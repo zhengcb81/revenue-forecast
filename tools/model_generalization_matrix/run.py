@@ -56,7 +56,7 @@ def _tree_digest(root: Path) -> dict[str, str]:
     if not root.exists():
         return out
     for p in sorted(root.rglob("*")):
-        if p.is_file():
+        if p.is_file() and not any(part in {"__pycache__", ".pytest_cache"} for part in p.parts):
             out[str(p.relative_to(root)).replace("\\", "/")] = _sha_file(p)
     return out
 
@@ -68,24 +68,35 @@ def _snapshot(path: Path) -> dict[str, Any]:
     if path.is_file():
         return {"existed": True, "kind": "file", "sentinel_sha256": _sha_file(path)}
     entries = sorted(e.name for e in path.iterdir())
-    return {"existed": True, "kind": "dir", "entries": entries}
+    return {"existed": True, "kind": "dir", "entries": entries,
+            "files": _tree_digest(path),
+            "directories": sorted(p.relative_to(path).as_posix() for p in path.rglob("*") if p.is_dir())}
 
 
 def run_matrix(out_root: Path, owned_root: Path, *, e2e: bool) -> dict[str, Any]:
     started_wall = time.time()
     started_at = datetime.now(timezone.utc).isoformat()
 
+    if out_root.exists():
+        raise FileExistsError(f"report output already exists: {out_root}")
+    if out_root == owned_root or owned_root in out_root.parents or out_root in owned_root.parents:
+        raise ValueError("report and scratch roots must be separate")
     # Fixed, read-only trees whose SHA must be unchanged at the end.
     repo = bootstrap.repo_root()
     readonly_roots = [repo / "scripts", repo / "tests"]
     readonly_before = {str(r): _tree_digest(r) for r in readonly_roots if r.exists()}
 
     # Isolated scratch: a fresh short path under owned_root.
+    owned_before = _snapshot(owned_root)
+    created_parents = []
+    ancestor = owned_root
+    while not ancestor.exists():
+        created_parents.append(ancestor)
+        ancestor = ancestor.parent
     owned_root.mkdir(parents=True, exist_ok=True)
-    scratch_name = f".tmp/w07-{uuid.uuid4().hex[:8]}"
-    scratch = owned_root / scratch_name
+    scratch = owned_root / f"w07-{uuid.uuid4().hex}"
     scratch_before = _snapshot(scratch)
-    scratch.mkdir(parents=True, exist_ok=True)
+    scratch.mkdir(exist_ok=False)
 
     residuals: list[str] = []
     cleanup: dict[str, Any] = {
@@ -97,14 +108,20 @@ def run_matrix(out_root: Path, owned_root: Path, *, e2e: bool) -> dict[str, Any]
         # Restore scratch baseline: delete only what we created.
         try:
             if scratch.exists():
-                shutil.rmtree(scratch, ignore_errors=True)
-            tmp_parent = scratch.parent
-            if tmp_parent.name == ".tmp" and tmp_parent.exists() and not any(tmp_parent.iterdir()):
-                tmp_parent.rmdir()
+                if owned_root.resolve() not in scratch.resolve().parents:
+                    raise ValueError("scratch escaped owned root")
+                shutil.rmtree(scratch)
+            for created in created_parents:
+                if created.exists() and not any(created.iterdir()):
+                    created.rmdir()
             cleanup["restored_absent"] = not scratch.exists()
         except Exception as exc:  # noqa: BLE001
             cleanup["restored_absent"] = False
             residuals.append(f"scratch cleanup failed: {exc}")
+        cleanup["owned_root_baseline"] = owned_before
+        cleanup["owned_root_restored"] = owned_before == _snapshot(owned_root)
+        if not cleanup["owned_root_restored"]:
+            residuals.append("owned root baseline not restored")
         # Read-only SHA re-check (recorded into the report, not just computed).
         readonly_after = {str(r): _tree_digest(r) for r in readonly_roots if r.exists()}
         cleanup["readonly_unchanged"] = readonly_before == readonly_after
@@ -133,6 +150,17 @@ def run_matrix(out_root: Path, owned_root: Path, *, e2e: bool) -> dict[str, Any]
         if e2e:
             cli_evidence = _run_cli_evidence(runtime, scratch, residuals)
 
+        if e2e:
+            cli_ok = (
+                cli_evidence.get("legal_validate_only", {}).get("returncode") == 0
+                and cli_evidence.get("reject_validate_only", {}).get("returncode") == 2
+                and "fiscal_year_end" in (cli_evidence.get("reject_validate_only", {}).get("stderr_tail", "")
+                                         + cli_evidence.get("reject_validate_only", {}).get("stdout_tail", ""))
+                and cli_evidence.get("support_diagnostics", {}).get("returncode") == 0
+                and cli_evidence.get("support_output_schema") == "economic-support-diagnostics/1"
+            )
+            if not cli_ok:
+                residuals.append("native CLI evidence incomplete, failed or wrong schema/rejection")
         # Finalize cleanup (restore + SHA re-check) BEFORE writing, so the report
         # carries the real recovery/SHA record, not a pre-cleanup snapshot.
         _finalize_cleanup()
@@ -238,12 +266,7 @@ def main(argv: list[str] | None = None) -> int:
                       "class_status": rep["class_status"]}, ensure_ascii=False))
     # A matrix run is "clean" when nothing failed/errored unexpectedly and every
     # reject landed as REJECT_OK.  NOT_RUN is never treated as a pass.
-    clean = (
-        counts["failed"] == 0
-        and counts["errored"] == 0
-        and counts["reject_mismatch"] == 0
-        and counts["not_run"] == 0
-    )
+    clean = rep["status"] == "COMPLETE"
     return 0 if clean else 1
 
 

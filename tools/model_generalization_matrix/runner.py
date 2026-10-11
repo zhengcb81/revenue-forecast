@@ -16,6 +16,7 @@ Design rules enforced here:
 from __future__ import annotations
 
 import copy
+import math
 import time
 from dataclasses import dataclass, field
 from typing import Any
@@ -92,8 +93,10 @@ def _jsonable(v: Any) -> Any:
 
 
 def _num_eq(a: Any, b: Any) -> bool:
+    if isinstance(a, bool) or isinstance(b, bool):
+        return type(a) is type(b) and a == b
     if isinstance(a, (int, float)) and isinstance(b, (int, float)):
-        return abs(a - b) <= TOL * max(1.0, abs(b))
+        return math.isfinite(a) and math.isfinite(b) and abs(a - b) <= TOL * max(1.0, abs(b))
     return a == b
 
 
@@ -124,6 +127,7 @@ def _compare_map(name: str, exp: dict, obs: dict) -> list[Assertion]:
 
 def run_case(spec: C.CaseSpec, engine: NativeEngine) -> CaseResult:
     started = time.time()
+    ref_start = len(engine.refs)
     res = CaseResult(
         case_id=spec.case_id,
         cls=spec.cls,
@@ -140,7 +144,10 @@ def run_case(spec: C.CaseSpec, engine: NativeEngine) -> CaseResult:
         res.diagnostics["error"] = f"{type(exc).__name__}: {exc}"
     finally:
         res.diagnostics["seconds"] = round(time.time() - started, 6)
-        res.native_refs = [r.to_json() for r in engine.refs]
+        res.native_refs = [r.to_json() for r in engine.refs[ref_start:]]
+        if res.status in {"PASS", "REJECT_OK"} and not res.native_refs:
+            res.status = "NOT_RUN"
+            res.diagnostics["error"] = "case has no native execution record"
     return res
 
 
@@ -184,6 +191,8 @@ def _run_period_flow(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) ->
     # Legal vector also confirms the engine computed (did not refuse) the window.
     observed = observe(result)
     res.observed.setdefault("annual", observed.get("annual"))
+    if not spec.expected.reject:
+        res.assertions.extend(_compare_map("annual", spec.expected.values["annual"], observed.get("annual", {})))
     if spec.expected.reject:
         res.status = "FAIL"
         res.assertions.append(
@@ -252,6 +261,10 @@ def _run_forecast(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> Ca
 
 
 def _handle_reject(spec: C.CaseSpec, res: CaseResult, exc: Exception) -> CaseResult:
+    if not _is_contract_reject(exc):
+        res.status = "ERROR"
+        res.diagnostics["error"] = f"{type(exc).__name__}: {exc}"
+        return res
     msg = f"{type(exc).__name__}: {exc}"
     res.observed = {"exception": msg}
     if not spec.expected.reject:
@@ -265,7 +278,7 @@ def _handle_reject(spec: C.CaseSpec, res: CaseResult, exc: Exception) -> CaseRes
     # A real contract refusal: engine must raise with a non-empty reason.  If a
     # specific reason string is required it must appear; otherwise any
     # ForecastInputError-family contract message suffices.
-    is_contract_error = isinstance(exc, Exception) and bool(str(exc).strip())
+    is_contract_error = _is_contract_reject(exc) and bool(str(exc).strip())
     if reason:
         matched = reason.lower() in str(exc).lower() and is_contract_error
         expected_label = reason
@@ -298,14 +311,11 @@ def _assert_values(spec: C.CaseSpec, res: CaseResult, observed: dict[str, Any]) 
 
     assertions: list[Assertion] = []
     for field_name in exp.unknown_fields:
-        if field_name in observed:
-            obs_val = observed[field_name]
-            # Unknown must be null, never 0.
-            passed = obs_val is None
-            assertions.append(
-                Assertion(name=f"unknown[{field_name}]", expected=None, observed=obs_val,
-                          passed=passed, kind="unknown")
-            )
+        obs_val = observed.get(field_name, {"__missing__": True})
+        assertions.append(
+            Assertion(name=f"unknown[{field_name}]", expected=None, observed=obs_val,
+                      passed=field_name in observed and obs_val is None, kind="unknown")
+        )
     for k, ev in exp.values.items():
         ov = observed.get(k, {"__missing__": True})
         if isinstance(ev, dict) and isinstance(ov, dict):
@@ -313,7 +323,7 @@ def _assert_values(spec: C.CaseSpec, res: CaseResult, observed: dict[str, Any]) 
         else:
             assertions.append(_compare_value(k, ev, ov))
     res.assertions.extend(assertions)
-    res.status = "PASS" if all(a.passed for a in res.assertions) else "FAIL"
+    res.status = "PASS" if assertions and all(a.passed for a in res.assertions) else "FAIL"
     return res
 
 
@@ -330,6 +340,10 @@ def _run_conversion(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> 
         pair = d.get(key)
         if pair:
             attempts.append((pair[0], pair[1]))
+    if not attempts:
+        res.status = "NOT_RUN"
+        res.diagnostics["error"] = "no conversion attempts declared"
+        return res
     all_rejected = True
     messages = []
     for in_u, eng_u in attempts:
@@ -338,6 +352,9 @@ def _run_conversion(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> 
             all_rejected = False
             messages.append(f"{in_u}->{eng_u}: NO ERROR (BAD)")
         except Exception as exc:  # noqa: BLE001
+            if not _is_contract_reject(exc):
+                raise
+            all_rejected = all_rejected and bool(str(exc).strip())
             messages.append(f"{in_u}->{eng_u}: {type(exc).__name__}: {exc}")
     res.observed = {"attempts": messages, "all_rejected": all_rejected}
     res.assertions.append(
@@ -355,11 +372,8 @@ def _run_support(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> Cas
     data = copy.deepcopy(data)
     if spec.case_id == "M08-C":
         # Unknown observed range must remain null through the native analyzer.
-        from research.evidence_roles import analyze_operating_research
-        from revenue_core import validate_document
-
         data["operating_research"]["calibrations"][0]["observed_range"] = None
-        diag = analyze_operating_research(data, validate_document(data))
+        diag = engine.analyze_operating_research(data)
         cal = diag["calibrations"][0]
         res.observed = {
             "observed_range": cal.get("observed_range"),
@@ -414,9 +428,10 @@ def _run_shock_pair(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> 
         ov = observed.get(k, {"__missing__": True})
         assertions.append(_compare_value(k, ev, ov))
     # Conservation: the first-year drop equals the deferred amount exactly once.
-    drop_once = abs(delta.get("2026", 0.0) - (-20.0)) <= TOL * 20.0
+    expected_drop = -float(spec.drivers["deferred"])
+    drop_once = _num_eq(expected_drop, delta.get("2026"))
     assertions.append(
-        Assertion(name="shock_applied_once", expected=-20.0, observed=delta.get("2026"),
+        Assertion(name="shock_applied_once", expected=expected_drop, observed=delta.get("2026"),
                   passed=drop_once, kind="conservation")
     )
     res.assertions = assertions

@@ -174,7 +174,7 @@ def _build_period_flow_cross_fy() -> tuple[dict[str, Any], Callable[[dict[str, A
     from test_m3_period_flow_contract import schema_3_9_document, add_flow_parameter
 
     data = schema_3_9_document()
-    # A six-month flow that crosses calendar years but sits inside the FY window.
+    # A calendar H1 evidence flow; unrelated to the annual forecast driver.
     add_flow_parameter(data, "seg_h1_2026", 55.0, "2026-01-01", "2026-06-30", 2026)
 
     def observe(result: dict[str, Any]) -> dict[str, Any]:
@@ -546,14 +546,14 @@ CASES: list[CaseSpec] = [
         case_id="M04-L",
         cls="M04",
         vector="legal",
-        boundary="a cross-calendar partial window inside the FY is accepted at its real coverage",
+        boundary="a calendar H1 evidence flow keeps six-month coverage and is not added to the annual forecast",
         kind="period_flow",
         drivers={
             "flow": {"start": "2026-01-01", "end": "2026-06-30", "year": 2026, "value": 55.0},
             "months": 6,
         },
         build=_build_period_flow_cross_fy,
-        expected=_e({"months": 6.0}),
+        expected=_e({"months": 6.0, "annual": {"2026": (100.0 + 50.0) * 1.1, "2027": (100.0 + 50.0) * 1.1 ** 2}}),
         expected_input_drivers=None,
     ),
     CaseSpec(

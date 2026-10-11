@@ -42,6 +42,8 @@ class NativeRef:
         return {
             "entry": self.entry,
             "request_sha256": self.request_sha256,
+            "request": self.request,
+            "result": self.result,
             "result_sha256": self.result_sha256,
             "exception_type": self.exception_type,
             "exception_message": self.exception_message,
@@ -116,8 +118,28 @@ class NativeEngine:
                         request_sha256=_sha({"start": str(start), "end": str(end)}),
                         request={"start": str(start), "end": str(end)})
         self.refs.append(ref)
-        val = self._rt.period_flow_months(start, end)
+        try:
+            val = self._rt.period_flow_months(start, end)
+        except Exception as exc:
+            ref.exception_type = type(exc).__name__
+            ref.exception_message = str(exc)
+            raise
         ref.result_sha256 = _sha(val)
         ref.result = val
         ref.json_pointers = {"/months": val}
         return val
+
+    def analyze_operating_research(self, data: dict[str, Any]) -> dict[str, Any]:
+        ref = NativeRef(entry="research.evidence_roles.analyze_operating_research",
+                        request_sha256=_sha(data), request=copy.deepcopy(data))
+        self.refs.append(ref)
+        try:
+            checked = copy.deepcopy(data)
+            out = self._rt.analyze_operating_research(checked, self._rt.validate_document(checked))
+        except Exception as exc:
+            ref.exception_type = type(exc).__name__
+            ref.exception_message = str(exc)
+            raise
+        ref.result = out
+        ref.result_sha256 = _sha(out)
+        return out

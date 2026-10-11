@@ -25,13 +25,16 @@ def load_runtime() -> SimpleNamespace:
         if p not in sys.path:
             sys.path.insert(0, p)
 
-    from revenue_core import run_forecast  # noqa: E402
+    from revenue_core import run_forecast, validate_document  # noqa: E402
+    from research.evidence_roles import analyze_operating_research
     from research.input_quantities import convert_input_quantity  # noqa: E402
     from research_support_diagnostics import build_support_diagnostics  # noqa: E402
     from contracts.period_flow import period_flow_months  # noqa: E402
 
     return SimpleNamespace(
         run_forecast=run_forecast,
+        validate_document=validate_document,
+        analyze_operating_research=analyze_operating_research,
         convert_input_quantity=convert_input_quantity,
         build_support_diagnostics=build_support_diagnostics,
         period_flow_months=period_flow_months,

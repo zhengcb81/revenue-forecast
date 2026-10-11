@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .runner import CaseResult
+from . import cases as C
 
 SCHEMA = "model-generalization-matrix/1"
 
@@ -81,11 +82,38 @@ def build_report(
     by_class: dict[str, list[CaseResult]] = {}
     for r in results:
         by_class.setdefault(r.cls, []).append(r)
-    for cls, rs in by_class.items():
-        ok = all(r.status in {"PASS", "REJECT_OK"} for r in rs)
+    required = {c.case_id: c for c in C.CASES}
+    observed_ids = [r.case_id for r in results]
+    missing = sorted(set(required) - set(observed_ids))
+    unexpected = sorted(set(observed_ids) - set(required))
+    duplicates = sorted({cid for cid in observed_ids if observed_ids.count(cid) > 1})
+    for cls in sorted({c.cls for c in C.CASES}):
+        rs = by_class.get(cls, [])
+        expected_ids = {c.case_id for c in C.CASES if c.cls == cls}
+        ok = (len(rs) == len(expected_ids) and {r.case_id for r in rs} == expected_ids
+              and all(r.status in {"PASS", "REJECT_OK"} for r in rs))
         class_status[cls] = "PASS" if ok else "FAIL"
+    coverage = {"missing_cases": missing, "unexpected_cases": unexpected, "duplicate_cases": duplicates}
+    clean = (bool(results) and not missing and not unexpected and not duplicates
+             and all(s == "PASS" for s in class_status.values())
+             and not residuals and cleanup.get("restored_absent") is True
+             and cleanup.get("readonly_unchanged") is True
+             and cleanup.get("owned_root_restored", True) is True)
 
     return {
+        "status": "COMPLETE" if clean else "FAILED",
+        "vector_coverage": coverage,
+        "combination_coverage": {
+            "status": "PARTIAL",
+            "remaining": [
+                "M01 explicit CNY/HKD labels and same-currency scaling",
+                "M04 dated acquisition/control, cross-FY and missing-quarter ancestry",
+                "M06 correlated joint volume/price scenarios",
+                "M07 cumulative target and gross/net/cannibalization",
+                "M08 future actual/WAPE null through draft output",
+            ],
+            "note": "Class PASS describes declared vectors only, not every card boundary.",
+        },
         "schema": SCHEMA,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "started_at": started_at,
@@ -110,7 +138,7 @@ def build_report(
 def write_report(report: dict[str, Any], out_root: str) -> dict[str, str]:
     import os
 
-    os.makedirs(out_root, exist_ok=True)
+    os.makedirs(out_root, exist_ok=False)
     json_path = os.path.join(out_root, "model-generalization-matrix.json")
     with open(json_path, "w", encoding="utf-8") as fh:
         json.dump(report, fh, ensure_ascii=False, indent=2)
@@ -125,6 +153,8 @@ def render_markdown(report: dict[str, Any]) -> str:
     lines = [
         "# Model Generalization Matrix (`model-generalization-matrix/1`)",
         "",
+        f"- execution status: {report['status']}",
+        f"- combination coverage: {report['combination_coverage']['status']}",
         f"- generated_at: {report['generated_at']}",
         f"- wall_seconds: {report['wall_seconds']}",
         f"- source_truth_verified: {report['source_truth_verified']}",
