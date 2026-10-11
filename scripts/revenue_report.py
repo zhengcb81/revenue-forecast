@@ -453,6 +453,24 @@ def _validate_forecast_output(
     require_validating_engine(
         result["schema_version"], result["engine_version"], "output"
     )
+    if data is not None and requires_bound_input_schema(result["schema_version"]):
+        # W05 (mutation patrol): against a frozen bound input the identity and
+        # denotation fields cannot drift — a rehashed output with a rewritten
+        # currency, unit, fiscal calendar or period label still fails here.
+        for _field in (
+            "company_name",
+            "as_of_date",
+            "currency",
+            "unit",
+            "fiscal_year_end",
+            "base_year",
+            "forecast_years",
+            "schema_version",
+        ):
+            require(
+                result.get(_field) == data.get(_field),
+                f"forecast output {_field} does not match the bound input",
+            )
     if requires_bound_input_schema(result["schema_version"]):
         require(
             "management_target_coverage" in result,

@@ -1,19 +1,20 @@
-"""Pure temporal eligibility of parameters actually consumed by annual roles.
+"""Pure eligibility of parameters actually consumed by annual business roles.
 
-This contract does not annualize amounts, expand derived ancestors, infer dates,
-or inspect sources/identity/permissions. A partial flow remains a legal fact;
-its direct consumption as a full-year flow is the error. Old schemas retain
-legacy behavior. Schema 3.9 uses the fiscal-year window already defined by the
-period-flow contract, with explicit stock/rate roles kept distinct from flows.
+This contract never annualizes amounts, infers dates or checks permissions.
+Schema 3.10 derived annual-flow roots reuse the actual formula dimension/period
+ancestry before accepting an outer annual label. Schema 3.9 retains its direct
+window eligibility; old schemas retain legacy behavior. Partial flows remain
+legal supporting facts but cannot directly serve a full-year consumer. Explicit
+native stock/rate roles stay distinct from recognized amounts.
 """
 from __future__ import annotations
 
 from collections import defaultdict
 from typing import Any
 
-from contracts.constants import PERIOD_EVIDENCE_SCHEMA_VERSION, PERIOD_FLOW_TIME_BASIS
+from contracts.constants import DATED_CONTRIBUTION_SCHEMA_VERSION, PERIOD_FLOW_SCHEMA_VERSIONS, PERIOD_FLOW_TIME_BASIS
 from contracts.evidence import parse_iso_date, period_year, require
-from contracts.period_flow import fiscal_year_window
+from contracts.period_flow import fiscal_year_window, validate_derived_flow_ancestry
 from model_registry import MODEL_DRIVER_DIMENSIONS
 from revenue_constraints import constraint_parameter_ids
 
@@ -56,7 +57,7 @@ def validate_annual_consumption(
     explicitly authored annual derived parameter remain valid supporting facts.
     Structural validation and formula evaluation retain their existing owners.
     """
-    if data.get("schema_version") != PERIOD_EVIDENCE_SCHEMA_VERSION:
+    if data.get("schema_version") not in PERIOD_FLOW_SCHEMA_VERSIONS:
         return
     roles: dict[str, set[str]] = defaultdict(set)
     flow_roles: set[str] = set()
@@ -114,6 +115,9 @@ def validate_annual_consumption(
         parameter = parameter_index[parameter_id]
         basis = parameter.get("time_basis")
         if basis == "annual":
+            if (data.get("schema_version") == DATED_CONTRIBUTION_SCHEMA_VERSION
+                    and parameter_id in flow_roles and parameter.get("kind") == "derived_fact"):
+                validate_derived_flow_ancestry(parameter_id, parameter, parameter_index)
             continue
         if basis == "point_in_time" and parameter_id not in flow_roles:
             continue

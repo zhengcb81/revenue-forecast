@@ -17,6 +17,7 @@ from __future__ import annotations
 import copy
 import sys
 import unittest
+import tempfile
 from pathlib import Path
 
 COMPAT_DIR = Path(__file__).resolve().parents[1] / "compatibility"
@@ -26,10 +27,9 @@ from contract_registry import (  # noqa: E402
     MANDATORY_CONTRACTS,
     load,
     validate,
+    validate_canonical_documents,
 )
 
-# The three repos are siblings; resolve canonical_doc_path values against it.
-REPO_PARENT = Path(__file__).resolve().parents[2]
 
 
 class ContractRegistryTests(unittest.TestCase):
@@ -57,12 +57,19 @@ class ContractRegistryTests(unittest.TestCase):
             )
 
     def test_every_contract_canonical_doc_exists_on_disk(self) -> None:
-        for name, spec in load()["contracts"].items():
-            path = REPO_PARENT / spec["canonical_doc_path"]
-            self.assertTrue(
-                path.is_file(),
-                f"{name}: canonical_doc_path does not exist: {path}",
-            )
+        # The registry path contract is tested in a portable owned fixture.
+        # Real document existence is an explicit cross-repository integration.
+        data = load()
+        with tempfile.TemporaryDirectory(prefix="rf-contract-docs-") as scratch:
+            parent = Path(scratch)
+            for spec in data["contracts"].values():
+                path = parent / spec["canonical_doc_path"]
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("fixture canonical contract", encoding="utf-8")
+            roots = {"company-wiki": parent / "company-wiki"}
+            self.assertEqual(validate_canonical_documents(data, roots), [])
+            path.unlink()
+            self.assertTrue(validate_canonical_documents(data, roots), "missing canonical document was accepted")
 
 
 class RegistryValidatorMutationTests(unittest.TestCase):

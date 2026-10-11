@@ -1,0 +1,115 @@
+[
+  {
+    "issue_key": "pw03-20261011T010657Z-cn-688012/process/PROCESS-006",
+    "source_report": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\reports\\process.json",
+    "source_sha256": "935ad90bda2bc2a96fdfb185d3a42c0f568aea57646cba3750bcc1b74ab7d58b",
+    "pointer": "/findings/5",
+    "finding": {
+      "issue_id": "PROCESS-006",
+      "severity": "P2",
+      "category": "data",
+      "summary": "众硅购后收入流的开始日被写成1月1日",
+      "evidence": [
+        {
+          "artifact": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\execution\\forecast\\assembled\\linked-input.json",
+          "locator": "/parameters/6/period_start; /evidence_claims/8"
+        },
+        {
+          "artifact": "C:/Users/郑曾波/Projects/company-wiki/companies/中微公司/raw/financial_reports/semi_annual/2026-08-19_cninfo_1225482884_2026年半年度报告.pdf",
+          "locator": "PDF page176 purchase date and purchase-to-end revenue"
+        }
+      ],
+      "expected": "period_flow要对应原件实际覆盖窗口，控制时点不能被半年简称覆盖。",
+      "actual": "cmp_h1_2026=1.29190208百万，原件p176购买日2026-05-31、购买日至期末收入1291902.08元；参数period_start=2026-01-01、end06-30。",
+      "root_cause_hypothesis": "author将控制期窄流填入H1宽窗口；强校验只判断在财年内，未证实原文覆盖。",
+      "recommendation": "新输入将购后流明确为2026-05-31至06-30，并以显式derived桥嵌入半年/全年；保留原输入历史。",
+      "material_impact": "当前总额算术差额0；该参数若用作半年同比/日数/季节性校准会误报覆盖窗口。",
+      "recommended_retests": [
+        "新输入将购后流明确为2026-05-31至06-30，并以显式derived桥嵌入半年/全年；保留原输入历史。"
+      ]
+    }
+  },
+  {
+    "issue_key": "pw03-20261011T010657Z-cn-688012/process/PROCESS-007",
+    "source_report": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\reports\\process.json",
+    "source_sha256": "935ad90bda2bc2a96fdfb185d3a42c0f568aea57646cba3750bcc1b74ab7d58b",
+    "pointer": "/findings/6",
+    "finding": {
+      "issue_id": "PROCESS-007",
+      "severity": "P1",
+      "category": "data",
+      "summary": "众硅与原有业务工作分拆尚无外部收入/内部抵销证据",
+      "evidence": [
+        {
+          "artifact": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\execution\\forecast\\assembled\\linked-input.json",
+          "locator": "/parameters/6–8; /segments/1; /data_gaps/2"
+        },
+        {
+          "artifact": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\execution\\reads\\01-182e2062fed9.json",
+          "locator": "/pages/175; purchase-to-end revenue"
+        }
+      ],
+      "expected": "合并外部收入不能由被收购方单体购买后收入直接证明；各segment需范围一致。",
+      "actual": "集团H1总额减众硅购买后1.29190208作core；base2025众硅0；金额和股权64.69%未错乘，但购买后收入是否含集团内部销售未知。",
+      "root_cause_hypothesis": "源表单体购买后披露与RF集团external perimeter尚未桥接。",
+      "recommendation": "在来源会计范围层拿到购后外部收入及抵销；无桥就保持工作分拆与未量化限制，勿把residual加总恒等式当segment事实。",
+      "material_impact": "集团历史总额受原表支持；当前分部重分影响unknown，未来CMP100–850百万元/年范围仍未证。",
+      "recommended_retests": [
+        "在来源会计范围层拿到购后外部收入及抵销；无桥就保持工作分拆与未量化限制，勿把residual加总恒等式当segment事实。"
+      ]
+    }
+  },
+  {
+    "issue_key": "pw03-20261011T010657Z-cn-688012/analyst/ANALYST-PW03-CN-003",
+    "source_report": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\reports\\analyst.json",
+    "source_sha256": "4840a3c26f2cda8bfcfae3d8f03f47939b2d47f02a56d94917e54a8bb214b86f",
+    "pointer": "/findings/2",
+    "finding": {
+      "issue_id": "ANALYST-PW03-CN-003",
+      "severity": "P1",
+      "category": "research",
+      "summary": "众硅条件收入150/350/500百万元缺购后订单验收路径与集团外部收入抵销桥",
+      "check_ids": [
+        "A03",
+        "A06",
+        "A11"
+      ],
+      "evidence": [
+        {
+          "artifact": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\execution\\reads\\01-182e2062fed9.json",
+          "locator": "pages[page=176,177]"
+        },
+        {
+          "artifact": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\execution\\forecast\\assembled\\linked-input.json",
+          "locator": "parameters/cmp_unobserved_*; core_h1_2026; segments/众硅CMP购后业务; management_targets"
+        },
+        {
+          "artifact": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\roles\\analyst\\independent-crosschecks.json",
+          "locator": "CMP_target_bridge"
+        }
+      ],
+      "source_quotes": [
+        {
+          "artifact": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\execution\\reads\\01-182e2062fed9.json",
+          "locator": "pages[page=176]",
+          "quote": "购买方实际取得对被购买方控制权的日期；购买日至期末被购买方的收入1,291,902.08"
+        },
+        {
+          "artifact": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\execution\\reads\\01-182e2062fed9.json",
+          "locator": "pages[page=177]",
+          "quote": "2026 年度、2027 年度和2028 年度实现的合并报表范围营业收入分别不低于28,000.00 万元、43,000.00 万元和58,000.00 万元"
+        }
+      ],
+      "expected": "A03/A11及目标契约要求控制时窗、商业化进度和确认范围桥；全年子集团承诺与集团购后外部贡献区分。未来数可为假设，仍需依据、替代解释及可实现节奏。",
+      "actual": "控制日2026-05-31、购买日至6月30日收入1.29190208百万元和零FY25集团贡献正确；未乘64.69%或7/12，目标登记为unmodeled_data_gap且2027/28明确预计全年控制有改善。Base2026购后金额151.29190208（H2假设150），FY27/28独立重设350/500；没有安装/验收或订单范围证明，也没有集团内交易/抵销证据。减购后收入形成core H1工作分拆，已诚实披露未经抵销核实。",
+      "root_cause_hypothesis": "子公司业绩承诺、购后历史贡献与未来集团外部收入三类数据已区分，但暂用金额网格替代缺失的商业化和合并桥。",
+      "recommendation": "新attempt核最终并购报告/标的审计与购后经营资料；FY26单列控制前收入和集团内抵销，FY27/28仅在持续控制假设下核内部抵销/业务边界；用订单及验收节奏支持假设，不强迫Base达到承诺。",
+      "revenue_impact": "BaseCMP2026/27/28=151.291902/350/500百万元；2028占Base集团2.2184%。集团收入的实际抵销影响unknown；未证明发生双算，也未证明零抵销。承诺280/430/580不是集团预测或实际增量。",
+      "retest": "核每年control与perimeter；明确外部收入、内部交易、控制前后流量并复算，保留未桥接目标；比较可比目标不按股权比例缩营业收入。",
+      "related_root_cause_ids": [
+        "R18",
+        "R16"
+      ]
+    }
+  }
+]

@@ -105,7 +105,7 @@ actual revenue use their dedicated target types.
 }
 ```
 
-Periods must match `FYyyyy` exactly. Accepted dimensions are `revenue`, `quantity`, `ratio`, `revenue_per_unit`, `activity`, `revenue_per_activity`, `monetary_balance`, `area`, `revenue_per_area`, `backlog`, `coverage_units`, and `reserve_volume`. Monetary dimensions also require company-matching `currency` and `scale`. `time_basis` is `annual` or `point_in_time`.
+Periods must match `FYyyyy` exactly. Accepted dimensions are `revenue`, `quantity`, `ratio`, `revenue_per_unit`, `activity`, `revenue_per_activity`, `monetary_balance`, `area`, `revenue_per_area`, `backlog`, `coverage_units`, and `reserve_volume`. Monetary dimensions also require company-matching `currency` and `scale`. `time_basis` is `annual` or `point_in_time`; on opt-in schemas 3.9/3.10 it may also be `period_flow` with `period_start`/`period_end` (3.9: 3/6/12 whole months; 3.10: any real finite window inside the fiscal year — see [dated-contribution.md](dated-contribution.md)).
 
 For `derived_fact`, use `x0...xn` in a restricted arithmetic formula and list inputs in that order. The engine recomputes the formula and rejects a conflicting stored value.
 

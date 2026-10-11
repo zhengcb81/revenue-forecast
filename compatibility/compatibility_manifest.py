@@ -3,8 +3,8 @@
 The manifest (``current.json``) pins the three-repo remotes, the frozen FCAP
 baseline triplet (the immovable floor), the current triplet, the contract
 versions, the Python/platform matrix, and the hashes of the contract,
-scenario, and command registries. CI and local runners must consume only this
-manifest — no scattered commits inside workflows.
+scenario, and command registries. Explicit integration callers consume this manifest; unit tests do not
+infer sibling repository paths from the module location.
 
 Two hard gates:
 
@@ -43,11 +43,7 @@ FROZEN_BASELINE = {
 REPOS = ("revenue", "filing", "wiki")
 # owner_repo in the command registry uses the real repo names.
 VALID_OWNER_REPOS = ("revenue-forecast", "filing-fetch", "company-wiki")
-REPO_DIRS = {
-    "revenue": Path(__file__).resolve().parents[2] / "revenue-forecast",
-    "filing": Path(__file__).resolve().parents[2] / "filing-fetch",
-    "wiki": Path(__file__).resolve().parents[2] / "company-wiki",
-}
+
 VALID_TIERS = ("T0", "T1", "T2", "T3", "T4")
 VALID_WRITES = ("temp_only", "read_only_check", "isolated_audit_output", "authorized_apply")
 _HEX = set("0123456789abcdef")
@@ -86,8 +82,6 @@ def _is_sha256(value: object) -> bool:
 
 def _is_descendant(baseline: str, head: str, repo_dir: Path) -> bool:
     """True when ``head`` is ``baseline`` or a descendant (merge-base gate)."""
-    if baseline == head:
-        return True
     proc = subprocess.run(
         ["git", "merge-base", "--is-ancestor", baseline, head],
         cwd=repo_dir,
@@ -102,7 +96,12 @@ def _is_descendant(baseline: str, head: str, repo_dir: Path) -> bool:
 
 
 def validate_manifest(data: dict) -> list[str]:
-    """Return manifest invariant violations; empty list means valid."""
+    """Pure manifest/registry validation; no implicit sibling repository reads.
+
+    Actual Git ancestry belongs to ``validate_repository_ancestry`` with
+    explicitly supplied roots. This function checks the immutable baseline
+    declaration, versions and registry byte hashes independently of layout.
+    """
     problems: list[str] = []
     if data.get("schema_version") != SCHEMA_VERSION:
         problems.append(f"schema_version must be {SCHEMA_VERSION!r}")
@@ -150,13 +149,32 @@ def validate_manifest(data: dict) -> list[str]:
         elif declared != actual:
             problems.append(f"{key} tamper detected: manifest {declared[:10]}... != file {actual[:10]}...")
 
+    return problems
+
+
+def validate_repository_ancestry(data: dict, repo_dirs: dict[str, Path]) -> list[str]:
+    """Explicit read-only integration check of the declared Git triplet.
+
+    Unit tests supply temporary repositories. Real integration callers first
+    run ``validate_manifest`` to verify the frozen baseline declaration, then
+    supply actual repository roots; there is no inferred user directory.
+    """
+    problems: list[str] = []
+    current = data.get("current_triplet", {})
+    baseline = data.get("frozen_baseline_triplet", {})
+    if not isinstance(current, dict) or not isinstance(baseline, dict):
+        return ["ancestry triplets must be objects"]
     for repo in REPOS:
-        head = current.get(repo) if isinstance(current, dict) else None
-        if _is_sha1(head) and not _is_descendant(FROZEN_BASELINE[repo], head, REPO_DIRS[repo]):
-            problems.append(
-                f"{repo} HEAD {head[:10]}... is not a descendant of the frozen baseline "
-                f"{FROZEN_BASELINE[repo][:10]}... (reset/regression detected)"
-            )
+        head, floor = current.get(repo), baseline.get(repo)
+        root = repo_dirs.get(repo)
+        if not _is_sha1(head) or not _is_sha1(floor):
+            problems.append(f"{repo}: ancestry needs complete SHA-1 commits")
+            continue
+        if not isinstance(root, Path) or not root.is_dir():
+            problems.append(f"{repo}: explicit repository root is missing")
+            continue
+        if not _is_descendant(floor, head, root):
+            problems.append(f"{repo} HEAD {head[:10]}... is not a descendant of the declared baseline {floor[:10]}...")
     return problems
 
 

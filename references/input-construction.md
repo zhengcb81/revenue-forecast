@@ -90,6 +90,40 @@ Half-year and quarter revenue flows must not wear the `annual` label. Schema 3.9
   one — the flow cannot be typed `period_flow` yet; keep it out until the
   window is proven.
 
+## Dated consolidated contributions (schema 3.10 opt-in)
+
+An acquisition post-control contribution (control date mid-period) or any other
+real short window must not be widened to a half year to fit the 3.9 month rule.
+Schema 3.10 (engine 4.3.0) admits any real finite inclusive window; 3.9 keeps
+its 3/6/12 rule and 3.7/3.8 keep rejecting the dated fields:
+
+- Set `schema_version` to `3.10` (e.g. `generate_input_template.py --schema 3.10`).
+- `period_start <= period_end` (a same-day flow is legal), strict `YYYY-MM-DD`,
+  still inside the fiscal-year window of the parameter's `FYyyyy` label.
+- A cross-fiscal-year amount must be split into per-FY parameters by its real
+  source or an explicit estimate — never clip the dates and keep the whole
+  amount.
+- The amount belongs only to the written window: no x2/x12/day annualization
+  anywhere. Compose a full year through explicit derived sums.
+- A derived `period_flow`, or an `annual` derived wrapper with a dated ancestor,
+  must preserve its actual nonzero formula inputs and their original temporal
+  lineage. Every contributing input window stays inside the result window.
+  A full-year bridge needs complete coverage or a rationale for a real perimeter
+  gap. A rationale may explain disjoint business scopes or residual subtraction,
+  but cannot relocate a 2026 amount into 2027 or add H1 and its own Q2. Renaming
+  a derived output does not erase the original input identity/scope. Group total
+  and included subsidiary revenue cannot be added; reconstruct a documented
+  residual first. Stock/rate inputs alone do not establish a recognized flow.
+  Derived annual aliases follow the same actual unit/period ancestry, including
+  ratios and inverse-period conversions; use genuine annual ARPU/turnover or a
+  native stock-flow model rather than changing metadata.
+- Estimates stay `analyst_assumption`/`scenario_stress`; a dated
+  `reported_fact` needs its exact-value claim with `source_id`/locator (the
+  control date's evidence lives there). Unknown source dates stay unknown.
+- Name the perimeter change explicitly: feed the low/base/high forecast DAG
+  through `forecast_adjustments` category `acquisition_contribution`
+  (non-negative) or `disposal_contribution` (non-positive).
+
 ## Mechanism evidence roles (schema 3.9 opt-in)
 
 On schema 3.9 the growth-driver triangulation counts only nodes carrying at

@@ -112,7 +112,7 @@ def add_flow_parameter(
 
 class PeriodFlowConstantTests(unittest.TestCase):
     def test_engine_and_schema_versions_are_registered(self) -> None:
-        self.assertEqual(SKILL_VERSION, "4.2.1")
+        self.assertEqual(SKILL_VERSION, "4.3.0")
         self.assertEqual(PERIOD_EVIDENCE_SCHEMA_VERSION, "3.9")
 
     def test_fiscal_year_window_resolves_calendar_and_offset_year_ends(self) -> None:
@@ -342,7 +342,7 @@ class PeriodFlowIntegrationTests(unittest.TestCase):
             legacy_result["consolidated_forecast"], modern_result["consolidated_forecast"]
         )
         self.assertEqual(modern_result["schema_version"], PERIOD_EVIDENCE_SCHEMA_VERSION)
-        self.assertEqual(modern_result["engine_version"], "4.2.1")
+        self.assertEqual(modern_result["engine_version"], "4.3.0")
         # The stock value passes through exactly — never doubled.
         self.assertEqual(
             modern_result["parameter_trace"][-1]["value"], 30.0

@@ -17,6 +17,8 @@ from __future__ import annotations
 import copy
 import sys
 import unittest
+import subprocess
+import tempfile
 from pathlib import Path
 
 COMPAT_DIR = Path(__file__).resolve().parents[1] / "compatibility"
@@ -27,7 +29,35 @@ from compatibility_manifest import (  # noqa: E402
     load_manifest,
     validate_command_registry,
     validate_manifest,
+    validate_repository_ancestry,
 )
+
+
+def fixture_git(root: Path, *arguments: str) -> str:
+    result = subprocess.run(["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                             "-c", "core.hooksPath=/dev/null", *arguments], cwd=root,
+                            capture_output=True, text=True, encoding="utf-8", timeout=15, check=True)
+    return result.stdout.strip()
+
+
+def ancestry_fixture():
+    """Nine tiny real commits, no canonical data or physical sibling contract."""
+    from contextlib import contextmanager
+
+    @contextmanager
+    def owned():
+        with tempfile.TemporaryDirectory(prefix="rf-ancestry-") as scratch:
+            roots, floor = {}, {}
+            for name in ("revenue", "filing", "wiki"):
+                root = Path(scratch) / name
+                root.mkdir()
+                fixture_git(root, "init", "--quiet")
+                fixture_git(root, "commit", "--quiet", "--allow-empty", "-m", "parent")
+                fixture_git(root, "commit", "--quiet", "--allow-empty", "-m", "floor")
+                roots[name], floor[name] = root, fixture_git(root, "rev-parse", "HEAD")
+                fixture_git(root, "commit", "--quiet", "--allow-empty", "-m", "current")
+            yield {"frozen_baseline_triplet": floor, "current_triplet": {name: fixture_git(root, "rev-parse", "HEAD") for name, root in roots.items()}}, roots
+    return owned()
 
 
 class ManifestTests(unittest.TestCase):
@@ -49,9 +79,8 @@ class ManifestTests(unittest.TestCase):
             self.assertEqual(self.manifest[key], actual, f"{key} drifted from {name}")
 
     def test_current_triplet_is_descendant_of_frozen_baseline(self) -> None:
-        # The real gate: no repo may sit below the frozen baseline.
-        problems = validate_manifest(self.manifest)
-        self.assertEqual(problems, [])
+        with ancestry_fixture() as (data, roots):
+            self.assertEqual(validate_repository_ancestry(data, roots), [])
 
     def test_contract_versions_match_contract_registry(self) -> None:
         registry = load_registry_json("contract_registry.json")
@@ -104,9 +133,16 @@ class ManifestMutationTests(unittest.TestCase):
         self.assertTrue(validate_manifest(data), "validator accepted a short current hash")
 
     def test_rejects_head_not_descendant_of_baseline(self) -> None:
-        data = self._base()
-        data["current_triplet"]["revenue"] = "a" * 40  # not a real commit on the line
-        self.assertTrue(validate_manifest(data), "validator accepted a reset sibling")
+        with ancestry_fixture() as (data, roots):
+            # The floor is the second fixture commit; its parent is a real
+            # ancestor but must be rejected as the current regression.
+            data["current_triplet"]["revenue"] = fixture_git(roots["revenue"], "rev-parse", "HEAD~2")
+            self.assertTrue(validate_repository_ancestry(data, roots), "validator accepted a reset sibling")
+
+    def test_ancestry_requires_explicit_repository_roots(self) -> None:
+        with ancestry_fixture() as (data, roots):
+            roots.pop("revenue")
+            self.assertTrue(validate_repository_ancestry(data, roots), "missing explicit root was accepted")
 
     def test_rejects_contract_version_mismatch(self) -> None:
         data = self._base()

@@ -15,7 +15,10 @@ SCENARIOS = ("low", "base", "high")
 # carried by bound conversion observations and outputs must be consumed by
 # the declared business scope. Revenue arithmetic, schemas and the optional
 # operating-research input contract are unchanged.
-SKILL_VERSION = "4.2.1"
+#
+# W05-RF-FLOW: 4.3.0 adds schema 3.10 (dated consolidated contributions).
+# The 4.2.1 emit history stays pinned in schema_compatibility.py.
+SKILL_VERSION = "4.3.0"
 
 
 FORECAST_SCHEMA_VERSION = "3.7"
@@ -34,6 +37,25 @@ OPT_IN_SCHEMA_VERSION = "3.8"
 PERIOD_EVIDENCE_SCHEMA_VERSION = "3.9"
 
 
+# W05-RF-FLOW: schema 3.10 = 3.9 + dated consolidated contributions: any real
+# finite inclusive window (``period_start <= period_end``, same-day flows
+# included) may carry a period_flow amount inside its fiscal-year window, with
+# explicit derived composition honesty for full-year claims. 3.9 keeps its
+# strict 3/6/12-month rule; 3.7/3.8 keep failing closed on the dated fields.
+DATED_CONTRIBUTION_SCHEMA_VERSION = "3.10"
+
+
+# Schemas whose ``time_basis`` vocabulary includes ``period_flow``.
+PERIOD_FLOW_SCHEMA_VERSIONS = frozenset({
+    PERIOD_EVIDENCE_SCHEMA_VERSION,
+    DATED_CONTRIBUTION_SCHEMA_VERSION,
+})
+
+# Schemas whose growth-driver triangulation is role-aware (only
+# ``mechanism_direction`` claims prove a future mechanism).
+MECHANISM_ROLE_SCHEMA_VERSIONS = PERIOD_FLOW_SCHEMA_VERSIONS
+
+
 SUPPORTED_FORECAST_SCHEMA_VERSIONS = {
     "3.0",
     "3.1",
@@ -45,6 +67,7 @@ SUPPORTED_FORECAST_SCHEMA_VERSIONS = {
     FORECAST_SCHEMA_VERSION,
     OPT_IN_SCHEMA_VERSION,
     PERIOD_EVIDENCE_SCHEMA_VERSION,
+    DATED_CONTRIBUTION_SCHEMA_VERSION,
 }
 
 

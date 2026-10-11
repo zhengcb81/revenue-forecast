@@ -122,3 +122,14 @@ def validate(data: dict) -> list[str]:
         if isinstance(owner, str) and isinstance(consumers, list) and owner in consumers:
             problems.append(f"{name}: owner_repo must not appear in its own consumed_by_repos")
     return problems
+
+
+def validate_canonical_documents(data: dict, repo_roots: dict[str, Path]) -> list[str]:
+    """Read-only document integration using explicit roots, not sibling layout."""
+    problems: list[str] = []
+    for name, spec in data["contracts"].items():
+        reference = Path(spec["canonical_doc_path"])
+        root = repo_roots.get(reference.parts[0])
+        if root is None or not (root.joinpath(*reference.parts[1:])).is_file():
+            problems.append(f"{name}: canonical_doc_path does not exist: {reference}")
+    return problems
