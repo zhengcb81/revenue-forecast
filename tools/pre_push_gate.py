@@ -83,6 +83,7 @@ SMOKE_TESTS = (
     "tests/test_company_wiki_source_v2.py",
     "tests/test_source_preparation.py",
     "tests/test_data_contract.py",
+    "tests/test_w04_financial_communication_window.py",
     "tests/test_recognition_bridge.py",
     "tests/test_confidence_determinism.py",
     "tests/test_sensitivity_dependency_dag.py",
