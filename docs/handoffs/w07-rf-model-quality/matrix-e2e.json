@@ -1,0 +1,2435 @@
+{
+  "schema": "model-generalization-matrix/1",
+  "generated_at": "2026-10-11T18:25:40.620728+00:00",
+  "started_at": "2026-10-11T18:25:37.614628+00:00",
+  "finished_at": "2026-10-11T18:25:40.620660+00:00",
+  "wall_seconds": 3.006072,
+  "engine_versions": {
+    "schema_version": null,
+    "SKILL_VERSION": "4.3.0",
+    "FORECAST_SCHEMA_VERSION": "3.7"
+  },
+  "source_truth_verified": false,
+  "economic_reasonableness": "not_evaluated",
+  "scope": "Finite cross-mechanism combination stress matrix over the native draft engine. Synthetic engineering vectors; no real company, no source truth, no buy-side conclusion.",
+  "counts": {
+    "total": 16,
+    "passed": 11,
+    "failed": 0,
+    "reject_ok": 5,
+    "reject_mismatch": 0,
+    "errored": 0,
+    "not_run": 0
+  },
+  "class_status": {
+    "M01": "PASS",
+    "M02": "PASS",
+    "M03": "PASS",
+    "M04": "PASS",
+    "M05": "PASS",
+    "M06": "PASS",
+    "M07": "PASS",
+    "M08": "PASS"
+  },
+  "cases": [
+    {
+      "case_id": "M01-L",
+      "class": "M01",
+      "vector": "legal",
+      "mode": "draft",
+      "boundary": "quantity x price computes revenue at an explicit currency/unit label",
+      "expected": {
+        "values": {
+          "revenue": {
+            "2026": 50.0,
+            "2027": 60.0
+          }
+        },
+        "reject": false,
+        "reject_reason": null,
+        "unknown_fields": []
+      },
+      "observed": {
+        "revenue": {
+          "2026": 50.0,
+          "2027": 60.0
+        }
+      },
+      "assertions": [
+        {
+          "name": "input_driver[units]",
+          "kind": "input",
+          "expected": [
+            10.0,
+            12.0
+          ],
+          "observed": [
+            10.0,
+            12.0
+          ],
+          "passed": true
+        },
+        {
+          "name": "input_driver[unit_revenue]",
+          "kind": "input",
+          "expected": [
+            5.0,
+            5.0
+          ],
+          "observed": [
+            5.0,
+            5.0
+          ],
+          "passed": true
+        },
+        {
+          "name": "conversion[5.0 usd_million->usd_thousand]",
+          "kind": "value",
+          "expected": 5000.0,
+          "observed": 5000.0,
+          "passed": true
+        },
+        {
+          "name": "revenue.2026",
+          "kind": "value",
+          "expected": 50.0,
+          "observed": 50.0,
+          "passed": true
+        },
+        {
+          "name": "revenue.2027",
+          "kind": "value",
+          "expected": 60.0,
+          "observed": 60.0,
+          "passed": true
+        }
+      ],
+      "status": "PASS",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.137508
+      }
+    },
+    {
+      "case_id": "M01-C",
+      "class": "M01",
+      "vector": "counter",
+      "mode": "draft",
+      "boundary": "mixed currency/units are refused or explicitly converted, never auto-FX",
+      "expected": {
+        "values": {},
+        "reject": true,
+        "reject_reason": "incompatible unit conversion",
+        "unknown_fields": []
+      },
+      "observed": {
+        "attempts": [
+          "usd_million->rmb_million: ForecastInputError: incompatible unit conversion: usd_million -> rmb_million",
+          "percent->usd_million: ForecastInputError: incompatible unit conversion: percent -> usd_million"
+        ],
+        "all_rejected": true
+      },
+      "assertions": [
+        {
+          "name": "mixed_units_rejected",
+          "kind": "reject",
+          "expected": true,
+          "observed": true,
+          "passed": true
+        }
+      ],
+      "status": "REJECT_OK",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.000124
+      }
+    },
+    {
+      "case_id": "M02-L",
+      "class": "M02",
+      "vector": "legal",
+      "mode": "draft",
+      "boundary": "closing ARR is not full-year revenue; revenue follows the committed bridge",
+      "expected": {
+        "values": {
+          "revenue": {
+            "2026": 105.0,
+            "2027": 136.25
+          }
+        },
+        "reject": false,
+        "reject_reason": null,
+        "unknown_fields": []
+      },
+      "observed": {
+        "revenue": {
+          "2026": 105.0,
+          "2027": 136.25
+        }
+      },
+      "assertions": [
+        {
+          "name": "input_driver[opening_arr]",
+          "kind": "input",
+          "expected": [
+            100.0,
+            125.0
+          ],
+          "observed": [
+            100.0,
+            125.0
+          ],
+          "passed": true
+        },
+        {
+          "name": "input_driver[new_arr]",
+          "kind": "input",
+          "expected": [
+            20.0,
+            30.0
+          ],
+          "observed": [
+            20.0,
+            30.0
+          ],
+          "passed": true
+        },
+        {
+          "name": "revenue.2026",
+          "kind": "value",
+          "expected": 105.0,
+          "observed": 105.0,
+          "passed": true
+        },
+        {
+          "name": "revenue.2027",
+          "kind": "value",
+          "expected": 136.25,
+          "observed": 136.25,
+          "passed": true
+        }
+      ],
+      "status": "PASS",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.032661
+      }
+    },
+    {
+      "case_id": "M02-C",
+      "class": "M02",
+      "vector": "counter",
+      "mode": "draft",
+      "boundary": "a missing ARR driver is refused, never zero-filled",
+      "expected": {
+        "values": {},
+        "reject": true,
+        "reject_reason": null,
+        "unknown_fields": []
+      },
+      "observed": {
+        "exception": "ForecastInputError: research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model"
+      },
+      "assertions": [
+        {
+          "name": "reject_reason",
+          "kind": "reject",
+          "expected": "(any non-empty contract reason)",
+          "observed": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "passed": true
+        }
+      ],
+      "status": "REJECT_OK",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.009466
+      }
+    },
+    {
+      "case_id": "M03-L",
+      "class": "M03",
+      "vector": "legal",
+      "mode": "draft",
+      "boundary": "demand is capped by capacity; the launch fraction is applied exactly once",
+      "expected": {
+        "values": {
+          "revenue": {
+            "2026": 80.0,
+            "2027": 480.0
+          }
+        },
+        "reject": false,
+        "reject_reason": null,
+        "unknown_fields": []
+      },
+      "observed": {
+        "revenue": {
+          "2026": 80.0,
+          "2027": 480.0
+        }
+      },
+      "assertions": [
+        {
+          "name": "input_driver[eligible_units]",
+          "kind": "input",
+          "expected": [
+            1000.0,
+            1200.0
+          ],
+          "observed": [
+            1000.0,
+            1200.0
+          ],
+          "passed": true
+        },
+        {
+          "name": "input_driver[annual_supply_capacity]",
+          "kind": "input",
+          "expected": [
+            80.0,
+            300.0
+          ],
+          "observed": [
+            80.0,
+            300.0
+          ],
+          "passed": true
+        },
+        {
+          "name": "revenue.2026",
+          "kind": "value",
+          "expected": 80.0,
+          "observed": 80.0,
+          "passed": true
+        },
+        {
+          "name": "revenue.2027",
+          "kind": "value",
+          "expected": 480.0,
+          "observed": 480.0,
+          "passed": true
+        }
+      ],
+      "status": "PASS",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "721359751b0cec7f285d5eb12f20faac0070b16a85c1dab55936f90a53ee2027",
+          "result_sha256": "313c49c0efd01f6cc30941e3d9e1f2106f5f1d684ca9a82f747cd486921ef90c",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.02106
+      }
+    },
+    {
+      "case_id": "M03-C",
+      "class": "M03",
+      "vector": "counter",
+      "mode": "draft",
+      "boundary": "zero capacity yields finite zero revenue, never unbounded growth",
+      "expected": {
+        "values": {
+          "revenue": {
+            "2026": 0.0,
+            "2027": 0.0
+          }
+        },
+        "reject": false,
+        "reject_reason": null,
+        "unknown_fields": []
+      },
+      "observed": {
+        "revenue": {
+          "2026": 0.0,
+          "2027": 0.0
+        }
+      },
+      "assertions": [
+        {
+          "name": "input_driver[annual_supply_capacity]",
+          "kind": "input",
+          "expected": [
+            0.0,
+            0.0
+          ],
+          "observed": [
+            0.0,
+            0.0
+          ],
+          "passed": true
+        },
+        {
+          "name": "revenue.2026",
+          "kind": "value",
+          "expected": 0.0,
+          "observed": 0.0,
+          "passed": true
+        },
+        {
+          "name": "revenue.2027",
+          "kind": "value",
+          "expected": 0.0,
+          "observed": 0.0,
+          "passed": true
+        }
+      ],
+      "status": "PASS",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "721359751b0cec7f285d5eb12f20faac0070b16a85c1dab55936f90a53ee2027",
+          "result_sha256": "313c49c0efd01f6cc30941e3d9e1f2106f5f1d684ca9a82f747cd486921ef90c",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "e5e3ed7aa1b8d713801a2c4b9132a3de8c0387a1dc6da3740c3d3cb230346d7b",
+          "result_sha256": "9986db225af0a8288688cdbcab2aa0870d418f8eb3a19b33d84fd26dfd9c0a2a",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.023011
+      }
+    },
+    {
+      "case_id": "M04-L",
+      "class": "M04",
+      "vector": "legal",
+      "mode": "draft",
+      "boundary": "a cross-calendar partial window inside the FY is accepted at its real coverage",
+      "expected": {
+        "values": {
+          "months": 6.0
+        },
+        "reject": false,
+        "reject_reason": null,
+        "unknown_fields": []
+      },
+      "observed": {
+        "months": 6.0,
+        "annual": {
+          "2026": 165.00000000000003,
+          "2027": 181.50000000000003
+        }
+      },
+      "assertions": [
+        {
+          "name": "months",
+          "kind": "value",
+          "expected": 6.0,
+          "observed": 6.0,
+          "passed": true
+        }
+      ],
+      "status": "PASS",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "721359751b0cec7f285d5eb12f20faac0070b16a85c1dab55936f90a53ee2027",
+          "result_sha256": "313c49c0efd01f6cc30941e3d9e1f2106f5f1d684ca9a82f747cd486921ef90c",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "e5e3ed7aa1b8d713801a2c4b9132a3de8c0387a1dc6da3740c3d3cb230346d7b",
+          "result_sha256": "9986db225af0a8288688cdbcab2aa0870d418f8eb3a19b33d84fd26dfd9c0a2a",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "contracts.period_flow.period_flow_months",
+          "request_sha256": "7d6f08c52497f0e95f1c12c272f317c33779017f2a2c793dc71b4b27b0f5d56d",
+          "result_sha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/months": 6
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "a7bdd87e41e6088ee988f784bfe1c58ee5b80d95de6d4ce104460dc72a44fdee",
+          "result_sha256": "fe4d26ab0c175a904132cf0f6759ab7a0603369a25a1b3a814181088dc4e1675",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.023778
+      }
+    },
+    {
+      "case_id": "M04-C",
+      "class": "M04",
+      "vector": "counter",
+      "mode": "draft",
+      "boundary": "a dated flow outside its declared FY window is refused, not zero-filled",
+      "expected": {
+        "values": {},
+        "reject": true,
+        "reject_reason": "must lie within the FY2026 window",
+        "unknown_fields": []
+      },
+      "observed": {
+        "exception": "ForecastInputError: seg_bad: period_flow dates must lie within the FY2026 window (2026-01-01..2026-12-31) implied by fiscal_year_end 12-31"
+      },
+      "assertions": [
+        {
+          "name": "reject_reason",
+          "kind": "reject",
+          "expected": "must lie within the FY2026 window",
+          "observed": "seg_bad: period_flow dates must lie within the FY2026 window (2026-01-01..2026-12-31) implied by fiscal_year_end 12-31",
+          "passed": true
+        }
+      ],
+      "status": "REJECT_OK",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "721359751b0cec7f285d5eb12f20faac0070b16a85c1dab55936f90a53ee2027",
+          "result_sha256": "313c49c0efd01f6cc30941e3d9e1f2106f5f1d684ca9a82f747cd486921ef90c",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "e5e3ed7aa1b8d713801a2c4b9132a3de8c0387a1dc6da3740c3d3cb230346d7b",
+          "result_sha256": "9986db225af0a8288688cdbcab2aa0870d418f8eb3a19b33d84fd26dfd9c0a2a",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "contracts.period_flow.period_flow_months",
+          "request_sha256": "7d6f08c52497f0e95f1c12c272f317c33779017f2a2c793dc71b4b27b0f5d56d",
+          "result_sha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/months": 6
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "a7bdd87e41e6088ee988f784bfe1c58ee5b80d95de6d4ce104460dc72a44fdee",
+          "result_sha256": "fe4d26ab0c175a904132cf0f6759ab7a0603369a25a1b3a814181088dc4e1675",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "39d6bf8fa4bba424d30f870ca4e492ae8736b1c090bd92700b5ab4241e7f9914",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "seg_bad: period_flow dates must lie within the FY2026 window (2026-01-01..2026-12-31) implied by fiscal_year_end 12-31",
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.007997
+      }
+    },
+    {
+      "case_id": "M05-L",
+      "class": "M05",
+      "vector": "legal",
+      "mode": "draft",
+      "boundary": "zero-base launch revenue is computable",
+      "expected": {
+        "values": {
+          "cagr": null,
+          "terminal": 480.0,
+          "annual": {
+            "2026": 80.0,
+            "2027": 480.0
+          }
+        },
+        "reject": false,
+        "reject_reason": null,
+        "unknown_fields": [
+          "cagr"
+        ]
+      },
+      "observed": {
+        "cagr": null,
+        "terminal": 480.0,
+        "annual": {
+          "2026": 80.0,
+          "2027": 480.0
+        }
+      },
+      "assertions": [
+        {
+          "name": "unknown[cagr]",
+          "kind": "unknown",
+          "expected": null,
+          "observed": null,
+          "passed": true
+        },
+        {
+          "name": "cagr",
+          "kind": "value",
+          "expected": null,
+          "observed": null,
+          "passed": true
+        },
+        {
+          "name": "terminal",
+          "kind": "value",
+          "expected": 480.0,
+          "observed": 480.0,
+          "passed": true
+        },
+        {
+          "name": "annual.2026",
+          "kind": "value",
+          "expected": 80.0,
+          "observed": 80.0,
+          "passed": true
+        },
+        {
+          "name": "annual.2027",
+          "kind": "value",
+          "expected": 480.0,
+          "observed": 480.0,
+          "passed": true
+        }
+      ],
+      "status": "PASS",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "721359751b0cec7f285d5eb12f20faac0070b16a85c1dab55936f90a53ee2027",
+          "result_sha256": "313c49c0efd01f6cc30941e3d9e1f2106f5f1d684ca9a82f747cd486921ef90c",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "e5e3ed7aa1b8d713801a2c4b9132a3de8c0387a1dc6da3740c3d3cb230346d7b",
+          "result_sha256": "9986db225af0a8288688cdbcab2aa0870d418f8eb3a19b33d84fd26dfd9c0a2a",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "contracts.period_flow.period_flow_months",
+          "request_sha256": "7d6f08c52497f0e95f1c12c272f317c33779017f2a2c793dc71b4b27b0f5d56d",
+          "result_sha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/months": 6
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "a7bdd87e41e6088ee988f784bfe1c58ee5b80d95de6d4ce104460dc72a44fdee",
+          "result_sha256": "fe4d26ab0c175a904132cf0f6759ab7a0603369a25a1b3a814181088dc4e1675",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "39d6bf8fa4bba424d30f870ca4e492ae8736b1c090bd92700b5ab4241e7f9914",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "seg_bad: period_flow dates must lie within the FY2026 window (2026-01-01..2026-12-31) implied by fiscal_year_end 12-31",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.019747
+      }
+    },
+    {
+      "case_id": "M05-C",
+      "class": "M05",
+      "vector": "unknown",
+      "mode": "draft",
+      "boundary": "CAGR from a zero base is undefined=null, not 0 growth nor a bad forecast",
+      "expected": {
+        "values": {
+          "cagr": null
+        },
+        "reject": false,
+        "reject_reason": null,
+        "unknown_fields": [
+          "cagr"
+        ]
+      },
+      "observed": {
+        "cagr": null,
+        "terminal": 480.0,
+        "annual": {
+          "2026": 80.0,
+          "2027": 480.0
+        }
+      },
+      "assertions": [
+        {
+          "name": "unknown[cagr]",
+          "kind": "unknown",
+          "expected": null,
+          "observed": null,
+          "passed": true
+        },
+        {
+          "name": "cagr",
+          "kind": "value",
+          "expected": null,
+          "observed": null,
+          "passed": true
+        }
+      ],
+      "status": "PASS",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "721359751b0cec7f285d5eb12f20faac0070b16a85c1dab55936f90a53ee2027",
+          "result_sha256": "313c49c0efd01f6cc30941e3d9e1f2106f5f1d684ca9a82f747cd486921ef90c",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "e5e3ed7aa1b8d713801a2c4b9132a3de8c0387a1dc6da3740c3d3cb230346d7b",
+          "result_sha256": "9986db225af0a8288688cdbcab2aa0870d418f8eb3a19b33d84fd26dfd9c0a2a",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "contracts.period_flow.period_flow_months",
+          "request_sha256": "7d6f08c52497f0e95f1c12c272f317c33779017f2a2c793dc71b4b27b0f5d56d",
+          "result_sha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/months": 6
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "a7bdd87e41e6088ee988f784bfe1c58ee5b80d95de6d4ce104460dc72a44fdee",
+          "result_sha256": "fe4d26ab0c175a904132cf0f6759ab7a0603369a25a1b3a814181088dc4e1675",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "39d6bf8fa4bba424d30f870ca4e492ae8736b1c090bd92700b5ab4241e7f9914",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "seg_bad: period_flow dates must lie within the FY2026 window (2026-01-01..2026-12-31) implied by fiscal_year_end 12-31",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.020667
+      }
+    },
+    {
+      "case_id": "M06-L",
+      "class": "M06",
+      "vector": "legal",
+      "mode": "draft",
+      "boundary": "a shared shock propagates once; the joint volume/price path conserves the delta",
+      "expected": {
+        "values": {
+          "delta_2026": -20.0,
+          "delta_2027": 15.0,
+          "delta_sum": -5.0
+        },
+        "reject": false,
+        "reject_reason": null,
+        "unknown_fields": []
+      },
+      "observed": {
+        "delta_2026": -20.0,
+        "delta_2027": 14.999999999999972,
+        "delta_sum": -5.000000000000028,
+        "baseline_annual": {
+          "2026": 165.00000000000003,
+          "2027": 181.50000000000003
+        },
+        "stressed_annual": {
+          "2026": 145.00000000000003,
+          "2027": 196.5
+        }
+      },
+      "assertions": [
+        {
+          "name": "delta_2026",
+          "kind": "value",
+          "expected": -20.0,
+          "observed": -20.0,
+          "passed": true
+        },
+        {
+          "name": "delta_2027",
+          "kind": "value",
+          "expected": 15.0,
+          "observed": 14.999999999999972,
+          "passed": true
+        },
+        {
+          "name": "delta_sum",
+          "kind": "value",
+          "expected": -5.0,
+          "observed": -5.000000000000028,
+          "passed": true
+        },
+        {
+          "name": "shock_applied_once",
+          "kind": "conservation",
+          "expected": -20.0,
+          "observed": -20.0,
+          "passed": true
+        }
+      ],
+      "status": "PASS",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "721359751b0cec7f285d5eb12f20faac0070b16a85c1dab55936f90a53ee2027",
+          "result_sha256": "313c49c0efd01f6cc30941e3d9e1f2106f5f1d684ca9a82f747cd486921ef90c",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "e5e3ed7aa1b8d713801a2c4b9132a3de8c0387a1dc6da3740c3d3cb230346d7b",
+          "result_sha256": "9986db225af0a8288688cdbcab2aa0870d418f8eb3a19b33d84fd26dfd9c0a2a",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "contracts.period_flow.period_flow_months",
+          "request_sha256": "7d6f08c52497f0e95f1c12c272f317c33779017f2a2c793dc71b4b27b0f5d56d",
+          "result_sha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/months": 6
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "a7bdd87e41e6088ee988f784bfe1c58ee5b80d95de6d4ce104460dc72a44fdee",
+          "result_sha256": "fe4d26ab0c175a904132cf0f6759ab7a0603369a25a1b3a814181088dc4e1675",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "39d6bf8fa4bba424d30f870ca4e492ae8736b1c090bd92700b5ab4241e7f9914",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "seg_bad: period_flow dates must lie within the FY2026 window (2026-01-01..2026-12-31) implied by fiscal_year_end 12-31",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "5fcb9c24efd6b5a335b832a9a691ad4d5dda27b5101f566f4cf028f681b286e1",
+          "result_sha256": "c92670c0f645b967ed3c81faad78e56b1e29c2de47b3930720a965555eeff440",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "4324d3546604b3b51a640281af74fecdfaa5283e2d96faf89f38803332fcec13",
+          "result_sha256": "3aea287b3bf20795a7b52b438728ba6c01bba7d7c3ab3e81240f832bf44fa5e0",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.045969
+      }
+    },
+    {
+      "case_id": "M06-C",
+      "class": "M06",
+      "vector": "counter",
+      "mode": "draft",
+      "boundary": "a fixed shared cap that would force Low<=Base<=High is refused, not reordered",
+      "expected": {
+        "values": {},
+        "reject": true,
+        "reject_reason": "scenario ordering",
+        "unknown_fields": []
+      },
+      "observed": {
+        "exception": "ForecastInputError: segment scenario ordering failed for Segment A/2027"
+      },
+      "assertions": [
+        {
+          "name": "reject_reason",
+          "kind": "reject",
+          "expected": "scenario ordering",
+          "observed": "segment scenario ordering failed for Segment A/2027",
+          "passed": true
+        }
+      ],
+      "status": "REJECT_OK",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "721359751b0cec7f285d5eb12f20faac0070b16a85c1dab55936f90a53ee2027",
+          "result_sha256": "313c49c0efd01f6cc30941e3d9e1f2106f5f1d684ca9a82f747cd486921ef90c",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "e5e3ed7aa1b8d713801a2c4b9132a3de8c0387a1dc6da3740c3d3cb230346d7b",
+          "result_sha256": "9986db225af0a8288688cdbcab2aa0870d418f8eb3a19b33d84fd26dfd9c0a2a",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "contracts.period_flow.period_flow_months",
+          "request_sha256": "7d6f08c52497f0e95f1c12c272f317c33779017f2a2c793dc71b4b27b0f5d56d",
+          "result_sha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/months": 6
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "a7bdd87e41e6088ee988f784bfe1c58ee5b80d95de6d4ce104460dc72a44fdee",
+          "result_sha256": "fe4d26ab0c175a904132cf0f6759ab7a0603369a25a1b3a814181088dc4e1675",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "39d6bf8fa4bba424d30f870ca4e492ae8736b1c090bd92700b5ab4241e7f9914",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "seg_bad: period_flow dates must lie within the FY2026 window (2026-01-01..2026-12-31) implied by fiscal_year_end 12-31",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "5fcb9c24efd6b5a335b832a9a691ad4d5dda27b5101f566f4cf028f681b286e1",
+          "result_sha256": "c92670c0f645b967ed3c81faad78e56b1e29c2de47b3930720a965555eeff440",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "4324d3546604b3b51a640281af74fecdfaa5283e2d96faf89f38803332fcec13",
+          "result_sha256": "3aea287b3bf20795a7b52b438728ba6c01bba7d7c3ab3e81240f832bf44fa5e0",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "fda935d1b49909b1b6af6851b47d166a94a8f0fdb482537e059dca420bf9ee3c",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "segment scenario ordering failed for Segment A/2027",
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.017351
+      }
+    },
+    {
+      "case_id": "M07-L",
+      "class": "M07",
+      "vector": "legal",
+      "mode": "draft",
+      "boundary": "a comparable annual target keeps its own value and basis",
+      "expected": {
+        "values": {
+          "comparison_value": 144.0,
+          "measurement_basis": "annual_period"
+        },
+        "reject": false,
+        "reject_reason": null,
+        "unknown_fields": []
+      },
+      "observed": {
+        "comparison_value": 144.0,
+        "measurement_basis": "annual_period"
+      },
+      "assertions": [
+        {
+          "name": "comparison_value",
+          "kind": "value",
+          "expected": 144.0,
+          "observed": 144.0,
+          "passed": true
+        },
+        {
+          "name": "measurement_basis",
+          "kind": "value",
+          "expected": "annual_period",
+          "observed": "annual_period",
+          "passed": true
+        }
+      ],
+      "status": "PASS",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "721359751b0cec7f285d5eb12f20faac0070b16a85c1dab55936f90a53ee2027",
+          "result_sha256": "313c49c0efd01f6cc30941e3d9e1f2106f5f1d684ca9a82f747cd486921ef90c",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "e5e3ed7aa1b8d713801a2c4b9132a3de8c0387a1dc6da3740c3d3cb230346d7b",
+          "result_sha256": "9986db225af0a8288688cdbcab2aa0870d418f8eb3a19b33d84fd26dfd9c0a2a",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "contracts.period_flow.period_flow_months",
+          "request_sha256": "7d6f08c52497f0e95f1c12c272f317c33779017f2a2c793dc71b4b27b0f5d56d",
+          "result_sha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/months": 6
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "a7bdd87e41e6088ee988f784bfe1c58ee5b80d95de6d4ce104460dc72a44fdee",
+          "result_sha256": "fe4d26ab0c175a904132cf0f6759ab7a0603369a25a1b3a814181088dc4e1675",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "39d6bf8fa4bba424d30f870ca4e492ae8736b1c090bd92700b5ab4241e7f9914",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "seg_bad: period_flow dates must lie within the FY2026 window (2026-01-01..2026-12-31) implied by fiscal_year_end 12-31",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "5fcb9c24efd6b5a335b832a9a691ad4d5dda27b5101f566f4cf028f681b286e1",
+          "result_sha256": "c92670c0f645b967ed3c81faad78e56b1e29c2de47b3930720a965555eeff440",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "4324d3546604b3b51a640281af74fecdfaa5283e2d96faf89f38803332fcec13",
+          "result_sha256": "3aea287b3bf20795a7b52b438728ba6c01bba7d7c3ab3e81240f832bf44fa5e0",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "fda935d1b49909b1b6af6851b47d166a94a8f0fdb482537e059dca420bf9ee3c",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "segment scenario ordering failed for Segment A/2027",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "18a36e5668849e1868c92a4c38ca2c39f44f52827bff4663aa779ee80fdb6ee1",
+          "result_sha256": "742823a27f25258a6965e3d6a04cd42fd65851803d7146369258bc7078108b9d",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.03093
+      }
+    },
+    {
+      "case_id": "M07-C",
+      "class": "M07",
+      "vector": "counter",
+      "mode": "draft",
+      "boundary": "a run-rate/period-end target is not re-labelled as the current annual figure",
+      "expected": {
+        "values": {},
+        "reject": true,
+        "reject_reason": "requires explicit annual recognized revenue conversion",
+        "unknown_fields": []
+      },
+      "observed": {
+        "exception": "ForecastInputError: run_rate_at_period_end target requires explicit annual recognized revenue conversion: five_year_revenue_goal"
+      },
+      "assertions": [
+        {
+          "name": "reject_reason",
+          "kind": "reject",
+          "expected": "requires explicit annual recognized revenue conversion",
+          "observed": "run_rate_at_period_end target requires explicit annual recognized revenue conversion: five_year_revenue_goal",
+          "passed": true
+        }
+      ],
+      "status": "REJECT_OK",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "721359751b0cec7f285d5eb12f20faac0070b16a85c1dab55936f90a53ee2027",
+          "result_sha256": "313c49c0efd01f6cc30941e3d9e1f2106f5f1d684ca9a82f747cd486921ef90c",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "e5e3ed7aa1b8d713801a2c4b9132a3de8c0387a1dc6da3740c3d3cb230346d7b",
+          "result_sha256": "9986db225af0a8288688cdbcab2aa0870d418f8eb3a19b33d84fd26dfd9c0a2a",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "contracts.period_flow.period_flow_months",
+          "request_sha256": "7d6f08c52497f0e95f1c12c272f317c33779017f2a2c793dc71b4b27b0f5d56d",
+          "result_sha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/months": 6
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "a7bdd87e41e6088ee988f784bfe1c58ee5b80d95de6d4ce104460dc72a44fdee",
+          "result_sha256": "fe4d26ab0c175a904132cf0f6759ab7a0603369a25a1b3a814181088dc4e1675",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "39d6bf8fa4bba424d30f870ca4e492ae8736b1c090bd92700b5ab4241e7f9914",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "seg_bad: period_flow dates must lie within the FY2026 window (2026-01-01..2026-12-31) implied by fiscal_year_end 12-31",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "5fcb9c24efd6b5a335b832a9a691ad4d5dda27b5101f566f4cf028f681b286e1",
+          "result_sha256": "c92670c0f645b967ed3c81faad78e56b1e29c2de47b3930720a965555eeff440",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "4324d3546604b3b51a640281af74fecdfaa5283e2d96faf89f38803332fcec13",
+          "result_sha256": "3aea287b3bf20795a7b52b438728ba6c01bba7d7c3ab3e81240f832bf44fa5e0",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "fda935d1b49909b1b6af6851b47d166a94a8f0fdb482537e059dca420bf9ee3c",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "segment scenario ordering failed for Segment A/2027",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "18a36e5668849e1868c92a4c38ca2c39f44f52827bff4663aa779ee80fdb6ee1",
+          "result_sha256": "742823a27f25258a6965e3d6a04cd42fd65851803d7146369258bc7078108b9d",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "5173174f0f9574d67fe137b931bdef18901aa1441410de96aed3052b0b3e399e",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "run_rate_at_period_end target requires explicit annual recognized revenue conversion: five_year_revenue_goal",
+          "json_pointers": {}
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.00604
+      }
+    },
+    {
+      "case_id": "M08-L",
+      "class": "M08",
+      "vector": "legal",
+      "mode": "draft",
+      "boundary": "support is scoped per segment/year/scenario; one calibrated cell never presumes another",
+      "expected": {
+        "values": {
+          "cells": {
+            "Segment A|low|2026": "supported",
+            "Segment A|base|2026": "supported",
+            "Segment A|high|2026": "supported",
+            "Segment A|base|2027": "unsupported",
+            "Segment B|base|2026": "unsupported"
+          },
+          "economic_truth_inferred": false
+        },
+        "reject": false,
+        "reject_reason": null,
+        "unknown_fields": []
+      },
+      "observed": {
+        "cells": {
+          "Segment A|low|2026": "supported",
+          "Segment A|low|2027": "unsupported",
+          "Segment A|base|2026": "supported",
+          "Segment A|base|2027": "unsupported",
+          "Segment A|high|2026": "supported",
+          "Segment A|high|2027": "unsupported",
+          "Segment B|low|2026": "unsupported",
+          "Segment B|low|2027": "unsupported",
+          "Segment B|base|2026": "unsupported",
+          "Segment B|base|2027": "unsupported",
+          "Segment B|high|2026": "unsupported",
+          "Segment B|high|2027": "unsupported"
+        },
+        "economic_truth_inferred": false
+      },
+      "assertions": [
+        {
+          "name": "cells.Segment A|low|2026",
+          "kind": "value",
+          "expected": "supported",
+          "observed": "supported",
+          "passed": true
+        },
+        {
+          "name": "cells.Segment A|base|2026",
+          "kind": "value",
+          "expected": "supported",
+          "observed": "supported",
+          "passed": true
+        },
+        {
+          "name": "cells.Segment A|high|2026",
+          "kind": "value",
+          "expected": "supported",
+          "observed": "supported",
+          "passed": true
+        },
+        {
+          "name": "cells.Segment A|base|2027",
+          "kind": "value",
+          "expected": "unsupported",
+          "observed": "unsupported",
+          "passed": true
+        },
+        {
+          "name": "cells.Segment B|base|2026",
+          "kind": "value",
+          "expected": "unsupported",
+          "observed": "unsupported",
+          "passed": true
+        },
+        {
+          "name": "economic_truth_inferred",
+          "kind": "value",
+          "expected": false,
+          "observed": false,
+          "passed": true
+        }
+      ],
+      "status": "PASS",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "721359751b0cec7f285d5eb12f20faac0070b16a85c1dab55936f90a53ee2027",
+          "result_sha256": "313c49c0efd01f6cc30941e3d9e1f2106f5f1d684ca9a82f747cd486921ef90c",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "e5e3ed7aa1b8d713801a2c4b9132a3de8c0387a1dc6da3740c3d3cb230346d7b",
+          "result_sha256": "9986db225af0a8288688cdbcab2aa0870d418f8eb3a19b33d84fd26dfd9c0a2a",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "contracts.period_flow.period_flow_months",
+          "request_sha256": "7d6f08c52497f0e95f1c12c272f317c33779017f2a2c793dc71b4b27b0f5d56d",
+          "result_sha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/months": 6
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "a7bdd87e41e6088ee988f784bfe1c58ee5b80d95de6d4ce104460dc72a44fdee",
+          "result_sha256": "fe4d26ab0c175a904132cf0f6759ab7a0603369a25a1b3a814181088dc4e1675",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "39d6bf8fa4bba424d30f870ca4e492ae8736b1c090bd92700b5ab4241e7f9914",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "seg_bad: period_flow dates must lie within the FY2026 window (2026-01-01..2026-12-31) implied by fiscal_year_end 12-31",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "5fcb9c24efd6b5a335b832a9a691ad4d5dda27b5101f566f4cf028f681b286e1",
+          "result_sha256": "c92670c0f645b967ed3c81faad78e56b1e29c2de47b3930720a965555eeff440",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "4324d3546604b3b51a640281af74fecdfaa5283e2d96faf89f38803332fcec13",
+          "result_sha256": "3aea287b3bf20795a7b52b438728ba6c01bba7d7c3ab3e81240f832bf44fa5e0",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "fda935d1b49909b1b6af6851b47d166a94a8f0fdb482537e059dca420bf9ee3c",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "segment scenario ordering failed for Segment A/2027",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "18a36e5668849e1868c92a4c38ca2c39f44f52827bff4663aa779ee80fdb6ee1",
+          "result_sha256": "742823a27f25258a6965e3d6a04cd42fd65851803d7146369258bc7078108b9d",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "5173174f0f9574d67fe137b931bdef18901aa1441410de96aed3052b0b3e399e",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "run_rate_at_period_end target requires explicit annual recognized revenue conversion: five_year_revenue_goal",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research_support_diagnostics.build_support_diagnostics",
+          "request_sha256": "ec0da03d5bb193f010c889bee67243cada78b2637e4aaf4c42332217ac37175f",
+          "result_sha256": "33e1254f593535fa477dff9f598511791d62fc46538906643f1f70a93c95e9dd",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/schema_version": "economic-support-diagnostics/1",
+            "/economic_truth_inferred": false
+          }
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.410527
+      }
+    },
+    {
+      "case_id": "M08-C",
+      "class": "M08",
+      "vector": "unknown",
+      "mode": "draft",
+      "boundary": "an unknown observed range/actual stays null, never coerced to 0",
+      "expected": {
+        "values": {
+          "unknown_stays_null": true
+        },
+        "reject": false,
+        "reject_reason": null,
+        "unknown_fields": [
+          "observed_range"
+        ]
+      },
+      "observed": {
+        "observed_range": null,
+        "adequacy_status": "unverified"
+      },
+      "assertions": [
+        {
+          "name": "observed_range_stays_null",
+          "kind": "unknown",
+          "expected": null,
+          "observed": null,
+          "passed": true
+        },
+        {
+          "name": "adequacy_unverified",
+          "kind": "unknown",
+          "expected": "unverified",
+          "observed": "unverified",
+          "passed": true
+        }
+      ],
+      "status": "PASS",
+      "native_refs": [
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "795eed27017bd6a4740088ac569a7f5feae80b3429209cfd4338241ced3d36bb",
+          "result_sha256": "c4ce948255d1f0938a4ac0c16b0eef6a3649c8e0c53c08235163e58cb0166a5f",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/engine_value": 5000.0,
+            "/conversion": "5 usd_million x 1000 = 5000 usd_thousand"
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "472838f3f54b6e560627f586067b14692e14ccc2794aa9cd8b2854b7140185ca",
+          "result_sha256": "2c068e2b3d3ec34b9b09c121de84f67d995df09d4d461e32aca6e3ab0eece579",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "4f2cddd6f7bbccdc5a28468fe9b1830ab0dd76e82873920d83c6dd92cd89b689",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: usd_million -> rmb_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research.input_quantities.convert_input_quantity",
+          "request_sha256": "0960a36e59c6e1fa7ae0239253e823766b3a05ddf287d9184eda25a9a4ecd1a7",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "incompatible unit conversion: percent -> usd_million",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "d396872f65a9d2f0ca90bf3f9bcc45631559a20e814bb76f27ab9fae1140252b",
+          "result_sha256": "7955eda565806575d2b75c77c9a322e918b5c4c5b38404e689c0f4ed0006bb41",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "1869560456087ff30f05928b8a265a897ecec91ffb98a3a67ba6f8bcc545236d",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "research parameter_id subscription_arr_bridge_new_arr_2026_base for growth_curve is not used by the revenue model",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "721359751b0cec7f285d5eb12f20faac0070b16a85c1dab55936f90a53ee2027",
+          "result_sha256": "313c49c0efd01f6cc30941e3d9e1f2106f5f1d684ca9a82f747cd486921ef90c",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "e5e3ed7aa1b8d713801a2c4b9132a3de8c0387a1dc6da3740c3d3cb230346d7b",
+          "result_sha256": "9986db225af0a8288688cdbcab2aa0870d418f8eb3a19b33d84fd26dfd9c0a2a",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "contracts.period_flow.period_flow_months",
+          "request_sha256": "7d6f08c52497f0e95f1c12c272f317c33779017f2a2c793dc71b4b27b0f5d56d",
+          "result_sha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/months": 6
+          }
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "a7bdd87e41e6088ee988f784bfe1c58ee5b80d95de6d4ce104460dc72a44fdee",
+          "result_sha256": "fe4d26ab0c175a904132cf0f6759ab7a0603369a25a1b3a814181088dc4e1675",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "39d6bf8fa4bba424d30f870ca4e492ae8736b1c090bd92700b5ab4241e7f9914",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "seg_bad: period_flow dates must lie within the FY2026 window (2026-01-01..2026-12-31) implied by fiscal_year_end 12-31",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "f6bc4b303d3f9dbf7af275e655e7c0a3493dac7c197c48201382e493c827e7ee",
+          "result_sha256": "d753159a6c7f522068a1c7c827e7729d35c0ab579e991cce6ede8e1c6a9d50d9",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "5fcb9c24efd6b5a335b832a9a691ad4d5dda27b5101f566f4cf028f681b286e1",
+          "result_sha256": "c92670c0f645b967ed3c81faad78e56b1e29c2de47b3930720a965555eeff440",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "4324d3546604b3b51a640281af74fecdfaa5283e2d96faf89f38803332fcec13",
+          "result_sha256": "3aea287b3bf20795a7b52b438728ba6c01bba7d7c3ab3e81240f832bf44fa5e0",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "fda935d1b49909b1b6af6851b47d166a94a8f0fdb482537e059dca420bf9ee3c",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "segment scenario ordering failed for Segment A/2027",
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "18a36e5668849e1868c92a4c38ca2c39f44f52827bff4663aa779ee80fdb6ee1",
+          "result_sha256": "742823a27f25258a6965e3d6a04cd42fd65851803d7146369258bc7078108b9d",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {}
+        },
+        {
+          "entry": "revenue_core.run_forecast(mode=draft)",
+          "request_sha256": "5173174f0f9574d67fe137b931bdef18901aa1441410de96aed3052b0b3e399e",
+          "result_sha256": null,
+          "exception_type": "ForecastInputError",
+          "exception_message": "run_rate_at_period_end target requires explicit annual recognized revenue conversion: five_year_revenue_goal",
+          "json_pointers": {}
+        },
+        {
+          "entry": "research_support_diagnostics.build_support_diagnostics",
+          "request_sha256": "ec0da03d5bb193f010c889bee67243cada78b2637e4aaf4c42332217ac37175f",
+          "result_sha256": "33e1254f593535fa477dff9f598511791d62fc46538906643f1f70a93c95e9dd",
+          "exception_type": null,
+          "exception_message": null,
+          "json_pointers": {
+            "/schema_version": "economic-support-diagnostics/1",
+            "/economic_truth_inferred": false
+          }
+        }
+      ],
+      "diagnostics": {
+        "seconds": 0.004077
+      }
+    }
+  ],
+  "cleanup": {
+    "scratch_path": "C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\w07\\rf-model-quality\\.tmp\\w07-e2e-owned\\.tmp\\w07-278cf5cb",
+    "baseline": {
+      "existed": false,
+      "sentinel": null
+    },
+    "restored_absent": true,
+    "readonly_unchanged": true
+  },
+  "residuals": [],
+  "cli_evidence": {
+    "legal_validate_only": {
+      "command": "C:\\Miniconda\\python.exe -B C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\w07\\rf-model-quality\\scripts\\revenue_forecast.py C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\w07\\rf-model-quality\\.tmp\\w07-e2e-owned\\.tmp\\w07-278cf5cb\\cli_legal_input.json --validate-only",
+      "returncode": 0,
+      "stdout_tail": "valid\n",
+      "stderr_tail": ""
+    },
+    "reject_validate_only": {
+      "command": "C:\\Miniconda\\python.exe -B C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\w07\\rf-model-quality\\scripts\\revenue_forecast.py C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\w07\\rf-model-quality\\.tmp\\w07-e2e-owned\\.tmp\\w07-278cf5cb\\cli_reject_input.json --validate-only",
+      "returncode": 2,
+      "stdout_tail": "",
+      "stderr_tail": "error: fiscal_year_end is not a valid month-day\n"
+    },
+    "support_diagnostics": {
+      "command": "C:\\Miniconda\\python.exe -B C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\w07\\rf-model-quality\\scripts\\research_support_diagnostics.py --input C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\w07\\rf-model-quality\\.tmp\\w07-e2e-owned\\.tmp\\w07-278cf5cb\\cli_support_input.json --output C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\w07\\rf-model-quality\\.tmp\\w07-e2e-owned\\.tmp\\w07-278cf5cb\\cli_support_output.json",
+      "returncode": 0,
+      "stdout_tail": "",
+      "stderr_tail": ""
+    },
+    "support_output_schema": "economic-support-diagnostics/1"
+  }
+}

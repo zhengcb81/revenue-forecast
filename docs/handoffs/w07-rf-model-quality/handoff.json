@@ -1,0 +1,198 @@
+{
+  "schema": "w07-lane-handoff/1",
+  "lane": "W07-RF-MODEL",
+  "status": "COMPLETE",
+  "repository": "C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\revenue-forecast",
+  "workdir": "C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\w07\\rf-model-quality",
+  "branch": "codex/w07-rf-model-quality",
+  "base_commit": "30ddae8ed2a457c418e63b182e7d8c9230fbf3ff",
+  "implementation_commit": "pending-at-handoff-time",
+  "changed_files": [
+    {
+      "path": "tools/model_generalization_matrix/__init__.py",
+      "purpose": "package marker",
+      "sha256": "e6d335a3cbc173918518491311cf0d791e89190e5e28c70c1427ad8106d52642",
+      "bytes": 509
+    },
+    {
+      "path": "tools/model_generalization_matrix/bootstrap.py",
+      "purpose": "load shipped engine interfaces",
+      "sha256": "df9abf3eabeca0b201d75d867abb69e5836dd5c033a4b8e0b2b2c8563d7ad979",
+      "bytes": 1367
+    },
+    {
+      "path": "tools/model_generalization_matrix/oracle.py",
+      "purpose": "independent hand-computed oracle",
+      "sha256": "7f99a63d6243f7795ec2ba0eb92d91d67b2c8c478b954546df61c80a9f706351",
+      "bytes": 7355
+    },
+    {
+      "path": "tools/model_generalization_matrix/native.py",
+      "purpose": "native call adapter + refs",
+      "sha256": "447b2d3b87dd278659b6403c00e53d215b5ee89f48ac49b45d1bbd6db804c3f2",
+      "bytes": 5010
+    },
+    {
+      "path": "tools/model_generalization_matrix/cases.py",
+      "purpose": "frozen CaseSpec (16 vectors)",
+      "sha256": "de21ea7a78c19ae236440a16480050c4129c8a1bef08ce8bd680d55090549238",
+      "bytes": 28255
+    },
+    {
+      "path": "tools/model_generalization_matrix/runner.py",
+      "purpose": "run cases vs engine, compare oracle",
+      "sha256": "33b4390452a9ec968bd25302a80156b6441ac0771c79643257650d62bf584b0a",
+      "bytes": 16069
+    },
+    {
+      "path": "tools/model_generalization_matrix/report.py",
+      "purpose": "assemble model-generalization-matrix/1",
+      "sha256": "d6d88bf8fc5297eb700b4619e2c489dce9743d55f3d82bc1ca32fc87144bfd4c",
+      "bytes": 5842
+    },
+    {
+      "path": "tools/model_generalization_matrix/run.py",
+      "purpose": "public entry + isolation/cleanup",
+      "sha256": "88afa7adbd1d020c3597f2e06131238cf9405410019805802c696f2b9e4b67ea",
+      "bytes": 9880
+    },
+    {
+      "path": "tools/model_generalization_matrix/README.md",
+      "purpose": "tool docs",
+      "sha256": "9eb90ead4d5f12cbad5bb718426fe52bc560e3ffee719e1038572d6e223587f5",
+      "bytes": 4123
+    },
+    {
+      "path": "tools/tests/test_w07_model_generalization.py",
+      "purpose": "centralized fast tests",
+      "sha256": "944658ba38c9f24cf16c468a803bd7cb8cbb0e52a89e9880aa74e5c2a7da0da0",
+      "bytes": 9256
+    },
+    {
+      "path": "docs/handoffs/w07-rf-model-quality/matrix-e2e.json",
+      "purpose": "E2E matrix report evidence",
+      "sha256": "fafe1df96658927a44c48350cc1884f992963086604651787942b92b8959e546",
+      "bytes": 98801
+    },
+    {
+      "path": "docs/handoffs/w07-rf-model-quality/matrix-e2e.md",
+      "purpose": "E2E matrix report (readable)",
+      "sha256": "0c6e325003dc2d00cb308fc883d86ba0d99a7b73c5171f5cb4125c4aae9b5f21",
+      "bytes": 11500
+    }
+  ],
+  "readonly_inputs": [
+    {
+      "path": ".planning/w07-rf-model-quality/input\\manifest.json",
+      "sha256": "c519023b0fc9a1738336ed0ed9be621e839f1e5e5fdaf3ebb7d75d0bad78495d"
+    },
+    {
+      "path": ".planning/w07-rf-model-quality/input\\native-draft.json",
+      "sha256": "d0c38f4a82c31077341f0ed95c4501c4e5cec21f34bc583543412ed06bfbc1bb"
+    },
+    {
+      "path": ".planning/w07-rf-model-quality/input\\native-input.json",
+      "sha256": "a9001a0139596bd55d6c1c68e90779498988d1e0a0ff42411257fab8b04d2e8d"
+    },
+    {
+      "path": ".planning/w07-rf-model-quality/input\\native-support.json",
+      "sha256": "65fe2ec714d3c504d654d3d94f0c61bf4bc6b0721ee56f33deab8b713d3855a1"
+    },
+    {
+      "path": ".planning/w07-rf-model-quality/INPUTS.json (readonly_code manifest)",
+      "sha256": "d7813ffeb7bc69b76bca2fb591c52fe4fd76dedef0a0ccf7f8c5bbd850fab59a"
+    }
+  ],
+  "interfaces": [
+    {
+      "name": "tools/model_generalization_matrix/run.py --owned-root --out-root [--e2e]",
+      "compatibility": "before: absent; after: new public entry (offline)"
+    },
+    {
+      "name": "model-generalization-matrix/1 report schema",
+      "compatibility": "before: absent; after: new report schema"
+    },
+    {
+      "name": "revenue_core.run_forecast(mode='draft')",
+      "compatibility": "unchanged (read-only consumer)"
+    },
+    {
+      "name": "research.input_quantities.convert_input_quantity",
+      "compatibility": "unchanged (read-only consumer)"
+    },
+    {
+      "name": "research_support_diagnostics.build_support_diagnostics",
+      "compatibility": "unchanged (read-only consumer)"
+    }
+  ],
+  "tests": [
+    {
+      "node": "A",
+      "command": "python -B tools/model_generalization_matrix/run.py --owned-root .tmp/x --out-root .tmp/y  (pre-fix RED: 2 failed / 1 reject_mismatch / 1 error across M01-C,M02-C,M04-L,M06-C)",
+      "exit_code": 1,
+      "counts": {
+        "total": 16,
+        "failed": 2,
+        "reject_mismatch": 1,
+        "errored": 1
+      },
+      "seconds": null,
+      "evidence": "behavioral RED: wrapper unpack bug, wrong observe field, over-specified reject reason, wrong M06 construction — engine math itself matched oracle"
+    },
+    {
+      "node": "B",
+      "command": "python -B -m pytest -q tools/tests/test_w07_model_generalization.py",
+      "exit_code": 0,
+      "counts": {
+        "passed": 12,
+        "failed": 0
+      },
+      "seconds": 0.71,
+      "evidence": "tools/tests/test_w07_model_generalization.py (12 passed)"
+    },
+    {
+      "node": "C",
+      "command": "python -B tools/model_generalization_matrix/run.py --owned-root ABS --out-root ABS --e2e",
+      "exit_code": 0,
+      "counts": {
+        "total": 16,
+        "passed": 11,
+        "reject_ok": 5,
+        "failed": 0,
+        "reject_mismatch": 0,
+        "errored": 0,
+        "not_run": 0
+      },
+      "seconds": 3.006,
+      "evidence": "docs/handoffs/w07-rf-model-quality/matrix-e2e.json (all 8 classes PASS; CLI legal rc=0, reject rc=2 contract reason, support rc=0)"
+    }
+  ],
+  "issues": [
+    {
+      "root_cause": "wrapper construction/observation bugs in the new tool (not engine defects)",
+      "evidence": "node A RED: M01-C unit-pair unpack ValueError; M04-L observed revenue instead of period_flow_months; M06-C used unstressed doc so no ordering refusal; M02-C over-pinned reject reason string",
+      "scope": "M01-C, M04-L, M06-C, M02-C (tool layer)",
+      "resolution": "fixed in tool (runner/cases); engine behavior matched the hand oracle in every class, so no ROOT request"
+    }
+  ],
+  "cleanup": {
+    "baseline": "scratch .tmp/w07-<uuid8> absent before run",
+    "final": "scratch absent after run (restored_absent=true)",
+    "restored": true,
+    "nonowned_preserved": true,
+    "readonly_unchanged": true
+  },
+  "cost": {
+    "real_provider_calls": 0,
+    "real_llm_calls": 0,
+    "dollars": 0
+  },
+  "space": {
+    "persist_bytes": 197967,
+    "scratch_peak_bytes": null
+  },
+  "source_truth_verified": false,
+  "economic_reasonableness": "not_evaluated",
+  "residuals": [],
+  "root_next_action": "receive/integrate"
+}
