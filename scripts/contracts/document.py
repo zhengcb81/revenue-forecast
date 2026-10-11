@@ -12,6 +12,7 @@ from contracts.constants import (
     ASSET_FACT_BASIS_REQUIRED,
     ASSET_FACT_OWNERSHIP_BASES,
     ASSERTION_STATUSES,
+    DATED_CONTRIBUTION_SCHEMA_VERSION,
     DIRECTIONAL_EVIDENCE_ROLES,
     FORECAST_SCHEMA_VERSION,
     GROWTH_DRIVER_EVIDENCE_ROLES,
@@ -20,6 +21,7 @@ from contracts.constants import (
     PARAMETER_DIMENSIONS,
     PARAMETER_KINDS,
     PERIOD_EVIDENCE_SCHEMA_VERSION,
+    PERIOD_FLOW_SCHEMA_VERSIONS,
     PERIOD_FLOW_TIME_BASIS,
     RESOLUTION_STATUSES,
     SCENARIOS,
@@ -46,7 +48,7 @@ from asset_ownership import (
     validate_segment_ownership,
 )
 from mine_year_operation import validate_mine_year_operation
-from contracts.period_flow import validate_period_flow_fields
+from contracts.period_flow import validate_period_flow_fields, validate_windowed_composition
 from contracts.annual_consumption import validate_annual_consumption
 from forecast.calc import (
     _parse_fiscal_year,
@@ -87,10 +89,12 @@ def validate_top_level(data: dict[str, Any]) -> tuple[list[int], date]:
 
     require(
         data["schema_version"]
-        in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION, PERIOD_EVIDENCE_SCHEMA_VERSION),
+        in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION,
+            PERIOD_EVIDENCE_SCHEMA_VERSION, DATED_CONTRIBUTION_SCHEMA_VERSION),
         f"schema_version must be {FORECAST_SCHEMA_VERSION}, "
-        f"{OPT_IN_SCHEMA_VERSION} (opt-in) or {PERIOD_EVIDENCE_SCHEMA_VERSION} "
-        "(period evidence opt-in)",
+        f"{OPT_IN_SCHEMA_VERSION} (opt-in), {PERIOD_EVIDENCE_SCHEMA_VERSION} "
+        f"(period evidence opt-in) or {DATED_CONTRIBUTION_SCHEMA_VERSION} "
+        "(dated contribution opt-in)",
     )
 
     require(
@@ -381,13 +385,13 @@ def validate_parameters(
     semantic_groups: dict[tuple[str, ...], list[dict[str, Any]]] = (
         defaultdict(list)
     )
-    # M3-FLOW: the dated-flow basis exists only in schema 3.9. On 3.7/3.8
-    # (and any older pin) period_flow fails closed, and period dates on a
-    # non-flow basis are rejected in every schema so the new fields can
-    # never ride along on legacy documents.
+    # M3-FLOW: the dated-flow basis exists only in the period-flow schema
+    # family (3.9, 3.10). On 3.7/3.8 (and any older pin) period_flow fails
+    # closed, and period dates on a non-flow basis are rejected in every
+    # schema so the new fields can never ride along on legacy documents.
     allowed_time_bases = (
         TIME_BASES | {PERIOD_FLOW_TIME_BASIS}
-        if data["schema_version"] == PERIOD_EVIDENCE_SCHEMA_VERSION
+        if data["schema_version"] in PERIOD_FLOW_SCHEMA_VERSIONS
         else TIME_BASES
     )
 
@@ -430,7 +434,10 @@ def validate_parameters(
                 f"time_basis {PERIOD_FLOW_TIME_BASIS}",
             )
         if time_basis == PERIOD_FLOW_TIME_BASIS:
-            validate_period_flow_fields(parameter_id, parameter, data["fiscal_year_end"])
+            validate_period_flow_fields(
+                parameter_id, parameter, data["fiscal_year_end"],
+                schema_version=data["schema_version"],
+            )
         if dimension in MONETARY_DIMENSIONS:
             require(
                 parameter.get("currency") == data["currency"],
@@ -501,7 +508,7 @@ def validate_parameters(
             parameter["unit"],
             scenario,
         )
-        if data.get("schema_version") == PERIOD_EVIDENCE_SCHEMA_VERSION:
+        if data.get("schema_version") in PERIOD_FLOW_SCHEMA_VERSIONS:
             # FY labels alone do not identify a fact: H1, H2 and full-year
             # amounts are distinct observations, even with the same business
             # definition. Conflict resolution applies within the same window.
@@ -522,6 +529,13 @@ def validate_parameters(
                 require(
                     input_id != parameter_id,
                     f"derived parameter {parameter_id} cannot reference itself",
+                )
+            if (
+                data["schema_version"] == DATED_CONTRIBUTION_SCHEMA_VERSION
+                and parameter.get("time_basis") == PERIOD_FLOW_TIME_BASIS
+            ):
+                validate_windowed_composition(
+                    parameter_id, parameter, index, data["fiscal_year_end"]
                 )
 
     resolved: dict[str, float] = {}
@@ -641,6 +655,7 @@ def validate_evidence_claims(
             FORECAST_SCHEMA_VERSION,
             OPT_IN_SCHEMA_VERSION,
             PERIOD_EVIDENCE_SCHEMA_VERSION,
+            DATED_CONTRIBUTION_SCHEMA_VERSION,
         ):
             require(
                 isinstance(source_capture, dict),

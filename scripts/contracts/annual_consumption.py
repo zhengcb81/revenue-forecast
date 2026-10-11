@@ -3,15 +3,16 @@
 This contract does not annualize amounts, expand derived ancestors, infer dates,
 or inspect sources/identity/permissions. A partial flow remains a legal fact;
 its direct consumption as a full-year flow is the error. Old schemas retain
-legacy behavior. Schema 3.9 uses the fiscal-year window already defined by the
-period-flow contract, with explicit stock/rate roles kept distinct from flows.
+legacy behavior. The period-flow schema family (3.9, 3.10) uses the fiscal-year
+window already defined by the period-flow contract, with explicit stock/rate
+roles kept distinct from flows.
 """
 from __future__ import annotations
 
 from collections import defaultdict
 from typing import Any
 
-from contracts.constants import PERIOD_EVIDENCE_SCHEMA_VERSION, PERIOD_FLOW_TIME_BASIS
+from contracts.constants import PERIOD_FLOW_SCHEMA_VERSIONS, PERIOD_FLOW_TIME_BASIS
 from contracts.evidence import parse_iso_date, period_year, require
 from contracts.period_flow import fiscal_year_window
 from model_registry import MODEL_DRIVER_DIMENSIONS
@@ -56,7 +57,7 @@ def validate_annual_consumption(
     explicitly authored annual derived parameter remain valid supporting facts.
     Structural validation and formula evaluation retain their existing owners.
     """
-    if data.get("schema_version") != PERIOD_EVIDENCE_SCHEMA_VERSION:
+    if data.get("schema_version") not in PERIOD_FLOW_SCHEMA_VERSIONS:
         return
     roles: dict[str, set[str]] = defaultdict(set)
     flow_roles: set[str] = set()

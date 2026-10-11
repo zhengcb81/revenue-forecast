@@ -38,7 +38,7 @@ PERIOD_EVIDENCE_SCHEMA_VERSION = "3.9"
 
 class PeriodEvidenceSchemaCompatibilityTests(unittest.TestCase):
     def test_new_schema_row_requires_new_engine(self) -> None:
-        self.assertEqual(ENGINE_VERSION, "4.2.1")
+        self.assertEqual(ENGINE_VERSION, "4.3.0")
         self.assertIn(PERIOD_EVIDENCE_SCHEMA_VERSION, SCHEMA_EMIT_ENGINES)
         # 4.1.x never emitted schema 3.9 — fail closed in read modes.
         self.assertFalse(

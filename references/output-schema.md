@@ -40,7 +40,8 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - official-communication completeness, target-ledger identity, cumulative/annual/run-rate measurement arithmetic, mapped-scenario attainment, and propagation of ambiguous or otherwise unmodeled targets.
 - every growth-driver claim/source identity, Base-parameter mapping, segment attribution weight, evidence status, terminal increment, ranking, share, and reconciliation to segment contribution.
 - every current-schema source capture and claim-to-capture snapshot binding, plus exact recomputation of the workflow compliance receipt and the publication receipt (including its `validated_payload_sha256` and `receipt_sha256`);
-- the publication receipt's structural contract (`formal_output_mode`, `freeform_override_allowed`, gate identity) and `validated_payload_sha256` against the independently recomputed payload hash.
+- the publication receipt's structural contract (`formal_output_mode`, `freeform_override_allowed`, gate identity) and `validated_payload_sha256` against the independently recomputed payload hash;
+- bound-input identity (company name, as-of date, currency, unit, fiscal year end, base year, forecast years, schema version) for modern schemas — a rehashed output with rewritten dates, currency or scope fails even when its `result_sha256` recomputes; dated `period_flow` parameters keep their real window dates in the parameter trace and rendered tables, and a partial contribution is never displayed as an annual figure.
 
 It rejects fields for stock prices, valuation, profitability, cash generation, investment ratings, shareholder returns, and position sizing.  The prohibited-field scan walks the entire output tree; a prohibited key whose value is a plain string is allowed as legitimate evidence vocabulary.
 

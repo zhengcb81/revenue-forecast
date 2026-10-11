@@ -299,6 +299,17 @@ def build_template(
                 if schema_version == "3.9"
                 else ""
             )
+            + (
+                "  Schema 3.10 note: any real dated window is expressible with "
+                "time_basis=period_flow plus period_start/period_end "
+                "(period_start <= period_end) inside the fiscal window — e.g. a "
+                "post-control contribution 2026-05-31..2026-06-30. Amounts belong "
+                "only to their window (no implicit annualization); compose a full "
+                "year only through explicit derived sums, with a rationale when "
+                "windows overlap or a pre-control gap stays out of scope."
+                if schema_version == "3.10"
+                else ""
+            )
         ),
         "schema_version": schema_version,
         "company_name": name,
@@ -357,7 +368,7 @@ def main(argv: list[str] | None = None) -> int:
         "--schema",
         default=None,
         metavar="VERSION",
-        help="opt-in schema version (default 3.7; 3.8 adds operating_units, 3.9 adds dated period flows and role-aware triangulation)",
+        help="opt-in schema version (default 3.7; 3.8 adds operating_units, 3.9 adds dated period flows and role-aware triangulation, 3.10 adds arbitrary real dated windows for consolidated contributions)",
     )
     args = parser.parse_args(argv)
 

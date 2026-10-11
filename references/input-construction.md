@@ -90,6 +90,35 @@ Half-year and quarter revenue flows must not wear the `annual` label. Schema 3.9
   one — the flow cannot be typed `period_flow` yet; keep it out until the
   window is proven.
 
+## Dated consolidated contributions (schema 3.10 opt-in)
+
+An acquisition post-control contribution (control date mid-period) or any other
+real short window must not be widened to a half year to fit the 3.9 month rule.
+Schema 3.10 (engine 4.3.0) admits any real finite inclusive window; 3.9 keeps
+its 3/6/12 rule and 3.7/3.8 keep rejecting the dated fields:
+
+- Set `schema_version` to `3.10` (e.g. `generate_input_template.py --schema 3.10`).
+- `period_start <= period_end` (a same-day flow is legal), strict `YYYY-MM-DD`,
+  still inside the fiscal-year window of the parameter's `FYyyyy` label.
+- A cross-fiscal-year amount must be split into per-FY parameters by its real
+  source or an explicit estimate — never clip the dates and keep the whole
+  amount.
+- The amount belongs only to the written window: no x2/x12/day annualization
+  anywhere. Compose a full year through explicit derived sums.
+- Full-year honesty: a derived `period_flow` covering the whole fiscal year
+  must compose its inputs exactly (non-overlapping windows covering the year;
+  an `annual` input already covers it), or carry a `rationale` (口径解释) —
+  e.g. the pre-control window is out of the group consolidation perimeter
+  (control date), which is out-of-scope, not missing data and never a silent
+  zero. Overlapping components (group total + acquired standalone over the same
+  window; a residual work split) need the same explicit rationale.
+- Estimates stay `analyst_assumption`/`scenario_stress`; a dated
+  `reported_fact` needs its exact-value claim with `source_id`/locator (the
+  control date's evidence lives there). Unknown source dates stay unknown.
+- Name the perimeter change explicitly: feed the low/base/high forecast DAG
+  through `forecast_adjustments` category `acquisition_contribution`
+  (non-negative) or `disposal_contribution` (non-positive).
+
 ## Mechanism evidence roles (schema 3.9 opt-in)
 
 On schema 3.9 the growth-driver triangulation counts only nodes carrying at

@@ -25,7 +25,7 @@ class SchemaCompatibilityRegistryTests(unittest.TestCase):
         )
 
     def test_source_clock_version_emit_and_validation_matrix(self) -> None:
-        self.assertEqual(ENGINE_VERSION, "4.2.1")
+        self.assertEqual(ENGINE_VERSION, "4.3.0")
         for schema in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION):
             for mode in ("snapshot", "output"):
                 self.assertTrue(validating_engine_allowed(schema, "4.1.0", mode))
@@ -65,7 +65,7 @@ class SchemaCompatibilityRegistryTests(unittest.TestCase):
 
     def test_unknown_schema_fails_closed(self) -> None:
         self.assertFalse(validating_engine_allowed("2.0", ENGINE_VERSION, "output"))
-        self.assertFalse(validating_engine_allowed("3.10", ENGINE_VERSION, "snapshot"))
+        self.assertFalse(validating_engine_allowed("3.11", ENGINE_VERSION, "snapshot"))
         # Schema 3.9 exists from engine 4.2.0; a 4.1.x engine never emitted it.
         self.assertFalse(validating_engine_allowed("3.9", "4.1.1", "snapshot"))
 
@@ -76,7 +76,7 @@ class SchemaCompatibilityRegistryTests(unittest.TestCase):
     def test_registry_matches_supported_schema_set(self) -> None:
         self.assertEqual(
             supported_schema_versions(),
-            {"3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION, "3.9"},
+            {"3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION, "3.9", "3.10"},
         )
 
     def test_require_validating_engine_raises_on_unknown(self) -> None:

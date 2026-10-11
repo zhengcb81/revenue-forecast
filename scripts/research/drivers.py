@@ -14,7 +14,7 @@ from contracts.constants import (
     GROWTH_DRIVER_PERSISTENCE,
     GROWTH_DRIVER_TREE_STATUSES,
     MECHANISM_EVIDENCE_ROLES,
-    PERIOD_EVIDENCE_SCHEMA_VERSION,
+    MECHANISM_ROLE_SCHEMA_VERSIONS,
 )
 from contracts.evidence import (
     finite_number,
@@ -381,7 +381,7 @@ def _validate_growth_driver_record(
             context["evidence_ids"],
             source_index,
             claim_index,
-            role_aware=data.get("schema_version") == PERIOD_EVIDENCE_SCHEMA_VERSION,
+            role_aware=data.get("schema_version") in MECHANISM_ROLE_SCHEMA_VERSIONS,
         )
     )
     if peer_note:

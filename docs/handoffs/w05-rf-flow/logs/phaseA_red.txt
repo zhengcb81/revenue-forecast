@@ -1,0 +1,1567 @@
+..F..FF.F..FFFFFFFFFF.F.FFFFFFFFF.F.F.F        [100%]
+================================== FAILURES ===================================
+_ DatedWindowContractTests.test_leap_day_windows_validate_on_3_10 (start='2024-02-29', end='2024-02-29') _
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_leap_day_windows_validate_on_3_10>
+
+    def test_leap_day_windows_validate_on_3_10(self) -> None:
+        for start, end, year in (
+            ("2024-02-29", "2024-02-29", 2024),
+            ("2024-02-01", "2024-02-29", 2024),
+            ("2024-01-01", "2024-03-31", 2024),
+        ):
+            with self.subTest(start=start, end=end):
+                data = schema_3_10_document()
+                add_window_parameter(data, "leap_flow", 2.0, start, end, year)
+>               validate_document(data)
+
+tests\test_w05_dated_contribution_contract.py:164: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedWindowContractTests.test_leap_day_windows_validate_on_3_10 (start='2024-02-01', end='2024-02-29') _
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_leap_day_windows_validate_on_3_10>
+
+    def test_leap_day_windows_validate_on_3_10(self) -> None:
+        for start, end, year in (
+            ("2024-02-29", "2024-02-29", 2024),
+            ("2024-02-01", "2024-02-29", 2024),
+            ("2024-01-01", "2024-03-31", 2024),
+        ):
+            with self.subTest(start=start, end=end):
+                data = schema_3_10_document()
+                add_window_parameter(data, "leap_flow", 2.0, start, end, year)
+>               validate_document(data)
+
+tests\test_w05_dated_contribution_contract.py:164: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedWindowContractTests.test_leap_day_windows_validate_on_3_10 (start='2024-01-01', end='2024-03-31') _
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_leap_day_windows_validate_on_3_10>
+
+    def test_leap_day_windows_validate_on_3_10(self) -> None:
+        for start, end, year in (
+            ("2024-02-29", "2024-02-29", 2024),
+            ("2024-02-01", "2024-02-29", 2024),
+            ("2024-01-01", "2024-03-31", 2024),
+        ):
+            with self.subTest(start=start, end=end):
+                data = schema_3_10_document()
+                add_window_parameter(data, "leap_flow", 2.0, start, end, year)
+>               validate_document(data)
+
+tests\test_w05_dated_contribution_contract.py:164: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedWindowContractTests.test_non_calendar_fiscal_year_short_flow_validates_on_3_10 _
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_non_calendar_fiscal_year_short_flow_validates_on_3_10>
+
+    def test_non_calendar_fiscal_year_short_flow_validates_on_3_10(self) -> None:
+        data = schema_3_10_document()
+        data["fiscal_year_end"] = "06-30"
+        # FY2026 = 2025-07-01..2026-06-30 for a 06-30 fiscal year end.
+        add_window_parameter(data, "off_fy_short", 1.5, "2026-06-01", "2026-06-10", 2026)
+>       validate_document(data)
+
+tests\test_w05_dated_contribution_contract.py:171: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedWindowContractTests.test_period_fields_still_rejected_on_non_flow_parameters (version='3.10') _
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_period_fields_still_rejected_on_non_flow_parameters>
+
+    def test_period_fields_still_rejected_on_non_flow_parameters(self) -> None:
+        for version in ("3.7", "3.8", "3.9", DATED_SCHEMA):
+            with self.subTest(version=version):
+                data = forecast_document()
+                data["schema_version"] = version
+                add_window_parameter(
+                    data, "misdated", 5.0, "2026-01-01", "2026-06-30", 2026,
+                    time_basis="annual",
+                )
+>               with self.assertRaisesRegex(ForecastInputError, "period_start"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "period_start" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_contract.py:210: AssertionError
+_ DatedWindowContractTests.test_pure_field_validator_defaults_to_3_9_and_takes_schema_explicitly _
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_pure_field_validator_defaults_to_3_9_and_takes_schema_explicitly>
+
+    def test_pure_field_validator_defaults_to_3_9_and_takes_schema_explicitly(self) -> None:
+        short = {
+            "time_basis": "period_flow",
+            "period": "FY2026",
+            "period_start": "2026-05-31",
+            "period_end": "2026-06-30",
+        }
+        # Old pure-helper call shape keeps the 3.9 meaning (fail closed).
+        with self.assertRaisesRegex(ForecastInputError, "month"):
+            validate_period_flow_fields("p1", short, "12-31")
+>       normalized = validate_period_flow_fields(
+            "p1", short, "12-31", schema_version=DATED_SCHEMA
+        )
+E       TypeError: validate_period_flow_fields() got an unexpected keyword argument 'schema_version'
+
+tests\test_w05_dated_contribution_contract.py:252: TypeError
+_____ DatedWindowContractTests.test_real_control_window_validates_on_3_10 _____
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_real_control_window_validates_on_3_10>
+
+    def test_real_control_window_validates_on_3_10(self) -> None:
+        # Sealed counterexample: purchase date 2026-05-31, purchase-to-end
+        # revenue 1,291,902.08 CNY (1.29190208 CNY million).
+        data = schema_3_10_document()
+        add_window_parameter(
+            data,
+            "cmp_post_2026",
+            1.29190208,
+            "2026-05-31",
+            "2026-06-30",
+            2026,
+            definition="acquired entity revenue from control date 2026-05-31 to period end",
+        )
+>       validated = validate_document(data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_contract.py:138: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_____ DatedWindowContractTests.test_same_day_flow_passes_through_unscaled _____
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_same_day_flow_passes_through_unscaled>
+
+    def test_same_day_flow_passes_through_unscaled(self) -> None:
+        data = schema_3_10_document()
+        add_window_parameter(data, "one_day", 0.5, "2026-06-30", "2026-06-30", 2026)
+>       validated = validate_document(data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_contract.py:265: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedWindowContractTests.test_ten_day_and_same_day_windows_validate_on_3_10 (start='2026-06-01', end='2026-06-10') _
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_ten_day_and_same_day_windows_validate_on_3_10>
+
+    def test_ten_day_and_same_day_windows_validate_on_3_10(self) -> None:
+        for start, end in (
+            ("2026-06-01", "2026-06-10"),
+            ("2026-06-30", "2026-06-30"),
+        ):
+            with self.subTest(start=start, end=end):
+                data = schema_3_10_document()
+                add_window_parameter(data, "short_flow", 3.0, start, end, 2026)
+>               validated = validate_document(data)
+                            ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_contract.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedWindowContractTests.test_ten_day_and_same_day_windows_validate_on_3_10 (start='2026-06-30', end='2026-06-30') _
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_ten_day_and_same_day_windows_validate_on_3_10>
+
+    def test_ten_day_and_same_day_windows_validate_on_3_10(self) -> None:
+        for start, end in (
+            ("2026-06-01", "2026-06-10"),
+            ("2026-06-30", "2026-06-30"),
+        ):
+            with self.subTest(start=start, end=end):
+                data = schema_3_10_document()
+                add_window_parameter(data, "short_flow", 3.0, start, end, 2026)
+>               validated = validate_document(data)
+                            ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_contract.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedWindowContractTests.test_window_outside_labeled_fiscal_year_rejected_on_3_10 (start='2026-05-31', end='2026-06-30', year=2025) _
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_window_outside_labeled_fiscal_year_rejected_on_3_10>
+
+    def test_window_outside_labeled_fiscal_year_rejected_on_3_10(self) -> None:
+        cases = (
+            ("2026-05-31", "2026-06-30", 2025, "12-31"),
+            ("2025-12-15", "2027-01-15", 2026, "12-31"),  # cross-FY amount unsplit
+            ("2025-07-01", "2026-06-30", 2026, "12-31"),
+        )
+        for start, end, year, fiscal_year_end in cases:
+            with self.subTest(start=start, end=end, year=year):
+                data = schema_3_10_document()
+                data["fiscal_year_end"] = fiscal_year_end
+                add_window_parameter(data, "wrong_window", 5.0, start, end, year)
+>               with self.assertRaisesRegex(ForecastInputError, "fiscal"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "fiscal" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_contract.py:184: AssertionError
+_ DatedWindowContractTests.test_window_outside_labeled_fiscal_year_rejected_on_3_10 (start='2025-12-15', end='2027-01-15', year=2026) _
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_window_outside_labeled_fiscal_year_rejected_on_3_10>
+
+    def test_window_outside_labeled_fiscal_year_rejected_on_3_10(self) -> None:
+        cases = (
+            ("2026-05-31", "2026-06-30", 2025, "12-31"),
+            ("2025-12-15", "2027-01-15", 2026, "12-31"),  # cross-FY amount unsplit
+            ("2025-07-01", "2026-06-30", 2026, "12-31"),
+        )
+        for start, end, year, fiscal_year_end in cases:
+            with self.subTest(start=start, end=end, year=year):
+                data = schema_3_10_document()
+                data["fiscal_year_end"] = fiscal_year_end
+                add_window_parameter(data, "wrong_window", 5.0, start, end, year)
+>               with self.assertRaisesRegex(ForecastInputError, "fiscal"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "fiscal" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_contract.py:184: AssertionError
+_ DatedWindowContractTests.test_window_outside_labeled_fiscal_year_rejected_on_3_10 (start='2025-07-01', end='2026-06-30', year=2026) _
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_contract.DatedWindowContractTests testMethod=test_window_outside_labeled_fiscal_year_rejected_on_3_10>
+
+    def test_window_outside_labeled_fiscal_year_rejected_on_3_10(self) -> None:
+        cases = (
+            ("2026-05-31", "2026-06-30", 2025, "12-31"),
+            ("2025-12-15", "2027-01-15", 2026, "12-31"),  # cross-FY amount unsplit
+            ("2025-07-01", "2026-06-30", 2026, "12-31"),
+        )
+        for start, end, year, fiscal_year_end in cases:
+            with self.subTest(start=start, end=end, year=year):
+                data = schema_3_10_document()
+                data["fiscal_year_end"] = fiscal_year_end
+                add_window_parameter(data, "wrong_window", 5.0, start, end, year)
+>               with self.assertRaisesRegex(ForecastInputError, "fiscal"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "fiscal" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_contract.py:184: AssertionError
+_ DatedCompositionTests.test_acquisition_contribution_composes_full_year_with_scope_explanation _
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_acquisition_contribution_composes_full_year_with_scope_explanation>
+
+    def test_acquisition_contribution_composes_full_year_with_scope_explanation(self) -> None:
+        data = schema_3_10_document()
+        add_acquisition_composition(data, rationale=SCOPE_RATIONALE)
+>       validated = validate_document(data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_composition.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedCompositionTests.test_collect_all_keeps_composition_violations_in_their_own_gate _
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_collect_all_keeps_composition_violations_in_their_own_gate>
+
+    def test_collect_all_keeps_composition_violations_in_their_own_gate(self) -> None:
+        data = schema_3_10_document()
+        add_acquisition_composition(data, rationale=None)
+        collector = Collector()
+        with self.assertRaises(MultiValidationError):
+            validate_document(data, collector=collector)
+>       self.assertTrue(any("composition" in message for _, message in collector.errors))
+E       AssertionError: False is not true
+
+tests\test_w05_dated_contribution_composition.py:312: AssertionError
+_ DatedCompositionTests.test_cross_entity_same_window_merge_rejected_without_explanation _
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_cross_entity_same_window_merge_rejected_without_explanation>
+
+    def test_cross_entity_same_window_merge_rejected_without_explanation(self) -> None:
+        # Group total and acquired-entity standalone revenue over the same
+        # window cannot be silently merged into one "group" number.
+        data = schema_3_10_document()
+        add_window_parameter(
+            data, "group_h1", 500.0, "2026-01-01", "2026-06-30", 2026,
+            definition="group consolidated revenue H1",
+        )
+        add_window_parameter(
+            data, "acq_standalone_h1", 20.0, "2026-01-01", "2026-06-30", 2026,
+            definition="acquired entity standalone revenue H1",
+        )
+        add_window_parameter(
+            data, "merged_h1", 520.0, "2026-01-01", "2026-06-30", 2026,
+            kind="derived_fact", claim=False, formula="x0+x1",
+            input_parameter_ids=["group_h1", "acq_standalone_h1"],
+            definition="group plus acquired standalone merged as one scope",
+        )
+>       with self.assertRaisesRegex(ForecastInputError, "composition"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: "composition" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_composition.py:152: AssertionError
+____ DatedCompositionTests.test_currency_and_scale_must_match_the_document ____
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_currency_and_scale_must_match_the_document>
+
+    def test_currency_and_scale_must_match_the_document(self) -> None:
+        data = schema_3_10_document()
+        entry = {
+            "parameter_id": "cny_flow", "kind": "reported_fact", "value": 1.29190208,
+            "unit": "CNY million", "period": "FY2026",
+            "definition": "CNY-denominated flow in a USD document",
+            "scenario": None, "source_ids": ["filing"],
+            "dimension": "revenue", "time_basis": "period_flow",
+            "period_start": "2026-05-31", "period_end": "2026-06-30",
+            "currency": "CNY", "scale": "million",
+        }
+        data["parameters"].append(entry)
+>       with self.assertRaisesRegex(ForecastInputError, "currency"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: "currency" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_composition.py:248: AssertionError
+_ DatedCompositionTests.test_estimates_keep_assumption_kinds_and_reported_facts_need_evidence _
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_estimates_keep_assumption_kinds_and_reported_facts_need_evidence>
+
+    def test_estimates_keep_assumption_kinds_and_reported_facts_need_evidence(self) -> None:
+        data = schema_3_10_document()
+        add_window_parameter(
+            data, "estimate_window", 5.0, "2026-07-01", "2026-08-15", 2026,
+            kind="scenario_stress", claim=False, rationale="stress case, synthetic",
+        )
+>       validate_document(data)
+
+tests\test_w05_dated_contribution_composition.py:283: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedCompositionTests.test_full_year_composition_without_explanation_rejected _
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_full_year_composition_without_explanation_rejected>
+
+    def test_full_year_composition_without_explanation_rejected(self) -> None:
+        # Missing full-year basis / unexplained gap: the pre-control window is
+        # neither composed nor explained, so the full-year claim is dishonest.
+        data = schema_3_10_document()
+        add_acquisition_composition(data, rationale=None)
+>       with self.assertRaisesRegex(ForecastInputError, "composition"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: "composition" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_composition.py:89: AssertionError
+________ DatedCompositionTests.test_gap_is_never_silently_zero_filled _________
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_gap_is_never_silently_zero_filled>
+
+    def test_gap_is_never_silently_zero_filled(self) -> None:
+        # A one-component "full year" equals only the post-control window;
+        # the missing months must not default to zero revenue.
+        data = schema_3_10_document()
+        add_window_parameter(
+            data, "cmp_post_2026", 1.29190208, "2026-05-31", "2026-06-30", 2026,
+        )
+        add_window_parameter(
+            data, "cmp_fy2026_silent", 1.29190208, "2026-01-01", "2026-12-31", 2026,
+            kind="derived_fact", claim=False, formula="x0",
+            input_parameter_ids=["cmp_post_2026"],
+            definition="full-year contribution claimed from the control window alone",
+        )
+>       with self.assertRaisesRegex(ForecastInputError, "composition"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: "composition" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_composition.py:105: AssertionError
+__ DatedCompositionTests.test_legal_explicit_sums_and_recognition_still_pass __
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_legal_explicit_sums_and_recognition_still_pass>
+
+    def test_legal_explicit_sums_and_recognition_still_pass(self) -> None:
+        data = schema_3_10_document()
+        add_window_parameter(data, "split_h1", 60.0, "2026-01-01", "2026-06-30", 2026)
+        add_window_parameter(data, "split_h2", 50.0, "2026-07-01", "2026-12-31", 2026)
+        original = parameter(data, "0_base_2026")["value"]
+        entry = parameter(data, "0_base_2026")
+        entry.update(
+            kind="derived_fact", formula="x0+x1",
+            input_parameter_ids=["split_h1", "split_h2"],
+            time_basis="period_flow", period_start="2026-01-01", period_end="2026-12-31",
+        )
+>       validated = validate_document(data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_composition.py:192: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedCompositionTests.test_overlapping_components_allowed_with_explicit_rationale _
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_overlapping_components_allowed_with_explicit_rationale>
+
+    def test_overlapping_components_allowed_with_explicit_rationale(self) -> None:
+        data = schema_3_10_document()
+        add_window_parameter(data, "cmp_h1", 55.0, "2026-01-01", "2026-06-30", 2026)
+        add_window_parameter(data, "cmp_q2", 30.0, "2026-04-01", "2026-06-30", 2026)
+        add_window_parameter(
+            data, "cmp_overlap_explained", 85.0, "2026-01-01", "2026-06-30", 2026,
+            kind="derived_fact", claim=False, formula="x0+x1",
+            input_parameter_ids=["cmp_h1", "cmp_q2"],
+            definition="disclosed overlapping composition",
+            rationale="Q2 is a subset of H1; the overlap is intentional and disclosed here",
+        )
+>       validate_document(data)
+
+tests\test_w05_dated_contribution_composition.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedCompositionTests.test_overlapping_components_rejected_without_explanation _
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_overlapping_components_rejected_without_explanation>
+
+    def test_overlapping_components_rejected_without_explanation(self) -> None:
+        data = schema_3_10_document()
+        add_window_parameter(data, "cmp_h1", 55.0, "2026-01-01", "2026-06-30", 2026)
+        add_window_parameter(data, "cmp_q2", 30.0, "2026-04-01", "2026-06-30", 2026)
+        add_window_parameter(
+            data, "cmp_double", 85.0, "2026-01-01", "2026-06-30", 2026,
+            kind="derived_fact", claim=False, formula="x0+x1",
+            input_parameter_ids=["cmp_h1", "cmp_q2"],
+            definition="H1 total merged with its own Q2 subset",
+        )
+>       with self.assertRaisesRegex(ForecastInputError, "composition"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: "composition" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_composition.py:118: AssertionError
+_ DatedCompositionTests.test_partial_flow_cannot_be_annual_base_or_adjustment (target='segment base') _
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_partial_flow_cannot_be_annual_base_or_adjustment>
+
+    def test_partial_flow_cannot_be_annual_base_or_adjustment(self) -> None:
+        for target, mutate in (
+            ("segment base", lambda data: parameter(data, "segment_a_base").update(
+                time_basis="period_flow", period_start="2025-01-01", period_end="2025-06-30",
+                period="FY2025")),
+            ("reported total", lambda data: parameter(data, "reported_total").update(
+                time_basis="period_flow", period_start="2025-05-31", period_end="2025-06-30",
+                period="FY2025")),
+        ):
+            with self.subTest(target=target):
+                data = schema_3_10_document()
+                mutate(data)
+>               with self.assertRaisesRegex(ForecastInputError, "annual"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "annual" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_composition.py:211: AssertionError
+_ DatedCompositionTests.test_partial_flow_cannot_be_annual_base_or_adjustment (target='reported total') _
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_partial_flow_cannot_be_annual_base_or_adjustment>
+
+    def test_partial_flow_cannot_be_annual_base_or_adjustment(self) -> None:
+        for target, mutate in (
+            ("segment base", lambda data: parameter(data, "segment_a_base").update(
+                time_basis="period_flow", period_start="2025-01-01", period_end="2025-06-30",
+                period="FY2025")),
+            ("reported total", lambda data: parameter(data, "reported_total").update(
+                time_basis="period_flow", period_start="2025-05-31", period_end="2025-06-30",
+                period="FY2025")),
+        ):
+            with self.subTest(target=target):
+                data = schema_3_10_document()
+                mutate(data)
+>               with self.assertRaisesRegex(ForecastInputError, "annual"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "annual" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_composition.py:211: AssertionError
+______ DatedCompositionTests.test_residual_work_split_needs_explanation _______
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_residual_work_split_needs_explanation>
+
+    def test_residual_work_split_needs_explanation(self) -> None:
+        # PROCESS-007 shape: core = group total - acquired contribution. The
+        # inputs overlap in time, so the work split must be disclosed.
+        data = schema_3_10_document()
+        add_window_parameter(
+            data, "group_h1", 500.0, "2026-01-01", "2026-06-30", 2026,
+            definition="group consolidated revenue H1",
+        )
+        add_window_parameter(
+            data, "acq_post", 1.29190208, "2026-05-31", "2026-06-30", 2026,
+            definition="acquired entity revenue from control date to period end",
+        )
+        add_window_parameter(
+            data, "core_h1_split", 498.70809792, "2026-01-01", "2026-06-30", 2026,
+            kind="derived_fact", claim=False, formula="x0-x1",
+            input_parameter_ids=["group_h1", "acq_post"],
+            definition="core business H1 as a residual work split",
+        )
+>       with self.assertRaisesRegex(ForecastInputError, "composition"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: "composition" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_composition.py:173: AssertionError
+_ DatedCompositionTests.test_rmb_yi_and_usd_scale_denominations_recompute (currency='CNY', scale='million') _
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_rmb_yi_and_usd_scale_denominations_recompute>
+
+    def test_rmb_yi_and_usd_scale_denominations_recompute(self) -> None:
+        # 1,291,902.08 CNY = 1.29190208 CNY million = 0.0129190208 CNY 亿, and
+        # 1.29190208 USD million = 0.00129190208 USD billion. Each document
+        # keeps one currency/scale and the conversion is recomputed here.
+        self.assertAlmostEqual(1.29190208 / 100, 0.0129190208, places=12)
+        self.assertAlmostEqual(0.0129190208 * 100 * 1_000_000, 1_291_902.08, places=6)
+        self.assertAlmostEqual(1.29190208 / 1000, 0.00129190208, places=12)
+        for currency, scale, factor in (
+            ("CNY", "million", 1.0),
+            ("CNY", "亿", 1.0 / 100),
+            ("USD", "billion", 1.0 / 1000),
+        ):
+            with self.subTest(currency=currency, scale=scale):
+                data = redenominated_document(currency, scale, factor)
+                add_window_parameter(
+                    data, "cmp_post_2026", 1.29190208 * factor, "2026-05-31", "2026-06-30", 2026,
+                    unit=f"{currency} {scale}",
+                    definition="acquired entity revenue from control date to period end",
+                )
+>               validated = validate_document(data)
+                            ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_composition.py:273: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedCompositionTests.test_rmb_yi_and_usd_scale_denominations_recompute (currency='CNY', scale='亿') _
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_rmb_yi_and_usd_scale_denominations_recompute>
+
+    def test_rmb_yi_and_usd_scale_denominations_recompute(self) -> None:
+        # 1,291,902.08 CNY = 1.29190208 CNY million = 0.0129190208 CNY 亿, and
+        # 1.29190208 USD million = 0.00129190208 USD billion. Each document
+        # keeps one currency/scale and the conversion is recomputed here.
+        self.assertAlmostEqual(1.29190208 / 100, 0.0129190208, places=12)
+        self.assertAlmostEqual(0.0129190208 * 100 * 1_000_000, 1_291_902.08, places=6)
+        self.assertAlmostEqual(1.29190208 / 1000, 0.00129190208, places=12)
+        for currency, scale, factor in (
+            ("CNY", "million", 1.0),
+            ("CNY", "亿", 1.0 / 100),
+            ("USD", "billion", 1.0 / 1000),
+        ):
+            with self.subTest(currency=currency, scale=scale):
+                data = redenominated_document(currency, scale, factor)
+                add_window_parameter(
+                    data, "cmp_post_2026", 1.29190208 * factor, "2026-05-31", "2026-06-30", 2026,
+                    unit=f"{currency} {scale}",
+                    definition="acquired entity revenue from control date to period end",
+                )
+>               validated = validate_document(data)
+                            ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_composition.py:273: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedCompositionTests.test_rmb_yi_and_usd_scale_denominations_recompute (currency='USD', scale='billion') _
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_rmb_yi_and_usd_scale_denominations_recompute>
+
+    def test_rmb_yi_and_usd_scale_denominations_recompute(self) -> None:
+        # 1,291,902.08 CNY = 1.29190208 CNY million = 0.0129190208 CNY 亿, and
+        # 1.29190208 USD million = 0.00129190208 USD billion. Each document
+        # keeps one currency/scale and the conversion is recomputed here.
+        self.assertAlmostEqual(1.29190208 / 100, 0.0129190208, places=12)
+        self.assertAlmostEqual(0.0129190208 * 100 * 1_000_000, 1_291_902.08, places=6)
+        self.assertAlmostEqual(1.29190208 / 1000, 0.00129190208, places=12)
+        for currency, scale, factor in (
+            ("CNY", "million", 1.0),
+            ("CNY", "亿", 1.0 / 100),
+            ("USD", "billion", 1.0 / 1000),
+        ):
+            with self.subTest(currency=currency, scale=scale):
+                data = redenominated_document(currency, scale, factor)
+                add_window_parameter(
+                    data, "cmp_post_2026", 1.29190208 * factor, "2026-05-31", "2026-06-30", 2026,
+                    unit=f"{currency} {scale}",
+                    definition="acquired entity revenue from control date to period end",
+                )
+>               validated = validate_document(data)
+                            ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_composition.py:273: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+__ DatedCompositionTests.test_same_window_fact_conflicts_still_fail_on_3_10 ___
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_same_window_fact_conflicts_still_fail_on_3_10>
+
+    def test_same_window_fact_conflicts_still_fail_on_3_10(self) -> None:
+        definition = "Segment A recognized revenue"
+        data = schema_3_10_document()
+        add_window_parameter(data, "window_first", 55.0, "2026-01-01", "2026-06-30", 2026, definition=definition)
+        add_window_parameter(data, "window_second", 65.0, "2026-01-01", "2026-06-30", 2026, definition=definition)
+>       with self.assertRaisesRegex(ForecastInputError, "conflict|resolution"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: "conflict|resolution" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_composition.py:298: AssertionError
+______ DatedCompositionTests.test_stock_and_net_asset_are_never_revenue _______
+contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+During handling of the above exception, another exception occurred:
+
+self = <test_w05_dated_contribution_composition.DatedCompositionTests testMethod=test_stock_and_net_asset_are_never_revenue>
+
+    def test_stock_and_net_asset_are_never_revenue(self) -> None:
+        # Period-end equity/net-asset/customer counts are point-in-time stocks:
+        # they cannot wear a period window and cannot be consumed as annual flow.
+        data = schema_3_10_document()
+        add_window_parameter(
+            data, "closing_equity", 800.0, None, None, 2025,
+            time_basis="point_in_time", claim=False,
+            definition="period-end net assets stock",
+        )
+        parameter(data, "closing_equity")["dimension"] = "monetary_balance"
+>       with self.assertRaisesRegex(ForecastInputError, "period_start"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: "period_start" does not match "schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)"
+
+tests\test_w05_dated_contribution_composition.py:224: AssertionError
+_ DatedContributionForecastTests.test_bound_input_reader_still_consumes_3_10 __
+
+self = <test_w05_dated_contribution_output.DatedContributionForecastTests testMethod=test_bound_input_reader_still_consumes_3_10>
+
+    def test_bound_input_reader_still_consumes_3_10(self) -> None:
+        data = schema_3_10_document()
+        add_window_parameter(
+            data, "cmp_post_2026", 1.29190208, "2026-05-31", "2026-06-30", 2026,
+        )
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_output.py:204: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedContributionForecastTests.test_contribution_enters_low_base_high_dag_with_explicit_scope_change _
+
+self = <test_w05_dated_contribution_output.DatedContributionForecastTests testMethod=test_contribution_enters_low_base_high_dag_with_explicit_scope_change>
+
+    def test_contribution_enters_low_base_high_dag_with_explicit_scope_change(self) -> None:
+        data = schema_3_10_document()
+        expected = add_acquisition_adjustment(data)
+>       reference = run_forecast(schema_3_10_document())
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_output.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedContributionForecastTests.test_output_tamper_dates_currency_and_scope_rejected_even_rehashed _
+
+self = <test_w05_dated_contribution_output.DatedContributionForecastTests testMethod=test_output_tamper_dates_currency_and_scope_rejected_even_rehashed>
+
+    def test_output_tamper_dates_currency_and_scope_rejected_even_rehashed(self) -> None:
+        data = schema_3_10_document()
+        add_acquisition_adjustment(data)
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_output.py:169: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedContributionForecastTests.test_report_shows_real_window_dates_amount_and_sources _
+
+self = <test_w05_dated_contribution_output.DatedContributionForecastTests testMethod=test_report_shows_real_window_dates_amount_and_sources>
+
+    def test_report_shows_real_window_dates_amount_and_sources(self) -> None:
+        data = schema_3_10_document()
+        add_window_parameter(
+            data, "cmp_post_2026", 1.29190208, "2026-05-31", "2026-06-30", 2026,
+            definition="acquired entity revenue from control date to period end",
+        )
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_output.py:155: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedContributionForecastTests.test_same_window_contribution_value_passes_through_unscaled _
+
+self = <test_w05_dated_contribution_output.DatedContributionForecastTests testMethod=test_same_window_contribution_value_passes_through_unscaled>
+
+    def test_same_window_contribution_value_passes_through_unscaled(self) -> None:
+        data = schema_3_10_document()
+        add_window_parameter(
+            data, "cmp_post_2026", 1.29190208, "2026-05-31", "2026-06-30", 2026,
+        )
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_output.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedContributionForecastTests.test_snapshot_reader_roundtrip_and_tamper_rejection _
+
+self = <test_w05_dated_contribution_output.DatedContributionForecastTests testMethod=test_snapshot_reader_roundtrip_and_tamper_rejection>
+
+    def test_snapshot_reader_roundtrip_and_tamper_rejection(self) -> None:
+        import os
+        import tempfile
+    
+        from revenue_backtest import create_snapshot, validate_snapshot
+    
+        data = schema_3_10_document()
+        add_window_parameter(
+            data, "cmp_post_2026", 1.29190208, "2026-05-31", "2026-06-30", 2026,
+        )
+        with tempfile.TemporaryDirectory() as scratch:
+            previous = os.environ.get("REVENUE_PUBLICATION_REGISTRY")
+            os.environ["REVENUE_PUBLICATION_REGISTRY"] = str(
+                Path(scratch) / "registry.jsonl"
+            )
+            try:
+>               snapshot = create_snapshot(data, "w05-fixture-v1")
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_output.py:225: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_backtest.py:40: in create_snapshot
+    result = run_forecast(frozen_input)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedContributionCompatibilityTests.test_3_10_requires_the_new_engine_and_cannot_be_issued_by_4_2_x _
+
+self = <test_w05_dated_contribution_output.DatedContributionCompatibilityTests testMethod=test_3_10_requires_the_new_engine_and_cannot_be_issued_by_4_2_x>
+
+    def test_3_10_requires_the_new_engine_and_cannot_be_issued_by_4_2_x(self) -> None:
+        for engine in ("4.1.0", "4.1.1", "4.2.0", "4.2.1"):
+            for mode in ("formal", "output", "snapshot"):
+                self.assertFalse(
+                    validating_engine_allowed(DATED_SCHEMA, engine, mode),
+                    f"3.10 must not be issued by engine {engine} in {mode}",
+                )
+        for mode in ("formal", "output", "snapshot"):
+>           self.assertTrue(validating_engine_allowed(DATED_SCHEMA, ENGINE_VERSION, mode))
+E           AssertionError: False is not true
+
+tests\test_w05_dated_contribution_output.py:266: AssertionError
+_ DatedContributionCompatibilityTests.test_engine_version_is_the_dated_contribution_release _
+
+self = <test_w05_dated_contribution_output.DatedContributionCompatibilityTests testMethod=test_engine_version_is_the_dated_contribution_release>
+
+    def test_engine_version_is_the_dated_contribution_release(self) -> None:
+>       self.assertEqual(SKILL_VERSION, "4.3.0")
+E       AssertionError: '4.2.1' != '4.3.0'
+E       - 4.2.1
+E       + 4.3.0
+
+tests\test_w05_dated_contribution_output.py:245: AssertionError
+_ DatedContributionRoleTests.test_history_background_does_not_triangulate_on_3_10 _
+
+self = <test_w05_dated_contribution_output.DatedContributionRoleTests testMethod=test_history_background_does_not_triangulate_on_3_10>
+
+    def test_history_background_does_not_triangulate_on_3_10(self) -> None:
+        data = role_document(
+            DATED_SCHEMA,
+            [
+                {"roles": ["history_base"], "source_id": "filing", "evidence_type": "company_execution"},
+                {"roles": ["history_base"], "source_id": "transcript", "evidence_type": "operating_metrics"},
+            ],
+        )
+>       validated = validate_document(data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_output.py:288: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ DatedContributionRoleTests.test_true_mechanism_support_triangulates_on_3_10 _
+
+self = <test_w05_dated_contribution_output.DatedContributionRoleTests testMethod=test_true_mechanism_support_triangulates_on_3_10>
+
+    def test_true_mechanism_support_triangulates_on_3_10(self) -> None:
+        data = role_document(
+            DATED_SCHEMA,
+            [
+                {"roles": ["mechanism_direction"], "source_id": "filing", "evidence_type": "company_execution"},
+                {"roles": ["mechanism_direction"], "source_id": "transcript", "evidence_type": "operating_metrics"},
+            ],
+        )
+>       validated = validate_document(data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w05_dated_contribution_output.py:300: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\contracts\document.py:1075: in validate_document
+    years, as_of = validate_top_level(data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:88: in validate_top_level
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: schema_version must be 3.7, 3.8 (opt-in) or 3.9 (period evidence opt-in)
+
+scripts\contracts\evidence.py:98: ForecastInputError
+=========================== short test summary info ===========================
+SUBFAILED(start='2024-02-29', end='2024-02-29') tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_leap_day_windows_validate_on_3_10
+SUBFAILED(start='2024-02-01', end='2024-02-29') tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_leap_day_windows_validate_on_3_10
+SUBFAILED(start='2024-01-01', end='2024-03-31') tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_leap_day_windows_validate_on_3_10
+FAILED tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_non_calendar_fiscal_year_short_flow_validates_on_3_10
+SUBFAILED(version='3.10') tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_period_fields_still_rejected_on_non_flow_parameters
+FAILED tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_pure_field_validator_defaults_to_3_9_and_takes_schema_explicitly
+FAILED tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_real_control_window_validates_on_3_10
+FAILED tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_same_day_flow_passes_through_unscaled
+SUBFAILED(start='2026-06-01', end='2026-06-10') tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_ten_day_and_same_day_windows_validate_on_3_10
+SUBFAILED(start='2026-06-30', end='2026-06-30') tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_ten_day_and_same_day_windows_validate_on_3_10
+SUBFAILED(start='2026-05-31', end='2026-06-30', year=2025) tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_window_outside_labeled_fiscal_year_rejected_on_3_10
+SUBFAILED(start='2025-12-15', end='2027-01-15', year=2026) tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_window_outside_labeled_fiscal_year_rejected_on_3_10
+SUBFAILED(start='2025-07-01', end='2026-06-30', year=2026) tests/test_w05_dated_contribution_contract.py::DatedWindowContractTests::test_window_outside_labeled_fiscal_year_rejected_on_3_10
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_acquisition_contribution_composes_full_year_with_scope_explanation
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_collect_all_keeps_composition_violations_in_their_own_gate
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_cross_entity_same_window_merge_rejected_without_explanation
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_currency_and_scale_must_match_the_document
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_estimates_keep_assumption_kinds_and_reported_facts_need_evidence
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_full_year_composition_without_explanation_rejected
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_gap_is_never_silently_zero_filled
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_legal_explicit_sums_and_recognition_still_pass
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_overlapping_components_allowed_with_explicit_rationale
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_overlapping_components_rejected_without_explanation
+SUBFAILED(target='segment base') tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_partial_flow_cannot_be_annual_base_or_adjustment
+SUBFAILED(target='reported total') tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_partial_flow_cannot_be_annual_base_or_adjustment
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_residual_work_split_needs_explanation
+SUBFAILED(currency='CNY', scale='million') tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_rmb_yi_and_usd_scale_denominations_recompute
+SUBFAILED(currency='CNY', scale='亿') tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_rmb_yi_and_usd_scale_denominations_recompute
+SUBFAILED(currency='USD', scale='billion') tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_rmb_yi_and_usd_scale_denominations_recompute
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_same_window_fact_conflicts_still_fail_on_3_10
+FAILED tests/test_w05_dated_contribution_composition.py::DatedCompositionTests::test_stock_and_net_asset_are_never_revenue
+FAILED tests/test_w05_dated_contribution_output.py::DatedContributionForecastTests::test_bound_input_reader_still_consumes_3_10
+FAILED tests/test_w05_dated_contribution_output.py::DatedContributionForecastTests::test_contribution_enters_low_base_high_dag_with_explicit_scope_change
+FAILED tests/test_w05_dated_contribution_output.py::DatedContributionForecastTests::test_output_tamper_dates_currency_and_scope_rejected_even_rehashed
+FAILED tests/test_w05_dated_contribution_output.py::DatedContributionForecastTests::test_report_shows_real_window_dates_amount_and_sources
+FAILED tests/test_w05_dated_contribution_output.py::DatedContributionForecastTests::test_same_window_contribution_value_passes_through_unscaled
+FAILED tests/test_w05_dated_contribution_output.py::DatedContributionForecastTests::test_snapshot_reader_roundtrip_and_tamper_rejection
+FAILED tests/test_w05_dated_contribution_output.py::DatedContributionCompatibilityTests::test_3_10_requires_the_new_engine_and_cannot_be_issued_by_4_2_x
+FAILED tests/test_w05_dated_contribution_output.py::DatedContributionCompatibilityTests::test_engine_version_is_the_dated_contribution_release
+FAILED tests/test_w05_dated_contribution_output.py::DatedContributionRoleTests::test_history_background_does_not_triangulate_on_3_10
+FAILED tests/test_w05_dated_contribution_output.py::DatedContributionRoleTests::test_true_mechanism_support_triangulates_on_3_10
+41 failed, 12 passed, 12 subtests passed in 6.91s
