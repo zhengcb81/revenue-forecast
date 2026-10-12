@@ -113,7 +113,61 @@ class NativeEngine:
         return out
 
     # -- period-flow window helper (native validation unit) --------------
-    def period_flow_months(self, start: Any, end: Any) -> int:
+    def analyze_operating_research(self, data: dict[str, Any]) -> dict[str, Any]:
+        ref = NativeRef(entry="research.evidence_roles.analyze_operating_research",
+                        request_sha256=_sha(data), request=copy.deepcopy(data))
+        self.refs.append(ref)
+        try:
+            checked = copy.deepcopy(data)
+            out = self._rt.analyze_operating_research(checked, self._rt.validate_document(checked))
+        except Exception as exc:
+            ref.exception_type = type(exc).__name__
+            ref.exception_message = str(exc)
+            raise
+        ref.result = out
+        ref.result_sha256 = _sha(out)
+        return out
+
+    # -- W08 combination groups ------------------------------------------
+
+    def convert_input_quantity_strict(
+        self, value: float, *, input_unit: str, engine_unit: str
+    ) -> Any:
+        """C01: convert and then re-derive through the shipped record validator.
+
+        The generic adapter records the conversion; this variant additionally
+        runs ``validate_input_quantity_record`` so the returned audit record is
+        machine-checked by the engine's own re-derivation rather than trusted.
+        """
+        req = {"value": value, "input_unit": input_unit, "engine_unit": engine_unit}
+        ref = NativeRef(
+            entry="research.input_quantities.convert_input_quantity"
+            " + validate_input_quantity_record",
+            request_sha256=_sha(req),
+            request=req,
+        )
+        self.refs.append(ref)
+        try:
+            out = self._rt.convert_input_quantity(
+                value, input_unit=input_unit, engine_unit=engine_unit
+            )
+            self._rt.validate_input_quantity_record(out, field="combination_conversion")
+        except Exception as exc:
+            ref.exception_type = type(exc).__name__
+            ref.exception_message = str(exc)
+            raise
+        ref.result_sha256 = _sha(out)
+        ref.result = out
+        ref.json_pointers = {
+            "/engine_value": out.get("engine_value"),
+            "/conversion": out.get("conversion"),
+        }
+        return out
+
+    def period_flow_months(self, start: Any, end: Any) -> int:  # noqa: D401 (existing)
+        return self._period_flow_months(start, end)
+
+    def _period_flow_months(self, start: Any, end: Any) -> int:
         ref = NativeRef(entry="contracts.period_flow.period_flow_months",
                         request_sha256=_sha({"start": str(start), "end": str(end)}),
                         request={"start": str(start), "end": str(end)})
@@ -129,13 +183,17 @@ class NativeEngine:
         ref.json_pointers = {"/months": val}
         return val
 
-    def analyze_operating_research(self, data: dict[str, Any]) -> dict[str, Any]:
-        ref = NativeRef(entry="research.evidence_roles.analyze_operating_research",
-                        request_sha256=_sha(data), request=copy.deepcopy(data))
+    # -- C04: net-amount adjustment resolution ---------------------------
+
+    def resolve_adjustments(self, data: dict[str, Any]) -> dict[str, Any]:
+        """C04: the native signed-adjustment resolver (gross/net contract)."""
+        req_sha = _sha(data)
+        ref = NativeRef(entry="forecast.segments.resolve_adjustments",
+                        request_sha256=req_sha, request=copy.deepcopy(data))
         self.refs.append(ref)
         try:
             checked = copy.deepcopy(data)
-            out = self._rt.analyze_operating_research(checked, self._rt.validate_document(checked))
+            out = self._rt.resolve_adjustments(checked, self._rt.validate_document(checked))
         except Exception as exc:
             ref.exception_type = type(exc).__name__
             ref.exception_message = str(exc)
@@ -143,3 +201,43 @@ class NativeEngine:
         ref.result = out
         ref.result_sha256 = _sha(out)
         return out
+
+    # -- C05: shipped historical error interface -------------------------
+
+    def evaluate_history(self, result: dict[str, Any]) -> dict[str, Any]:
+        """C05: feed a real draft result to the shipped backtest interface.
+
+        A snapshot is created from the SAME draft result (no second forecast),
+        and the actuals document is derived from that draft's declared scope.
+        The returned evaluation is the engine's own scoped actual/WAPE record.
+        """
+        import copy as _copy
+
+        req = {"forecast_result_sha256": _sha(result)}
+        ref = NativeRef(entry="revenue_backtest.evaluate_snapshot(draft snapshot)",
+                        request_sha256=_sha(req), request=req)
+        self.refs.append(ref)
+        try:
+            forecast = _copy.deepcopy(result)
+            snapshot = {
+                "snapshot_schema_version": "2.0",
+                "snapshot_id": self._rt.canonical_sha256({"result": _sha(forecast)}),
+                "forecast_version": forecast.get("forecast_version") or "w08-draft",
+                "company_name": forecast["company_name"],
+                "as_of_date": forecast["as_of_date"],
+                "input_sha256": forecast.get("input_sha256"),
+                "forecast_result_sha256": _sha(forecast),
+                "engine_version": forecast.get("engine_version"),
+                "forecast_schema_version": forecast.get("schema_version"),
+                "input_document": None,
+                "forecast_result": forecast,
+            }
+            evaluation = self._rt.evaluate_draft_scope(snapshot)
+        except Exception as exc:
+            ref.exception_type = type(exc).__name__
+            ref.exception_message = str(exc)
+            raise
+        ref.result = evaluation
+        ref.result_sha256 = _sha(evaluation)
+        return evaluation
+

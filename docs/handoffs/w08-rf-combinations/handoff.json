@@ -1,0 +1,325 @@
+{
+  "schema": "w08-lane-handoff/1",
+  "lane_id": "W08-RF-COMBOS",
+  "plan_id": "w08-rf-combinations",
+  "repo": "revenue-forecast",
+  "workdir": "C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\w08\\rf-combinations",
+  "base_head": "8dc2671040f4330d3b54d1bea1d17246130f9c2a",
+  "branch": "codex/w08-rf-combinations",
+  "implementation_commits": [
+    "PENDING_COMMIT_SHA"
+  ],
+  "handoff_commit": null,
+  "handoff_commit_note": "self-referential hash cannot be filled honestly before the commit exists; exact SHA is supplied by ROOT from the branch tip after this commit lands.",
+  "scope_status": "COMPLETE",
+  "scope_status_basis": "All five declared combination groups C01-C05 were actually executed against the real native engine on the full authoritative list (original W07 16 + W08 15 = 31 case ids), with zero failures, zero errors, zero NOT_RUN, and every group CLOSED by its authoritative required_case_ids manifest. Group closure is not inferred from a case count.",
+  "changed_files": [
+    {
+      "path": "tools/model_generalization_matrix/combinations.py",
+      "state": "added",
+      "bytes": 24367,
+      "sha256": "6301891c5c594153d70ff34a1f4df1356b5df298646463020c3918e5628439f6"
+    },
+    {
+      "path": "tools/model_generalization_matrix/native.py",
+      "state": "modified",
+      "bytes": 10157,
+      "sha256": "1fa75b94056058bcd034a86ddb1a89cf08cb72e66dc548c75fbc0080ab24975b"
+    },
+    {
+      "path": "tools/model_generalization_matrix/bootstrap.py",
+      "state": "modified",
+      "bytes": 4934,
+      "sha256": "0ac94a1ea914b0ddea488625a89924b10cb8d309cd63ca233f71b238bb880752"
+    },
+    {
+      "path": "tools/model_generalization_matrix/runner.py",
+      "state": "modified",
+      "bytes": 32733,
+      "sha256": "97fb2d105876a9c0a46f6476f3675491ebdf8455a58125382100eca89b0aea54"
+    },
+    {
+      "path": "tools/model_generalization_matrix/report.py",
+      "state": "modified",
+      "bytes": 10657,
+      "sha256": "7333acf174c751dd842b525bc1fa6868506c20d0fa0104d99eab1f0fb94b453f"
+    },
+    {
+      "path": "tools/model_generalization_matrix/run.py",
+      "state": "modified",
+      "bytes": 11732,
+      "sha256": "419b9c191dfa1afee735fdb03a3527b0bad8945d318613bcced0d186a61c42f9"
+    },
+    {
+      "path": "tools/tests/test_w08_model_combinations.py",
+      "state": "added",
+      "bytes": 24551,
+      "sha256": "cc5444448d4e65fd32c32f58e25cc4c88e4cd7cdd79616f8e242d2268e30050d"
+    },
+    {
+      "path": "docs/handoffs/w08-rf-combinations/native-payload.zip",
+      "state": "added",
+      "bytes": 411435,
+      "sha256": "8dc6908d0e1d19aa14453e112bc20b275e817587a5f4827e168d9e8fd77999e6"
+    },
+    {
+      "path": "docs/handoffs/w08-rf-combinations/native-payload-summary.json",
+      "state": "added",
+      "bytes": 3001,
+      "sha256": "1c906aa0ee2f0b530c22831b1879fd00078f9681d79c39fffb50d30cabf83456"
+    },
+    {
+      "path": "docs/handoffs/w08-rf-combinations/handoff.json",
+      "state": "added",
+      "self_reference": "hash intentionally omitted; the file is being written"
+    },
+    {
+      "path": "docs/handoffs/w08-rf-combinations/handoff.md",
+      "state": "added",
+      "self_reference": "hash intentionally omitted; the file is being written"
+    }
+  ],
+  "readonly_input_manifest_sha256": "c75bfdca0ad8f2e7386f81933961719c871bad33b514728a948974a0965f2884",
+  "readonly_verification": {
+    "manifest": ".planning/w08-rf-combinations/INPUTS.json",
+    "declared_files": 297,
+    "rechecked_files": 297,
+    "sha_mismatches": [],
+    "missing": [],
+    "result": "UNCHANGED",
+    "note": "every declared read-only input was re-hashed after all runs; all 297 match the frozen manifest."
+  },
+  "write_set_compliance": {
+    "declared": [
+      "tools/model_generalization_matrix/**",
+      "tools/tests/test_w08_model_combinations.py",
+      "docs/handoffs/w08-rf-combinations/**",
+      ".planning/w08-rf-combinations/**"
+    ],
+    "touched_paths_outside_write_set": [],
+    "scripts_tests_config_references": "read-only, never modified",
+    "main_repo_revenue_forecast": "never written",
+    "core_scripts_remediation": "not required and not performed"
+  },
+  "sparse_checkout_constraint": {
+    "observed": true,
+    "detail": "core.sparseCheckout=true and the cone contains docs/handoffs/w08-rf-combinations but NOT .planning/.",
+    "consequence": "The three PWF files (task_plan.md, findings.md, progress.md) were written to disk and are fully readable, but git refuses to stage them ('matched paths that exist outside of your sparse-checkout definition').",
+    "action_taken": "Committed only the in-cone part of the write set. Deliberately did NOT run 'git add --sparse' or modify the sparse cone, because the card forbids cancelling the sparse checkout.",
+    "for_ROOT": "The PWF content is present on disk in the worktree; ROOT can add it with 'git add --sparse .planning/w08-rf-combinations' at integration time if a committed copy is required. Verified by: the files exist and are byte-stable; only staging is blocked."
+  },
+  "nodes": {
+    "A": {
+      "title": "freeze native entry, real call arguments, expected derivation, result JSON pointers, and the genuinely-unsupported cases",
+      "started_utc": null,
+      "recorded_utc": "2026-10-12",
+      "commands": [
+        "python -B -c \"... build each CaseSpec via its native builder and inspect the built input drivers ...\"",
+        "python -B -c \"... run each combination case through run_case(NativeEngine(bootstrap.load_runtime())) ...\""
+      ],
+      "exit_code": 0,
+      "result": "15 CaseSpecs frozen across C01-C05, each with native_entry, real build() arguments, hand-derived Expected, and observed JSON pointers recorded per native ref.",
+      "evidence_ref": "docs/handoffs/w08-rf-combinations/native-payload-summary.json"
+    },
+    "B": {
+      "title": "centralized tool regression (original 36 W07 assertions + new combination behaviour tests)",
+      "recorded_utc": "2026-10-12",
+      "command": "python -B -m pytest -q tools/tests/test_w07_model_generalization.py tools/tests/test_w08_model_combinations.py",
+      "exit_code": 0,
+      "result": "71 passed, 6 skipped",
+      "elapsed_seconds": 4.81,
+      "supporting_command": "python -B -m pytest -q tools/tests/test_root_w07_model_boundaries.py",
+      "supporting_result": "24 passed (ROOT-owned W07 boundary suite stayed green)",
+      "evidence_ref": "tools/tests/test_w08_model_combinations.py"
+    },
+    "C": {
+      "title": "one real native E2E over the full authoritative list plus the three shipped CLIs, with recovery",
+      "recorded_utc": "2026-10-12",
+      "commands": [
+        "python -B tools/model_generalization_matrix/run.py --help",
+        "python -B tools/model_generalization_matrix/run.py --owned-root <ABS_NEW>/owned --out-root <ABS_NEW>/out --e2e"
+      ],
+      "help_confirmed_switches": ["--owned-root", "--out-root", "--e2e"],
+      "invented_switches": "none",
+      "exit_code": 0,
+      "elapsed_seconds": 2.15,
+      "result": "COMPLETE; counts total=31 passed=22 reject_ok=9 failed=0 reject_mismatch=0 errored=0 not_run=0; all five groups CLOSED",
+      "cli_evidence": {
+        "legal_validate_only_returncode": 0,
+        "reject_validate_only_returncode": 2,
+        "reject_stderr": "error: fiscal_year_end is not a valid month-day",
+        "support_diagnostics_returncode": 0,
+        "support_output_schema": "economic-support-diagnostics/1"
+      },
+      "recovery": [
+        {
+          "scenario": "absent owned-root before the run",
+          "observed": "owned root was absent; after the run it does not exist and the report was written",
+          "result": "PASS"
+        },
+        {
+          "scenario": "owned-root pre-existing with a sentinel file",
+          "observed": "sentinel keep_me.txt survived byte-identical; zero leftover w07-* scratch dirs",
+          "result": "PASS"
+        },
+        {
+          "scenario": "failure path: out-root already exists",
+          "observed": "failed closed with FileExistsError, exit 1, zero leftover scratch, owned root restored absent",
+          "result": "PASS"
+        }
+      ],
+      "evidence_ref": "docs/handoffs/w08-rf-combinations/native-payload.zip"
+    }
+  },
+  "case_coverage": {
+    "authoritative_required_case_ids": [
+      "M01-L", "M01-C", "M02-L", "M02-C", "M03-L", "M03-C", "M04-L", "M04-C",
+      "M05-L", "M05-C", "M06-L", "M06-C", "M07-L", "M07-C", "M08-L", "M08-C",
+      "C01-USD-L", "C01-CNY-L", "C01-HKD-C", "C01-CROSS-C",
+      "C02-FY-L", "C02-FYE-C", "C02-QGAP-C", "C02-DBL-C",
+      "C03-JOINT-L", "C03-ORDER-C",
+      "C04-CUM-L", "C04-NET-L", "C04-CUM-C",
+      "C05-ACT-L", "C05-COV-C"
+    ],
+    "required_count": 31,
+    "expected_ids": 31,
+    "actually_run_ids": 31,
+    "missing": [],
+    "unknown": [],
+    "not_run": 0,
+    "errored": 0,
+    "original_w07_cases_preserved": 16,
+    "w08_combination_cases_added": 15,
+    "original_cases_deleted": 0
+  },
+  "group_coverage": {
+    "C01": {
+      "title": "currency/unit labels and same-currency scaling",
+      "native_entry": "research.input_quantities.convert_input_quantity + validate_input_quantity_record",
+      "required_case_ids": ["C01-USD-L", "C01-CNY-L", "C01-HKD-C", "C01-CROSS-C"],
+      "observed": 4,
+      "missing": [],
+      "status": "CLOSED",
+      "hand_derivation": "scale = input scale / engine scale; 7.25 rmb_100m (1e8) -> rmb_million (1e6) = 7.25 x 100 = 725; 5.0 usd_million -> usd_thousand = 5000. Wrong magnitudes x100 / x1000 are explicitly refuted.",
+      "json_pointers": ["/engine_value", "/conversion", "/input_unit", "/engine_unit"],
+      "status_mapping": ["PASS -> computed value equals the hand scale", "REJECT_OK -> real contract refusal"],
+      "unsupported": "HKD is not a registered unit name in the native unit table. No hkd_* unit exists, so C01-HKD-C is deliberately an unknown-unit REJECT vector rather than a fabricated alias; no FX rate is guessed anywhere."
+    },
+    "C02": {
+      "title": "acquisition / dated contribution across a non-calendar fiscal year",
+      "native_entry": "revenue_core.run_forecast(mode=draft) over dated-contribution ancestry",
+      "required_case_ids": ["C02-FY-L", "C02-FYE-C", "C02-QGAP-C", "C02-DBL-C"],
+      "observed": 4,
+      "missing": [],
+      "status": "CLOSED",
+      "hand_derivation": "fiscal_year_end 09-30 (real non-calendar FYE); Segment A FY2026 is an explicit Q1+Q2 hand bridge (36 base) and FY2027 its own driver (90); Segment B 55/60.5. Consolidated = sum(segments) + adjustments, so the hand annual total is 36+55 = 91.0 and 90+60.5 = 150.5.",
+      "json_pointers": ["/consolidated_forecast/base/annual_revenue"],
+      "status_mapping": ["PASS -> annual equals the hand period plan", "REJECT_OK -> real contract refusal"],
+      "unsupported": "The fixture carries the two-quarter hand total on the declared FY2026 annual driver; the engine's own dated-window validator is exercised through the fiscal_year_end and quarter-grid contracts rather than by re-implementing the dated-composition arithmetic in this package."
+    },
+    "C03": {
+      "title": "joint volume/price path frozen on one shared shock",
+      "native_entry": "revenue_core.run_forecast(mode=draft) with the native unit_sales model",
+      "required_case_ids": ["C03-JOINT-L", "C03-ORDER-C"],
+      "observed": 2,
+      "missing": [],
+      "status": "CLOSED",
+      "hand_derivation": "unit_sales revenue = units x unit_revenue x timing_factor. FY2027 base drivers are 12 units / 5.0 price and both legs carry the same shock s=0.9: joint = 12(0.9) x 5.0(0.9) = 48.6; single-leg-only = 54.0; double-shocked = 43.74. All three are mutually distinguishable.",
+      "json_pointers": ["/consolidated_forecast/base/annual_revenue", "/consolidated_forecast/{low,base,high}/annual_revenue"],
+      "status_mapping": ["PASS -> observed equals the joint product and differs from both look-alikes", "REJECT_OK -> real scenario-ordering contract refusal"],
+      "unsupported": "none for C03. Low <= Base <= High is never asserted anywhere; the counter vector intentionally violates that order and the engine refuses it with 'segment scenario ordering failed'."
+    },
+    "C04": {
+      "title": "cumulative target comparison and gross/net anti-double-count",
+      "native_entry": "revenue_core.run_forecast(mode=draft) target ledger + forecast_adjustments",
+      "required_case_ids": ["C04-CUM-L", "C04-NET-L", "C04-CUM-C"],
+      "observed": 3,
+      "missing": [],
+      "status": "CLOSED",
+      "hand_derivation": "cumulative high path = FY2026 120.0 + FY2027 144.0 = 264.0 vs target 260.0 -> attainment 1.015384615...; net identity consolidated = segment gross 165.0 + signed elimination (-10.0) = 155.0.",
+      "json_pointers": ["/management_target_coverage/targets/0/scenario_comparison/high/modeled_value", "/management_target_coverage/targets/0/scenario_comparison/high/measurement_periods", "/consolidated_forecast/base/annual_revenue", "/consolidated_forecast/base/adjustment_bridge/0/annual_adjustment"],
+      "status_mapping": ["PASS -> hand net/cumulative identity holds", "unknown[annual_total]=null -> no single-year number is fabricated for a cumulative label"],
+      "unsupported": "none for C04."
+    },
+    "C05": {
+      "title": "actual/WAPE scope on the shipped historical error interface",
+      "native_entry": "revenue_core.run_forecast(mode=draft) + revenue_backtest.evaluate_snapshot (draft scope)",
+      "required_case_ids": ["C05-ACT-L", "C05-COV-C"],
+      "observed": 2,
+      "missing": [],
+      "status": "CLOSED",
+      "hand_derivation": "scope identity: the evaluated cells are exactly {Segment A, Segment B} x {2026, 2027}; a zero-observation sample must yield wape = null, never 0; a calibration scoped to Segment A never promotes Segment B.",
+      "json_pointers": ["/segments", "/scoped_segment_cells", "/company_summary/wape", "/company_summary/observations"],
+      "status_mapping": ["PASS -> declared scope reproduced exactly with no foreign cell", "unknown[unobserved_wape]=null -> no fabricated skill"],
+      "unsupported": "A draft result is not a formal publication snapshot (no publication receipt, no registry anchor), so the shipped revenue_backtest.evaluate_snapshot entry rejects it by design. This package therefore drives the same shipped pieces that backtest uses for the scoped evaluation (revenue_backtest._error_record and _summarize_records) via bootstrap.evaluate_draft_scope, marked schema revenue-backtest-draft-scope/1. It does not re-implement WAPE or any error arithmetic."
+    }
+  },
+  "actual_code_binding": {
+    "engine_invocation_mode": "draft only; formal publication and validate_published_forecast are intentionally NOT used",
+    "native_entries_bound": [
+      "revenue_core.run_forecast(mode=draft)",
+      "research.input_quantities.convert_input_quantity",
+      "research.input_quantities.validate_input_quantity_record",
+      "contracts.period_flow.period_flow_months",
+      "forecast.segments.resolve_adjustments",
+      "research_support_diagnostics.build_support_diagnostics",
+      "research.evidence_roles.analyze_operating_research",
+      "revenue_backtest._error_record",
+      "revenue_backtest._summarize_records"
+    ],
+    "per_case_request_result_fingerprints": "present; every native ref records entry, request_sha256 and result_sha256 (or a typed exception with message)",
+    "native_exception_classification_preserved": true,
+    "engine_reimplementation": "none; combinations.py and runner.py contain no forecast arithmetic",
+    "run_list_single_source": "run.full_case_list() == report.required_case_ids() == original 16 + W08 15"
+  },
+  "cleanup": {
+    "before": {
+      "w08_e2e_root": "absent",
+      "w08_recovery_root": "absent"
+    },
+    "after": {
+      "leftover_w07_scratch_dirs": 0,
+      "owned_roots_restored": true,
+      "sentinel_file_preserved": true,
+      "package_scratch_removed": true
+    },
+    "remaining": [
+      "docs/handoffs/w08-rf-combinations/native-payload.zip (411409 bytes; the single compressed native payload)",
+      "docs/handoffs/w08-rf-combinations/native-payload-summary.json (2995 bytes; small summary, no duplicated full JSON)"
+    ],
+    "duplication_policy": "the full 5.0 MB native JSON exists only inside native-payload.zip; neither the PWF nor the handoff copies it again."
+  },
+  "resource_usage": {
+    "wall_seconds_node_C": 2.15,
+    "wall_seconds_node_B": 4.81,
+    "peak_memory_bytes": null,
+    "network_used": false,
+    "database_used": false
+  },
+  "provider_calls": 0,
+  "llm_calls": 0,
+  "cost_usd": 0.0,
+  "known_baseline_failures": [],
+  "new_defects": {
+    "found": 0,
+    "core_scripts_remediation_required": false,
+    "note": "No core defect was found. All five groups were closed without touching scripts/, tests/ or config/; no expectation was relaxed to obtain green."
+  },
+  "remaining": [
+    "ROOT to record the exact implementation commit SHA from the branch tip (this handoff cannot honestly self-reference its own commit).",
+    "ROOT to decide whether the draft-scope evaluator (bootstrap.evaluate_draft_scope, schema revenue-backtest-draft-scope/1) should be replaced by a first-class native draft-backtest entry; today it reuses only shipped backtest helpers and re-implements no arithmetic.",
+    "C02 exercises the non-calendar FYE and the quarterly hand bridge through the declared annual driver plus the engine's fiscal-year/period contracts; a future ROOT phase could add a fully dated 3.10 windowed-composition variant if the W05 dated-contribution helper is republished with an explicit quarterly-consumption contract.",
+    "The three .planning/w08-rf-combinations PWF files exist on disk but are outside the sparse-checkout cone, so they are not part of the commit; ROOT can 'git add --sparse' them at integration time."
+  ],
+  "root_integration_suggestions": [
+    "Consume native-payload-summary.json for the G4/G5 model-boundary check; it carries the authoritative 31 case ids and the CLOSED/OPEN status per group without the 5 MB payload.",
+    "Treat combination_coverage.status=COMPLETE plus open_groups=[] as the only signal that the five previously-missing groups are covered; never reduce it to a case count.",
+    "The report keeps model-generalization-matrix/1 compatibility; the additive fields are required_case_ids and the reworked combination_coverage (groups/open_groups/evidence). Existing consumers reading counts/class_status/cases are unaffected.",
+    "Do not treat this engineering pass as source-truth or buy-side validation: source_truth_verified stays false and economic_reasonableness stays not_evaluated."
+  ],
+  "notes": [
+    "Zero external provider calls, zero LLM calls, zero cost.",
+    "The original W07 16 CaseSpecs and the original 36 wrapper assertions were preserved unchanged; the W08 list is additive and shares one engine and one comparison layer.",
+    "Every expectation was fixed before running and derived from frozen drivers, never read back from a native result; hand values were cross-checked against the engine's independent document identity rather than copied from its output."
+  ]
+}

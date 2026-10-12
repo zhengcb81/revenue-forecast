@@ -37,9 +37,15 @@ if str(_TOOLS) not in sys.path:
 
 from model_generalization_matrix import bootstrap  # noqa: E402
 from model_generalization_matrix import cases as C  # noqa: E402
+from model_generalization_matrix import combinations as CB  # noqa: E402
 from model_generalization_matrix import report as R  # noqa: E402
 from model_generalization_matrix.native import NativeEngine  # noqa: E402
 from model_generalization_matrix.runner import run_case  # noqa: E402
+
+
+def full_case_list() -> list:
+    """The single authoritative run list: W07 original 16 + W08 combinations."""
+    return list(C.CASES) + list(CB.COMBINATION_CASES)
 
 
 def _sha_file(path: Path) -> str:
@@ -144,7 +150,7 @@ def run_matrix(out_root: Path, owned_root: Path, *, e2e: bool) -> dict[str, Any]
         except Exception:  # noqa: BLE001
             pass
 
-        results = [run_case(spec, engine) for spec in C.CASES]
+        results = [run_case(spec, engine) for spec in full_case_list()]
 
         cli_evidence: dict[str, Any] = {}
         if e2e:

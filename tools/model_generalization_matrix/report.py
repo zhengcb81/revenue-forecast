@@ -16,8 +16,71 @@ from typing import Any
 
 from .runner import CaseResult
 from . import cases as C
+from . import combinations as CB
 
 SCHEMA = "model-generalization-matrix/1"
+
+
+def required_case_ids() -> list[str]:
+    """The single authoritative required list (W07 16 + W08 combinations)."""
+    return [c.case_id for c in C.CASES] + [c.case_id for c in CB.COMBINATION_CASES]
+
+
+def _combination_coverage(results: list[CaseResult]) -> dict[str, Any]:
+    """Per-group coverage consumed from the SAME list the report requires.
+
+    A group is closed only when every case in its authoritative
+    ``required_case_ids`` actually ran and landed on its expected outcome
+    (PASS or REJECT_OK).  A missing case, an unexecuted case, an ERROR or a
+    mismatch leaves the group ``OPEN`` — an unknown is never a pass.
+    """
+    by_id = {r.case_id: r for r in results}
+    groups: dict[str, Any] = {}
+    open_groups: list[str] = []
+    for group_id in sorted(CB.COMBINATION_GROUP_REQUIREMENTS):
+        spec = CB.COMBINATION_GROUP_REQUIREMENTS[group_id]
+        required = list(spec["required_case_ids"])
+        observed = [cid for cid in required if cid in by_id]
+        missing = [cid for cid in required if cid not in by_id]
+        not_run = [cid for cid in observed if by_id[cid].status == "NOT_RUN"]
+        failed = [
+            cid for cid in observed
+            if by_id[cid].status not in {"PASS", "REJECT_OK", "NOT_RUN"}
+        ]
+        closed = not missing and not not_run and not failed and bool(observed)
+        groups[group_id] = {
+            "title": spec["title"],
+            "native_entry": spec["native_entry"],
+            "closes": spec["closes"],
+            "required_case_ids": required,
+            "observed_case_ids": observed,
+            "missing_case_ids": missing,
+            "not_run_case_ids": not_run,
+            "unexpected_status_case_ids": failed,
+            "status": "CLOSED" if closed else "OPEN",
+            "evidence": {
+                cid: {
+                    "status": by_id[cid].status,
+                    "native_entries": sorted(
+                        {ref.get("entry") for ref in by_id[cid].native_refs}
+                    ),
+                    "native_ref_count": len(by_id[cid].native_refs),
+                }
+                for cid in observed
+            },
+        }
+        if not closed:
+            open_groups.append(group_id)
+    return {
+        "status": "COMPLETE" if not open_groups else "PARTIAL",
+        "open_groups": open_groups,
+        "groups": groups,
+        "note": (
+            "Group status comes from the authoritative per-group required_case_ids "
+            "manifest, never from a case count. An unknown/not-run case leaves its "
+            "group OPEN."
+        ),
+    }
 
 
 def _sha_file(path: str) -> str:
@@ -82,20 +145,23 @@ def build_report(
     by_class: dict[str, list[CaseResult]] = {}
     for r in results:
         by_class.setdefault(r.cls, []).append(r)
-    required = {c.case_id: c for c in C.CASES}
+    required = {cid: True for cid in required_case_ids()}
+    all_cases = list(C.CASES) + list(CB.COMBINATION_CASES)
     observed_ids = [r.case_id for r in results]
     missing = sorted(set(required) - set(observed_ids))
     unexpected = sorted(set(observed_ids) - set(required))
     duplicates = sorted({cid for cid in observed_ids if observed_ids.count(cid) > 1})
-    for cls in sorted({c.cls for c in C.CASES}):
+    for cls in sorted({c.cls for c in all_cases}):
         rs = by_class.get(cls, [])
-        expected_ids = {c.case_id for c in C.CASES if c.cls == cls}
+        expected_ids = {c.case_id for c in all_cases if c.cls == cls}
         ok = (len(rs) == len(expected_ids) and {r.case_id for r in rs} == expected_ids
               and all(r.status in {"PASS", "REJECT_OK"} for r in rs))
         class_status[cls] = "PASS" if ok else "FAIL"
     coverage = {"missing_cases": missing, "unexpected_cases": unexpected, "duplicate_cases": duplicates}
+    combination_coverage = _combination_coverage(results)
     clean = (bool(results) and not missing and not unexpected and not duplicates
              and all(s == "PASS" for s in class_status.values())
+             and combination_coverage["status"] == "COMPLETE"
              and not residuals and cleanup.get("restored_absent") is True
              and cleanup.get("readonly_unchanged") is True
              and cleanup.get("owned_root_restored", True) is True)
@@ -103,17 +169,8 @@ def build_report(
     return {
         "status": "COMPLETE" if clean else "FAILED",
         "vector_coverage": coverage,
-        "combination_coverage": {
-            "status": "PARTIAL",
-            "remaining": [
-                "M01 explicit CNY/HKD labels and same-currency scaling",
-                "M04 dated acquisition/control, cross-FY and missing-quarter ancestry",
-                "M06 correlated joint volume/price scenarios",
-                "M07 cumulative target and gross/net/cannibalization",
-                "M08 future actual/WAPE null through draft output",
-            ],
-            "note": "Class PASS describes declared vectors only, not every card boundary.",
-        },
+        "required_case_ids": required_case_ids(),
+        "combination_coverage": combination_coverage,
         "schema": SCHEMA,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "started_at": started_at,
@@ -175,6 +232,23 @@ def render_markdown(report: dict[str, Any]) -> str:
     lines += ["", "## Class status", "", "| class | status |", "|---|---|"]
     for cls in sorted(report["class_status"]):
         lines.append(f"| {cls} | {report['class_status'][cls]} |")
+    combo = report.get("combination_coverage", {})
+    lines += [
+        "",
+        "## Combination group coverage (C01-C05)",
+        "",
+        f"- status: {combo.get('status')}",
+        f"- open groups: {combo.get('open_groups')}",
+        f"- required cases: {len(report.get('required_case_ids', []))}",
+        "",
+        "| group | status | required | observed | missing |",
+        "|---|---|---|---|---|",
+    ]
+    for group_id, group in sorted(combo.get("groups", {}).items()):
+        lines.append(
+            f"| {group_id} | {group['status']} | {len(group['required_case_ids'])} | "
+            f"{len(group['observed_case_ids'])} | {group['missing_case_ids']} |"
+        )
     lines += ["", "## Cases", ""]
     for case in report["cases"]:
         lines.append(f"### {case['case_id']} — {case['status']}")

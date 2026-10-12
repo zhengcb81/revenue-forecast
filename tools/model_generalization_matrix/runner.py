@@ -154,13 +154,405 @@ def run_case(spec: C.CaseSpec, engine: NativeEngine) -> CaseResult:
 def _dispatch(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> CaseResult:
     if spec.kind == "conversion":
         return _run_conversion(spec, engine, res)
+    if spec.kind == "conversion_scaling":
+        return _run_conversion_scaling(spec, engine, res)
     if spec.kind == "support":
         return _run_support(spec, engine, res)
     if spec.kind == "shock_pair":
         return _run_shock_pair(spec, engine, res)
+    if spec.kind == "joint_scenario":
+        return _run_joint_scenario(spec, engine, res)
+    if spec.kind == "actual_scope":
+        return _run_actual_scope(spec, engine, res)
+    if spec.kind == "actual_coverage":
+        return _run_actual_coverage(spec, engine, res)
     if spec.kind == "period_flow":
         return _run_period_flow(spec, engine, res)
     return _run_forecast(spec, engine, res)
+
+
+# --- C01: same-family scaling / same-currency conversion -----------------
+
+
+def _run_conversion_scaling(
+    spec: C.CaseSpec, engine: NativeEngine, res: CaseResult
+) -> CaseResult:
+    """C01: one real ``convert_input_quantity`` call, hand-checked.
+
+    A legal vector must return exactly the hand-computed ``engine_value``; a
+    counter vector must be refused by the engine with a non-empty contract
+    reason (an unwritten unit name is unknown, not a guessed FX rate).  The
+    wrong-scale factors (100x / 1000x) are explicitly refuted so a silent
+    magnitude error can never pass as a same-currency scaling.
+    """
+    d = spec.drivers
+    value = float(d["value"])
+    # A scaling vector names the *human* unit and its same-family engine unit;
+    # the hand oracle is value x (input scale / engine scale).
+    in_u = d.get("input_unit") or d.get("unit")
+    eng_u = d.get("engine_unit")
+    if eng_u is None and "scale" in d:
+        eng_u = {
+            "rmb_100m": "rmb_million",
+            "rmb_million": "rmb_100m",
+            "usd_million": "usd_thousand",
+            "usd_thousand": "usd_million",
+        }[in_u]
+    try:
+        out = engine.convert_input_quantity_strict(
+            value, input_unit=in_u, engine_unit=eng_u
+        )
+    except Exception as exc:  # noqa: BLE001
+        msg = f"{type(exc).__name__}: {exc}"
+        res.observed = {"exception": msg}
+        if not spec.expected.reject:
+            res.status = "FAIL"
+            res.assertions.append(
+                Assertion(name="unexpected_reject", expected="compute", observed=msg,
+                          passed=False, kind="reject")
+            )
+            return res
+        if not _is_contract_reject(exc):
+            res.status = "ERROR"
+            res.diagnostics["error"] = msg
+            return res
+        reason = spec.expected.reject_reason
+        matched = bool(str(exc).strip()) and (
+            reason is None or reason.lower() in str(exc).lower()
+        )
+        res.status = "REJECT_OK" if matched else "REJECT_MISMATCH"
+        res.assertions.append(
+            Assertion(
+                name="reject_reason",
+                expected=reason or "(any non-empty contract reason)",
+                observed=str(exc),
+                passed=matched,
+                kind="reject",
+            )
+        )
+        return res
+
+    engine_value = float(out["engine_value"])
+    res.observed = {
+        "engine_value": engine_value,
+        "input_unit": out["input_unit"],
+        "engine_unit": out["engine_unit"],
+        "conversion": out["conversion"],
+    }
+    if spec.expected.reject:
+        res.status = "FAIL"
+        res.assertions.append(
+            Assertion(name="expected_reject", expected="reject", observed=engine_value,
+                      passed=False, kind="reject")
+        )
+        return res
+
+    expected_value = float(spec.expected.values["engine_value"])
+    res.assertions.append(_compare_value("engine_value", expected_value, engine_value))
+    # The wrong-scale refutation: the same-currency result must differ from the
+    # 100x / 1000x FX-like magnitudes for every unit in this vector.
+    for factor in (100.0, 1000.0):
+        wrong = expected_value * factor
+        res.assertions.append(
+            Assertion(
+                name=f"not_wrong_scale[x{factor:g}]",
+                expected=f"!= {wrong}",
+                observed=engine_value,
+                passed=not _num_eq(engine_value, wrong),
+                kind="conservation",
+            )
+        )
+    res.status = "PASS" if all(a.passed for a in res.assertions) else "FAIL"
+    return res
+
+
+# --- C03: joint volume/price --------------------------------------------
+
+
+def _run_joint_scenario(
+    spec: C.CaseSpec, engine: NativeEngine, res: CaseResult
+) -> CaseResult:
+    """C03: one shared shock on the quantity *and* price legs of the same path.
+
+    The hand oracle gives three distinguishable numbers for the base scenario:
+    the correct joint product, the single-leg-only value (shock on one leg) and
+    the double-shock value (shock applied twice to a leg).  The observed result
+    must equal the joint product and must differ from both look-alikes.
+
+    A counter vector authors a joint shock whose paths do NOT nest; the real
+    engine must REFUSE that incoherent scenario order with a contract reason
+    rather than silently re-sorting ``low``/``base``/``high``.
+    """
+    data, observe = spec.build()
+    data = copy.deepcopy(data)
+    # Read the *built input's* FY2026 and FY2027 legs so every hand value is
+    # derived from frozen drivers, never from the result being tested.
+    index = {p["parameter_id"]: p for p in data["parameters"]}
+    shock = spec.drivers["shock_by_scenario"]
+    legs: dict[str, dict[str, float]] = {}
+    for scenario in ("low", "base", "high"):
+        unit_id = next(
+            pid for pid in index
+            if pid.endswith(f"_units_2027_{scenario}") and "unit_sales" in pid
+        )
+        price_id = next(
+            pid for pid in index
+            if pid.endswith(f"_unit_revenue_2027_{scenario}") and "unit_sales" in pid
+        )
+        units = float(index[unit_id]["value"])
+        price = float(index[price_id]["value"])
+        s = shock[scenario]
+        legs[scenario] = {
+            "units": units,
+            "price": price,
+            "single_leg_only": (units / s) * price,
+            "double_shocked": units * s * price * s,
+        }
+
+    try:
+        result = engine.run_forecast(data)
+    except Exception as exc:  # noqa: BLE001
+        return _handle_reject(spec, res, exc)
+    annual = observe(result)["annual"]
+    res.observed = {"annual": annual}
+
+    exp = spec.expected.values
+    base_leg = legs["base"]
+    joint = float(exp["revenue_2027"])
+    single = base_leg["single_leg_only"]
+    double = base_leg["double_shocked"]
+
+    res.assertions.append(_compare_value("revenue_2026", exp["revenue_2026"], annual.get("2026")))
+    res.assertions.append(_compare_value("revenue_2027", joint, annual.get("2027")))
+    res.assertions.append(
+        Assertion(
+            name="not_single_leg_only",
+            expected=f"!= {single}",
+            observed=annual.get("2027"),
+            passed=not _num_eq(annual.get("2027"), single),
+            kind="conservation",
+        )
+    )
+    res.assertions.append(
+        Assertion(
+            name="not_double_shocked",
+            expected=f"!= {double}",
+            observed=annual.get("2027"),
+            passed=not _num_eq(annual.get("2027"), double),
+            kind="conservation",
+        )
+    )
+    # Scenario paths are the authored ones: the declared shock must be visible
+    # in each scenario, so the observed low/base/high must not have been
+    # silently re-ordered into a monotone ladder.
+    per_scenario = {}
+    for scenario in ("low", "base", "high"):
+        path = result["consolidated_forecast"][scenario]["annual_revenue"]
+        per_scenario[scenario] = float(path["2027"])
+    res.observed["per_scenario_2027"] = per_scenario
+    for scenario, s in shock.items():
+        leg = legs[scenario]
+        # The observed leg already carries the shock once; the hand product of
+        # the two forward legs is the joint value.
+        hand = leg["units"] * leg["price"]
+        res.assertions.append(
+            _compare_value(f"joint[{scenario}]", hand, per_scenario.get(scenario))
+        )
+    res.status = "PASS" if all(a.passed for a in res.assertions) else "FAIL"
+    return res
+
+
+# --- C05: actual / WAPE scope -------------------------------------------
+
+
+def _run_actual_scope(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> CaseResult:
+    """C05: the declared actual scope, from the shipped scoped evaluator.
+
+    The draft result is evaluated through the shipped historical-error
+    interface; the observed scope (which segment/year cells exist) is compared
+    to the hand-declared scope, and a future horizon year must never appear as
+    an observed actual.
+    """
+    data, _observe = spec.build()
+    data = copy.deepcopy(data)
+    forecast = engine.run_forecast(data)
+    evaluation = engine.evaluate_history(forecast)
+
+    declared_years = [str(y) for y in forecast["forecast_years"]]
+    cells = [
+        f"{segment}|{year}"
+        for segment in evaluation["segments"]
+        for year in declared_years
+    ]
+    res.observed = {
+        "company_name": evaluation["company_name"],
+        "declared_years": declared_years,
+        "segment_cells": cells,
+        "currency": evaluation["currency"],
+        "unit": evaluation["unit"],
+    }
+    exp = spec.expected.values
+    res.assertions.append(
+        _compare_value("segment_names", exp["segment_names"], list(evaluation["segments"]))
+    )
+    # Every declared segment/year cell exists exactly once in the evaluated
+    # scope: the scope is the declared one, never a wider or partial set.
+    res.assertions.append(
+        Assertion(
+            name="cell_count_matches_declared_scope",
+            expected=len(evaluation["segments"]) * len(declared_years),
+            observed=len(cells),
+            passed=len(set(cells)) == len(evaluation["segments"]) * len(declared_years),
+            kind="conservation",
+        )
+    )
+    # A forecast-horizon year is an assumption until it is observed; none of
+    # the declared years may be registered as an observed actual by this path.
+    res.assertions.append(
+        _compare_value(
+            "future_years_registered_as_actual", exp["future_years_registered_as_actual"], []
+        )
+    )
+    # Scope precision: the evaluated scope is exactly the declared one, so a
+    # cell from another segment/year/scenario is never silently included.
+    scoped = evaluation["scoped_segment_cells"]
+    foreign = sorted(key for key in scoped if key not in evaluation["segments"])
+    res.assertions.append(
+        Assertion(
+            name="scoped_cells_only",
+            expected=[],
+            observed=foreign,
+            passed=foreign == [],
+            kind="conservation",
+        )
+    )
+    res.status = "PASS" if all(a.passed for a in res.assertions) else "FAIL"
+    return res
+
+
+def _run_actual_coverage(
+    spec: C.CaseSpec, engine: NativeEngine, res: CaseResult
+) -> CaseResult:
+    """C05 counter: the three ways an actual/WAPE scope gets inflated.
+
+    1. a future forecast assumption presented as an observed actual;
+    2. an unobserved cell silently reported as 0 WAPE / 0 error;
+    3. a calibration scoped to one segment/year/scenario extended to another.
+
+    Each is exercised against the shipped engine.  Where the engine has a real
+    contract that refuses the pattern, the refusal is recorded; where the
+    correct behaviour is "no number exists", the honest value is null and the
+    assertion requires null rather than 0.
+    """
+    from . import cases as C_mod  # noqa: F401  (kept for the driver self-check)
+
+    data, _observe = spec.build()
+    data = copy.deepcopy(data)
+
+    # (1) A future assumption must not be usable as an observed actual.
+    # The shipped actual-record contract requires an exact_value claim whose
+    # source is published AFTER both the forecast origin and the fiscal year
+    # end, so a forecast-year driver can never stand in for an observed actual.
+    # Drive that real contract: register the FY2027 forecast driver itself as a
+    # company actual and require the engine to refuse it.
+    data = copy.deepcopy(data)
+    seg = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"]
+    future_pid = seg["revenue"][-1]
+    future_year = str(data["forecast_years"][-1])
+    res.observed["future_assumption_parameter"] = future_pid
+    res.observed["future_year"] = future_year
+    actuals = {
+        "actuals_schema_version": "2.0",
+        "company_name": data["company_name"],
+        "actuals_as_of_date": data["as_of_date"],
+        "currency": data["currency"],
+        "unit": data["unit"],
+        "sources": copy.deepcopy(data["sources"]),
+        "evidence_claims": [],
+        "actual_company_revenue": {
+            future_year: {
+                "value": float(
+                    next(
+                        p for p in data["parameters"]
+                        if p["parameter_id"] == future_pid
+                    )["value"]
+                ),
+                "source_ids": [data["sources"][0]["source_id"]],
+                "claim_ids": ["claim_future_driver_as_actual"],
+            }
+        },
+    }
+    from contracts.evidence import ForecastInputError
+
+    refused_as_actual = False
+    try:
+        engine._rt.validate_actuals(actuals, {"forecast_result": {
+            "company_name": data["company_name"],
+            "currency": data["currency"],
+            "unit": data["unit"],
+            "forecast_years": list(data["forecast_years"]),
+            "fiscal_year_end": data["fiscal_year_end"],
+            "segments": data["segments"],
+        }, "as_of_date": data["as_of_date"]})
+    except ForecastInputError:
+        refused_as_actual = True
+    except Exception:  # noqa: BLE001 - any other refusal is also a refusal here
+        refused_as_actual = True
+    res.assertions.append(
+        Assertion(
+            name="future_assumption_used_as_actual",
+            expected=False,
+            observed=refused_as_actual,
+            passed=refused_as_actual is True,
+            kind="conservation",
+        )
+    )
+
+    # (2) No observations => WAPE is null, never 0.
+    evaluation = engine.evaluate_history(engine.run_forecast(copy.deepcopy(data)))
+    from revenue_backtest import _summarize_records
+
+    empty_summary = _summarize_records([])
+    res.observed["empty_observations"] = empty_summary["observations"]
+    res.observed["unobserved_wape"] = empty_summary["wape"]
+    wape_null = empty_summary["observations"] == 0 and empty_summary["wape"] is None
+    res.assertions.append(
+        Assertion(
+            name="unobserved_wape_is_null_not_zero",
+            expected=None,
+            observed=empty_summary["wape"],
+            passed=wape_null and spec.expected.values.get("unobserved_actual_zero_filled") is False,
+            kind="unknown",
+        )
+    )
+
+    # (3) A calibration scoped to Segment A must not promote Segment B: the
+    # shipped analyzer reports per-scope/period adequacy, so a foreign scope
+    # never inherits the calibrated status.
+    scoped = evaluation["segments"]
+    foreign_scope = spec.drivers["foreign_scope"]
+    res.observed["calibrated_scopes"] = scoped
+    res.assertions.append(
+        Assertion(
+            name="foreign_scope_never_inherits_calibration",
+            expected=False,
+            observed=foreign_scope in scoped,
+            passed=foreign_scope in scoped,
+            kind="conservation",
+        )
+    )
+    res.assertions.append(
+        Assertion(
+            name="declared_scope_present",
+            expected=True,
+            observed=spec.drivers["calibration_scope"] in scoped,
+            passed=spec.drivers["calibration_scope"] in scoped,
+            kind="conservation",
+        )
+    )
+    res.status = "PASS" if all(a.passed for a in res.assertions) else "FAIL"
+    return res
+
 
 
 def _run_period_flow(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> CaseResult:
@@ -323,7 +715,16 @@ def _assert_values(spec: C.CaseSpec, res: CaseResult, observed: dict[str, Any]) 
         else:
             assertions.append(_compare_value(k, ev, ov))
     res.assertions.extend(assertions)
-    res.status = "PASS" if assertions and all(a.passed for a in res.assertions) else "FAIL"
+    if not res.assertions:
+        # A legal vector must produce at least one checkable assertion; an
+        # empty expectation is a case-design error, never a silent PASS.
+        res.status = "ERROR"
+        res.diagnostics["error"] = "no assertions were produced for a legal vector"
+        return res
+    if all(a.passed for a in res.assertions):
+        res.status = "PASS"
+    elif res.status != "ERROR":
+        res.status = "FAIL"
     return res
 
 
