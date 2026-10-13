@@ -45,7 +45,7 @@ from .oracle import Expected  # noqa: F401  (re-exported for the case manifest)
 def _quality_document() -> dict[str, Any]:
     """Segment A over a non-calendar FYE with an explicit two-quarter bridge.
 
-    FY2026 recognized revenue is q1 + q2 (36 + 36 = 72 base); FY2027 is its own
+    This shared annual-driver fixture supplies FY2026=36; FY2027 is its own
     annual driver (90 base).  Both numbers are frozen by hand, so the real
     annual result can be checked without reading it back.
     """
@@ -65,11 +65,14 @@ def _quality_document() -> dict[str, Any]:
         q1_id = add_parameter(data, f"quality_q1_{scenario}", q1, 2026, scenario)
         add_parameter(data, f"quality_q2_{scenario}", q2, 2026, scenario)
         next_id = add_parameter(data, f"quality_next_{scenario}", nxt, 2027, scenario)
-        segment["scenarios"][scenario]["driver_parameter_ids"]["revenue"] = [q1_id, next_id]
+        segment["scenarios"][scenario]["driver_parameter_ids"]["revenue"] = [
+            q1_id,
+            next_id,
+        ]
         # The declared FY2026 annual driver carries the two-quarter hand total.
-        next(
-            p for p in data["parameters"] if p["parameter_id"] == q1_id
-        )["definition"] = "Segment A FY2026 recognized revenue = Q1 2026 + Q2 2026 bridge"
+        next(p for p in data["parameters"] if p["parameter_id"] == q1_id)[
+            "definition"
+        ] = "Segment A FY2026 annual recognized revenue (synthetic baseline)"
     # Re-point the growth-curve coverage at the parameters this document
     # actually consumes; the fixture helper froze the pre-rewrite driver IDs.
     used = [
@@ -79,7 +82,8 @@ def _quality_document() -> dict[str, Any]:
         for pid in ids
     ]
     data["research_coverage"] = research_coverage(
-        ["reported_total"] + [s["base_revenue_parameter_id"] for s in data["segments"]], used
+        ["reported_total"] + [s["base_revenue_parameter_id"] for s in data["segments"]],
+        used,
     )
     return finalize_contract(data)
 
@@ -88,39 +92,135 @@ def _annual_observe(result: dict[str, Any]) -> dict[str, Any]:
     return {"annual": dict(result["consolidated_forecast"]["base"]["annual_revenue"])}
 
 
-def _build_quality_cleaned() -> tuple[dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]]:
+def _build_quality_cleaned() -> tuple[
+    dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]
+]:
     return _quality_document(), _annual_observe
 
 
-def _build_quality_wrong_fye() -> tuple[dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]]:
-    """C02-FYE-C: an impossible fiscal-year-end label must be refused.
-
-    A genuine tax-reporting convention (``09-30``, ``03-31``, ``02-29``) is a
-    real window; ``13-45`` is not a month-day at all and may never be silently
-    snapped to a nearby window.
-    """
-    data = _quality_document()
+def _build_quality_wrong_fye():
+    data, observe = _build_dated_contribution()
     data["fiscal_year_end"] = "13-45"
-    return data, _annual_observe
+    return data, observe
 
 
-def _build_quality_zero_filled() -> tuple[dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]]:
-    """C02-QGAP-C: a hole in the quarterly grid is never zero-filled.
+def _build_quality_zero_filled():
+    data, observe = _build_dated_contribution()
+    for p in data["parameters"]:
+        if p["parameter_id"].startswith("dated_fy2026_"):
+            p.update(
+                value=12.0,
+                formula="x0",
+                input_parameter_ids=["dated_post"],
+                rationale="",
+            )
+    return data, observe
 
-    The builder *does* put the two-quarter hand total on the declared FY2026
-    driver; the runner separately proves that the unmodelled quarter cannot be
-    reconstructed by padding (q1 + q3 != the declared annual total).
-    """
-    return _quality_document(), _annual_observe
+
+def _build_quality_double_count():
+    data, observe = _build_dated_contribution()
+    for p in data["parameters"]:
+        if p["parameter_id"].startswith("dated_fy2026_"):
+            scenario = p["scenario"]
+            p.update(
+                value=12.0 + 2 * {"low": 20.0, "base": 24.0, "high": 28.0}[scenario],
+                formula="x0+x1+x2",
+                input_parameter_ids=[
+                    "dated_post",
+                    f"dated_tail_{scenario}",
+                    f"dated_tail_{scenario}",
+                ],
+            )
+    return data, observe
 
 
-def _build_quality_double_count() -> tuple[dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]]:
-    """C02-DBL-C: the same economic flow is never added twice.
+def _build_dated_contribution():
+    from test_w05_dated_contribution_contract import add_window_parameter, parameter
 
-    The runner proves q1 + q2 + q2 is strictly larger than the declared annual
-    total, so a doubled component can never masquerade as the year.
-    """
-    return _quality_document(), _annual_observe
+    data = _quality_document()
+    data["schema_version"] = "3.10"
+    add_window_parameter(
+        data,
+        "dated_post",
+        12.0,
+        "2026-05-31",
+        "2026-06-30",
+        2026,
+        definition="acquired entity contribution after control date",
+    )
+    ids = {}
+    for scenario, tail in {"low": 20.0, "base": 24.0, "high": 28.0}.items():
+        add_window_parameter(
+            data,
+            f"dated_tail_{scenario}",
+            tail,
+            "2026-07-01",
+            "2026-09-30",
+            2026,
+            kind="scenario_stress",
+            claim=False,
+            definition="remaining controlled fiscal-year contribution",
+        )
+        parameter(data, f"dated_tail_{scenario}")["scenario"] = scenario
+        fy = f"dated_fy2026_{scenario}"
+        add_window_parameter(
+            data,
+            fy,
+            12.0 + tail,
+            "2025-10-01",
+            "2026-09-30",
+            2026,
+            kind="derived_fact",
+            claim=False,
+            formula="x0+x1",
+            input_parameter_ids=["dated_post", f"dated_tail_{scenario}"],
+            definition="full fiscal-year contribution after control date",
+            rationale="Pre-control 2025-10-01..2026-05-30 outside consolidation scope, not missing or zero-filled; control begins 2026-05-31.",
+        )
+        parameter(data, fy)["scenario"] = scenario
+        next_id = f"dated_fy2027_{scenario}"
+        add_window_parameter(
+            data,
+            next_id,
+            {"low": 50.0, "base": 60.0, "high": 70.0}[scenario],
+            "2026-10-01",
+            "2027-09-30",
+            2027,
+            kind="scenario_stress",
+            claim=False,
+            definition="next full fiscal-year acquired contribution",
+        )
+        parameter(data, next_id)["scenario"] = scenario
+        ids[scenario] = [fy, next_id]
+    data["forecast_adjustments"] = [
+        {
+            "name": "acquired_entity",
+            "category": "acquisition_contribution",
+            "scenario_parameter_ids": ids,
+        }
+    ]
+
+    def observe(result):
+        out = _annual_observe(result)
+        out["contribution"] = dict(
+            result["consolidated_forecast"]["base"]["adjustment_total"]
+        )
+        out["dated_windows"] = [
+            {
+                k: p.get(k)
+                for k in (
+                    "parameter_id",
+                    "period_start",
+                    "period_end",
+                    "input_parameter_ids",
+                )
+            }
+            for p in result["parameter_trace"]
+            if p["parameter_id"].startswith("dated_")
+        ]
+        return out
+
+    return data, observe
 
 
 # --- C03 joint volume/price ----------------------------------------------
@@ -147,11 +247,13 @@ def _build_joint_volume_price(
     data = model_document("unit_sales")
     for scenario, shock in shocks.items():
         units = next(
-            p for p in data["parameters"]
+            p
+            for p in data["parameters"]
             if p["parameter_id"] == f"unit_sales_units_2027_{scenario}"
         )
         price = next(
-            p for p in data["parameters"]
+            p
+            for p in data["parameters"]
             if p["parameter_id"] == f"unit_sales_unit_revenue_2027_{scenario}"
         )
         _set_param(data, units["parameter_id"], units["value"] * shock)
@@ -160,11 +262,15 @@ def _build_joint_volume_price(
     return data, _annual_observe
 
 
-def _build_joint_legal() -> tuple[dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]]:
+def _build_joint_legal() -> tuple[
+    dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]
+]:
     return _build_joint_volume_price({"low": 0.8, "base": 0.9, "high": 1.0})
 
 
-def _build_joint_counter_ordered() -> tuple[dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]]:
+def _build_joint_counter_ordered() -> tuple[
+    dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]
+]:
     """A joint shock that would break the scenario order.
 
     The FY2027 base drivers are 12 units / 5.0 price.  ``low`` is pushed far
@@ -180,7 +286,9 @@ def _build_joint_counter_ordered() -> tuple[dict[str, Any], Callable[[dict[str, 
 # --- C04 target / net ------------------------------------------------------
 
 
-def _build_cumulative_target() -> tuple[dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]]:
+def _build_cumulative_target() -> tuple[
+    dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]
+]:
     """C04-CUM-L: a cumulative (FY2026 + FY2027) management target."""
     from test_recognition_bridge import forecast_document
     from test_management_targets import add_target
@@ -194,7 +302,9 @@ def _build_cumulative_target() -> tuple[dict[str, Any], Callable[[dict[str, Any]
     )
 
     def observe(result: dict[str, Any]) -> dict[str, Any]:
-        comparison = result["management_target_coverage"]["targets"][0]["scenario_comparison"]["high"]
+        comparison = result["management_target_coverage"]["targets"][0][
+            "scenario_comparison"
+        ]["high"]
         return {
             "measurement_basis": comparison["measurement_basis"],
             "modeled_value": float(comparison["modeled_value"]),
@@ -205,7 +315,9 @@ def _build_cumulative_target() -> tuple[dict[str, Any], Callable[[dict[str, Any]
     return data, observe
 
 
-def _build_net_of_cannibalization() -> tuple[dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]]:
+def _build_net_of_cannibalization() -> tuple[
+    dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]
+]:
     """C04-NET-L: gross segment revenue minus one elimination equals net.
 
     The new business is already inside the segment paths, so a second positive
@@ -249,7 +361,9 @@ def _build_net_of_cannibalization() -> tuple[dict[str, Any], Callable[[dict[str,
     return data, observe
 
 
-def _build_cumulative_as_annual() -> tuple[dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]]:
+def _build_cumulative_as_annual() -> tuple[
+    dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]
+]:
     """C04-CUM-C: a cumulative label must not be read as a single annual figure.
 
     The runner asserts, from the built input alone, that the two registered
@@ -276,7 +390,8 @@ def _build_cumulative_as_annual() -> tuple[dict[str, Any], Callable[[dict[str, A
         return {
             "measurement_basis": comparison["measurement_basis"],
             "measured_periods": periods,
-            "periods_are_distinct": len(set(periods)) == len(periods) and len(periods) > 1,
+            "periods_are_distinct": len(set(periods)) == len(periods)
+            and len(periods) > 1,
             "annual_total": None
             if comparison["measurement_basis"] != "annual_period"
             else comparison["modeled_value"],
@@ -285,12 +400,14 @@ def _build_cumulative_as_annual() -> tuple[dict[str, Any], Callable[[dict[str, A
     return data, observe
 
 
-def _build_actual_scope() -> tuple[dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]]:
-    return _quality_document(), _annual_observe
+def _build_actual_scope():
+    from test_recognition_bridge import forecast_document
+
+    return forecast_document(), _annual_observe
 
 
-def _build_actual_coverage_counter() -> tuple[dict[str, Any], Callable[[dict[str, Any]], dict[str, Any]]]:
-    return _quality_document(), _annual_observe
+def _build_actual_coverage_counter():
+    return _build_actual_scope()
 
 
 # ---------------------------------------------------------------------------
@@ -326,7 +443,11 @@ COMBINATION_CASES: list[CaseSpec] = [
         vector="counter",
         boundary="an unwritten unit name is an unknown unit, never a guessed FX rate or alias",
         kind="conversion_scaling",
-        drivers={"value": 7.8, "input_unit": "hkd_million", "engine_unit": "usd_million"},
+        drivers={
+            "value": 7.8,
+            "input_unit": "hkd_million",
+            "engine_unit": "usd_million",
+        },
         build=lambda: ({"conversion": True}, (lambda _r: {})),
         expected=_e({}, reject=True, reject_reason="unknown input_unit"),
     ),
@@ -336,7 +457,11 @@ COMBINATION_CASES: list[CaseSpec] = [
         vector="counter",
         boundary="a missing currency name never silently auto-converts between currencies",
         kind="conversion_scaling",
-        drivers={"value": 5.0, "input_unit": "usd_million", "engine_unit": "rmb_million"},
+        drivers={
+            "value": 5.0,
+            "input_unit": "usd_million",
+            "engine_unit": "rmb_million",
+        },
         build=lambda: ({"conversion": True}, (lambda _r: {})),
         expected=_e({}, reject=True, reject_reason="incompatible unit conversion"),
     ),
@@ -345,16 +470,20 @@ COMBINATION_CASES: list[CaseSpec] = [
         case_id="C02-FY-L",
         cls="C02",
         vector="legal",
-        boundary="non-12-31 FYE plus a two-quarter dated bridge produce the real annual revenue",
+        boundary="non-calendar FYE, control-window flow and remaining-quarter contribution reach annual revenue",
         kind="forecast",
         drivers={
             "fiscal_year_end": "09-30",
-            "segment_a": {"fy2026_q1": 36.0, "fy2026_q2": 36.0, "fy2027": 90.0},
+            "segment_a": {
+                "fy2026_control_window": 12.0,
+                "fy2026_tail": 24.0,
+                "fy2027": 90.0,
+            },
             "segment_b": {"fy2026": 55.0, "fy2027": 60.5},
-            "annual": {"2026": 36.0 + 55.0, "2027": 90.0 + 60.5},
+            "annual": {"2026": 36.0 + 55.0 + 12.0 + 24.0, "2027": 90.0 + 60.5 + 60.0},
         },
-        build=_build_quality_cleaned,
-        expected=_e({"annual": {"2026": 91.0, "2027": 150.5}}),
+        build=_build_dated_contribution,
+        expected=_e({"annual": {"2026": 127.0, "2027": 210.5}}),
         expected_input_drivers={"revenue": [36.0, 90.0]},
     ),
     CaseSpec(
@@ -374,13 +503,18 @@ COMBINATION_CASES: list[CaseSpec] = [
         boundary="a missing quarter stays a real gap: q1+q3 never reconstructs the annual total",
         kind="forecast",
         drivers={
-            "quarters": {"q1": 36.0, "q3": 36.0},
-            "segment_a_fy2026": 36.0,
-            "segment_b_fy2026": 55.0,
-            "annual": {"2026": 91.0, "2027": 150.5},
+            "control_window_value": 12.0,
+            "missing_tail": True,
+            "fiscal_year_end": "09-30",
         },
         build=_build_quality_zero_filled,
-        expected=_e({"annual": {"2026": 91.0, "2027": 150.5}}),
+        expected=_e(
+            {},
+            reject=True,
+            reject_reason="composition"
+            if "C02-QGAP-C" == "C02-QGAP-C"
+            else "double counts",
+        ),
         expected_input_drivers={"revenue": [36.0, 90.0]},
     ),
     CaseSpec(
@@ -390,13 +524,19 @@ COMBINATION_CASES: list[CaseSpec] = [
         boundary="the same economic flow is never added twice into the annual result",
         kind="forecast",
         drivers={
-            "quarters": {"q1": 36.0, "q2": 36.0},
-            "segment_a_fy2026": 36.0,
-            "segment_b_fy2026": 55.0,
-            "annual": {"2026": 91.0, "2027": 150.5},
+            "control_window_value": 12.0,
+            "tail_value": 24.0,
+            "tail_used_twice": True,
+            "fiscal_year_end": "09-30",
         },
         build=_build_quality_double_count,
-        expected=_e({"annual": {"2026": 91.0, "2027": 150.5}}),
+        expected=_e(
+            {},
+            reject=True,
+            reject_reason="composition"
+            if "C02-DBL-C" == "C02-QGAP-C"
+            else "double counts",
+        ),
         expected_input_drivers={"revenue": [36.0, 90.0]},
     ),
     # ---- C03 joint volume / price ---------------------------------------
@@ -460,7 +600,9 @@ COMBINATION_CASES: list[CaseSpec] = [
                 "attainment_ratio": (120.0 + 144.0) / 260.0,
                 "measurement_basis": "cumulative_periods",
             },
-            conservation={"cumulative_sums_periods": "cumulative value == sum(registered periods)"},
+            conservation={
+                "cumulative_sums_periods": "cumulative value == sum(registered periods)"
+            },
         ),
     ),
     CaseSpec(
@@ -506,8 +648,9 @@ COMBINATION_CASES: list[CaseSpec] = [
         build=_build_actual_scope,
         expected=_e(
             {
-                "segment_names": ["Segment A", "Segment B"],
+                "segment_names": ["Segment A"],
                 "future_years_registered_as_actual": [],
+                "wape": (5.0 + 11.5) / (160.0 + 170.0),
             },
             conservation={
                 "scoped_cells_only": "an observed actual cell never implies another cell is observed"
@@ -568,7 +711,7 @@ COMBINATION_GROUP_REQUIREMENTS: dict[str, dict[str, Any]] = {
     },
     "C05": {
         "title": "actual/WAPE scope on the shipped historical error interface",
-        "native_entry": "revenue_core.run_forecast(mode=draft) + revenue_backtest.evaluate_snapshot",
+        "native_entry": "revenue_backtest.create_snapshot + revenue_backtest.evaluate_snapshot (isolated engineering registry)",
         "required_case_ids": ["C05-ACT-L", "C05-COV-C"],
         "closes": "future actual/WAPE null semantics, scoped to segment/year/scenario",
     },

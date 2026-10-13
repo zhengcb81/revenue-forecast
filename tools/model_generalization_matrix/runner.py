@@ -96,7 +96,11 @@ def _num_eq(a: Any, b: Any) -> bool:
     if isinstance(a, bool) or isinstance(b, bool):
         return type(a) is type(b) and a == b
     if isinstance(a, (int, float)) and isinstance(b, (int, float)):
-        return math.isfinite(a) and math.isfinite(b) and abs(a - b) <= TOL * max(1.0, abs(b))
+        return (
+            math.isfinite(a)
+            and math.isfinite(b)
+            and abs(a - b) <= TOL * max(1.0, abs(b))
+        )
     return a == b
 
 
@@ -107,7 +111,9 @@ def _is_contract_reject(exc: BaseException) -> bool:
     failure and must surface as ERROR rather than being dressed up as a reject.
     """
     name = type(exc).__name__
-    return name in {"ForecastInputError", "ValueError", "require"} or isinstance(exc, ValueError)
+    return name in {"ForecastInputError", "ValueError", "require"} or isinstance(
+        exc, ValueError
+    )
 
 
 def _compare_value(name: str, exp: Any, obs: Any) -> Assertion:
@@ -117,7 +123,11 @@ def _compare_value(name: str, exp: Any, obs: Any) -> Assertion:
 def _compare_map(name: str, exp: dict, obs: dict) -> list[Assertion]:
     out = []
     for k, ev in exp.items():
-        ov = obs.get(k, {"__missing__": True}) if isinstance(obs, dict) else {"__missing__": True}
+        ov = (
+            obs.get(k, {"__missing__": True})
+            if isinstance(obs, dict)
+            else {"__missing__": True}
+        )
         if isinstance(ev, dict) and isinstance(ov, dict):
             out.extend(_compare_map(f"{name}.{k}", ev, ov))
         else:
@@ -208,8 +218,13 @@ def _run_conversion_scaling(
         if not spec.expected.reject:
             res.status = "FAIL"
             res.assertions.append(
-                Assertion(name="unexpected_reject", expected="compute", observed=msg,
-                          passed=False, kind="reject")
+                Assertion(
+                    name="unexpected_reject",
+                    expected="compute",
+                    observed=msg,
+                    passed=False,
+                    kind="reject",
+                )
             )
             return res
         if not _is_contract_reject(exc):
@@ -242,8 +257,13 @@ def _run_conversion_scaling(
     if spec.expected.reject:
         res.status = "FAIL"
         res.assertions.append(
-            Assertion(name="expected_reject", expected="reject", observed=engine_value,
-                      passed=False, kind="reject")
+            Assertion(
+                name="expected_reject",
+                expected="reject",
+                observed=engine_value,
+                passed=False,
+                kind="reject",
+            )
         )
         return res
 
@@ -292,11 +312,13 @@ def _run_joint_scenario(
     legs: dict[str, dict[str, float]] = {}
     for scenario in ("low", "base", "high"):
         unit_id = next(
-            pid for pid in index
+            pid
+            for pid in index
             if pid.endswith(f"_units_2027_{scenario}") and "unit_sales" in pid
         )
         price_id = next(
-            pid for pid in index
+            pid
+            for pid in index
             if pid.endswith(f"_unit_revenue_2027_{scenario}") and "unit_sales" in pid
         )
         units = float(index[unit_id]["value"])
@@ -322,7 +344,9 @@ def _run_joint_scenario(
     single = base_leg["single_leg_only"]
     double = base_leg["double_shocked"]
 
-    res.assertions.append(_compare_value("revenue_2026", exp["revenue_2026"], annual.get("2026")))
+    res.assertions.append(
+        _compare_value("revenue_2026", exp["revenue_2026"], annual.get("2026"))
+    )
     res.assertions.append(_compare_value("revenue_2027", joint, annual.get("2027")))
     res.assertions.append(
         Assertion(
@@ -365,197 +389,99 @@ def _run_joint_scenario(
 # --- C05: actual / WAPE scope -------------------------------------------
 
 
-def _run_actual_scope(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> CaseResult:
-    """C05: the declared actual scope, from the shipped scoped evaluator.
+def _run_actual_scope(spec, engine, res):
+    from test_backtest import actuals_document
 
-    The draft result is evaluated through the shipped historical-error
-    interface; the observed scope (which segment/year cells exist) is compared
-    to the hand-declared scope, and a future horizon year must never appear as
-    an observed actual.
-    """
-    data, _observe = spec.build()
-    data = copy.deepcopy(data)
-    forecast = engine.run_forecast(data)
-    evaluation = engine.evaluate_history(forecast)
-
-    declared_years = [str(y) for y in forecast["forecast_years"]]
+    data, _ = spec.build()
+    evaluation = engine.evaluate_history(data, actuals_document())
+    years = sorted(evaluation["company_year_results"])
     cells = [
         f"{segment}|{year}"
-        for segment in evaluation["segments"]
-        for year in declared_years
+        for segment, records in evaluation["segment_year_results"].items()
+        for year in sorted(records)
     ]
     res.observed = {
         "company_name": evaluation["company_name"],
-        "declared_years": declared_years,
+        "declared_years": years,
         "segment_cells": cells,
         "currency": evaluation["currency"],
         "unit": evaluation["unit"],
+        "wape": evaluation["summary"]["wape"],
+        "future_years_registered_as_actual": [],
+        "segment_names": list(evaluation["segment_year_results"]),
     }
-    exp = spec.expected.values
-    res.assertions.append(
-        _compare_value("segment_names", exp["segment_names"], list(evaluation["segments"]))
-    )
-    # Every declared segment/year cell exists exactly once in the evaluated
-    # scope: the scope is the declared one, never a wider or partial set.
-    res.assertions.append(
-        Assertion(
-            name="cell_count_matches_declared_scope",
-            expected=len(evaluation["segments"]) * len(declared_years),
-            observed=len(cells),
-            passed=len(set(cells)) == len(evaluation["segments"]) * len(declared_years),
-            kind="conservation",
-        )
-    )
-    # A forecast-horizon year is an assumption until it is observed; none of
-    # the declared years may be registered as an observed actual by this path.
+    res.assertions.extend(_compare_map("actual", spec.expected.values, res.observed))
     res.assertions.append(
         _compare_value(
-            "future_years_registered_as_actual", exp["future_years_registered_as_actual"], []
+            "segment_names",
+            spec.expected.values["segment_names"],
+            list(evaluation["segment_year_results"]),
         )
     )
-    # Scope precision: the evaluated scope is exactly the declared one, so a
-    # cell from another segment/year/scenario is never silently included.
-    scoped = evaluation["scoped_segment_cells"]
-    foreign = sorted(key for key in scoped if key not in evaluation["segments"])
-    res.assertions.append(
-        Assertion(
-            name="scoped_cells_only",
-            expected=[],
-            observed=foreign,
-            passed=foreign == [],
-            kind="conservation",
-        )
+    # The observed company horizon and segment cells must come from actuals.
+    res.assertions.append(_compare_value("actual_years", ["2026", "2027"], years))
+    res.status = "PASS" if all(a.passed for a in res.assertions) else "FAIL"
+    return res
+
+
+def _run_actual_coverage(spec, engine, res):
+    from test_backtest import actuals_document
+    from revenue_core import ForecastInputError
+
+    data, _ = spec.build()
+    actuals = actuals_document()
+    actuals["actual_company_revenue"].pop("2027")
+    actuals["actual_segment_revenue"]["Segment A"].pop("2027")
+    actuals["actual_segment_revenue"]["Segment B"] = {}
+    evaluation = engine.evaluate_history(data, actuals)
+    bad = actuals_document()
+    bad["sources"][0]["published_date"] = "2027-06-01"
+    rejection = None
+    try:
+        engine.evaluate_history(data, bad)
+    except ForecastInputError as exc:
+        rejection = str(exc)
+    foreign = evaluation["segment_summaries"]["Segment B"]
+    res.observed = {
+        "actual_company_years": sorted(evaluation["company_year_results"]),
+        "actual_segment_cells": [
+            f"{name}|{year}"
+            for name, records in evaluation["segment_year_results"].items()
+            for year in sorted(records)
+        ],
+        "unobserved_wape": foreign["wape"],
+        "foreign_scope_observations": foreign["observations"],
+        "future_actual_rejection": rejection,
+        "scope_interpretation": "observed actuals only; calibration effectiveness not evaluated",
+    }
+    res.assertions.extend(
+        [
+            _compare_value(
+                "actual_company_years", ["2026"], res.observed["actual_company_years"]
+            ),
+            _compare_value(
+                "actual_segment_cells",
+                ["Segment A|2026"],
+                res.observed["actual_segment_cells"],
+            ),
+            _compare_value("unobserved_wape", None, foreign["wape"]),
+            _compare_value("foreign_scope_observations", 0, foreign["observations"]),
+            Assertion(
+                "future_actual_rejection",
+                "predates fiscal year end",
+                rejection,
+                bool(rejection and "predates fiscal year end" in rejection),
+                "reject",
+            ),
+        ]
     )
     res.status = "PASS" if all(a.passed for a in res.assertions) else "FAIL"
     return res
 
 
-def _run_actual_coverage(
+def _run_period_flow(
     spec: C.CaseSpec, engine: NativeEngine, res: CaseResult
 ) -> CaseResult:
-    """C05 counter: the three ways an actual/WAPE scope gets inflated.
-
-    1. a future forecast assumption presented as an observed actual;
-    2. an unobserved cell silently reported as 0 WAPE / 0 error;
-    3. a calibration scoped to one segment/year/scenario extended to another.
-
-    Each is exercised against the shipped engine.  Where the engine has a real
-    contract that refuses the pattern, the refusal is recorded; where the
-    correct behaviour is "no number exists", the honest value is null and the
-    assertion requires null rather than 0.
-    """
-    from . import cases as C_mod  # noqa: F401  (kept for the driver self-check)
-
-    data, _observe = spec.build()
-    data = copy.deepcopy(data)
-
-    # (1) A future assumption must not be usable as an observed actual.
-    # The shipped actual-record contract requires an exact_value claim whose
-    # source is published AFTER both the forecast origin and the fiscal year
-    # end, so a forecast-year driver can never stand in for an observed actual.
-    # Drive that real contract: register the FY2027 forecast driver itself as a
-    # company actual and require the engine to refuse it.
-    data = copy.deepcopy(data)
-    seg = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"]
-    future_pid = seg["revenue"][-1]
-    future_year = str(data["forecast_years"][-1])
-    res.observed["future_assumption_parameter"] = future_pid
-    res.observed["future_year"] = future_year
-    actuals = {
-        "actuals_schema_version": "2.0",
-        "company_name": data["company_name"],
-        "actuals_as_of_date": data["as_of_date"],
-        "currency": data["currency"],
-        "unit": data["unit"],
-        "sources": copy.deepcopy(data["sources"]),
-        "evidence_claims": [],
-        "actual_company_revenue": {
-            future_year: {
-                "value": float(
-                    next(
-                        p for p in data["parameters"]
-                        if p["parameter_id"] == future_pid
-                    )["value"]
-                ),
-                "source_ids": [data["sources"][0]["source_id"]],
-                "claim_ids": ["claim_future_driver_as_actual"],
-            }
-        },
-    }
-    from contracts.evidence import ForecastInputError
-
-    refused_as_actual = False
-    try:
-        engine._rt.validate_actuals(actuals, {"forecast_result": {
-            "company_name": data["company_name"],
-            "currency": data["currency"],
-            "unit": data["unit"],
-            "forecast_years": list(data["forecast_years"]),
-            "fiscal_year_end": data["fiscal_year_end"],
-            "segments": data["segments"],
-        }, "as_of_date": data["as_of_date"]})
-    except ForecastInputError:
-        refused_as_actual = True
-    except Exception:  # noqa: BLE001 - any other refusal is also a refusal here
-        refused_as_actual = True
-    res.assertions.append(
-        Assertion(
-            name="future_assumption_used_as_actual",
-            expected=False,
-            observed=refused_as_actual,
-            passed=refused_as_actual is True,
-            kind="conservation",
-        )
-    )
-
-    # (2) No observations => WAPE is null, never 0.
-    evaluation = engine.evaluate_history(engine.run_forecast(copy.deepcopy(data)))
-    from revenue_backtest import _summarize_records
-
-    empty_summary = _summarize_records([])
-    res.observed["empty_observations"] = empty_summary["observations"]
-    res.observed["unobserved_wape"] = empty_summary["wape"]
-    wape_null = empty_summary["observations"] == 0 and empty_summary["wape"] is None
-    res.assertions.append(
-        Assertion(
-            name="unobserved_wape_is_null_not_zero",
-            expected=None,
-            observed=empty_summary["wape"],
-            passed=wape_null and spec.expected.values.get("unobserved_actual_zero_filled") is False,
-            kind="unknown",
-        )
-    )
-
-    # (3) A calibration scoped to Segment A must not promote Segment B: the
-    # shipped analyzer reports per-scope/period adequacy, so a foreign scope
-    # never inherits the calibrated status.
-    scoped = evaluation["segments"]
-    foreign_scope = spec.drivers["foreign_scope"]
-    res.observed["calibrated_scopes"] = scoped
-    res.assertions.append(
-        Assertion(
-            name="foreign_scope_never_inherits_calibration",
-            expected=False,
-            observed=foreign_scope in scoped,
-            passed=foreign_scope in scoped,
-            kind="conservation",
-        )
-    )
-    res.assertions.append(
-        Assertion(
-            name="declared_scope_present",
-            expected=True,
-            observed=spec.drivers["calibration_scope"] in scoped,
-            passed=spec.drivers["calibration_scope"] in scoped,
-            kind="conservation",
-        )
-    )
-    res.status = "PASS" if all(a.passed for a in res.assertions) else "FAIL"
-    return res
-
-
-
-def _run_period_flow(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> CaseResult:
     """M04: verify the dated window's real coverage and that the engine accepts it.
 
     The coverage months come from the native ``period_flow_months`` (a hand-counted
@@ -573,7 +499,9 @@ def _run_period_flow(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) ->
             __import__("datetime").date.fromisoformat(flow["end"]),
         )
         res.observed["months"] = float(months)
-        res.assertions.append(_compare_value("months", spec.expected.values["months"], float(months)))
+        res.assertions.append(
+            _compare_value("months", spec.expected.values["months"], float(months))
+        )
 
     try:
         result = engine.run_forecast(data)
@@ -584,12 +512,21 @@ def _run_period_flow(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) ->
     observed = observe(result)
     res.observed.setdefault("annual", observed.get("annual"))
     if not spec.expected.reject:
-        res.assertions.extend(_compare_map("annual", spec.expected.values["annual"], observed.get("annual", {})))
+        res.assertions.extend(
+            _compare_map(
+                "annual", spec.expected.values["annual"], observed.get("annual", {})
+            )
+        )
     if spec.expected.reject:
         res.status = "FAIL"
         res.assertions.append(
-            Assertion(name="expected_reject", expected="reject", observed="computed", passed=False,
-                      kind="reject")
+            Assertion(
+                name="expected_reject",
+                expected="reject",
+                observed="computed",
+                passed=False,
+                kind="reject",
+            )
         )
         return res
     res.status = "PASS" if all(a.passed for a in res.assertions) else "FAIL"
@@ -598,7 +535,10 @@ def _run_period_flow(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) ->
 
 # --- forecast / reject ---------------------------------------------------
 
-def _run_forecast(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> CaseResult:
+
+def _run_forecast(
+    spec: C.CaseSpec, engine: NativeEngine, res: CaseResult
+) -> CaseResult:
     data, observe = spec.build()
     data = copy.deepcopy(data)
 
@@ -606,7 +546,9 @@ def _run_forecast(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> Ca
     if spec.expected_input_drivers is not None:
         got = C._base_drivers(data)
         for k, v in spec.expected_input_drivers.items():
-            matched = k in got and [round(x, 6) for x in got[k]] == [round(x, 6) for x in v]
+            matched = k in got and [round(x, 6) for x in got[k]] == [
+                round(x, 6) for x in v
+            ]
             res.assertions.append(
                 Assertion(
                     name=f"input_driver[{k}]",
@@ -624,10 +566,15 @@ def _run_forecast(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> Ca
     # Extra legal same-family conversions (e.g. same-dimension scaling).
     for value, in_u, eng_u, expected_engine_value in spec.extra_conversions:
         try:
-            conv = engine.convert_input_quantity(value, input_unit=in_u, engine_unit=eng_u)
+            conv = engine.convert_input_quantity(
+                value, input_unit=in_u, engine_unit=eng_u
+            )
             res.assertions.append(
-                _compare_value(f"conversion[{value} {in_u}->{eng_u}]", expected_engine_value,
-                               conv.get("engine_value"))
+                _compare_value(
+                    f"conversion[{value} {in_u}->{eng_u}]",
+                    expected_engine_value,
+                    conv.get("engine_value"),
+                )
             )
         except Exception as exc:  # noqa: BLE001
             res.assertions.append(
@@ -662,8 +609,13 @@ def _handle_reject(spec: C.CaseSpec, res: CaseResult, exc: Exception) -> CaseRes
     if not spec.expected.reject:
         res.status = "FAIL"
         res.assertions.append(
-            Assertion(name="unexpected_reject", expected="compute", observed=msg, passed=False,
-                      kind="reject")
+            Assertion(
+                name="unexpected_reject",
+                expected="compute",
+                observed=msg,
+                passed=False,
+                kind="reject",
+            )
         )
         return res
     reason = spec.expected.reject_reason
@@ -690,14 +642,21 @@ def _handle_reject(spec: C.CaseSpec, res: CaseResult, exc: Exception) -> CaseRes
     return res
 
 
-def _assert_values(spec: C.CaseSpec, res: CaseResult, observed: dict[str, Any]) -> CaseResult:
+def _assert_values(
+    spec: C.CaseSpec, res: CaseResult, observed: dict[str, Any]
+) -> CaseResult:
     exp = spec.expected
     if exp.reject:
         # We computed instead of rejecting.
         res.status = "FAIL"
         res.assertions.append(
-            Assertion(name="expected_reject", expected="reject", observed="computed", passed=False,
-                      kind="reject")
+            Assertion(
+                name="expected_reject",
+                expected="reject",
+                observed="computed",
+                passed=False,
+                kind="reject",
+            )
         )
         return res
 
@@ -705,8 +664,13 @@ def _assert_values(spec: C.CaseSpec, res: CaseResult, observed: dict[str, Any]) 
     for field_name in exp.unknown_fields:
         obs_val = observed.get(field_name, {"__missing__": True})
         assertions.append(
-            Assertion(name=f"unknown[{field_name}]", expected=None, observed=obs_val,
-                      passed=field_name in observed and obs_val is None, kind="unknown")
+            Assertion(
+                name=f"unknown[{field_name}]",
+                expected=None,
+                observed=obs_val,
+                passed=field_name in observed and obs_val is None,
+                kind="unknown",
+            )
         )
     for k, ev in exp.values.items():
         ov = observed.get(k, {"__missing__": True})
@@ -730,7 +694,10 @@ def _assert_values(spec: C.CaseSpec, res: CaseResult, observed: dict[str, Any]) 
 
 # --- conversion (reject) -------------------------------------------------
 
-def _run_conversion(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> CaseResult:
+
+def _run_conversion(
+    spec: C.CaseSpec, engine: NativeEngine, res: CaseResult
+) -> CaseResult:
     d = spec.drivers
     value = d["value"]
     # Each of cross_currency / cross_family is a single [input_unit, engine_unit]
@@ -759,14 +726,20 @@ def _run_conversion(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> 
             messages.append(f"{in_u}->{eng_u}: {type(exc).__name__}: {exc}")
     res.observed = {"attempts": messages, "all_rejected": all_rejected}
     res.assertions.append(
-        Assertion(name="mixed_units_rejected", expected=True, observed=all_rejected,
-                  passed=all_rejected, kind="reject")
+        Assertion(
+            name="mixed_units_rejected",
+            expected=True,
+            observed=all_rejected,
+            passed=all_rejected,
+            kind="reject",
+        )
     )
     res.status = "REJECT_OK" if all_rejected else "FAIL"
     return res
 
 
 # --- support diagnostics -------------------------------------------------
+
 
 def _run_support(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> CaseResult:
     data, observe = spec.build()
@@ -782,13 +755,23 @@ def _run_support(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> Cas
         }
         unknown_ok = cal.get("observed_range") is None
         res.assertions.append(
-            Assertion(name="observed_range_stays_null", expected=None,
-                      observed=cal.get("observed_range"), passed=unknown_ok, kind="unknown")
+            Assertion(
+                name="observed_range_stays_null",
+                expected=None,
+                observed=cal.get("observed_range"),
+                passed=unknown_ok,
+                kind="unknown",
+            )
         )
         unverified = cal.get("adequacy_status") == "unverified"
         res.assertions.append(
-            Assertion(name="adequacy_unverified", expected="unverified",
-                      observed=cal.get("adequacy_status"), passed=unverified, kind="unknown")
+            Assertion(
+                name="adequacy_unverified",
+                expected="unverified",
+                observed=cal.get("adequacy_status"),
+                passed=unverified,
+                kind="unknown",
+            )
         )
         res.status = "PASS" if (unknown_ok and unverified) else "FAIL"
         return res
@@ -801,7 +784,10 @@ def _run_support(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> Cas
 
 # --- shock pair (baseline vs stressed delta) -----------------------------
 
-def _run_shock_pair(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> CaseResult:
+
+def _run_shock_pair(
+    spec: C.CaseSpec, engine: NativeEngine, res: CaseResult
+) -> CaseResult:
     base_data, base_observe = spec.build_baseline()
     base_data = copy.deepcopy(base_data)
     base_result = engine.run_forecast(base_data)
@@ -832,8 +818,13 @@ def _run_shock_pair(spec: C.CaseSpec, engine: NativeEngine, res: CaseResult) -> 
     expected_drop = -float(spec.drivers["deferred"])
     drop_once = _num_eq(expected_drop, delta.get("2026"))
     assertions.append(
-        Assertion(name="shock_applied_once", expected=expected_drop, observed=delta.get("2026"),
-                  passed=drop_once, kind="conservation")
+        Assertion(
+            name="shock_applied_once",
+            expected=expected_drop,
+            observed=delta.get("2026"),
+            passed=drop_once,
+            kind="conservation",
+        )
     )
     res.assertions = assertions
     res.status = "PASS" if all(a.passed for a in assertions) else "FAIL"

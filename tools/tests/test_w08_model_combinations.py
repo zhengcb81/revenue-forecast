@@ -78,7 +78,14 @@ def test_w07_original_sixteen_cases_unchanged():
     """The original frozen matrix must still be exactly 16 cases / 8 classes."""
     assert len(C.CASES) == 16, "the original W07 16-case matrix was modified"
     assert {c.cls for c in C.CASES} == {
-        "M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08",
+        "M01",
+        "M02",
+        "M03",
+        "M04",
+        "M05",
+        "M06",
+        "M07",
+        "M08",
     }
 
 
@@ -107,7 +114,9 @@ def test_every_group_has_legal_and_counter_or_unknown_vector():
         assert specs, f"{group} has no case"
         vectors = {c.vector for c in specs}
         assert "legal" in vectors, f"{group} is missing a legal vector"
-        assert vectors & {"counter", "unknown"}, f"{group} is missing a counter/unknown vector"
+        assert vectors & {"counter", "unknown"}, (
+            f"{group} is missing a counter/unknown vector"
+        )
 
 
 def test_group_manifest_matches_the_cases_and_is_the_required_source():
@@ -134,13 +143,20 @@ def test_group_coverage_reports_open_for_missing_or_unknown():
 
     one = CB.combination_case_index()["C01-USD-L"]
     res = CaseResult(
-        case_id=one.case_id, cls=one.cls, vector=one.vector, mode="draft",
-        boundary=one.boundary, status="PASS", expected=one.expected,
+        case_id=one.case_id,
+        cls=one.cls,
+        vector=one.vector,
+        mode="draft",
+        boundary=one.boundary,
+        status="PASS",
+        expected=one.expected,
     )
     partial = R._combination_coverage([res])
     assert partial["status"] == "PARTIAL"
     assert partial["groups"]["C01"]["status"] == "OPEN"
-    assert partial["groups"]["C01"]["missing_case_ids"], "missing case ids must be listed"
+    assert partial["groups"]["C01"]["missing_case_ids"], (
+        "missing case ids must be listed"
+    )
     assert "C01" in partial["open_groups"]
 
 
@@ -151,8 +167,13 @@ def test_group_coverage_closes_only_on_real_execution():
         status = "REJECT_OK" if spec.expected.reject else "PASS"
         results.append(
             CaseResult(
-                case_id=spec.case_id, cls=spec.cls, vector=spec.vector, mode="draft",
-                boundary=spec.boundary, status=status, expected=spec.expected,
+                case_id=spec.case_id,
+                cls=spec.cls,
+                vector=spec.vector,
+                mode="draft",
+                boundary=spec.boundary,
+                status=status,
+                expected=spec.expected,
             )
         )
     closed = R._combination_coverage(results)
@@ -184,8 +205,13 @@ def test_wrong_result_is_detected_for_every_combination_case(case_id):
     if spec.expected.reject or not spec.expected.values:
         pytest.skip(f"{case_id} asserts a rejection/unknown, not a numeric value")
     res = CaseResult(
-        case_id=spec.case_id, cls=spec.cls, vector=spec.vector, mode="draft",
-        boundary=spec.boundary, status="NOT_RUN", expected=spec.expected,
+        case_id=spec.case_id,
+        cls=spec.cls,
+        vector=spec.vector,
+        mode="draft",
+        boundary=spec.boundary,
+        status="NOT_RUN",
+        expected=spec.expected,
     )
     wrong: dict = {}
     for key, expected in spec.expected.values.items():
@@ -205,8 +231,13 @@ def test_correct_hand_values_pass_for_legal_combination_cases():
         if spec.expected.reject or not spec.expected.values:
             continue
         res = CaseResult(
-            case_id=spec.case_id, cls=spec.cls, vector=spec.vector, mode="draft",
-            boundary=spec.boundary, status="NOT_RUN", expected=spec.expected,
+            case_id=spec.case_id,
+            cls=spec.cls,
+            vector=spec.vector,
+            mode="draft",
+            boundary=spec.boundary,
+            status="NOT_RUN",
+            expected=spec.expected,
         )
         # Feed the frozen values back, and satisfy any declared unknown with null
         # (an unknown field must be present-and-null to assert honestly).
@@ -221,12 +252,23 @@ def test_legal_vector_without_assertions_is_error_not_pass():
     """A legal vector that yields no checkable assertion is a case-design error."""
     spec = CB.combination_case_index()["C01-USD-L"]
     empty = C.CaseSpec(
-        case_id="X-EMPTY", cls=spec.cls, vector="legal", boundary="no expectation",
-        kind="forecast", drivers={}, build=spec.build, expected=C._e({}),
+        case_id="X-EMPTY",
+        cls=spec.cls,
+        vector="legal",
+        boundary="no expectation",
+        kind="forecast",
+        drivers={},
+        build=spec.build,
+        expected=C._e({}),
     )
     res = CaseResult(
-        case_id="X-EMPTY", cls="C01", vector="legal", mode="draft",
-        boundary="no expectation", status="NOT_RUN", expected=empty.expected,
+        case_id="X-EMPTY",
+        cls="C01",
+        vector="legal",
+        mode="draft",
+        boundary="no expectation",
+        status="NOT_RUN",
+        expected=empty.expected,
     )
     out = _assert_values(empty, res, {})
     assert out.status == "ERROR", "an empty expectation was silently treated as PASS"
@@ -287,7 +329,7 @@ def quality_input(engine):
 
 
 def test_cross_fy_two_quarter_bridge_is_a_real_hand_identity(quality_input):
-    """FYE 09-30 with a hand-planned two-quarter bridge: 36 + 55 = 91."""
+    """Shared baseline fixture: annual drivers 36 and 90 with FYE 09-30."""
     index = {p["parameter_id"]: p for p in quality_input["parameters"]}
     assert quality_input["fiscal_year_end"] == "09-30"
     assert index["quality_q1_base"]["period"] == "FY2026"
@@ -306,26 +348,28 @@ def test_invalid_fiscal_year_end_is_refused_not_windowed(engine):
         engine.run_forecast(copy.deepcopy(data))
 
 
-def test_missing_quarter_is_never_zero_filled():
-    """q1 + q3 must not reconstruct the annual total (a gap is not a zero)."""
-    spec = CB.combination_case_index()["C02-QGAP-C"]
-    q1 = spec.drivers["quarters"]["q1"]
-    q3 = spec.drivers["quarters"]["q3"]
-    segment_b = spec.drivers["segment_b_fy2026"]
-    padded = q1 + q3 + segment_b
-    assert padded != pytest.approx(spec.drivers["annual"]["2026"]), (
-        "the zero-filled reconstruction collides with the real annual total"
+def test_missing_quarter_is_never_zero_filled(engine):
+    from revenue_core import ForecastInputError
+
+    data, _ = CB._build_quality_zero_filled()
+    derived = next(
+        p for p in data["parameters"] if p["parameter_id"] == "dated_fy2026_base"
     )
+    assert derived["input_parameter_ids"] == ["dated_post"]
+    with pytest.raises(ForecastInputError, match="composition"):
+        engine.run_forecast(data)
 
 
-def test_same_flow_added_twice_is_detectable():
-    """q1 + q2 + q2 is strictly larger than the declared annual total."""
-    spec = CB.combination_case_index()["C02-DBL-C"]
-    q1 = spec.drivers["quarters"]["q1"]
-    q2 = spec.drivers["quarters"]["q2"]
-    segment_b = spec.drivers["segment_b_fy2026"]
-    doubled = q1 + q2 + q2 + segment_b
-    assert doubled > spec.drivers["annual"]["2026"]
+def test_same_flow_added_twice_is_detectable(engine):
+    from revenue_core import ForecastInputError
+
+    data, _ = CB._build_quality_double_count()
+    derived = next(
+        p for p in data["parameters"] if p["parameter_id"] == "dated_fy2026_base"
+    )
+    assert derived["input_parameter_ids"].count("dated_tail_base") == 2
+    with pytest.raises(ForecastInputError, match="double counts"):
+        engine.run_forecast(data)
 
 
 # --- 6. C03 joint volume/price -------------------------------------------
@@ -339,12 +383,24 @@ def test_joint_shock_moves_both_legs_exactly_once():
     s = spec.drivers["shock_by_scenario"]["base"]
     joint = units * s * price * s
     assert spec.expected.values["revenue_2027"] == pytest.approx(joint)
-    assert spec.expected.values["single_leg_only_2027"] == pytest.approx(units * s * price)
-    assert spec.expected.values["double_leg_2027"] == pytest.approx(units * s * s * price * s)
+    assert spec.expected.values["single_leg_only_2027"] == pytest.approx(
+        units * s * price
+    )
+    assert spec.expected.values["double_leg_2027"] == pytest.approx(
+        units * s * s * price * s
+    )
     # The three are genuinely distinguishable, so a silent single/double shock
     # can never be mistaken for the joint path.
-    assert len({round(joint, 9), round(units * s * price, 9),
-                round(units * s * s * price * s, 9)}) == 3
+    assert (
+        len(
+            {
+                round(joint, 9),
+                round(units * s * price, 9),
+                round(units * s * s * price * s, 9),
+            }
+        )
+        == 3
+    )
 
 
 def test_joint_counter_vector_is_a_real_rejection():
@@ -388,9 +444,13 @@ def test_gross_minus_one_elimination_is_the_net_identity():
     spec = CB.combination_case_index()["C04-NET-L"]
     gross = spec.drivers["gross_2026"]
     elimination = spec.drivers["elimination_2026"]
-    assert spec.expected.values["consolidated_2026"] == pytest.approx(gross + elimination)
+    assert spec.expected.values["consolidated_2026"] == pytest.approx(
+        gross + elimination
+    )
     # Adding the new business a second time would double count.
-    assert spec.expected.values["consolidated_2026"] != pytest.approx(gross - 2 * elimination)
+    assert spec.expected.values["consolidated_2026"] != pytest.approx(
+        gross - 2 * elimination
+    )
 
 
 def test_elimination_must_be_non_positive(runtime):
@@ -411,15 +471,25 @@ def test_cumulative_counter_never_relabels_as_annual():
     spec = CB.combination_case_index()["C04-CUM-C"]
     assert "annual_total" in spec.expected.unknown_fields
     res = CaseResult(
-        case_id=spec.case_id, cls=spec.cls, vector=spec.vector, mode="draft",
-        boundary=spec.boundary, status="NOT_RUN", expected=spec.expected,
+        case_id=spec.case_id,
+        cls=spec.cls,
+        vector=spec.vector,
+        mode="draft",
+        boundary=spec.boundary,
+        status="NOT_RUN",
+        expected=spec.expected,
     )
     out = _assert_values(spec, res, {"annual_total": None})
     assert out.status == "PASS"
     # A numeric annual total where an unknown is required must fail.
     res2 = CaseResult(
-        case_id=spec.case_id, cls=spec.cls, vector=spec.vector, mode="draft",
-        boundary=spec.boundary, status="NOT_RUN", expected=spec.expected,
+        case_id=spec.case_id,
+        cls=spec.cls,
+        vector=spec.vector,
+        mode="draft",
+        boundary=spec.boundary,
+        status="NOT_RUN",
+        expected=spec.expected,
     )
     out2 = _assert_values(spec, res2, {"annual_total": 264.0})
     assert out2.status == "FAIL"
@@ -490,7 +560,11 @@ def test_every_combination_case_records_a_native_execution(case_id, engine):
     """A PASS/REJECT_OK case with no native record is NOT_RUN, never a pass."""
     spec = CB.combination_case_index()[case_id]
     res = run_case(spec, engine)
-    assert res.status in {"PASS", "REJECT_OK"}, (case_id, res.diagnostics, res.assertions)
+    assert res.status in {"PASS", "REJECT_OK"}, (
+        case_id,
+        res.diagnostics,
+        res.assertions,
+    )
     assert res.native_refs, f"{case_id} has no native execution record"
     for ref in res.native_refs:
         assert ref["entry"], "a native ref must record its real entry point"
@@ -509,8 +583,13 @@ def test_case_without_native_execution_is_not_run(runtime):
             raise AssertionError("must not be reachable in this assertion")
 
     res = CaseResult(
-        case_id=spec.case_id, cls=spec.cls, vector=spec.vector, mode="draft",
-        boundary=spec.boundary, status="NOT_RUN", expected=spec.expected,
+        case_id=spec.case_id,
+        cls=spec.cls,
+        vector=spec.vector,
+        mode="draft",
+        boundary=spec.boundary,
+        status="NOT_RUN",
+        expected=spec.expected,
     )
     # A case that produced no native execution record can never be a PASS.
     assert res.status == "NOT_RUN"
@@ -555,8 +634,13 @@ def test_report_declares_not_evaluated_and_unverified():
         status = "REJECT_OK" if spec.expected.reject else "PASS"
         results.append(
             CaseResult(
-                case_id=spec.case_id, cls=spec.cls, vector=spec.vector, mode="draft",
-                boundary=spec.boundary, status=status, expected=spec.expected,
+                case_id=spec.case_id,
+                cls=spec.cls,
+                vector=spec.vector,
+                mode="draft",
+                boundary=spec.boundary,
+                status=status,
+                expected=spec.expected,
             )
         )
     report = R.build_report(
