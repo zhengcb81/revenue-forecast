@@ -106,6 +106,52 @@ def _validate_growth_driver_parameters(
     return list(parameter_ids)
 
 
+def _shared_excerpt_relation(driver_id: str, nodes: list[dict[str, Any]],
+                             claims: dict[str, dict[str, Any]]) -> str | None:
+    """Physical evidence identity is distinct from the asserted proposition.
+
+    The machine can reject relabelling the same claim or the same explicitly
+    stated conclusion as both directions. It cannot determine whether two
+    different conclusions about a multi-fact excerpt are economically valid.
+    That remains a disclosed NOT_EVALUATED semantic review, never permission.
+    """
+    excerpts: dict[tuple[str, str], list[tuple[str, str, str]]] = {}
+    claim_directions: dict[str, set[str]] = {}
+    for node in nodes:
+        conclusion = " ".join(node["conclusion"].casefold().split())
+        direction = node["inference_distance"]
+        for cid in node["claim_ids"]:
+            claim_directions.setdefault(cid, set()).add(direction)
+            claim = claims[cid]
+            sha = claim.get("excerpt_sha256")
+            if sha:
+                key = (claim["source_id"], sha)
+                excerpts.setdefault(key, []).append((cid, direction, conclusion))
+    contradictory = {cid for cid, directions in claim_directions.items()
+                     if "contrary" in directions and len(directions) > 1}
+    shared = set()
+    for rows in excerpts.values():
+        directions = {direction for _, direction, _ in rows}
+        if "contrary" not in directions or len(directions) < 2:
+            continue
+        conclusions: dict[str, set[str]] = {}
+        for _, direction, conclusion in rows:
+            conclusions.setdefault(conclusion, set()).add(direction)
+        repeated = {conclusion for conclusion, directions in conclusions.items()
+                    if "contrary" in directions and len(directions) > 1}
+        contradictory.update(cid for cid, _, conclusion in rows if conclusion in repeated)
+        shared.update(cid for cid, _, _ in rows)
+    require(not contradictory,
+        f"{driver_id}: the same excerpt cannot support and contradict the same proposition "
+        f"(claims: {', '.join(sorted(contradictory))})")
+    if shared:
+        return (f"Growth driver {driver_id} shares a physical excerpt across different "
+                "evidence conclusions; semantic relationship NOT_EVALUATED, factual "
+                "interpretation belongs to independent economic review "
+                f"(claims: {', '.join(sorted(shared))})")
+    return None
+
+
 def _validate_growth_driver_evidence(
     driver_id: str,
     evidence_nodes: Any,
@@ -190,27 +236,7 @@ def _validate_growth_driver_evidence(
             any(node["inference_distance"] == "contrary" for node in normalized_nodes),
             f"{driver_id} found counterevidence requires a contrary evidence node",
         )
-    # The same checked excerpt cannot serve as both support and counterevidence.
-    excerpt_distances: dict[str, set[str]] = {}
-    for node in normalized_nodes:
-        for claim_id in node["claim_ids"]:
-            excerpt_sha = claim_index.get(claim_id, {}).get("excerpt_sha256")
-            if excerpt_sha:
-                excerpt_distances.setdefault(excerpt_sha, set()).add(
-                    node["inference_distance"]
-                )
-    dual_use = [
-        claim_index[next(cid for cid in node["claim_ids"]
-                         if claim_index.get(cid, {}).get("excerpt_sha256") == sha)]["claim_id"]
-        for sha in excerpt_distances
-        if "contrary" in excerpt_distances[sha] and len(excerpt_distances[sha]) > 1
-        for node in normalized_nodes
-        if any(claim_index.get(cid, {}).get("excerpt_sha256") == sha for cid in node["claim_ids"])
-    ]
-    require(
-        not dual_use,
-        f"{driver_id}: the same excerpt cannot support and contradict (claims: {', '.join(sorted(set(dual_use)))})",
-    )
+    shared_excerpt_note = _shared_excerpt_relation(driver_id, normalized_nodes, claim_index)
     # A peer analogy is a reference class, never the company's own mechanism:
     # peer-based nodes are disclosed but excluded from triangulation.
     def _is_peer_based(node: dict[str, Any]) -> bool:
@@ -294,6 +320,8 @@ def _validate_growth_driver_evidence(
                 "is disclosed but excluded from mechanism triangulation"
             )
         peer_note = f"Growth driver {driver_id}: {detail}"
+    if shared_excerpt_note:
+        peer_note = f"{peer_note}; {shared_excerpt_note}" if peer_note else shared_excerpt_note
     return normalized_nodes, evidence_types, evidence_source_ids, evidence_status, peer_note
 
 

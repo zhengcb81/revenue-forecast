@@ -234,7 +234,10 @@ def test_default_reuse_receipt_keeps_honest_empty_semantics(
     assert receipt["outcome"] == "reused_existing"
 
 
-def test_repeated_default_preparation_dedupes_demand(monkeypatch, tmp_path):
+def test_repeated_default_preparation_reuses_without_shadow_jobs(monkeypatch, tmp_path):
+    def shadow_job(*args, **kwargs):
+        raise AssertionError("RF must not submit a second processing queue")
+    monkeypatch.setattr(sp, "_submit_preparation_demand", shadow_job, raising=False)
     _tripwire_legacy(monkeypatch)
     _patch_v2_read(monkeypatch)
 
@@ -253,11 +256,8 @@ def test_repeated_default_preparation_dedupes_demand(monkeypatch, tmp_path):
             company_wiki_catalog_config=_config(tmp_path),
         )
         assert record["reuse_receipt"]["outcome"] == "reused_existing"
-    demands = sp.preparation_demands().snapshot()
-    # the process-level queue is shared across tests: pin dedupe for THIS key
-    assert [d.key for d in demands].count("src-1") == 1
-    assert demands[-1].key == "src-1"
-    assert demands[-1].kind == "source_preparation"
+    assert record["reuse_receipt"]["download_calls"] == 0
+    assert record["reuse_receipt"]["artifact_read"] == []
 
 
 def test_cli_default_forwards_catalog_config_and_tolerates_legacy_flag(

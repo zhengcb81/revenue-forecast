@@ -108,9 +108,31 @@ def finite_number(value: Any, field: str) -> float:
         isinstance(value, (int, float)) and not isinstance(value, bool),
         f"{field} must be numeric",
     )
-    number = float(value)
+    try:
+        number = float(value)
+    except OverflowError as exc:
+        raise ForecastInputError(f"{field} must be finite") from exc
     require(math.isfinite(number), f"{field} must be finite")
     return number
+
+
+# Four binary64 ULPs cover the independently reproduced proportional-cap
+# equal-path inversion. This is not a currency/scale tolerance or a revenue
+# reconciliation threshold, and never modifies an emitted number.
+SCENARIO_ORDER_MAX_ULPS = 4
+
+
+def scenario_ordered(low: float, base: float, high: float) -> bool:
+    """Check nondecreasing finite scenarios, allowing machine roundoff only."""
+    if not all(math.isfinite(value) for value in (low, base, high)):
+        return False
+
+    def ordered(left: float, right: float) -> bool:
+        return left <= right or left - right <= SCENARIO_ORDER_MAX_ULPS * max(
+            math.ulp(left), math.ulp(right),
+        )
+
+    return ordered(low, base) and ordered(base, high)
 
 
 # ---------------------------------------------------------------------------

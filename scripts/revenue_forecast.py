@@ -68,35 +68,11 @@ def main() -> int:
     )
     args = parser.parse_args()
     if args.version:
-        # R4.2: the CLI reports the manifest hash of the installation it runs
-        # from, so drift between canonical and installed copies is visible.
-        from pathlib import Path as _Path
-
-        root = _Path(__file__).resolve().parents[1]
-        # Match tools/sync_installations.py installable_files so canonical and
-        # installed copies of identical code report the same manifest hash
-        # (only the files an installation actually contains are counted).
-        _excluded_parts = {"__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache"}
-        _root_files = {".gitignore", "CHANGELOG.md", "SKILL.md"}
-        _root_directories = {"agents", "config", "references", "scripts"}
-        installable: list[Path] = [root / name for name in _root_files]
-        for directory in _root_directories:
-            base = root / directory
-            if base.is_dir():
-                installable.extend(
-                    path
-                    for path in base.rglob("*")
-                    if path.is_file()
-                    and not (set(path.relative_to(root).parts) & _excluded_parts)
-                    and path.suffix not in {".pyc", ".pyo"}
-                )
-        manifest = json.dumps(
-            sorted(path.relative_to(root).as_posix() for path in installable),
-            ensure_ascii=False,
-        )
-        import hashlib
-
-        print(f"revenue-forecast {ENGINE_VERSION} manifest_sha256={hashlib.sha256(manifest.encode('utf-8')).hexdigest()[:16]}")
+        # The shared owned-byte inventory matches the installer exactly.
+        # This is a diagnostic digest, never a publication permission token.
+        from installation_manifest import manifest_sha256
+        root = Path(__file__).resolve().parents[1]
+        print(f"revenue-forecast {ENGINE_VERSION} manifest_sha256={manifest_sha256(root)[:16]}")
         return 0
     if args.input is None:
         parser.error("the following arguments are required: input")

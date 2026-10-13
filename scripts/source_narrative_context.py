@@ -14,6 +14,7 @@ from company_wiki_narrative_reader import read_narrative_context
 from contracts.evidence import text_sha256
 from contracts.source_clock import utc_timestamp
 from forecast.calc import collect_parameter_roles
+from forecast.dependencies import parameter_formula_refs
 
 
 def _read_time(value: dict) -> str:
@@ -53,25 +54,7 @@ def _source_locator(span: dict, *, projected: bool) -> str:
 
 
 def _formula_refs(data: dict, parameter_id: str, index: dict) -> list[dict]:
-    """Trace an input through derived inputs into actual segment driver formulas."""
-    def depends(identifier, seen):
-        if identifier == parameter_id:
-            return True
-        if identifier in seen:
-            return False
-        parameter = index.get(identifier, {})
-        inputs = parameter.get("input_parameter_ids", [])
-        return any(depends(child, seen | {identifier}) for child in inputs)
-
-    refs = []
-    for segment in data.get("segments", []):
-        for scenario, config in segment.get("scenarios", {}).items():
-            for driver, ids in config.get("driver_parameter_ids", {}).items():
-                if any(depends(identifier, set()) for identifier in ids):
-                    refs.append({"segment": segment["name"], "scenario": scenario,
-                                 "model": config["model"], "driver": driver,
-                                 "output": "recognized_revenue"})
-    return refs
+    return parameter_formula_refs(data, parameter_id, index)
 
 
 def _claim(binding: dict, span: dict, source: dict, verified_date: str, verified_by: str, *, projected: bool = False) -> dict:

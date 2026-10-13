@@ -13,6 +13,7 @@ from contracts.evidence import (
     require,
 )
 from contracts.document import validate_historical_accuracy_records
+from forecast.dependencies import segment_parameter_uses
 
 
 CONFIDENCE_CALCULATION_VERSION = "stable-fsum/1"
@@ -39,14 +40,7 @@ def parameter_revenue_weights(
                 )[-1]
             )
         )
-        refs: set[str] = set()
-        for ids in segment["scenarios"]["base"]["driver_parameter_ids"].values():
-            refs.update(ids)
-        recognition = segment["recognition"]
-        for container in ("carry_in_parameter_ids", "progress_parameter_ids"):
-            values = recognition.get(container, {})
-            if isinstance(values, dict):
-                refs.update(values.get("base", []))
+        refs = {use.parameter_id for use in segment_parameter_uses(data, segment, "base")}
         if refs:
             for parameter_id in sorted(refs):
                 contributions[parameter_id].append(terminal / len(refs))

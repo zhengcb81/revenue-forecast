@@ -30,6 +30,7 @@ from revenue_core import (
     validate_growth_driver_tree,
     validate_source_capture,
 )
+from contracts.evidence import scenario_ordered
 from analysis.confidence import validate_confidence_recomputation
 from contracts.annual_consumption import validate_annual_consumption
 from forecast.calc import opening_base_bridge, scenario_forecast_parameter_ids
@@ -598,9 +599,9 @@ def _validate_forecast_output(
             )
         for year in years:
             require(
-                segment["scenarios"]["low"]["recognized_revenue"][year]
-                <= segment["scenarios"]["base"]["recognized_revenue"][year]
-                <= segment["scenarios"]["high"]["recognized_revenue"][year],
+                scenario_ordered(segment["scenarios"]["low"]["recognized_revenue"][year],
+                                 segment["scenarios"]["base"]["recognized_revenue"][year],
+                                 segment["scenarios"]["high"]["recognized_revenue"][year]),
                 f"segment scenario ordering mismatch: {segment['name']}/{year}",
             )
 
@@ -661,9 +662,9 @@ def _validate_forecast_output(
     for segment in result["segments"]:
         for year in years:
             require(
-                effective_path(segment, "low")[year]
-                <= effective_path(segment, "base")[year]
-                <= effective_path(segment, "high")[year],
+                scenario_ordered(effective_path(segment, "low")[year],
+                                 effective_path(segment, "base")[year],
+                                 effective_path(segment, "high")[year]),
                 f"segment effective scenario ordering mismatch: {segment['name']}/{year}",
             )
     require(
@@ -673,9 +674,9 @@ def _validate_forecast_output(
     _recompute_consolidated_paths(consolidated, years, segment_index, base, effective_path)
     for year in years:
         require(
-            consolidated["low"]["annual_revenue"][year]
-            <= consolidated["base"]["annual_revenue"][year]
-            <= consolidated["high"]["annual_revenue"][year],
+            scenario_ordered(consolidated["low"]["annual_revenue"][year],
+                             consolidated["base"]["annual_revenue"][year],
+                             consolidated["high"]["annual_revenue"][year]),
             f"scenario ordering mismatch in output/{year}",
         )
     weighted = result.get("probability_weighted_forecast")

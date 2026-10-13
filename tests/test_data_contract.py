@@ -217,10 +217,12 @@ def finalize_contract(data: dict) -> dict:
             if isinstance(base_scenario, dict)
             else {}
         )
-        parameter_ids = [
-            parameter_id for ids in driver_map.values() for parameter_id in ids
-        ]
         recognition = segment.get("recognition", {})
+        lag = recognition.get("lag_years", 0) if recognition.get("mode") == "lagged_activity" else 0
+        parameter_ids = [
+            parameter_id for ids in driver_map.values()
+            for parameter_id in (ids[:-lag] if lag else ids)
+        ]
         for container in ("carry_in_parameter_ids", "progress_parameter_ids"):
             scenario_map = (
                 recognition.get(container, {}) if isinstance(recognition, dict) else {}

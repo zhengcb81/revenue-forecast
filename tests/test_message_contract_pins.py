@@ -8,7 +8,7 @@ for the message contracts the OPEN5-DOUBT-PROBE sweep (evidence
 turns these tests red instead of passing silently:
 
   #2  the former review block is superseded by verified-byte consumption;
-  #5  the six demand/claim refusal texts (RF + CW processing_demand.py) —
+  #5  the six demand/claim refusal texts (archived RF + CW processing_demand.py) —
       verbatim behavior pins AND cross-repo (RF/CW) equality (逐字同文);
   #8  the "{field} must be a lowercase SHA-256" family — verbatim behavior pins;
   #9  the parser/llm counts fail-closed sentence — verbatim.
@@ -48,6 +48,7 @@ if not _CW_DEFAULT.is_dir():  # lanes worktree layout: sibling under ~/Projects
     _CW_DEFAULT = Path.home() / "Projects" / "company-wiki" / "src" / "company_wiki" / "source_catalog"
 
 RF_SCRIPTS = Path(os.environ.get("GAPS_PIN_RF_SCRIPTS", _RF_DEFAULT))
+RF_DEMAND = ROOT / "tools" / "legacy" / "processing_demand.py"
 CW_DIR = Path(os.environ.get("GAPS_PIN_CW_DIR", _CW_DEFAULT))
 
 COUNTS_SENTENCE = (
@@ -78,7 +79,7 @@ def _load_module(name: str, path: Path):
 
 
 def _load_rf_demand():
-    return _load_module(f"pin_rf_demand_{id(object())}", RF_SCRIPTS / "processing_demand.py")
+    return _load_module(f"pin_rf_demand_{id(object())}", RF_DEMAND)
 
 
 def _drive_six_refusals(mod) -> dict:
@@ -181,7 +182,7 @@ def test_six_refusal_sources_verbatim_identical():
     for _, verbatim in REFUSAL_CONTRACT.values():
         rendered_literal = verbatim.split(" '")[0] if "'" in verbatim else verbatim
         # both repos must contain the same source-level message text
-        rf_src = (RF_SCRIPTS / "processing_demand.py").read_text(encoding="utf-8")
+        rf_src = (RF_DEMAND).read_text(encoding="utf-8")
         cw_src = (CW_DIR / "processing_demand.py").read_text(encoding="utf-8")
         token = {
             "no demand 'pd-x'": "no demand {demand_id!r}",
@@ -235,7 +236,7 @@ def test_cases_json_declared_expectation_missing_absent_in_product():
 def test_resume_refusal_surface_structurally_absent():
     mod = _load_rf_demand()
     assert not hasattr(mod.DemandQueue, "resume")  # OPEN-5 C4: pending instantiation
-    for path in (RF_SCRIPTS / "processing_demand.py",
+    for path in (RF_DEMAND,
                  CW_DIR / "processing_demand.py"):
         if path.is_file():
             assert "def resume" not in path.read_text(encoding="utf-8")

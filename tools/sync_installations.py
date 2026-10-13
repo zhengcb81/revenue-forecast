@@ -37,17 +37,21 @@ import hashlib
 import json
 import os
 import shutil
+import sys
 import tempfile
 from pathlib import Path, PurePosixPath
 
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from installation_manifest import (  # noqa: E402
+    IGNORED_PARTS as IGNORED_PARTS,
+    ROOT_DIRECTORIES as ROOT_DIRECTORIES,
+    ROOT_FILES as ROOT_FILES,
+    installable_files as installable_files,
+    manifest as manifest,
+)
+
 SKILL_NAME = "revenue-forecast"
-ROOT_FILES = (".gitignore", "CHANGELOG.md", "SKILL.md")
-# The runtime closure of the skill entry points.  ``tests/`` is deliberately
-# absent: the repository's engineering tests read repo-only ``tools/`` and
-# are not part of a distribution package.
-ROOT_DIRECTORIES = ("agents", "config", "references", "scripts")
-IGNORED_PARTS = {"__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache"}
 PRESERVED_INSTALLATION_DIRECTORIES = {"output"}
 # Phase 6 B3 (F-08): every supported install root is a default check target so
 # a drift in any one of them cannot be silently missed.
@@ -69,38 +73,6 @@ class ScopeError(ValueError):
 
 class _SourceChangedError(Exception):
     """The bytes read from the canonical source changed during this operation."""
-
-
-def installable_files(root: Path) -> list[Path]:
-    """Return the closed set of files this skill package owns.
-
-    That set is the runtime closure of the skill's entry points: the root
-    files plus ``agents/``, ``config/``, ``references/`` and ``scripts/``.
-    Repository-only engineering controls are never part of it.
-    """
-    files = [root / name for name in ROOT_FILES]
-    for directory in ROOT_DIRECTORIES:
-        base = root / directory
-        if not base.is_dir():
-            raise FileNotFoundError(f"missing installable directory: {base}")
-        files.extend(
-            path
-            for path in base.rglob("*")
-            if path.is_file()
-            and not (set(path.relative_to(root).parts) & IGNORED_PARTS)
-            and path.suffix not in {".pyc", ".pyo"}
-        )
-    missing = [path for path in files if not path.is_file()]
-    if missing:
-        raise FileNotFoundError(f"missing installable file: {missing[0]}")
-    return sorted(set(files))
-
-
-def manifest(root: Path) -> dict[str, str]:
-    return {
-        path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
-        for path in installable_files(root)
-    }
 
 
 def _installed_manifest(root: Path) -> dict[str, str]:

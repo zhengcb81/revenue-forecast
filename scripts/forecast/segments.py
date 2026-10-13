@@ -18,6 +18,7 @@ from contracts.evidence import (
     ForecastInputError,
     period_year,
     require,
+    scenario_ordered,
 )
 from forecast.calc import (
     _optional_series,
@@ -571,7 +572,7 @@ def add_scenario_analysis(
                 "effective_revenue", segment["scenarios"]["high"]["recognized_revenue"]
             )[year]
             require(
-                low <= base <= high,
+                scenario_ordered(low, base, high),
                 f"segment scenario ordering failed for {segment['name']}/{year}",
             )
     for year in map(str, years):
@@ -579,7 +580,7 @@ def add_scenario_analysis(
         base = consolidated["base"]["annual_revenue"][year]
         high = consolidated["high"]["annual_revenue"][year]
         require(
-            low <= base <= high,
+            scenario_ordered(low, base, high),
             f"scenario ordering failed in {year}: low <= base <= high is required",
         )
     probabilities = validate_scenario_probabilities(data, validated)

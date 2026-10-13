@@ -28,11 +28,17 @@ class ModelSpec:
     formula: str
     calculator: Calculator
     driver_bounds: Mapping[str, tuple[float | None, float | None]] = field(default_factory=dict)
+    cumulative_drivers: frozenset[str] = frozenset()
+    consumes_base_revenue: bool = False
 
     def __post_init__(self) -> None:
         if not self.model_id.strip():
             raise ModelRegistryError("revenue model_id is required")
         drivers = self.required + self.optional
+        if not self.cumulative_drivers <= set(drivers):
+            raise ModelRegistryError(f"cumulative driver is not registered: {self.model_id}")
+        if type(self.consumes_base_revenue) is not bool:
+            raise ModelRegistryError(f"base dependency must be boolean: {self.model_id}")
         if len(drivers) != len(set(drivers)):
             raise ModelRegistryError(f"duplicate driver in revenue model: {self.model_id}")
         if set(self.dimensions) != set(drivers):
@@ -58,6 +64,7 @@ class ModelSpec:
                 raise ModelRegistryError(f"default must be finite numeric: {self.model_id}.{driver}")
         if not self.formula.strip() or not callable(self.calculator):
             raise ModelRegistryError(f"formula and calculator are required: {self.model_id}")
+        object.__setattr__(self, "cumulative_drivers", frozenset(self.cumulative_drivers))
         object.__setattr__(self, "defaults", MappingProxyType(dict(self.defaults)))
         object.__setattr__(self, "dimensions", MappingProxyType(dict(self.dimensions)))
         object.__setattr__(self, "driver_bounds", MappingProxyType({
@@ -203,6 +210,8 @@ def _spec(
     defaults: Mapping[str, float] | None = None,
     ratio_drivers: Iterable[str] = (),
     driver_bounds: Mapping[str, tuple[float | None, float | None]] | None = None,
+    cumulative_drivers: Iterable[str] = (),
+    consumes_base_revenue: bool = False,
 ) -> ModelSpec:
     return ModelSpec(
         model_id=model_id,
@@ -214,11 +223,13 @@ def _spec(
         formula=formula,
         calculator=calculator,
         driver_bounds=driver_bounds or {},
+        cumulative_drivers=frozenset(cumulative_drivers),
+        consumes_base_revenue=consumes_base_revenue,
     )
 
 
 MODEL_REGISTRY = build_registry([
-    _spec("direct_growth", ("growth_rate",), (), {"growth_rate": "ratio"}, "revenue[t] = revenue[t-1] * (1 + growth_rate[t])", _direct_growth),
+    _spec("direct_growth", ("growth_rate",), (), {"growth_rate": "ratio"}, "revenue[t] = revenue[t-1] * (1 + growth_rate[t])", _direct_growth, cumulative_drivers=("growth_rate",), consumes_base_revenue=True),
     _spec("direct_revenue", ("revenue",), (), {"revenue": "revenue"}, "revenue[t] = direct_revenue[t]", _direct_revenue),
     _spec("unit_sales", ("units", "unit_revenue"), ("timing_factor", "other_revenue"), {"units": "quantity", "unit_revenue": "revenue_per_unit", "timing_factor": "ratio", "other_revenue": "revenue"}, "revenue = units * unit_revenue * timing_factor + other_revenue", _rowwise(lambda d: d["units"] * d["unit_revenue"] * d["timing_factor"] + d["other_revenue"]), defaults={"timing_factor": 1.0}, ratio_drivers=("timing_factor",)),
     _spec("capacity_utilization", ("capacity", "utilization", "yield", "unit_revenue"), ("timing_factor", "other_revenue"), {"capacity": "quantity", "utilization": "ratio", "yield": "ratio", "unit_revenue": "revenue_per_unit", "timing_factor": "ratio", "other_revenue": "revenue"}, "revenue = capacity * utilization * yield * unit_revenue * timing_factor + other_revenue", _rowwise(lambda d: d["capacity"] * d["utilization"] * d["yield"] * d["unit_revenue"] * d["timing_factor"] + d["other_revenue"]), defaults={"timing_factor": 1.0}, ratio_drivers=("utilization", "yield", "timing_factor")),

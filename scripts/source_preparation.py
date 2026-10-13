@@ -33,21 +33,8 @@ FILING_FETCH_CLIENT = PROJECT_ROOT / "scripts" / "filing_fetch_client.py"
 
 import company_wiki_source  # noqa: E402
 from filing_upstream_cause import failure_observation, parse_error_document, safe_failure_message, validated_source_failure_reason  # noqa: E402
-from processing_demand import DemandQueue  # noqa: E402
 from filing_fetch_client import select_filing  # noqa: E402
 from source_period_semantics import valid_fiscal_year  # noqa: E402
-
-# ZR-701: source preparation submits one demand per prepared source (key =
-# the source record's sha-256 identity) so schedulers/consumers can claim,
-# heartbeat and complete the work under the shared ProcessingDemand
-# contract.  In-memory queue (persistence is a later phase).
-_preparation_demands = DemandQueue()
-
-
-def preparation_demands() -> DemandQueue:
-    """The process-level demand queue (test-visible)."""
-    return _preparation_demands
-
 
 def _read_deadline(timeout_seconds: float) -> float:
     if (isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, (int, float))
@@ -61,19 +48,6 @@ def _remaining_timeout(deadline: float) -> float:
     if remaining <= 0:
         raise RuntimeError("source_preparation_deadline_exhausted: no time remains for the next public read")
     return remaining
-
-
-def _demand_key(record: dict) -> str:
-    """Stable demand key for one prepared source (keeps prepare_source
-    within the frozen complexity ratchet)."""
-    return str(record.get("source_id") or record.get("source_sha256") or "")
-
-
-def _submit_preparation_demand(record: dict) -> None:
-    """ZR-701: enqueue one deduped processing demand per prepared source."""
-    source_key = _demand_key(record)
-    if source_key:
-        _preparation_demands.enqueue(key=source_key, kind="source_preparation", now=0.0)
 
 
 def _read_request(request_file: str | None) -> dict:
@@ -313,7 +287,6 @@ def _prepare_source_ref_v2(
         "artifact_read_events": [],
         "artifact_failed_events": [],
     }
-    _submit_preparation_demand(record)
     return record
 
 
@@ -374,7 +347,6 @@ def _prepare_legacy_source(request: dict, handle: dict) -> dict:
         "artifact_read_events": artifact_read_events,
         "artifact_failed_events": artifact_failed_events,
     }
-    _submit_preparation_demand(record)
     return record
 
 

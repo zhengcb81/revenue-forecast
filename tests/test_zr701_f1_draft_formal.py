@@ -1,14 +1,13 @@
 """ZR-701 acceptance tests (phase F1 entry): explicit Draft/Formal
-artifacts + pure prepare_forecast + ProcessingDemand submission.
+artifacts + pure prepare_forecast + source preparation; queue replay is historical.
 
   C1  prepare_forecast is a pure function (deterministic, no IO).
   C2  --validate-only writes nothing (no output/markdown files, no
       publication-registry append).
   C3  publication registry distinguishes draft (unvalidated) from formal
       (validated) entries.
-  C4  source preparation submits a ProcessingDemand (contract identical
-      to company-wiki ZR-507: key dedupe / claim lease / heartbeat /
-      complete / fail backoff / expire); prepare_source enqueues.
+  C4  historical ProcessingDemand semantics replay only; source preparation
+      reuses verified sources without another mutable task queue.
   C5  atomic publication: formal registry entries bind payload sha.
 """
 
@@ -26,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "tests"))
 
-import processing_demand  # noqa: E402
+from tools.legacy import processing_demand  # noqa: E402
 import publication_registry  # noqa: E402
 import revenue_forecast  # noqa: E402
 import source_preparation  # noqa: E402
@@ -163,8 +162,8 @@ def test_c4_demand_contract_matches_wiki_semantics():
         queue.claim(owner="w1", now=10.0)  # in backoff until 11
 
 
-def test_c4_prepare_source_enqueues_demand(tmp_path, monkeypatch):
-    """P5-RF: the v2 default path enqueues the same deduped demand."""
+def test_c4_prepare_source_keeps_only_the_public_reuse_result(tmp_path, monkeypatch):
+    """CWP owns processing; RF returns actual reuse without local shadow jobs."""
     import company_wiki_source_reader_v2 as reader_v2
     import company_wiki_source_v2 as builder_v2
 
@@ -232,19 +231,13 @@ def test_c4_prepare_source_enqueues_demand(tmp_path, monkeypatch):
         company_wiki_catalog_config=config,
     )
     assert record["source_id"] == "src-abc"
-    demands = source_preparation.preparation_demands().snapshot()
-    assert [d.key for d in demands].count("src-abc") == 1
-    assert demands[-1].key == "src-abc"
-    assert demands[-1].kind == "source_preparation"
-    # repeated preparation dedupes
-    source_preparation.prepare_source(
-        request,
-        timeout_seconds=30.0,
-        company_wiki_catalog_config=config,
+    assert record["reuse_receipt"]["download_calls"] == 0
+    assert record["reuse_receipt"]["outcome"] == "reused_existing"
+    repeated = source_preparation.prepare_source(
+        request, timeout_seconds=30.0, company_wiki_catalog_config=config,
     )
-    assert [d.key for d in
-            source_preparation.preparation_demands().snapshot()].count(
-                "src-abc") == 1
+    assert repeated == record
+    assert repeated["reuse_receipt"]["artifact_read"] == []
 
 
 # ---------------------------------------------------------------------------

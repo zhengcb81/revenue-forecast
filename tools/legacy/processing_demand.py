@@ -1,4 +1,6 @@
-"""ZR-701: ProcessingDemand API for revenue — same contract as the
+"""Historical RF queue contract fixture, never shipped or used by RF runtime.
+
+ZR-701 archived ProcessingDemand contract — same contract as the
 company-wiki ZR-507 implementation (pure in-memory, clock injected,
 zero IO), so source preparation submits demands under one shared
 semantic: enqueue dedupes by key, claim grants a lease, heartbeat

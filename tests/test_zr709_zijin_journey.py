@@ -745,10 +745,10 @@ def test_j1_missing_document_fails_closed_into_tracked_demand(tmp_path):
     assert payload["error_code"] == "upstream"
 
     # 补齐路径 = 显式 ProcessingDemand（claim → heartbeat → complete），
-    # 缺口被跟踪而不是用编造数据填补。prepare_source → preparation_demands()
+    # 缺口被跟踪而不是用编造数据填补。历史队列 fixture（不再由 prepare_source 生产创建）
     # 的提交接线已由 ZR-701 C4 钉住；这里用全新本地队列验证租约语义，
     # 不触碰进程级共享队列（保持测试顺序无关）。
-    import processing_demand  # noqa: PLC0415
+    from tools.legacy import processing_demand  # noqa: PLC0415
 
     queue = processing_demand.DemandQueue(
         lease_seconds=10.0, max_attempts=2, backoff_base=5.0

@@ -5,39 +5,27 @@ not revalidate sources, infer business semantics or create another registry.
 """
 from __future__ import annotations
 from typing import Any
-from forecast.calc import _expand_derived_inputs
+from forecast.dependencies import effective_segment_dependencies, expand_derived_inputs, segment_parameter_uses, series_parameter_ids
 
 
 def ancestry(parameter_ids, parameters):
-    return _expand_derived_inputs(set(parameter_ids), parameters)
+    return expand_derived_inputs(parameter_ids, parameters)
 
 
 def _period_ids(mapping, scenario, year, years):
-    ids = mapping.get(scenario, []) if isinstance(mapping, dict) else []
-    return [ids[years.index(year)]] if year in years and len(ids) == len(years) else []
+    return series_parameter_ids(mapping, scenario, year, years)
 
 
 def segment_roots(data, segment, scenario, year):
-    """Unexpanded revenue roots (driver and recognition IDs) of one segment cell.
-
-    These are the revenue-bearing parameters of that segment/scenario/year; the
-    expanded ancestry is available through :func:`segment_ancestry`.
-    """
-    years = data["forecast_years"]
-    if year not in years:
-        return []
-    drivers = segment.get("scenarios", {}).get(scenario, {}).get("driver_parameter_ids", {})
-    roots = [ids[years.index(year)] for ids in drivers.values() if len(ids) == len(years)]
-    recognition = segment.get("recognition", {})
-    roots.extend(_period_ids(recognition.get("progress_parameter_ids", {}), scenario, year, years))
-    roots.extend(_period_ids(recognition.get("carry_in_parameter_ids", {}), scenario, year, years))
-    return roots
+    """Direct INPUT-clock roots (activity or recognition inputs), not final cells."""
+    return [use.parameter_id for use in segment_parameter_uses(data, segment, scenario)
+            if use.year == year]
 
 
 def direct_parameter_cells(
     data: dict[str, Any], parameter_id: str, *, scope: str, scenario: str
 ) -> list[tuple[str, str, str]]:
-    """Actual direct revenue/recognition consumers, without flattening a bridge.
+    """Actual direct native INPUT-clock consumers, without flattening a bridge.
 
     A downstream derived FY2027 node may legitimately consume an FY2026
     intermediate. Only a direct root claims to describe that cell itself;
@@ -47,20 +35,25 @@ def direct_parameter_cells(
     for segment in data.get("segments", []):
         if scope not in {data.get("company_name"), segment["name"]}:
             continue
-        for year in data["forecast_years"]:
-            if parameter_id in segment_roots(data, segment, scenario, year):
-                cells.append((segment["name"], scenario, f"FY{year}"))
+        used_years = {u.input_year for u in segment_parameter_uses(data, segment, scenario)
+                      if u.parameter_id == parameter_id}
+        cells.extend((segment["name"], scenario, f"FY{year}")
+                     for year in data["forecast_years"] if year in used_years)
     return cells
 
 
 def segment_ancestry(data, parameters, segment, scenario, year):
-    return ancestry(segment_roots(data, segment, scenario, year), parameters)
+    cells = effective_segment_dependencies(data, scenario).get(segment["name"], {})
+    roots = cells[year].value_parameter_ids if year in cells else set()
+    return ancestry(roots, parameters)
 
 
 def scope_components(data, parameters, scope, scenario, year):
     segments = [s for s in data.get("segments", [])
                 if scope["type"] == "company" or s["name"] == scope["name"]]
-    components = {s["name"]: segment_ancestry(data, parameters, s, scenario, year) for s in segments}
+    graph = effective_segment_dependencies(data, scenario)
+    components = {s["name"]: ancestry(graph[s["name"]][year].value_parameter_ids, parameters)
+                  for s in segments if year in graph[s["name"]]}
     if scope["type"] == "company":
         for adjustment in data.get("forecast_adjustments", []):
             roots = _period_ids(adjustment.get("scenario_parameter_ids", {}), scenario, year, data["forecast_years"])
@@ -71,11 +64,14 @@ def scope_components(data, parameters, scope, scenario, year):
 
 def parameter_scopes(data, parameters, pid):
     scopes = set()
-    for segment in data.get("segments", []):
-        for scenario in segment.get("scenarios", {}):
-            for year in data.get("forecast_years", []):
-                if pid in segment_ancestry(data, parameters, segment, scenario, year):
-                    scopes.add(segment["name"])
+    scenarios = {scenario for segment in data.get("segments", [])
+                 for scenario in segment.get("scenarios", {})}
+    for scenario in scenarios:
+        graph = effective_segment_dependencies(data, scenario)
+        for name, cells in graph.items():
+            if any(pid in ancestry(cell.value_parameter_ids, parameters)
+                   for cell in cells.values()):
+                scopes.add(name)
     return scopes
 
 

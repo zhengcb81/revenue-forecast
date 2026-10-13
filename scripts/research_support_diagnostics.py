@@ -2,8 +2,10 @@
 """Read-only economic support diagnostics (economic-support-diagnostics/1).
 
 Reads one native forecast input, validates it and reports, for every
-segment x year x scenario, whether the revenue-bearing parameters are
-covered by a referenced-range calibration. Independent observed-range
+segment x native INPUT year x scenario, whether the operating-model and
+recognition inputs are covered by a referenced-range calibration. Input cells
+are not final recognized/effective output cells; lagged activity uses a separate
+recognized clock in forecast.dependencies. Independent observed-range
 endpoints may sit outside the revenue DAG; actual conversions and outputs
 must bind to the real native business scope and period.
 

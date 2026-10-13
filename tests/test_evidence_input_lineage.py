@@ -539,7 +539,7 @@ class PeerTriangulationEngineTests(unittest.TestCase):
 
 
 class CounterevidenceMixingTests(unittest.TestCase):
-    def test_same_excerpt_cannot_support_and_contradict(self) -> None:
+    def test_same_proposition_cannot_support_and_contradict(self) -> None:
         data = forecast_document()
         excerpt = "Order intake grew 10 percent year over year."
         for claim_id, node_id in (("claim_mix_support", "node_support"), ("claim_mix_contra", "node_contra")):
@@ -581,10 +581,10 @@ class CounterevidenceMixingTests(unittest.TestCase):
                 "persistence_rationale": "Spans the horizon.",
                 "evidence_nodes": [
                     {"evidence_id": "node_support", "evidence_type": "company_execution",
-                     "inference_distance": "direct", "conclusion": "Supports.",
+                     "inference_distance": "direct", "conclusion": "Order intake grew 10 percent year over year.",
                      "claim_ids": ["claim_mix_support"]},
                     {"evidence_id": "node_contra", "evidence_type": "company_execution",
-                     "inference_distance": "contrary", "conclusion": "Contradicts.",
+                     "inference_distance": "contrary", "conclusion": "Order intake grew 10 percent year over year.",
                      "claim_ids": ["claim_mix_contra"]},
                 ],
                 "leading_indicators": ["order intake"],

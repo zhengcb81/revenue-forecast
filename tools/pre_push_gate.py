@@ -71,6 +71,9 @@ def _run(
 
 
 SMOKE_TESTS = (
+    "tests/test_architecture_dependency_uses.py",
+    "tests/test_architecture_numeric_errors.py",
+    "tests/test_shared_excerpt_claim_semantics.py",
     "tests/test_m3_acquisition_usage_acceptance.py",
     "tests/test_m3_period_flow_consumers.py",
     "tests/test_m3_period_flow_annual_consumers.py",

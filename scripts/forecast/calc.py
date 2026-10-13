@@ -15,7 +15,7 @@ from contracts.evidence import (
 )
 from model_registry import MODEL_DRIVER_DIMENSIONS, driver_value_bounds
 from model_extensions import EXTENSION_OPENING_BALANCES
-from revenue_constraints import constraint_parameter_ids
+from forecast.dependencies import effective_segment_dependencies, expand_derived_inputs, parameter_uses
 
 
 def _evaluate_formula_node(node: ast.AST, variables: dict[str, float]) -> float:
@@ -60,11 +60,13 @@ def evaluate_derived_formula(formula: str, inputs: list[float]) -> float:
         parsed = ast.parse(formula, mode="eval")
     except SyntaxError as exc:
         raise ForecastInputError("derived formula is not valid arithmetic") from exc
-    value = _evaluate_formula_node(
-        parsed, {f"x{index}": number for index, number in enumerate(inputs)}
-    )
-    require(math.isfinite(value), "derived formula result must be finite")
-    return value
+    try:
+        value = _evaluate_formula_node(
+            parsed, {f"x{index}": number for index, number in enumerate(inputs)}
+        )
+    except ArithmeticError as exc:
+        raise ForecastInputError("derived formula arithmetic is invalid") from exc
+    return finite_number(value, "derived formula result")
 
 
 def parameter_values(
@@ -148,37 +150,15 @@ def calculate_cagr(base: float, terminal: float, years: int) -> float | None:
 
 
 def referenced_parameter_ids(data: dict[str, Any], scenario: str) -> set[str]:
-    referenced: set[str] = set()
-    for segment in data["segments"]:
-        scenario_input = segment["scenarios"][scenario]
-        for ids in scenario_input["driver_parameter_ids"].values():
-            referenced.update(ids)
-        recognition = segment["recognition"]
-        if recognition.get("mode") == "lagged_activity":
-            referenced.update(recognition["carry_in_parameter_ids"][scenario])
-        progress = recognition.get("progress_parameter_ids")
-        if isinstance(progress, dict):
-            referenced.update(progress.get(scenario, []))
-    for adjustment in data.get("forecast_adjustments", []):
-        referenced.update(adjustment["scenario_parameter_ids"][scenario])
-    return referenced
+    return {use.parameter_id for use in parameter_uses(data, scenario)
+            if use.kind != "constraint"}
 
 
 def scenario_forecast_parameter_ids(
     data: dict[str, Any], scenario: str, parameter_index: dict[str, dict[str, Any]]
 ) -> set[str]:
-    """Follow the native inputs consumed by one scenario, including constraints."""
-    def project(value: Any) -> Any:
-        if isinstance(value, dict):
-            if value and set(value) <= {"low", "base", "high"}:
-                return project(value.get(scenario, []))
-            return {key: project(child) for key, child in value.items()}
-        if isinstance(value, list):
-            return [project(child) for child in value]
-        return value
-
-    roots = referenced_parameter_ids(data, scenario)
-    roots.update(constraint_parameter_ids(project(data.get("revenue_constraints", []))))
+    """Follow native inputs in one scenario without mixing constraint scenarios."""
+    roots = {use.parameter_id for use in parameter_uses(data, scenario)}
     return _expand_derived_inputs(roots & parameter_index.keys(), parameter_index)
 
 
@@ -312,18 +292,8 @@ def _listed_parameter_ids(value: Any) -> set[str]:
 def _expand_derived_inputs(
     parameter_ids: set[str], parameter_index: dict[str, dict[str, Any]]
 ) -> set[str]:
-    expanded = set(parameter_ids)
-    pending = list(parameter_ids)
-    while pending:
-        parameter_id = pending.pop()
-        parameter = parameter_index.get(parameter_id)
-        if not parameter or parameter.get("kind") != "derived_fact":
-            continue
-        for input_id in parameter.get("input_parameter_ids", []):
-            if input_id not in expanded:
-                expanded.add(input_id)
-                pending.append(input_id)
-    return expanded
+    """Compatibility alias for the shared iterative native ancestry visitor."""
+    return expand_derived_inputs(parameter_ids, parameter_index)
 
 
 def _collect_segment_foundation(
@@ -342,49 +312,6 @@ def _collect_segment_foundation(
             foundation.add(value)
 
 
-def _collect_parameter_map(
-    container: dict[str, Any], field: str, forecast: set[str],
-) -> None:
-    parameter_map = container.get(field, {})
-    if isinstance(parameter_map, dict):
-        for ids in parameter_map.values():
-            forecast.update(_listed_parameter_ids(ids))
-
-
-def _collect_scenario_drivers(segment: dict[str, Any], forecast: set[str]) -> None:
-    scenarios = segment.get("scenarios", {})
-    if not isinstance(scenarios, dict):
-        return
-    for scenario in scenarios.values():
-        if not isinstance(scenario, dict):
-            continue
-        _collect_parameter_map(scenario, "driver_parameter_ids", forecast)
-
-
-def _collect_recognition_drivers(segment: dict[str, Any], forecast: set[str]) -> None:
-    recognition = segment.get("recognition", {})
-    if not isinstance(recognition, dict):
-        return
-    _collect_parameter_map(recognition, "carry_in_parameter_ids", forecast)
-    _collect_parameter_map(recognition, "progress_parameter_ids", forecast)
-
-
-def _collect_segment_roles(
-    segment: Any, foundation: set[str], forecast: set[str],
-) -> None:
-    if not isinstance(segment, dict):
-        return
-    _collect_segment_foundation(segment, foundation)
-    _collect_scenario_drivers(segment, forecast)
-    _collect_recognition_drivers(segment, forecast)
-
-
-def _collect_adjustment_roles(adjustment: Any, forecast: set[str]) -> None:
-    if not isinstance(adjustment, dict):
-        return
-    _collect_parameter_map(adjustment, "scenario_parameter_ids", forecast)
-
-
 def collect_parameter_roles(
     data: dict[str, Any], parameter_index: dict[str, dict[str, Any]]
 ) -> dict[str, set[str]]:
@@ -399,11 +326,9 @@ def collect_parameter_roles(
         _listed_parameter_ids(data.get("base_adjustment_parameter_ids", []))
     )
     for segment in data.get("segments", []):
-        _collect_segment_roles(segment, foundation, forecast)
-    for adjustment in data.get("forecast_adjustments", []):
-        _collect_adjustment_roles(adjustment, forecast)
-
-    forecast.update(constraint_parameter_ids(data.get("revenue_constraints", [])))
+        if isinstance(segment, dict):
+            _collect_segment_foundation(segment, foundation)
+    forecast.update(use.parameter_id for use in parameter_uses(data))
     foundation = _expand_derived_inputs(foundation, parameter_index)
     forecast = _expand_derived_inputs(forecast, parameter_index)
     return {
@@ -420,54 +345,11 @@ def base_forecast_parameter_ids(
     return scenario_forecast_parameter_ids(data, "base", parameter_index)
 
 
-def _add_segment_name(names: set[str], value: Any) -> None:
-    if isinstance(value, str):
-        names.add(value)
-
-
 def base_segment_parameter_ids(
     data: dict[str, Any], parameter_index: dict[str, dict[str, Any]]
 ) -> dict[str, set[str]]:
-    """Map Base-path parameters to the segment revenue paths they can affect."""
-    segment_parameters: dict[str, set[str]] = {}
-    for segment in data.get("segments", []):
-        if not isinstance(segment, dict) or not isinstance(segment.get("name"), str):
-            continue
-        parameter_ids: set[str] = set()
-        base_scenario = segment.get("scenarios", {}).get("base", {})
-        if isinstance(base_scenario, dict):
-            driver_map = base_scenario.get("driver_parameter_ids", {})
-            if isinstance(driver_map, dict):
-                for ids in driver_map.values():
-                    parameter_ids.update(_listed_parameter_ids(ids))
-        recognition = segment.get("recognition", {})
-        if isinstance(recognition, dict):
-            for container in ("carry_in_parameter_ids", "progress_parameter_ids"):
-                scenario_map = recognition.get(container, {})
-                if isinstance(scenario_map, dict):
-                    parameter_ids.update(
-                        _listed_parameter_ids(scenario_map.get("base", []))
-                    )
-        segment_parameters[segment["name"]] = _expand_derived_inputs(
-            parameter_ids, parameter_index
-        )
-
-    for constraint in data.get("revenue_constraints", []):
-        if not isinstance(constraint, dict):
-            continue
-        affected_segments: set[str] = set()
-        if constraint.get("type") == "sum_cap":
-            affected_segments.update(constraint.get("segments", []))
-        elif constraint.get("type") == "linked_ratio":
-            _add_segment_name(affected_segments, constraint.get("target_segment"))
-        elif constraint.get("type") == "elimination":
-            affected_segments.update(
-                constraint.get("segment_adjustment_parameter_ids", {})
-            )
-        linked_parameters = _expand_derived_inputs(
-            constraint_parameter_ids([constraint]), parameter_index
-        )
-        for segment_name in affected_segments:
-            if segment_name in segment_parameters:
-                segment_parameters[segment_name].update(linked_parameters)
-    return segment_parameters
+    """Map final Base-path value dependencies to affected segment outputs."""
+    roots = {name: set().union(*(cell.value_parameter_ids for cell in cells.values()))
+             if cells else set()
+             for name, cells in effective_segment_dependencies(data, "base").items()}
+    return {name: _expand_derived_inputs(ids, parameter_index) for name, ids in roots.items()}
