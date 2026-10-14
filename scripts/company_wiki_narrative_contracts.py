@@ -475,13 +475,148 @@ def _diagnostics(bundle: dict, source_sha256: str | None = None) -> None:
              "invalid_bundle_versions")
 
 
+
+READING_CONTEXT_LIMIT = 192 * 1024
+_READING_FIELDS = {"schema_version", "reading_policy_version", "reading_policies", "business_facets",
+                   "constraints", "groups", "unread", "deferred", "layout_coverage"}
+_READING_SAMPLING_FIELDS = {"deferred_count", "deferred_limited", "selection_diagnostics"}
+_READING_POLICY_FIELDS = {"profile_id", "profile_version", "family", "summary_focus", "policy_components",
+    "reading_questions", "context_requirements", "family_policy", "negative_hints", "semantic_units", "section_priorities"}
+_READING_FACET_FIELDS = {"id", "version", "content_digest", "selection_basis", "business_questions", "summary_focus",
+                       "required_context", "absence_rules", "confusion_checks", "applicable_mechanisms"}
+_READING_FORBIDDEN = _PATH_KEYS | {"raw_text", "body", "observation", "evidence_packages", "members",
+    "wrong_assertion", "correct_assertion", "source_meaning", "confusions", "examples", "example"}
+
+
+def _reading_json(value: Any) -> None:
+    """Bound policy data before recursive projection; never interpret it as code.
+
+    These are the producer's published finite-wire ceilings. Arbitrary policy
+    content stays data; no source IO, policy lookup or original-byte verification
+    is repeated by this consumer.
+    """
+    stack = [(value, 0)]
+    visited = 0
+    while stack:
+        item, depth = stack.pop()
+        visited += 1
+        _require(visited <= 30000 and depth <= 12, "reading_structure_limit")
+        if item is None or type(item) in {bool, int, float}:
+            continue  # The existing JSON decoder already rejects nonfinite numbers.
+        if isinstance(item, str):
+            _require(len(item) <= 16384, "reading_string_limit")
+        elif isinstance(item, dict):
+            _require(len(item) <= 256, "reading_object_limit")
+            _require(all(isinstance(key, str) and len(key) <= 128 for key in item), "invalid_reading_key")
+            _require(not (_READING_FORBIDDEN & set(item)), "reading_payload_forbidden")
+            stack.extend((child, depth + 1) for child in item.values())
+        elif isinstance(item, list):
+            _require(len(item) <= 4096, "reading_array_limit")
+            stack.extend((child, depth + 1) for child in item)
+        else:
+            raise NarrativeTransportError("blocked", "invalid_reading_json")
+
+
+def _reading_rows(value: Any, *, limit: int = 4096) -> list:
+    _require(isinstance(value, list), "invalid_reading_array")
+    _require(len(value) <= limit, "reading_array_limit")
+    return value
+
+
+def _reading_texts(value: Any, *, limit: int = 4096) -> list:
+    values = _reading_rows(value, limit=limit)
+    _require(all(_text(entry) for entry in values), "invalid_reading_text")
+    return values
+
+
+def _reading_sample(value: dict, lists: set[str], count_key: str, limited_key: str) -> None:
+    counts = _exact(value[count_key], lists, "invalid_reading_counts")
+    _require(all(_integer(counts[key], len(value[key])) for key in lists), "invalid_reading_counts")
+    _require(type(value[limited_key]) is bool and value[limited_key] == any(
+        counts[key] > len(value[key]) for key in lists), "invalid_reading_limited")
+
+
+def _reading_context(value: Any, spans: dict[str, dict]) -> None:
+    """Validate du-production-reading/1 against this already transported span table.
+
+    Group references keep the source owner's closure available downstream.
+    Native text, semantic structure and fine-layout completeness are distinct
+    diagnostics; an incomplete one never becomes a new permission gate.
+    """
+    if value is None:
+        return
+    _reading_json(value)
+    _require(len(canonical_bytes(value)) <= READING_CONTEXT_LIMIT, "reading_bytes_limit")
+    extra = _READING_SAMPLING_FIELDS if isinstance(value, dict) and (_READING_SAMPLING_FIELDS & value.keys()) else set()
+    context = _exact(value, _READING_FIELDS | extra, "invalid_reading_context")
+    _require(context["schema_version"] == "du-production-reading/1", "unsupported_reading_context")
+    version = context["reading_policy_version"]
+    prefix = "du-sent-policy/1+"
+    _require(isinstance(version, str) and version.startswith(prefix) and _sha(version[len(prefix):]), "invalid_reading_policy_version")
+    for policy in _reading_rows(context["reading_policies"], limit=128):
+        _exact(policy, _READING_POLICY_FIELDS, "invalid_reading_policy")
+        components = policy["policy_components"]
+        for component in _reading_rows([] if components is None else components):
+            _exact(component, {"kind", "id", "version", "content_digest"}, "invalid_reading_component")
+            _require(_sha(component["content_digest"]), "invalid_reading_component_digest")
+    for facet in _reading_rows(context["business_facets"], limit=16):
+        _exact(facet, _READING_FACET_FIELDS, "invalid_reading_facet")
+        _require(_sha(facet["content_digest"]), "invalid_reading_facet_digest")
+        checks = facet["confusion_checks"]
+        for check in _reading_rows([] if checks is None else checks):
+            _exact(check, {"risk", "required_context_slots"}, "invalid_reading_confusion_check")
+            _require(_text(check["risk"]), "invalid_reading_confusion_check")
+            _reading_texts(check["required_context_slots"])
+    _reading_texts(context["constraints"], limit=32)
+    group_ids: set[str] = set()
+    for group in _reading_rows(context["groups"], limit=512):
+        _exact(group, {"group_id", "kind", "section_role", "evidence_ids"}, "invalid_reading_group")
+        _require(all(_text(group[key]) for key in ("group_id", "kind", "section_role")), "invalid_reading_group")
+        _require(group["group_id"] not in group_ids, "duplicate_reading_group")
+        group_ids.add(group["group_id"])
+        refs = _reading_texts(group["evidence_ids"])
+        _require(bool(refs) and len(refs) == len(set(refs)) and set(refs) <= spans.keys(), "invalid_reading_group_references")
+        _require(len({spans[ref]["source_id"] for ref in refs}) == 1, "reading_group_parent_mismatch")
+    lists = {"opaque_pages", "deferred_pages", "deferred_unit_ids", "unassigned_unit_ids"}
+    unread = context["unread"]
+    sampled = isinstance(unread, dict) and bool({"counts", "limited"} & unread.keys())
+    _exact(unread, lists | {"native_scan", "structure_complete"} | ({"counts", "limited"} if sampled else set()), "invalid_reading_unread")
+    _require(unread["native_scan"] is None or _text(unread["native_scan"]), "invalid_reading_native_scan")
+    _require(unread["structure_complete"] is None or type(unread["structure_complete"]) is bool, "invalid_reading_structure_coverage")
+    for name in ("opaque_pages", "deferred_pages"):
+        _require(all(_integer(page, 1) for page in _reading_rows(unread[name])), "invalid_reading_page")
+    for name in ("deferred_unit_ids", "unassigned_unit_ids"):
+        _reading_texts(unread[name])
+    if sampled:
+        _reading_sample(unread, lists, "counts", "limited")
+    for row in _reading_rows(context["deferred"]):
+        _exact(row, {"package_id", "reason"}, "invalid_reading_deferred")
+        _require(_text(row["package_id"]) and _text(row["reason"]), "invalid_reading_deferred")
+    _require(isinstance(context["layout_coverage"], dict), "invalid_reading_layout_coverage")
+    if extra:
+        _require(_integer(context["deferred_count"], len(context["deferred"])) and
+            type(context["deferred_limited"]) is bool and context["deferred_limited"] == (
+                context["deferred_count"] > len(context["deferred"])), "invalid_reading_deferred_counts")
+        for row in _reading_rows(context["selection_diagnostics"]):
+            _exact(row, {"code", "count"}, "invalid_reading_diagnostic")
+            _require(_text(row["code"]) and _integer(row["count"]), "invalid_reading_diagnostic")
+
+
+def _reading_extension(bundle: dict) -> dict:
+    return {"reading_context": bundle["reading_context"]} if "reading_context" in bundle else {}
+
+
+def _bundle_fields(bundle: dict, base: set[str]) -> None:
+    _exact(bundle, base | ({"reading_context"} if "reading_context" in bundle else set()), "invalid_narrative_bundle")
+
+
 def _bundle(body: bytes, request: dict, receipt: dict, manifest: dict) -> dict:
     ref = request["narrative_ref"]
     _require(len(body) == ref["byte_size"] and hashlib.sha256(body).hexdigest() == ref["artifact_sha256"],
              "artifact_bytes_mismatch")
     bundle = decode_object(body, limit=BODY_LIMIT)
     _require(canonical_bytes(bundle) == body, "noncanonical_bundle")
-    _exact(bundle, BUNDLE_FIELDS, "invalid_narrative_bundle")
+    _bundle_fields(bundle, BUNDLE_FIELDS)
     _require(bundle["schema_version"] == "narrative-bundle/2.0", "unsupported_narrative_bundle")
     _require(bundle["source_ref"] == ref["source_ref"] and _sha(bundle["expected_read_policy_sha256"]),
              "bundle_source_mismatch")
@@ -495,6 +630,8 @@ def _bundle_contents(bundle: dict, receipt: dict, manifest: dict) -> None:
     by_id = {span["span_id"]: span for span in spans}
     selection = _selection(bundle["selection"], len(spans))
     _bundle_quality(bundle, receipt, selection, len(spans))
+    if "reading_context" in bundle:
+        _reading_context(bundle["reading_context"], by_id)
     skipped = selection["status"] == "skipped_no_narrative"
     _summary(bundle["summary"], bundle["source_ref"], by_id, metadata["language"], skipped)
     _replay(bundle["replay"], len(spans))
@@ -716,7 +853,7 @@ def _projection_bundle(body: bytes, ref: dict) -> dict:
     _require(canonical_bytes(bundle) == body, "noncanonical_bundle")
     fields = (BUNDLE_FIELDS - {"source_ref", "expected_read_policy_sha256", "transcript_lineage",
                              "transcript_byte_bindings"}) | {"subject_binding"}
-    _exact(bundle, fields, "invalid_narrative_bundle")
+    _bundle_fields(bundle, fields)
     _require(bundle["schema_version"] == "narrative-bundle/3.0", "unsupported_narrative_bundle")
     return bundle
 
@@ -740,6 +877,8 @@ def _projected_response(request: dict, body: bytes, receipt: dict) -> NarrativeC
     _require(not selection["coverage_complete"] or (subject["coverage"].get("pagination_complete") is True and
              subject["coverage"].get("page_envelope_complete") is True), "projection_coverage_mismatch")
     _bundle_quality(bundle, receipt, selection, len(spans))
+    if "reading_context" in bundle:
+        _reading_context(bundle["reading_context"], by_id)
     _projected_summary(bundle["summary"], subject, by_id, metadata["language"],
                        selection["status"] == "skipped_no_narrative")
     _replay(bundle["replay"], len(spans))
@@ -748,7 +887,7 @@ def _projected_response(request: dict, body: bytes, receipt: dict) -> NarrativeC
         "subject_binding": subject, "parent_source_refs": subject["parent_source_refs"],
         "as_of_date": request["as_of_date"], "source_metadata": metadata, "selection": selection,
         "quality_status": bundle["quality_status"], "evidence_spans": spans,
-        "summary": bundle["summary"], "read_receipt": receipt})
+        "summary": bundle["summary"], "read_receipt": receipt, **_reading_extension(bundle)})
 
 
 def _validated_response(request: dict, body: bytes, receipt_bytes: bytes) -> NarrativeContext:
@@ -764,7 +903,7 @@ def _validated_response(request: dict, body: bytes, receipt_bytes: bytes) -> Nar
         "as_of_date": request["as_of_date"], "manifest": manifest,
         "source_metadata": bundle["source_metadata"], "selection": bundle["selection"],
         "quality_status": bundle["quality_status"], "evidence_spans": bundle["evidence_spans"],
-        "summary": bundle["summary"], "read_receipt": receipt,
+        "summary": bundle["summary"], "read_receipt": receipt, **_reading_extension(bundle),
     })
 
 

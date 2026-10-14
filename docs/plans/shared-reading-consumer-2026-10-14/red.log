@@ -1,0 +1,356 @@
+F.FFFF...................FFFFFFFF...                                     [100%]
+================================== FAILURES ===================================
+__ test_saved_actual_090_public_bytes_are_consumed_with_full_reading_context __
+
+    def test_saved_actual_090_public_bytes_are_consumed_with_full_reading_context():
+        request, body, receipt = actual()
+        original = json.loads(body)
+>       context = validate_narrative_response(request, body, receipt)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_shared_reading_narrative_contract.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\company_wiki_narrative_contracts.py:775: in validate_narrative_response
+    return _validated_response(request, body, receipt_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:760: in _validated_response
+    bundle = _bundle(body, request, receipt, manifest)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:484: in _bundle
+    _exact(bundle, BUNDLE_FIELDS, "invalid_narrative_bundle")
+scripts\company_wiki_narrative_contracts.py:95: in _exact
+    _require(isinstance(value, dict) and set(value) == fields, reason)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, reason = 'invalid_narrative_bundle'
+
+    def _require(condition: bool, reason: str) -> None:
+        if not condition:
+>           raise NarrativeTransportError("blocked", reason)
+E           company_wiki_narrative_contracts.NarrativeTransportError: blocked: invalid_narrative_bundle
+
+scripts\company_wiki_narrative_contracts.py:76: NarrativeTransportError
+_______ test_real_reader_subprocess_preserves_the_actual_public_context _______
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-523/test_real_reader_subprocess_pr0')
+
+    def test_real_reader_subprocess_preserves_the_actual_public_context(tmp_path):
+        request, body, receipt = actual()
+        baseline = {p.name: p.read_bytes() for p in tmp_path.iterdir() if p.is_file()}
+>       value = read_narrative_context(request, catalog_config=tmp_path / "catalog.yaml",
+            reader_command=_fake(tmp_path, body, receipt)).to_dict()
+
+tests\test_shared_reading_narrative_contract.py:69: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\company_wiki_narrative_reader.py:57: in read_narrative_context
+    return validate_narrative_response(request, result.stdout, result.stderr)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:775: in validate_narrative_response
+    return _validated_response(request, body, receipt_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:760: in _validated_response
+    bundle = _bundle(body, request, receipt, manifest)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:484: in _bundle
+    _exact(bundle, BUNDLE_FIELDS, "invalid_narrative_bundle")
+scripts\company_wiki_narrative_contracts.py:95: in _exact
+    _require(isinstance(value, dict) and set(value) == fields, reason)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, reason = 'invalid_narrative_bundle'
+
+    def _require(condition: bool, reason: str) -> None:
+        if not condition:
+>           raise NarrativeTransportError("blocked", reason)
+E           company_wiki_narrative_contracts.NarrativeTransportError: blocked: invalid_narrative_bundle
+
+scripts\company_wiki_narrative_contracts.py:76: NarrativeTransportError
+____________ test_cli_projection_retains_validated_reading_context ____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001FE8C694B00>
+
+    def test_cli_projection_retains_validated_reading_context(monkeypatch):
+        import narrative_source_preparation as cli
+        request, body, receipt = actual()
+>       context = validate_narrative_response(request, body, receipt)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_shared_reading_narrative_contract.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\company_wiki_narrative_contracts.py:775: in validate_narrative_response
+    return _validated_response(request, body, receipt_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:760: in _validated_response
+    bundle = _bundle(body, request, receipt, manifest)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:484: in _bundle
+    _exact(bundle, BUNDLE_FIELDS, "invalid_narrative_bundle")
+scripts\company_wiki_narrative_contracts.py:95: in _exact
+    _require(isinstance(value, dict) and set(value) == fields, reason)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, reason = 'invalid_narrative_bundle'
+
+    def _require(condition: bool, reason: str) -> None:
+        if not condition:
+>           raise NarrativeTransportError("blocked", reason)
+E           company_wiki_narrative_contracts.NarrativeTransportError: blocked: invalid_narrative_bundle
+
+scripts\company_wiki_narrative_contracts.py:76: NarrativeTransportError
+__________ test_official_json_projection_preserves_scope_and_context __________
+
+    def test_official_json_projection_preserves_scope_and_context():
+        request, body, receipt = projected_context()
+>       value = validate_narrative_response(request, body, receipt).to_dict()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_shared_reading_narrative_contract.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\company_wiki_narrative_contracts.py:775: in validate_narrative_response
+    return _validated_response(request, body, receipt_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:758: in _validated_response
+    return _projected_response(request, body, receipt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:735: in _projected_response
+    bundle = _projection_bundle(body, ref)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:719: in _projection_bundle
+    _exact(bundle, fields, "invalid_narrative_bundle")
+scripts\company_wiki_narrative_contracts.py:95: in _exact
+    _require(isinstance(value, dict) and set(value) == fields, reason)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, reason = 'invalid_narrative_bundle'
+
+    def _require(condition: bool, reason: str) -> None:
+        if not condition:
+>           raise NarrativeTransportError("blocked", reason)
+E           company_wiki_narrative_contracts.NarrativeTransportError: blocked: invalid_narrative_bundle
+
+scripts\company_wiki_narrative_contracts.py:76: NarrativeTransportError
+________ test_reading_group_cannot_borrow_a_different_original_parent _________
+
+    def test_reading_group_cannot_borrow_a_different_original_parent():
+>       with pytest.raises(NarrativeTransportError, match="reading_group_parent_mismatch"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'reading_group_parent_mismatch'
+E         Actual message: 'blocked: invalid_narrative_bundle'
+
+tests\test_shared_reading_narrative_contract.py:123: AssertionError
+__ test_reading_context_resource_bounds_are_distinct_contract_errors[depth] ___
+
+bound = 'depth'
+
+    @pytest.mark.parametrize("bound", ["depth", "nodes", "bytes", "string", "groups", "policies", "facets"])
+    def test_reading_context_resource_bounds_are_distinct_contract_errors(bound):
+        def mutate(context):
+            if bound == "depth":
+                nested = None
+                for _ in range(16): nested = {"x": nested}
+                context["layout_coverage"]["nested"] = nested
+            elif bound == "nodes": context["layout_coverage"]["many"] = [[0] * 3000 for _ in range(12)]
+            elif bound == "bytes": context["layout_coverage"]["many"] = ["x" * 16000] * 15
+            elif bound == "string": context["constraints"] = ["x" * 16385]
+            elif bound == "groups": context["groups"] *= 513
+            elif bound == "policies": context["reading_policies"] *= 129
+            else: context["business_facets"] *= 17
+>       with pytest.raises(NarrativeTransportError, match="reading_.*limit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'reading_.*limit'
+E         Actual message: 'blocked: invalid_narrative_bundle'
+
+tests\test_shared_reading_narrative_contract.py:169: AssertionError
+__ test_reading_context_resource_bounds_are_distinct_contract_errors[nodes] ___
+
+bound = 'nodes'
+
+    @pytest.mark.parametrize("bound", ["depth", "nodes", "bytes", "string", "groups", "policies", "facets"])
+    def test_reading_context_resource_bounds_are_distinct_contract_errors(bound):
+        def mutate(context):
+            if bound == "depth":
+                nested = None
+                for _ in range(16): nested = {"x": nested}
+                context["layout_coverage"]["nested"] = nested
+            elif bound == "nodes": context["layout_coverage"]["many"] = [[0] * 3000 for _ in range(12)]
+            elif bound == "bytes": context["layout_coverage"]["many"] = ["x" * 16000] * 15
+            elif bound == "string": context["constraints"] = ["x" * 16385]
+            elif bound == "groups": context["groups"] *= 513
+            elif bound == "policies": context["reading_policies"] *= 129
+            else: context["business_facets"] *= 17
+>       with pytest.raises(NarrativeTransportError, match="reading_.*limit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'reading_.*limit'
+E         Actual message: 'blocked: invalid_narrative_bundle'
+
+tests\test_shared_reading_narrative_contract.py:169: AssertionError
+__ test_reading_context_resource_bounds_are_distinct_contract_errors[bytes] ___
+
+bound = 'bytes'
+
+    @pytest.mark.parametrize("bound", ["depth", "nodes", "bytes", "string", "groups", "policies", "facets"])
+    def test_reading_context_resource_bounds_are_distinct_contract_errors(bound):
+        def mutate(context):
+            if bound == "depth":
+                nested = None
+                for _ in range(16): nested = {"x": nested}
+                context["layout_coverage"]["nested"] = nested
+            elif bound == "nodes": context["layout_coverage"]["many"] = [[0] * 3000 for _ in range(12)]
+            elif bound == "bytes": context["layout_coverage"]["many"] = ["x" * 16000] * 15
+            elif bound == "string": context["constraints"] = ["x" * 16385]
+            elif bound == "groups": context["groups"] *= 513
+            elif bound == "policies": context["reading_policies"] *= 129
+            else: context["business_facets"] *= 17
+>       with pytest.raises(NarrativeTransportError, match="reading_.*limit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'reading_.*limit'
+E         Actual message: 'blocked: invalid_narrative_bundle'
+
+tests\test_shared_reading_narrative_contract.py:169: AssertionError
+__ test_reading_context_resource_bounds_are_distinct_contract_errors[string] __
+
+bound = 'string'
+
+    @pytest.mark.parametrize("bound", ["depth", "nodes", "bytes", "string", "groups", "policies", "facets"])
+    def test_reading_context_resource_bounds_are_distinct_contract_errors(bound):
+        def mutate(context):
+            if bound == "depth":
+                nested = None
+                for _ in range(16): nested = {"x": nested}
+                context["layout_coverage"]["nested"] = nested
+            elif bound == "nodes": context["layout_coverage"]["many"] = [[0] * 3000 for _ in range(12)]
+            elif bound == "bytes": context["layout_coverage"]["many"] = ["x" * 16000] * 15
+            elif bound == "string": context["constraints"] = ["x" * 16385]
+            elif bound == "groups": context["groups"] *= 513
+            elif bound == "policies": context["reading_policies"] *= 129
+            else: context["business_facets"] *= 17
+>       with pytest.raises(NarrativeTransportError, match="reading_.*limit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'reading_.*limit'
+E         Actual message: 'blocked: invalid_narrative_bundle'
+
+tests\test_shared_reading_narrative_contract.py:169: AssertionError
+__ test_reading_context_resource_bounds_are_distinct_contract_errors[groups] __
+
+bound = 'groups'
+
+    @pytest.mark.parametrize("bound", ["depth", "nodes", "bytes", "string", "groups", "policies", "facets"])
+    def test_reading_context_resource_bounds_are_distinct_contract_errors(bound):
+        def mutate(context):
+            if bound == "depth":
+                nested = None
+                for _ in range(16): nested = {"x": nested}
+                context["layout_coverage"]["nested"] = nested
+            elif bound == "nodes": context["layout_coverage"]["many"] = [[0] * 3000 for _ in range(12)]
+            elif bound == "bytes": context["layout_coverage"]["many"] = ["x" * 16000] * 15
+            elif bound == "string": context["constraints"] = ["x" * 16385]
+            elif bound == "groups": context["groups"] *= 513
+            elif bound == "policies": context["reading_policies"] *= 129
+            else: context["business_facets"] *= 17
+>       with pytest.raises(NarrativeTransportError, match="reading_.*limit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'reading_.*limit'
+E         Actual message: 'blocked: invalid_narrative_bundle'
+
+tests\test_shared_reading_narrative_contract.py:169: AssertionError
+_ test_reading_context_resource_bounds_are_distinct_contract_errors[policies] _
+
+bound = 'policies'
+
+    @pytest.mark.parametrize("bound", ["depth", "nodes", "bytes", "string", "groups", "policies", "facets"])
+    def test_reading_context_resource_bounds_are_distinct_contract_errors(bound):
+        def mutate(context):
+            if bound == "depth":
+                nested = None
+                for _ in range(16): nested = {"x": nested}
+                context["layout_coverage"]["nested"] = nested
+            elif bound == "nodes": context["layout_coverage"]["many"] = [[0] * 3000 for _ in range(12)]
+            elif bound == "bytes": context["layout_coverage"]["many"] = ["x" * 16000] * 15
+            elif bound == "string": context["constraints"] = ["x" * 16385]
+            elif bound == "groups": context["groups"] *= 513
+            elif bound == "policies": context["reading_policies"] *= 129
+            else: context["business_facets"] *= 17
+>       with pytest.raises(NarrativeTransportError, match="reading_.*limit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'reading_.*limit'
+E         Actual message: 'blocked: invalid_narrative_bundle'
+
+tests\test_shared_reading_narrative_contract.py:169: AssertionError
+__ test_reading_context_resource_bounds_are_distinct_contract_errors[facets] __
+
+bound = 'facets'
+
+    @pytest.mark.parametrize("bound", ["depth", "nodes", "bytes", "string", "groups", "policies", "facets"])
+    def test_reading_context_resource_bounds_are_distinct_contract_errors(bound):
+        def mutate(context):
+            if bound == "depth":
+                nested = None
+                for _ in range(16): nested = {"x": nested}
+                context["layout_coverage"]["nested"] = nested
+            elif bound == "nodes": context["layout_coverage"]["many"] = [[0] * 3000 for _ in range(12)]
+            elif bound == "bytes": context["layout_coverage"]["many"] = ["x" * 16000] * 15
+            elif bound == "string": context["constraints"] = ["x" * 16385]
+            elif bound == "groups": context["groups"] *= 513
+            elif bound == "policies": context["reading_policies"] *= 129
+            else: context["business_facets"] *= 17
+>       with pytest.raises(NarrativeTransportError, match="reading_.*limit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'reading_.*limit'
+E         Actual message: 'blocked: invalid_narrative_bundle'
+
+tests\test_shared_reading_narrative_contract.py:169: AssertionError
+_ test_unsampled_earlier_du1_shape_is_explicitly_supported_without_promoting_coverage _
+
+    def test_unsampled_earlier_du1_shape_is_explicitly_supported_without_promoting_coverage():
+        def mutate(context):
+            for key in ("deferred_count", "deferred_limited", "selection_diagnostics"): del context[key]
+            for key in ("counts", "limited"): del context["unread"][key]
+        request, body, receipt = changed(mutate)
+>       value = validate_narrative_response(request, body, receipt).to_dict()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_shared_reading_narrative_contract.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\company_wiki_narrative_contracts.py:775: in validate_narrative_response
+    return _validated_response(request, body, receipt_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:760: in _validated_response
+    bundle = _bundle(body, request, receipt, manifest)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:484: in _bundle
+    _exact(bundle, BUNDLE_FIELDS, "invalid_narrative_bundle")
+scripts\company_wiki_narrative_contracts.py:95: in _exact
+    _require(isinstance(value, dict) and set(value) == fields, reason)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, reason = 'invalid_narrative_bundle'
+
+    def _require(condition: bool, reason: str) -> None:
+        if not condition:
+>           raise NarrativeTransportError("blocked", reason)
+E           company_wiki_narrative_contracts.NarrativeTransportError: blocked: invalid_narrative_bundle
+
+scripts\company_wiki_narrative_contracts.py:76: NarrativeTransportError
+=========================== short test summary info ===========================
+FAILED tests/test_shared_reading_narrative_contract.py::test_saved_actual_090_public_bytes_are_consumed_with_full_reading_context
+FAILED tests/test_shared_reading_narrative_contract.py::test_real_reader_subprocess_preserves_the_actual_public_context
+FAILED tests/test_shared_reading_narrative_contract.py::test_cli_projection_retains_validated_reading_context
+FAILED tests/test_shared_reading_narrative_contract.py::test_official_json_projection_preserves_scope_and_context
+FAILED tests/test_shared_reading_narrative_contract.py::test_reading_group_cannot_borrow_a_different_original_parent
+FAILED tests/test_shared_reading_narrative_contract.py::test_reading_context_resource_bounds_are_distinct_contract_errors[depth]
+FAILED tests/test_shared_reading_narrative_contract.py::test_reading_context_resource_bounds_are_distinct_contract_errors[nodes]
+FAILED tests/test_shared_reading_narrative_contract.py::test_reading_context_resource_bounds_are_distinct_contract_errors[bytes]
+FAILED tests/test_shared_reading_narrative_contract.py::test_reading_context_resource_bounds_are_distinct_contract_errors[string]
+FAILED tests/test_shared_reading_narrative_contract.py::test_reading_context_resource_bounds_are_distinct_contract_errors[groups]
+FAILED tests/test_shared_reading_narrative_contract.py::test_reading_context_resource_bounds_are_distinct_contract_errors[policies]
+FAILED tests/test_shared_reading_narrative_contract.py::test_reading_context_resource_bounds_are_distinct_contract_errors[facets]
+FAILED tests/test_shared_reading_narrative_contract.py::test_unsampled_earlier_du1_shape_is_explicitly_supported_without_promoting_coverage
+13 failed, 23 passed in 1.67s
