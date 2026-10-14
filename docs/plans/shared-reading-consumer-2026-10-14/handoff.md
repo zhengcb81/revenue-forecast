@@ -1,11 +1,20 @@
-# RF shared reading consumer handoff — SOURCE STOP
+# RF shared reading consumer handoff — ROOT received and published
 
-## Worktree and base
+## ROOT reception and publication — complete, 2026-10-14
+
+- Published implementation commit: `512e85bbe274c357c780a78791f5784c3af66d2d` (`fix: consume bounded shared document reading context`). ROOT integrated and pushed it; local `main` and `origin/main` were read back at this exact commit.
+- Normal pre-push acceptance: **416 PASS +36 subtests, 38.11s**. Exact GitHub Actions run **38563752875** succeeded for this code commit, as recorded by ROOT. These are ROOT's publication results; the source author did not run a second publication or push.
+- Independent ROOT consumer review: **8 PASS, exit0, 0.412199s**; author source/test/plan SHA unchanged during review, independent TEMP restored. This verifies the bounded consumer seam, not a complete company forecast.
+- Scoped installation finished: only `scripts/company_wiki_narrative_contracts.py` changed. Three skill entries resolve to **two physical copies** (`.agents` and `.codex`); `.claude/skills/revenue-forecast` is a Windows junction to `.agents/skills/revenue-forecast`. Fresh read-back SHA for all three entries equals **`ca878e4d1b5cfa254ec1db2734596eab36c7d542d49b3b28b5a95097d5cfa10a`**, 49,584 bytes. Selected and unselected installation drift are both zero. The 97-owned-file content manifest is `5db2de9da6043b9a12bf5471ad32816261b88c9936883ae7a39048adb4ed1c36`; it is computed from bytes, so no permission/manifest JSON was added.
+- Author-worktree CRLF source SHA `78aa128da01e0a711699ca8b478627132344eee84ccef0af4b96ad5fe52d42bb` normalizes to the published LF SHA above. The published LF test SHA is `b688875ea6dd176ba4b76a300628bd599a48745a0068b800cd0d165672c13558` (11,481 bytes); the retained source-author CRLF test SHA remains historical evidence.
+- Mother-plan scope remains open: at this RF publication snapshot, the CWP source-recall replay is **CN9/10 and US7/8**. This RF card establishes consumer compatibility and source-context preservation; it does not claim all company research, financial forecasts, source semantic quality or the mother PWF is green/complete.
+
+## Source-author worktree and base (historical)
 
 - Worktree: C:/Users/郑曾波/Projects/_harness_worktrees/shared-reading-completion-20261014/rf-reader
 - Branch: codex/shared-reading-rf-reader-20261014
 - Base: f0d694d69a05ef3f7a449e87cd91cdb44d1ff8ce
-- Uncommitted delivery; no commit/push/installation. ROOT receives only the owned source, test and this plan subtree.
+- Historical source-author delivery was uncommitted: this author did not commit/push/install. ROOT received only the owned source, test and this plan subtree and then completed the publication recorded above.
 
 ## Root cause and precise current producer contract
 
@@ -26,7 +35,7 @@ Only scripts/company_wiki_narrative_contracts.py is modified. The new tests are 
 - Finite transport ceilings: 192KiB context, depth12/30,000 nodes,16,384-character strings,256-field objects/4,096-array entries; policies128/facets16/groups512/constraints32. No producer original reread, policy lookup, alias validation, permission receipt or fee-budget changes.
 - Preserve the validated context unchanged in raw and official NarrativeContext DTOs. Existing CLI `.to_dict()` consequently retains it; subprocess and CLI projection are covered. Legacy 0.8 wire retains its old DTO shape.
 
-Final SHA256:
+Historical source-author worktree SHA256 (CRLF bytes, not the published LF files):
 
 - scripts/company_wiki_narrative_contracts.py:78aa128da01e0a711699ca8b478627132344eee84ccef0af4b96ad5fe52d42bb
 - tests/test_shared_reading_narrative_contract.py:901d91fc0ba0dbb7ef4cb691455ea156f668eebf4c606f17c4f3eb216d131d98
@@ -47,8 +56,8 @@ Ruff on changed source/new test, host-assumption guard on the new test, and git 
 
 Final RF main read-only status remains the three pre-existing assurance/runs/{daily_alert.jsonl,weekly_alert.jsonl,weekly_manifest.json} modifications and untracked output/. Main source and those runtime files were not written by this lane.
 
-## ROOT next action / limits
+## ROOT handoff / remaining scope
 
-Review the isolated diff and new files, then integrate only the source, test, and plan subtree with normal hooks. Do not copy worktree runtime/cache content or restore RF main's unrelated WIP. The plan test is portable: no developer absolute paths or CWP imports occur in the test code. ROOT can rerun the saved public RF boundary immediately without another paid model call.
+ROOT has completed code reception, push, exact CI and the scoped installation. The only next receipt is this documentation-only handoff; this actor does not fast-forward main or push. Keep the original author evidence and unrelated RF assurance/output WIP. No repeated paid/source producer run or new permission is required to close this RF consumer card. The portable new test has no developer absolute paths or CWP imports.
 
 This proves current consumer interoperability and finite source context preservation. It does not certify company research quality or a future unpublished DTO, and it does not rerun the original paid/source producer. Future formal schema changes should have explicit new fixtures/version coverage rather than broad unknown-field omission.
