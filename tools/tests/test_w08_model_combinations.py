@@ -289,13 +289,19 @@ def test_same_currency_scaling_is_exact_and_not_a_wrong_scale(engine):
 
 
 def test_unwritten_unit_is_unknown_not_a_guessed_rate(engine):
-    """HKD is not a registered unit name; it must be refused, never FX-guessed."""
+    """HKD is a written unit name but still never FX-guessed into USD, and a
+    genuinely unwritten spelling stays an unknown unit, never a guessed alias."""
     from contracts.evidence import ForecastInputError
 
-    with pytest.raises(ForecastInputError, match="unknown input_unit"):
+    with pytest.raises(ForecastInputError, match="incompatible unit conversion"):
         engine.convert_input_quantity_strict(
             7.8, input_unit="hkd_million", engine_unit="usd_million"
         )
+    for unwritten in ("wan_yuan", "hkd_mega"):
+        with pytest.raises(ForecastInputError, match="unknown input_unit"):
+            engine.convert_input_quantity_strict(
+                7.8, input_unit=unwritten, engine_unit="rmb_million"
+            )
 
 
 def test_cross_currency_never_auto_converts(engine):

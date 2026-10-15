@@ -438,15 +438,43 @@ COMBINATION_CASES: list[CaseSpec] = [
         expected=_e({"engine_value": 7.25 * 100.0, "scale_applied": 100.0}),
     ),
     CaseSpec(
+        case_id="C01-HKD-L",
+        cls="C01",
+        vector="legal",
+        boundary="HKD same-currency scaling: 5 HKD billion = 5000 HKD million, never an FX move",
+        kind="conversion_scaling",
+        drivers={
+            "value": 5.0,
+            "input_unit": "hkd_billion",
+            "engine_unit": "hkd_million",
+        },
+        build=lambda: ({"conversion": True}, (lambda _r: {})),
+        expected=_e({"engine_value": 5.0 * 1000.0, "scale_applied": 1000.0}),
+    ),
+    CaseSpec(
         case_id="C01-HKD-C",
         cls="C01",
         vector="counter",
-        boundary="an unwritten unit name is an unknown unit, never a guessed FX rate or alias",
+        boundary="a written HKD unit is still never FX-converted into USD; same-currency scaling only",
         kind="conversion_scaling",
         drivers={
             "value": 7.8,
             "input_unit": "hkd_million",
             "engine_unit": "usd_million",
+        },
+        build=lambda: ({"conversion": True}, (lambda _r: {})),
+        expected=_e({}, reject=True, reject_reason="incompatible unit conversion"),
+    ),
+    CaseSpec(
+        case_id="C01-UNK-C",
+        cls="C01",
+        vector="counter",
+        boundary="an unwritten unit name is an unknown unit, never a guessed FX rate or alias",
+        kind="conversion_scaling",
+        drivers={
+            "value": 3.5,
+            "input_unit": "wan_yuan",
+            "engine_unit": "rmb_million",
         },
         build=lambda: ({"conversion": True}, (lambda _r: {})),
         expected=_e({}, reject=True, reject_reason="unknown input_unit"),
@@ -688,7 +716,7 @@ COMBINATION_GROUP_REQUIREMENTS: dict[str, dict[str, Any]] = {
     "C01": {
         "title": "currency/unit labels and same-currency scaling",
         "native_entry": "research.input_quantities.convert_input_quantity",
-        "required_case_ids": ["C01-USD-L", "C01-CNY-L", "C01-HKD-C", "C01-CROSS-C"],
+        "required_case_ids": ["C01-USD-L", "C01-CNY-L", "C01-HKD-L", "C01-HKD-C", "C01-UNK-C", "C01-CROSS-C"],
         "closes": "explicit CNY/HKD/USD labels and same-currency scaling",
     },
     "C02": {
