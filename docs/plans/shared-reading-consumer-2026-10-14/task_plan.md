@@ -1,3 +1,13 @@
+## ROOT attribution publication closed — 2026-10-15
+
+Code `caf74c5f6c71e917a6320c37789ff18194c24dbd` is on main/origin, normal pre-push 416PASS +36 subtests/37.98s; exact CI **38784099830 success**. Two physical installed copies were point-synced for the one owned contract script. CWP paired source `0b61bcd1` exact CI38788268113 also succeeded. No hooks bypassed, assurance/runs and output WIP remain untouched.
+
+Actual official-QA → canonical public compact /3 → RF CLI passed with exact summary/support/context/spans preserved, using one loopback POST and no supplier calls. These engineering contracts do not certify each generated claim's semantic entailment. A real MiMo CWP summary has separate semantic failures recorded in the ROOT mother/shared-reading PWF; consumer preservation is complete, model semantic correction and mother G2/G4/G5 remain open.
+
+Next Step: consume ROOT's future validated additive contracts only when handed off; no independent source reparsing, broad installation overwrite, or new permission receipt.
+
+Previous records below are historical; normal publication is no longer pending.
+
 ## ROOT additive attribution acceptance — 2026-10-15
 
 This is an extension of the completed initial reader card. CWP now emits finite
