@@ -1,3 +1,30 @@
+## ROOT additive attribution acceptance — 2026-10-15
+
+This is an extension of the completed initial reader card. CWP now emits finite
+`du-production-reading/2` citation views and optional per-claim
+`context_evidence_ids`. RF's single existing contract validates and preserves
+both support and context; source roles apply to factual support, while context
+must remain known, distinct, disjoint and within the same original parent.
+No raw reparse, CWP import, download, model call, new approval receipt or broad
+unknown-field acceptance is introduced. Public compact projected transport /3
+remains the supported consumer interface; legacy CWP /2 full-subject testing is
+not relabeled as RF /3 support.
+
+Actual TDD: 4 semantic failures / 11 passes before the narrow implementation;
+145 concentrated tests passed (1.92s) including old reader/contract controls;
+Ruff passed on the two owned Python files. One contract script was point-synced
+to the two physical installed skill copies, preserving other files/config.
+Cross-repository raw-source CLI loopback passed on 2026-10-15; canonical context,
+summary and spans were preserved exactly. Official-QA attributed public
+transport is a separate ROOT acceptance probe; its result is recorded in the
+company-wiki receipt, not assumed from these unit tests.
+
+Only `scripts/company_wiki_narrative_contracts.py`,
+`tests/test_citation_attribution_narrative_contract.py` and this plan are owned.
+Existing assurance/runs and output work are untouched. Normal main commit/push
+and exact CI observation close publication; this does not certify forecast
+economics or close mother G2/G4/G5. Current next action: ROOT normal publication.
+
 # Progress
 
 ## ROOT reception and publication — complete, 2026-10-14
@@ -18,3 +45,5 @@
 - Ruff and host assumption guard pass. Direct manual mypy is outside this module's existing CI scope: baseline and current both contain the same nine historical optional-narrowing errors; no new error added and no rules loosened.
 - New-test initial format lint fixed. Initial baseline mypy -c hit Windows command-length206, switched to owned standard TEMP baseline source and cleaned it.
 - Source-author handoff snapshot: this author made no commit/push/install, CWP source/production config/original writes, model calls or downloads. RF main WIP remained separate. Author SOURCE STOP; ROOT subsequently completed the reception/publication above.
+
+2026-10-15 ROOT official-QA public /3 E2E PASS: actual configured source selection/model/verification/publication and exact RF CLI read, 1 local fake-model POST, 0 suppliers; all reading_context/evidence_spans/summary fields equal, management support and investor-question context preserved. Owned temporary lake removed. Old /2 request refusal and observer setup/field errors retained as harness diagnostics, not production fixes.

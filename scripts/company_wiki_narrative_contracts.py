@@ -363,7 +363,8 @@ def _selection(value: Any, span_count: int) -> dict:
 
 
 def _claim(value: Any, spans: dict[str, dict]) -> dict:
-    claim = _exact(value, {"claim_id", "text", "evidence_ids", "claim_type", "modality", "needs_review"},
+    extra = {"context_evidence_ids"} if isinstance(value, dict) and "context_evidence_ids" in value else set()
+    claim = _exact(value, {"claim_id", "text", "evidence_ids", "claim_type", "modality", "needs_review"} | extra,
                    "invalid_summary_claim")
     _require(_text(claim["claim_id"]) and _text(claim["text"]), "invalid_summary_claim")
     ids = claim["evidence_ids"]
@@ -374,6 +375,13 @@ def _claim(value: Any, spans: dict[str, dict]) -> dict:
              "invalid_claim_type")
     _require(claim["modality"] in {"actual", "planned", "forecast", "question", "negation", "uncertain"},
              "invalid_claim_modality")
+    context = claim.get("context_evidence_ids", [])
+    _require(isinstance(context, list) and all(isinstance(key, str) and key in spans for key in context)
+             and len(context) == len(set(context)) and not set(context).intersection(ids),
+             "unbound_summary_context")
+    support_sources = {spans[key]["source_id"] for key in ids}
+    _require(all(spans[key]["source_id"] in support_sources for key in context),
+             "summary_context_parent_mismatch")
     _claim_roles(claim, spans)
     return claim
 
@@ -537,7 +545,7 @@ def _reading_sample(value: dict, lists: set[str], count_key: str, limited_key: s
 
 
 def _reading_context(value: Any, spans: dict[str, dict]) -> None:
-    """Validate du-production-reading/1 against this already transported span table.
+    """Validate finite reading-context versions against transported spans.
 
     Group references keep the source owner's closure available downstream.
     Native text, semantic structure and fine-layout completeness are distinct
@@ -549,7 +557,9 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
     _require(len(canonical_bytes(value)) <= READING_CONTEXT_LIMIT, "reading_bytes_limit")
     extra = _READING_SAMPLING_FIELDS if isinstance(value, dict) and (_READING_SAMPLING_FIELDS & value.keys()) else set()
     context = _exact(value, _READING_FIELDS | extra, "invalid_reading_context")
-    _require(context["schema_version"] == "du-production-reading/1", "unsupported_reading_context")
+    _require(context["schema_version"] in {"du-production-reading/1", "du-production-reading/2"},
+             "unsupported_reading_context")
+    attributed = context["schema_version"] == "du-production-reading/2"
     version = context["reading_policy_version"]
     prefix = "du-sent-policy/1+"
     _require(isinstance(version, str) and version.startswith(prefix) and _sha(version[len(prefix):]), "invalid_reading_policy_version")
@@ -570,13 +580,29 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
     _reading_texts(context["constraints"], limit=32)
     group_ids: set[str] = set()
     for group in _reading_rows(context["groups"], limit=512):
-        _exact(group, {"group_id", "kind", "section_role", "evidence_ids"}, "invalid_reading_group")
+        _exact(group, {"group_id", "kind", "section_role", "evidence_ids"}
+               | ({"citation_views"} if attributed else set()), "invalid_reading_group")
         _require(all(_text(group[key]) for key in ("group_id", "kind", "section_role")), "invalid_reading_group")
         _require(group["group_id"] not in group_ids, "duplicate_reading_group")
         group_ids.add(group["group_id"])
         refs = _reading_texts(group["evidence_ids"])
         _require(bool(refs) and len(refs) == len(set(refs)) and set(refs) <= spans.keys(), "invalid_reading_group_references")
         _require(len({spans[ref]["source_id"] for ref in refs}) == 1, "reading_group_parent_mismatch")
+        if attributed:
+            views = _reading_rows(group["citation_views"], limit=2)
+            _require(bool(views), "missing_reading_citation_view")
+            seen_support: set[frozenset[str]] = set()
+            for value in views:
+                view = _exact(value, {"support_evidence_ids", "context_evidence_ids"}, "invalid_reading_citation_view")
+                support = _reading_texts(view["support_evidence_ids"])
+                context_refs = _reading_texts(view["context_evidence_ids"])
+                _require(bool(support) and len(support) == len(set(support))
+                         and len(context_refs) == len(set(context_refs))
+                         and not set(support).intersection(context_refs)
+                         and set(support) | set(context_refs) == set(refs), "invalid_reading_citation_partition")
+                identity = frozenset(support)
+                _require(identity not in seen_support, "duplicate_reading_citation_view")
+                seen_support.add(identity)
     lists = {"opaque_pages", "deferred_pages", "deferred_unit_ids", "unassigned_unit_ids"}
     unread = context["unread"]
     sampled = isinstance(unread, dict) and bool({"counts", "limited"} & unread.keys())
