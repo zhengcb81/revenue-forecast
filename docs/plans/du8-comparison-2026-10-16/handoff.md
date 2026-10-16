@@ -204,15 +204,36 @@ owner 调用不得只被赋值而不参与判定。
 | owner 仅与 `None` 比较 | **CAUGHT** |
 | `not(owner判定) is False` 包装 | **CAUGHT** |
 | 生产端 `targets.py` 委托替换为 `{}` | **CAUGHT**（11 个测试失败） |
+| **不可达绑定 + 忠实本地带宽**（`__never__` 分支） | **静态 guard 全绿**，但**行为断言 CAUGHT** |
 
 见 `receipts/guard-attack-matrix.txt`（**ESCAPED: NONE**）、
 `receipts/guard-attack-check.txt`、`receipts/guard-attack-3-decoy.txt`、
-`receipts/guard-attack-2-producer.txt`。
+`receipts/guard-attack-2-producer.txt`、`receipts/guard-attack-4-escape.txt`。
 
 **关键教训（记录以免重犯）**："某处出现了 owner 名字"与"结果由 owner 的返回值决定"
-是两回事。前者可被诱饵调用满足——早期版本因此被独立审查攻破，且当时真的能让校验器
-**接受伪造的 `meets_target`**（同时重封 `result_sha256` 与 publication receipt）。
-只有 AST 形状检查能表达后者。
+是两回事。前者可被诱饵调用满足。
+
+**为什么最终放弃静态 guard**：静态形状检查连续被两轮独立审查攻破：
+
+1. 计数"源文本包含 owner 名字"的表达式 → 被诱饵调用
+   `require(恒真 or bool(owner(...)))` 满足；
+2. 计数"形状正确的 `comparisons == owner(...)` 站点" → 被**不可达分支**满足：
+   `if target["treatment"] == "__never__": require(comparisons == owner(...))`，
+   真实判定用不写 `isclose(abs_tol=...)` 的等价算术本地重算。
+   该攻击让全部 28 个静态 guard 保持绿色，而校验器**接受伪造的 `meets_target`**。
+
+结论：**没有任何 AST 形状能证明"活路径"用了 owner**。因此改用
+`tests/test_du8_owner_enforcement.py` 的**行为断言**：
+
+| 断言 | 证明的东西 |
+|---|---|
+| 校验 legacy 目标时 owner **确实被调用**（对 `research.target_comparison` 与 `revenue_report` 两处命名空间打桩） | 委托不是摆设 |
+| **毒化 owner 的返回值会让原本被接受的产物变为被拒** | 判定确实由 owner 的输出决定，而非本地重算 |
+| 逐字段篡改仍被拒 | 独立输入绑定未被削弱 |
+
+`receipts/guard-attack-4-escape.txt` 记录了关键的对比证据：同一个 `__never__` 攻击下，
+**静态 guard 仍然全绿（28 passed），而行为断言失败（2 failed）**。
+这正是"行为检查才是真正守住底线的那一个"的证据。
 
 所有攻击均在可还原写入上执行，事后源码文件与 HEAD 逐字节一致，仅 guard 测试本身有意变更。
 
