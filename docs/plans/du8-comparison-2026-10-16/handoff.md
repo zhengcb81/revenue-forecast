@@ -190,9 +190,14 @@ fixture 的独立脚本，在 `e86488a7` 的临时 worktree 与当前树上跑�
 （缩小声明窗口、改 `measurement_basis`、连同收入路径一起改写并重封 hash），
 全部被拒。
 
-**结构 guard 的反绕过证据**：`receipts/guard-attack-check.txt` 记录了一次
-真实攻击——把 report 的 legacy 委托整体替换为本地带宽重算（避开旧 guard 的字面量），
-旧 guard 全绿（19 passed），新 guard **exit 1 捕获**。该收据是 guard 非空转的证据。
+**结构 guard 的反绕过证据（两次攻击）**：
+
+- `receipts/guard-attack-check.txt`：把 report 的 legacy 委托整体替换为本地带宽重算
+  （避开旧 guard 的字面量），旧 guard 全绿（19 passed），新 guard **exit 1 捕获**。
+- `receipts/guard-attack-2-producer.txt`：把 `targets.py` 生产端的 owner 委托改成
+  返回空字典，**11 个测试失败**（含行为测试），证明生产端不止靠静态 guard 兜底。
+
+两次攻击均在临时副本/可还原写入上执行，事后 `git diff HEAD` 为空，证实已还原。
 
 ## 8. NOT_RUN / 不跑范围
 
