@@ -24,7 +24,7 @@
 | 白名单外新增 `tests/du8_models.py` | 中 | 移入白名单内的 `tests/fixtures/du8_comparison/models.py` |
 | 缺 ownership 语义测试 | 中 | 新增 `constrained_model`（sum_cap 使 effective ≠ recognized）与两项断言，证明 owner 读约束调整后路径 |
 | 仅测失败路径 sentinel，未测成功路径 | 中 | 新增成功路径 sentinel 测试（用 registry 自身 append 写入链有效记录） |
-| `b-regression-focused.txt` 未覆盖 DU8 套件 | 中 | 已重跑，487 passed 含全部 DU8 套件 |
+| `b-regression-focused.txt` 未覆盖 DU8 套件 | 中 | 已重跑，497 passed 含全部 DU8 套件 |
 
 **审查同时独立确认**（对抗验证结论）：发布数字与形状相对基线**逐字节相同**
 （9 个模型全等、whole-body sha16 一致、schema 3.1/3.2/3.3/3.7–3.10 全等）；
@@ -126,7 +126,7 @@ compare_target_measurement(target, result, parameters=None, *, periods=None) -> 
 python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py \
   tests/test_du8_hand_anchors.py tests/test_du8_target_report_roundtrip.py -q
 
-# B 节点集中回归（487 passed, 7 skipped，含全部 DU8 套件）
+# B 节点集中回归（497 passed, 7 skipped，含全部 DU8 套件）
 python -X utf8 -B -m pytest tests/test_management_targets.py \
   tests/test_target_measurement_comparison.py tests/test_management_target_semantics.py \
   tests/test_independent_targets.py tests/test_structure_targets.py \
@@ -213,27 +213,33 @@ owner 调用不得只被赋值而不参与判定。
 **关键教训（记录以免重犯）**："某处出现了 owner 名字"与"结果由 owner 的返回值决定"
 是两回事。前者可被诱饵调用满足。
 
-**为什么最终放弃静态 guard**：静态形状检查连续被两轮独立审查攻破：
+**为什么最终改变了报告侧的校验形状**：静态 guard 与"调用/可毒化"式行为断言
+连续被三轮独立审查攻破：
 
-1. 计数"源文本包含 owner 名字"的表达式 → 被诱饵调用
-   `require(恒真 or bool(owner(...)))` 满足；
-2. 计数"形状正确的 `comparisons == owner(...)` 站点" → 被**不可达分支**满足：
-   `if target["treatment"] == "__never__": require(comparisons == owner(...))`，
-   真实判定用不写 `isclose(abs_tol=...)` 的等价算术本地重算。
-   该攻击让全部 28 个静态 guard 保持绿色，而校验器**接受伪造的 `meets_target`**。
+1. 计数"源文本包含 owner 名字" → 诱饵调用
+   `require(恒真 or bool(owner(...)))` 即可满足；
+2. 计数"形状正确的 `comparisons == owner(...)` 站点" → **不可达分支**
+   `if target["treatment"] == "__never__":` 加一个忠于 owner 的本地带宽即可满足；
+3. 断言"owner 被调用且可毒化" → **回声包装器**：先调用真 owner，再返回一个由
+   **被校验工件自身的行**推导出的映射，使等式退化为恒真。
 
-结论：**没有任何 AST 形状能证明"活路径"用了 owner**。因此改用
-`tests/test_du8_owner_enforcement.py` 的**行为断言**：
+三者的共同点是都能被"返回一个源自工件自身"的值满足。**根治办法不在加 guard，
+而在报告侧的校验形状本身**：报告现在向 owner 请求**基于自己读到的模型**重算的行
+（传入 `dict(target, scenario_comparison=None)`，即**扣留已发布行**），
+再逐行比对 `meets_target` 与 `attainment_ratio`。owner 看不到工件的答案，
+因此回声无法满足。
 
-| 断言 | 证明的东西 |
-|---|---|
-| 校验 legacy 目标时 owner **确实被调用**（对 `research.target_comparison` 与 `revenue_report` 两处命名空间打桩） | 委托不是摆设 |
-| **毒化 owner 的返回值会让原本被接受的产物变为被拒** | 判定确实由 owner 的输出决定，而非本地重算 |
-| 逐字段篡改仍被拒 | 独立输入绑定未被削弱 |
+| 攻击 | 静态 guard | 行为断言 | 伪造 `meets_target` 端到端 |
+|---|---|---|---|
+| 本地带宽重写 | CAUGHT | CAUGHT | 拒绝 |
+| 诱饵 `or` 调用 | CAUGHT | CAUGHT | 拒绝 |
+| 不可达绑定 + 忠实本地带宽 | 全绿 | **CAUGHT** | 拒绝 |
+| **回声包装器**（审查发现的最强攻击） | — | **CAUGHT（23 failed）** | **拒绝** |
 
-`receipts/guard-attack-4-escape.txt` 记录了关键的对比证据：同一个 `__never__` 攻击下，
-**静态 guard 仍然全绿（28 passed），而行为断言失败（2 failed）**。
-这正是"行为检查才是真正守住底线的那一个"的证据。
+`receipts/guard-attack-5-echo.txt` 记录了关键对比：未改动的树上，翻转 `meets_target`
+并重封 `result_sha256` 与 publication receipt 会被拒（
+`management target meets_target mismatch`）；装上回声包装器后，行为断言 23 个失败，
+篡改同样被拒——**不再有"全绿却接受伪造"的窗口**。
 
 所有攻击均在可还原写入上执行，事后源码文件与 HEAD 逐字节一致，仅 guard 测试本身有意变更。
 
@@ -268,7 +274,7 @@ A 节点临时探针 `tools/du8_probe_*.py`、`tools/du8_scan.py`、
 
 1. `git log` 确认最终 commit `67b15a60eda6894162523f64fa5e02a619106f07`
    与 `handoff.json.implementation_commits` 对齐；`git status` 应为空。
-2. 跑 §5 的集中回归命令复现 487 passed。
+2. 跑 §5 的集中回归命令复现 497 passed。
 3. 独立验收建议重点：用 `git diff <base> <final>` 确认白名单外零改动；
    用 §2 的反例在基线上复核 RED 真实存在；重放
    `receipts/guard-attack-check.txt` 的攻击确认 guard 仍能捕获。

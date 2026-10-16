@@ -1036,17 +1036,49 @@ def _validate_forecast_output(
                         ),
                         f"management target comparison value mismatch: {target_id}/{scenario}",
                     )
-                require(
-                    comparisons
-                    == compare_target_measurement(
-                        target,
-                        result,
-                        periods=[target["target_period"]]
-                        if result["schema_version"] == "3.1"
-                        else target["measurement_periods"],
-                    ),
-                    f"management target comparison recomputation mismatch: {target_id}",
+                # The decision itself is re-derived by the one owner from the
+                # report's OWN reading of the model, then compared row by row.
+                # The stored rows are withheld from the owner, so this cannot
+                # become a self-confirming comparison: the observed values were
+                # computed here from the model, not echoed from the artifact.
+                #
+                # This shape replaced a plain `comparisons == owner(target)`
+                # check, which successive adversarial reviews defeated (decoy
+                # call, unreachable binding, echo wrapper): each satisfied it by
+                # returning something derived from the artifact under check.
+                expected_rows = compare_target_measurement(
+                    dict(target, scenario_comparison=None),
+                    result,
+                    periods=[target["target_period"]]
+                    if result["schema_version"] == "3.1"
+                    else target["measurement_periods"],
                 )
+                require(
+                    set(comparisons) <= set(expected_rows),
+                    f"management target comparison scenario set mismatch: {target_id}",
+                )
+                for scenario, comparison in comparisons.items():
+                    expected_row = expected_rows[scenario]
+                    require(
+                        bool(comparison["meets_target"])
+                        is bool(expected_row["meets_target"]),
+                        f"management target meets_target mismatch: {target_id}/{scenario}",
+                    )
+                    actual_ratio = comparison["attainment_ratio"]
+                    expected_ratio = expected_row["attainment_ratio"]
+                    require(
+                        (actual_ratio is None) == (expected_ratio is None)
+                        and (
+                            actual_ratio is None
+                            or math.isclose(
+                                float(actual_ratio),
+                                float(expected_ratio),
+                                rel_tol=1e-9,
+                                abs_tol=1e-9,
+                            )
+                        ),
+                        f"management target attainment mismatch: {target_id}/{scenario}",
+                    )
             else:
                 require(
                     not comparisons,

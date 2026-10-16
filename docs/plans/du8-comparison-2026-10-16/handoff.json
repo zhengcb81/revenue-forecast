@@ -16,20 +16,20 @@
   ],
   "frozen_source_tree": "scripts/ is byte-identical from 03f35e91 onward: run `git diff 03f35e91 <HEAD> -- scripts` and expect no output. tests/test_du8_target_comparison_owner.py was hardened three times after that commit in response to independent adversarial review; every other test and fixture file is byte-identical from 03f35e91 onward. Verify the whole tree with `git diff 03f35e91 <HEAD> --stat -- scripts tests`.",
   "changed_paths": [
+    "docs/plans/du8-comparison-2026-10-16/findings.md",
+    "docs/plans/du8-comparison-2026-10-16/handoff.json",
+    "docs/plans/du8-comparison-2026-10-16/handoff.md",
+    "docs/plans/du8-comparison-2026-10-16/progress.md",
+    "references/management-targets.md",
     "scripts/research/target_comparison.py",
     "scripts/research/targets.py",
     "scripts/revenue_report.py",
-    "tests/test_du8_target_comparison_owner.py",
-    "tests/test_du8_target_report_roundtrip.py",
-    "tests/test_du8_hand_anchors.py",
-    "tests/fixtures/du8_comparison/models.py",
     "tests/fixtures/du8_comparison/hand_anchors.py",
-    "references/management-targets.md",
-    "docs/plans/du8-comparison-2026-10-16/findings.md",
-    "docs/plans/du8-comparison-2026-10-16/handoff.md",
-    "docs/plans/du8-comparison-2026-10-16/handoff.json",
-    "docs/plans/du8-comparison-2026-10-16/progress.md",
-    "tests/test_du8_owner_enforcement.py"
+    "tests/fixtures/du8_comparison/models.py",
+    "tests/test_du8_hand_anchors.py",
+    "tests/test_du8_owner_enforcement.py",
+    "tests/test_du8_target_comparison_owner.py",
+    "tests/test_du8_target_report_roundtrip.py"
   ],
   "interfaces": {
     "entrypoints": [
@@ -69,9 +69,9 @@
   },
   "tests": [
     {
-      "command": "python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py tests/test_du8_owner_enforcement.py tests/test_du8_hand_anchors.py tests/test_du8_target_report_roundtrip.py -q",
+      "command": "python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py tests/test_du8_owner_enforcement.py tests/test_du8_owner_enforcement.py tests/test_du8_hand_anchors.py tests/test_du8_target_report_roundtrip.py -q",
       "exit_code": 0,
-      "passed": 113,
+      "passed": 118,
       "failed": 0,
       "skipped": 6,
       "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/c-du8-suites.txt"
@@ -79,7 +79,7 @@
     {
       "command": "python -X utf8 -B -m pytest <26 adjacent suites> -q",
       "exit_code": 0,
-      "passed": 487,
+      "passed": 497,
       "failed": 0,
       "skipped": 7,
       "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/b-regression-focused.txt"
@@ -139,6 +139,14 @@
       "failed": 2,
       "skipped": 0,
       "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-4-escape.txt"
+    },
+    {
+      "command": "python -X utf8 -B tools/du8_final_attacks.py  (adversarial: echo wrapper returning rows derived from the artifact under check)",
+      "exit_code": 0,
+      "passed": 0,
+      "failed": 23,
+      "skipped": 0,
+      "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-5-echo.txt"
     }
   ],
   "red_receipts": [
@@ -150,7 +158,8 @@
     "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-2-producer.txt",
     "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-3-decoy.txt",
     "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-matrix.txt",
-    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-4-escape.txt"
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-4-escape.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-5-echo.txt"
   ],
   "independent_expected_basis": [
     "tests/fixtures/du8_comparison/hand_anchors.py recomputes every frozen constant with decimal and imports no production comparison code",

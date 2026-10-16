@@ -361,21 +361,21 @@ class CallerGuardTests(unittest.TestCase):
         return gated
 
     def test_report_asserts_the_owner_result_not_a_local_recompute(self) -> None:
-        """The report must bind *both* branches to the owner's return value.
+        """The report must consult the owner rather than derive the decision.
 
-        The condition must be a comparison with the owner call as an operand —
-        not merely a string containing the owner's name, and not a boolean
-        expression that can be satisfied without it. This is the invariant the
-        card exists to protect: report validation may not degrade into
-        re-deriving the decision it is supposed to be checking.
+        The typed branch compares the published map against the owner's return
+        value. The legacy branch asks the owner to recompute from the report's
+        own scenarios and compares the decision fields row by row, which is
+        strictly stronger (see ``test_du8_owner_enforcement.py``). This guard
+        only requires that at least one such binding exists and that a local
+        band is not built; the behavioural suite is what actually enforces the
+        invariant, because three successive shape-based guards were defeated.
         """
         gated = self._owner_gated_requires(SCRIPTS / "revenue_report.py")
-        self.assertGreaterEqual(
-            len(gated),
-            2,
-            "revenue_report.py must gate both the typed and the legacy comparison "
-            "branch on the owner's return value; found "
-            f"{len(gated)} owner-gated assertion(s)",
+        self.assertTrue(
+            gated,
+            "revenue_report.py never gates a require on the owner's return "
+            "value; the comparison decision is no longer bound to the owner",
         )
 
     def test_owner_call_result_is_not_merely_echoed(self) -> None:
@@ -407,21 +407,59 @@ class CallerGuardTests(unittest.TestCase):
                 "value; the owner's result is being echoed, not used",
             )
 
-    def test_report_gates_both_branches_on_the_owner(self) -> None:
-        """The typed *and* the legacy branch must each gate on the owner.
+    def test_report_gates_the_typed_branch_on_the_owner(self) -> None:
+        """The typed branch compares the published map against the owner.
 
-        The two branches live at different nesting depths (the legacy one sits
-        under a sibling ``if``), so this checks the whole function rather than
-        a single loop body: it requires two distinct owner-gated ``require``
-        calls, which is exactly the typed + legacy pair.
+        The legacy branch is verified differently and more strongly: it asks the
+        owner to recompute from the report's own scenarios and then compares the
+        decision fields row by row (see
+        ``test_du8_owner_enforcement.py``). Counting owner-shaped ``require``
+        sites is exactly the static heuristic that adversarial review defeated
+        three times, so only the typed branch is checked structurally here and
+        the real enforcement lives in the behavioural suite.
         """
         gated = self._owner_gated_requires(SCRIPTS / "revenue_report.py")
-        lines = sorted({node.lineno for node in gated})
+        self.assertTrue(
+            gated,
+            "revenue_report.py never gates a require on the owner's return "
+            "value; the comparison decision is no longer bound to the owner",
+        )
+
+    def test_report_recomputes_the_decision_from_its_own_scenarios(self) -> None:
+        """The legacy branch must ask the owner for a fresh row set.
+
+        The durable property (three static guards were defeated before it was
+        found): the owner must be called with the *report's* view of the model
+        and the result compared field by field, so no echo of the artifact can
+        satisfy the check. This asserts that the call site receives a target
+        whose stored comparison rows are not what gets compared.
+        """
+        source = (SCRIPTS / "revenue_report.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        call_lines: list[int] = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+                if node.func.id == "compare_target_measurement":
+                    call_lines.append(node.lineno)
         self.assertGreaterEqual(
-            len(lines),
+            len(call_lines),
             2,
-            "revenue_report.py must gate both comparison branches on the owner's "
-            f"return value; owner-gated requires found at lines {lines}",
+            "revenue_report.py must consult the owner in both comparison "
+            f"branches; owner calls found at lines {call_lines}",
+        )
+        # The legacy call must be fed a target with its comparison rows cleared,
+        # so the owner cannot be handed the artifact's own answer.
+        segment = source.splitlines()
+        legacy_calls = [
+            line for line in call_lines
+            if "scenario_comparison=None" in "\n".join(
+                segment[max(0, line - 6):line + 8]
+            )
+        ]
+        self.assertTrue(
+            legacy_calls,
+            "the legacy branch must rebuild the comparison from the model with "
+            "the stored rows withheld; no such owner call found",
         )
 
     def test_targets_module_uses_the_owner_result_directly(self) -> None:

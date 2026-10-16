@@ -1,25 +1,32 @@
 """DU8: the comparison decision must provably come from the single owner.
 
 The construction card's central invariant is that report validation must not
-degrade into re-deriving the decision it is supposed to be checking. Two
-earlier attempts enforced this with static AST shape checks. Independent
-adversarial review defeated both:
+degrade into re-deriving the decision it is supposed to be checking.
 
-1. a count of "expressions mentioning the owner" was satisfied by a decoy call;
-2. a count of "well-formed ``comparisons == owner(...)`` sites" was satisfied by
-   placing that comparison in an *unreachable* branch (``if treatment ==
-   "__never__":``) while the real verdict was re-derived locally.
+Three successive enforcement designs were defeated by independent adversarial
+review, and the history matters because each failure names a real gap:
 
-The lesson is that no static shape can prove the live path uses the owner.
-These tests therefore assert the invariant *behaviourally*:
+1. counting expressions whose source text mentioned the owner -> a decoy call
+   ``require(<always true> or bool(owner(...)))`` satisfied it;
+2. counting well-formed ``comparisons == owner(...)`` AST sites -> an
+   *unreachable* binding (``if treatment == "__never__":``) plus a faithful
+   local band satisfied it;
+3. asserting the owner is *invoked* and *poisonable* -> an echo wrapper that
+   calls the real owner and then returns a map **derived from the row under
+   check** satisfied it, because the equality became a tautology.
 
-* the owner is invoked exactly once per compared target during a real
-  validation, so a shadow re-derivation that calls it a second time (or not at
-  all) is visible;
-* mutating the owner's return value changes what validation accepts, so the
-  verdict is provably bound to the owner's output rather than to an
-  independently recomputed band;
-* tampering any published field is still refused.
+The durable lesson: invocation, shape and poisonability are all satisfiable by
+a wrapper. What must be proven is that the verdict is a function of the
+owner's *computation over the model*, not of the artifact being checked.
+
+These tests therefore assert **input independence**:
+
+* the decision fields of the artifact are REMOVED before validation, so any
+  implementation that echoes the artifact's own rows has nothing to echo and
+  must fail closed;
+* the owner's return value still decides the verdict, and the row is still
+  bound to the model's own revenue data;
+* tampering any published field is refused.
 """
 from __future__ import annotations
 
@@ -83,6 +90,114 @@ class _OwnerSpy:
         target_comparison.compare_target_measurement = self._original["target_comparison"]
         revenue_report.compare_target_measurement = self._original["revenue_report"]
         return False
+
+
+class InputIndependenceTests(unittest.TestCase):
+    """The verdict must be computed from the model, not echoed from the artifact.
+
+    The echo-wrapper bypass calls the real owner and then returns a map derived
+    from ``target["scenario_comparison"]`` — the rows being validated — making
+    the comparison a tautology. Two properties separate a real delegation from
+    such a wrapper, and both are asserted here:
+
+    * the stored rows are *rebound* to the model, so an artifact whose rows and
+      model disagree is refused (the wrapper would accept its own echo);
+    * removing the rows entirely makes validation fail closed rather than
+      vacuously agree.
+    """
+
+    def test_stored_rows_are_rebound_to_the_model(self) -> None:
+        """Edit a row's observation away from the model; validation refuses.
+
+        This is the property an echo wrapper cannot have: it compares the
+        artifact against itself, so a row that no longer matches the model
+        still satisfies it. Here the row is changed while ``result_sha256`` is
+        resealed, and validation must still refuse.
+        """
+        data = legacy_annual_model()
+        result = run_forecast(data)
+        validate_forecast_output(result)  # accepted as produced
+
+        tampered = _reseal(result)
+        row = tampered["management_target_coverage"]["targets"][0][
+            "scenario_comparison"]["high"]
+        row["modeled_value"] = float(row["modeled_value"]) + 1.0
+        with pytest.raises(ForecastInputError):
+            validate_forecast_output(tampered)
+
+    def test_missing_comparison_rows_are_refused(self) -> None:
+        """Strip the stored rows; validation must fail closed, not agree."""
+        data = legacy_annual_model()
+        result = run_forecast(data)
+        stripped = _reseal(copy.deepcopy(result))
+        for target in stripped["management_target_coverage"]["targets"]:
+            target.pop("scenario_comparison", None)
+        with pytest.raises((ForecastInputError, KeyError)):
+            validate_forecast_output(stripped)
+
+    def test_owner_output_object_is_what_gets_compared(self) -> None:
+        """The comparison must consume the owner's *own* return object.
+
+        The owner is replaced with one that returns a distinguishable but
+        still model-derived map (identical shape, one verdict inverted). If
+        validation compares against the owner's return value at all, the
+        inversion must be observable as a refusal; an echo wrapper or a local
+        re-derivation would ignore it.
+        """
+        data = legacy_annual_model()
+        result = run_forecast(data)
+        original = target_comparison.compare_target_measurement
+        seen_returns: list[object] = []
+
+        def marking(target, res, parameters=None, *, periods=None):
+            rows = original(target, res, parameters, periods=periods)
+            for value in rows.values():
+                value["meets_target"] = not value["meets_target"]
+            seen_returns.append(rows)
+            return rows
+
+        target_comparison.compare_target_measurement = marking
+        revenue_report.compare_target_measurement = marking
+        try:
+            with pytest.raises(ForecastInputError):
+                validate_forecast_output(result)
+        finally:
+            target_comparison.compare_target_measurement = original
+            revenue_report.compare_target_measurement = original
+        self.assertTrue(seen_returns, "the owner was never asked to compute")
+
+    def test_owner_is_asked_without_the_published_rows(self) -> None:
+        """The legacy decision must be recomputed, not read back.
+
+        This is the property that survives every bypass found so far: the
+        report must hand the owner a target whose stored comparison rows are
+        withheld, so an echo wrapper has nothing to echo. The spy records what
+        the owner actually received.
+        """
+        data = legacy_annual_model()
+        result = run_forecast(data)
+        original = target_comparison.compare_target_measurement
+        supplies: list[object] = []
+
+        def spy(target, res, parameters=None, *, periods=None):
+            supplies.append(target.get("scenario_comparison"))
+            return original(target, res, parameters, periods=periods)
+
+        target_comparison.compare_target_measurement = spy
+        revenue_report.compare_target_measurement = spy
+        try:
+            validate_forecast_output(result)
+        finally:
+            target_comparison.compare_target_measurement = original
+            revenue_report.compare_target_measurement = original
+
+        self.assertTrue(supplies, "the owner was never asked to compute")
+        self.assertTrue(
+            any(supplied is None for supplied in supplies),
+            "no owner call withheld the stored comparison rows; the decision "
+            f"may be read back from the artifact instead of recomputed "
+            f"(supplied values: {supplies})",
+        )
 
 
 class OwnerCallCountTests(unittest.TestCase):
