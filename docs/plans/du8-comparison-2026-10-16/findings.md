@@ -67,3 +67,30 @@ legacy 目标跟随自带副本，两条路径的未来修改必然漂移。
 因此本卡的收敛目标是**责任唯一**：把 legacy 的乘除次序、键集与默认值原样搬进一个
 owner 内的显式兼容路径，让 `targets.py`、`revenue_report.py` 都只调用它，
 并保留 legacy 数值不变（old gold / old wire 不动）。
+
+## 6. 实施后的独立对抗复核（两轮，全部修复）
+
+两轮独立审查在首次实现 commit 上核对了上述判断，并确认：发布数字与形状相对基线
+**逐字节相同**（9 个模型全等、whole-body sha16 一致、schema 3.1/3.2/3.3/3.7–3.10
+全等）；A 节点 RED 可在基线独立复现；反篡改独立且比基线更强。
+
+同时发现的真实缺陷（均已在最终 commit 修复）：
+
+1. **静态 guard 可绕过**（高）。把 report 的 legacy 委托整体替换为本地带宽重算，
+   只要 typed 分支仍保留 `compare_target_measurement` 符号，旧 guard 全绿。
+   现已改为语义 guard：每个比较分支都必须断言 owner 返回值，且禁止任何本地带宽；
+   该攻击已复现为失败用例（`receipts/guard-attack-check.txt`，exit 1）。
+   **这条纠正了本文档先前"guard 非空转"的说法过于乐观。**
+2. `typed_level_model` 未设 `comparison_basis`，标称 typed 实走 legacy 路径（高）。
+   已修复并由 `test_typed_and_legacy_models_really_take_different_paths` 断言。
+3. `handoff.json` 的 `implementation_commits` 曾填入**不存在的 SHA**，且声称 ruff
+   exit 0 而其收据为 exit 1（高）。均为作者自查时发现并修正。
+4. 两处白名单外改动（`references/target-measurement-comparison.md`、
+   `tests/du8_models.py`）已还原/移入 `tests/fixtures/du8_comparison/`。
+5. 缺 ownership 语义测试、缺成功路径 sentinel 测试，均已补。
+
+## 7. 仍保留的有意差异（非缺陷）
+
+- legacy 与 typed 的 `approximately` 带宽在 `|v| < 1` 及负点目标上不同；
+- legacy `at_least`/`at_most` 对负目标向零收窄；
+- 报告输入绑定的 `rel_tol=1e-9, abs_tol=1e-9` 身份带宽是既有的，非比较容差。

@@ -4,7 +4,8 @@
   "base_commit": "e86488a701ee8a107b432749e85003b9d115d407",
   "branch": "codex/du8-rf-comparison-20261016",
   "implementation_commits": [
-    "4fcdbb5c2b0e6d1a9f1e6c2c6e1b0f0b0d2e4d1a"
+    "4fcdbb5ca8a9ebd3d69708ec4427a64801abd1f2",
+    "03f35e918540c4b8bc0d2730417b412012632ece"
   ],
   "changed_paths": [
     "scripts/research/target_comparison.py",
@@ -13,15 +14,13 @@
     "tests/test_du8_target_comparison_owner.py",
     "tests/test_du8_target_report_roundtrip.py",
     "tests/test_du8_hand_anchors.py",
-    "tests/du8_models.py",
+    "tests/fixtures/du8_comparison/models.py",
     "tests/fixtures/du8_comparison/hand_anchors.py",
     "references/management-targets.md",
-    "references/target-measurement-comparison.md",
     "docs/plans/du8-comparison-2026-10-16/findings.md",
     "docs/plans/du8-comparison-2026-10-16/handoff.md",
     "docs/plans/du8-comparison-2026-10-16/handoff.json",
-    "docs/plans/du8-comparison-2026-10-16/progress.md",
-    "docs/plans/du8-comparison-2026-10-16/task_plan.md"
+    "docs/plans/du8-comparison-2026-10-16/progress.md"
   ],
   "interfaces": {
     "entrypoints": [
@@ -63,17 +62,17 @@
     {
       "command": "python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py tests/test_du8_hand_anchors.py tests/test_du8_target_report_roundtrip.py -q",
       "exit_code": 0,
-      "passed": 93,
+      "passed": 107,
       "failed": 0,
       "skipped": 6,
       "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/c-du8-suites.txt"
     },
     {
-      "command": "python -X utf8 -B -m pytest <25 adjacent suites> -q",
+      "command": "python -X utf8 -B -m pytest <26 adjacent suites> -q",
       "exit_code": 0,
-      "passed": 435,
+      "passed": 486,
       "failed": 0,
-      "skipped": 3,
+      "skipped": 7,
       "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/b-regression-focused.txt"
     },
     {
@@ -99,6 +98,14 @@
       "failed": 0,
       "skipped": 0,
       "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/c-gates.txt"
+    },
+    {
+      "command": "python -X utf8 -B tools/du8_guard_attack_check.py <scratch>  (adversarial: replace the report's legacy delegation with a local band, then run the guards)",
+      "exit_code": 1,
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-check.txt"
     }
   ],
   "red_receipts": [
@@ -116,8 +123,8 @@
   "fixtures": [
     {
       "kind": "synthetic",
-      "scope": "legacy_annual / legacy_approximately / legacy_cumulative / typed_level / typed_growth / typed_quarterly complete models built from the repo's own synthetic test documents",
-      "sha256": "aad3720ce0d4eda081849ca7090b99d74110ab0ed9f3feb767a9223c44097b26",
+      "scope": "legacy_annual / legacy_approximately / legacy_cumulative / constrained / typed_level / typed_growth / typed_quarterly complete models built from the repo's own synthetic test documents",
+      "sha256": "06b2f8c52e2e7fff5c6edfb320743485d89be0dde3381ba1af53c04d70695ac6",
       "limits": "synthetic only; not evidence about any real company; no supplier or network input; no buy-side model-quality claim"
     },
     {
@@ -131,7 +138,10 @@
   "known_limits": [
     "the legacy and typed approximately bands still differ below |v| = 1 and for negative point targets; this is intentional and now explicit rather than convergent",
     "the legacy at_least/at_most bound narrows toward zero for a negative point target; that published arithmetic is preserved deliberately",
-    "receipts/wider-preexisting-*.txt record 17 pre-existing failures that are byte-identical between baseline e86488a7 and the implementation commit"
+    "the report binds modeled_value/target_value with rel_tol=1e-9 and abs_tol=1e-9, so a drift below that band is accepted; this is the pre-existing identity tolerance, not a comparison tolerance",
+    "receipts/wider-preexisting-*.txt record 17 pre-existing failures that are byte-identical between baseline e86488a7 and the implementation commit",
+    "two independent adversarial reviews of 4fcdbb5c found: (1) the first guard suite was defeatable by rewriting the legacy delegation while the typed branch kept the owner symbol, now fixed and reproduced as receipts/guard-attack-check.txt; (2) typed_level_model did not set comparison_basis and so silently exercised the legacy path, now fixed and asserted by test_typed_and_legacy_models_really_take_different_paths; (3) the handoff was uncommitted with a fabricated commit SHA, now corrected",
+    "the receipt b-regression-focused.txt now includes the DU8 suites (the earlier 435-pass figure did not cover them)"
   ],
   "not_run": [
     "real company data, real filings, any supplier or network call (0 by design)",

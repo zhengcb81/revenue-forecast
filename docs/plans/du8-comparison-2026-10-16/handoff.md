@@ -3,8 +3,30 @@
 - 卡片：`du8-comparison-2026-10-16`
 - 分支：`codex/du8-rf-comparison-20261016`
 - 源码基线：`e86488a701ee8a107b432749e85003b9d115d407`
-- 实现 commit：见 `handoff.json` 的 `implementation_commits`（本文件冻结于实现 commit 之后）
-- 状态：**实现与测试完成，STOP，等待 ROOT 独立验收/并线/同步技能**
+- 实现 commit：`4fcdbb5ca8a9ebd3d69708ec4427a64801abd1f2`（首次实现）、
+  `03f35e918540c4b8bc0d2730417b412012632ece`（审查后修复，最终冻结）
+- 状态：**实现、审查修复与测试完成，工作树干净，STOP，等待 ROOT 独立验收/并线/同步技能**
+
+## 0. 两轮独立对抗审查及其修复（必读）
+
+本卡在冻结前接受了两轮独立审查，findings 全部修复并留证：
+
+| 审查发现 | 严重度 | 修复 |
+|---|---|---|
+| 静态 guard 可用"保留 typed 分支 owner 符号、重写 legacy 分支"绕过 | 高 | guard 改为语义检查：每个比较分支都必须断言 owner 返回值，并禁止任何本地带宽；攻击已复现为失败用例，见 `receipts/guard-attack-check.txt`（exit 1） |
+| `typed_level_model` 未设 `comparison_basis`，标称 typed 实走 legacy 路径 | 高 | 补 `comparison_basis` + `normalization_rationale`，并新增 `test_typed_and_legacy_models_really_take_different_paths` 断言分支归属 |
+| 交接文件未提交、`implementation_commits` 为不存在的 SHA | 高 | 全部提交；SHA 改为真实值（本文件头部） |
+| `handoff.json` 声称 ruff exit 0 而其收据为 exit 1 | 高 | 删除未用 import，ruff 真实通过，`receipts/c-gates.txt` 为真实输出 |
+| `cleanup_receipt` 指向不存在的文件 | 中 | 已创建 `receipts/cleanup.txt` |
+| 白名单外改动 `references/target-measurement-comparison.md` | 中 | 已 `git checkout` 还原，该文件零改动 |
+| 白名单外新增 `tests/du8_models.py` | 中 | 移入白名单内的 `tests/fixtures/du8_comparison/models.py` |
+| 缺 ownership 语义测试 | 中 | 新增 `constrained_model`（sum_cap 使 effective ≠ recognized）与两项断言，证明 owner 读约束调整后路径 |
+| 仅测失败路径 sentinel，未测成功路径 | 中 | 新增成功路径 sentinel 测试（用 registry 自身 append 写入链有效记录） |
+| `b-regression-focused.txt` 未覆盖 DU8 套件 | 中 | 已重跑，486 passed 含全部 DU8 套件 |
+
+**审查同时独立确认**（对抗验证结论）：发布数字与形状相对基线**逐字节相同**
+（9 个模型全等、whole-body sha16 一致、schema 3.1/3.2/3.3/3.7–3.10 全等）；
+A 节点 RED 在基线可独立复现；反篡改确实独立且比基线更强；兼容面全部保持。
 
 ## 1. 已查明的根因
 
@@ -98,12 +120,11 @@ compare_target_measurement(target, result, parameters=None, *, periods=None) -> 
 ## 5. 实际运行命令
 
 ```text
-# 新单元/锚点/往返套件
-python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py -q
-python -X utf8 -B -m pytest tests/test_du8_hand_anchors.py -q
-python -X utf8 -B -m pytest tests/test_du8_target_report_roundtrip.py -q
+# 新单元/锚点/往返套件（107 passed, 6 skipped）
+python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py \
+  tests/test_du8_hand_anchors.py tests/test_du8_target_report_roundtrip.py -q
 
-# B 节点集中回归（435 passed, 3 skipped）
+# B 节点集中回归（486 passed, 7 skipped，含全部 DU8 套件）
 python -X utf8 -B -m pytest tests/test_management_targets.py \
   tests/test_target_measurement_comparison.py tests/test_management_target_semantics.py \
   tests/test_independent_targets.py tests/test_structure_targets.py \
@@ -115,7 +136,8 @@ python -X utf8 -B -m pytest tests/test_management_targets.py \
   tests/test_du5_root_unit_boundaries.py tests/test_input_quantity_conversion.py \
   tests/test_evidence_input_lineage.py tests/test_contract_registry.py \
   tests/test_schema_compatibility.py tests/test_scenarios_confidence.py \
-  tests/test_growth_driver_tree.py tests/test_lint_input.py tests/test_publication_pipeline.py -q
+  tests/test_growth_driver_tree.py tests/test_lint_input.py tests/test_publication_pipeline.py \
+  tests/test_revenue_constraints.py -q
 
 # 门禁
 python -X utf8 -B -m ruff check scripts tests tools
@@ -140,10 +162,13 @@ python -X utf8 -B tools/host_assumption_guard.py --roots tests tools scripts
 | `typed_at_least_negative_widens_down` | `-0.10 - 0.01 * |{-0.10}|` | `-0.101` |
 | `typed_at_most_negative_widens_up` | `-0.10 + 0.01 * |{-0.10}|` | `-0.099` |
 
+锚点文件 `tests/fixtures/du8_comparison/hand_anchors.py` 只 import `decimal`，
+不 import 任何生产比较模块；由 `tests/test_du8_hand_anchors.py` 逐项对 owner 断言。
+
 ## 7. 反篡改证据
 
 `tests/test_du8_target_comparison_owner.py::LegacyAntiTamperTests` 与
-`tests/test_du8_target_report_roundtrip.py`（参数化到全部 6 个合成模型）对
+`tests/test_du8_target_report_roundtrip.py`（参数化到全部 7 个合成模型）对
 `modeled_value`、`target_value`（区间目标改 `target_low`）、`attainment_ratio`、
 `meets_target`、`measurement_periods`、`measurement_basis`、`modeled_period_values`
 逐项篡改并重新封 `result_sha256`，全部被
@@ -152,7 +177,13 @@ python -X utf8 -B tools/host_assumption_guard.py --roots tests tools scripts
 
 **独立性说明**：报告校验不是"调同一函数再比同函数"。它先独立重建期间值并与发布行
 逐字段比对（输入绑定），再与 owner 判定比对。篡改 `modeled_value` 会先在绑定阶段
-被拒，与 owner 是否被调用无关。
+被拒，与 owner 是否被调用无关。独立对抗审查另测了三种洗白尝试
+（缩小声明窗口、改 `measurement_basis`、连同收入路径一起改写并重封 hash），
+全部被拒。
+
+**结构 guard 的反绕过证据**：`receipts/guard-attack-check.txt` 记录了一次
+真实攻击——把 report 的 legacy 委托整体替换为本地带宽重算（避开旧 guard 的字面量），
+旧 guard 全绿（19 passed），新 guard **exit 1 捕获**。该收据是 guard 非空转的证据。
 
 ## 8. NOT_RUN / 不跑范围
 
@@ -171,18 +202,23 @@ python -X utf8 -B tools/host_assumption_guard.py --roots tests tools scripts
 
 ## 9. 清理
 
-所有测试运行写入 pytest `tmp_path` 或自建 `TemporaryDirectory`；CLI 子进程通过
+所有测试运行写入 pytest `tmp_path`；CLI 子进程通过
 `REVENUE_PUBLICATION_REGISTRY` 指向临时目录，未触碰真实 registry。
-`tests/test_du8_target_report_roundtrip.py::test_failed_run_leaves_the_isolated_registry_untouched`
-用预存 sentinel 验证失败运行后 registry 字节不变、无输出文件残留。
-A 节点临时探针 `tools/du8_probe_*.py`、`tools/du8_scan.py` 已在 B 节点结束前删除，
-未入交付。
+sentinel 用 `scripts/publication_registry.py` 自身的 append 写入**链有效**记录
+（手写行会被正确判为 tampered），成功与失败两条路径均断言：
+预存字节保留、每行仍可解析、仓根不产生 registry 文件。
+A 节点临时探针 `tools/du8_probe_*.py`、`tools/du8_scan.py`、
+`tools/du8_guard_attack_check.py`、`tools/du8_attack_debug.py`
+均在交付前删除，未入 commit；攻击复现结论保存在
+`receipts/guard-attack-check.txt`。
 
 ## 10. ROOT 如何接收
 
-1. `git log` 确认实现 commit 的完整 SHA，与 `handoff.json.implementation_commits` 对齐。
-2. 跑 §5 的集中回归命令复现 435 passed。
-3. 独立验收建议重点：用 `git diff <base> <impl>` 确认白名单外零改动；
-   用 §2 的反例在基线上复核 RED 真实存在。
+1. `git log` 确认最终 commit `03f35e918540c4b8bc0d2730417b412012632ece`
+   与 `handoff.json.implementation_commits` 对齐；`git status` 应为空。
+2. 跑 §5 的集中回归命令复现 486 passed。
+3. 独立验收建议重点：用 `git diff <base> <final>` 确认白名单外零改动；
+   用 §2 的反例在基线上复核 RED 真实存在；重放
+   `receipts/guard-attack-check.txt` 的攻击确认 guard 仍能捕获。
 4. 本卡不等待来源升级：ROOT 可在 CWP 新原文摘要交付后继续调用相同 RF 公开接口
    （`scripts/revenue_forecast.py`），无需本卡再次改动。
