@@ -28,7 +28,8 @@
     "docs/plans/du8-comparison-2026-10-16/findings.md",
     "docs/plans/du8-comparison-2026-10-16/handoff.md",
     "docs/plans/du8-comparison-2026-10-16/handoff.json",
-    "docs/plans/du8-comparison-2026-10-16/progress.md"
+    "docs/plans/du8-comparison-2026-10-16/progress.md",
+    "tests/test_du8_owner_enforcement.py"
   ],
   "interfaces": {
     "entrypoints": [
@@ -68,9 +69,9 @@
   },
   "tests": [
     {
-      "command": "python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py tests/test_du8_hand_anchors.py tests/test_du8_target_report_roundtrip.py -q",
+      "command": "python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py tests/test_du8_owner_enforcement.py tests/test_du8_hand_anchors.py tests/test_du8_target_report_roundtrip.py -q",
       "exit_code": 0,
-      "passed": 108,
+      "passed": 112,
       "failed": 0,
       "skipped": 6,
       "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/c-du8-suites.txt"
@@ -130,6 +131,14 @@
       "failed": 0,
       "skipped": 0,
       "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-matrix.txt"
+    },
+    {
+      "command": "python -X utf8 -B tools/du8_escape_check.py <scratch>  (adversarial: unreachable owner binding + faithful local band)",
+      "exit_code": 1,
+      "passed": 0,
+      "failed": 2,
+      "skipped": 0,
+      "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-4-escape.txt"
     }
   ],
   "red_receipts": [
@@ -140,7 +149,8 @@
     "docs/plans/du8-comparison-2026-10-16/receipts/behaviour-freeze-recheck.txt",
     "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-2-producer.txt",
     "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-3-decoy.txt",
-    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-matrix.txt"
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-matrix.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-4-escape.txt"
   ],
   "independent_expected_basis": [
     "tests/fixtures/du8_comparison/hand_anchors.py recomputes every frozen constant with decimal and imports no production comparison code",
