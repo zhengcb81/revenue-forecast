@@ -4,7 +4,9 @@
 - 分支：`codex/du8-rf-comparison-20261016`
 - 源码基线：`e86488a701ee8a107b432749e85003b9d115d407`
 - 实现 commit：`4fcdbb5ca8a9ebd3d69708ec4427a64801abd1f2`（首次实现）、
-  `03f35e918540c4b8bc0d2730417b412012632ece`（审查后修复，最终冻结）
+  `03f35e918540c4b8bc0d2730417b412012632ece`（审查后修复）、
+  `7f286d811d5cd80f1f7e4339a0961671b125428a`（交接文档）、
+  `67b15a60eda6894162523f64fa5e02a619106f07`（**最终冻结**，还原白名单外文档）
 - 状态：**实现、审查修复与测试完成，工作树干净，STOP，等待 ROOT 独立验收/并线/同步技能**
 
 ## 0. 两轮独立对抗审查及其修复（必读）
@@ -214,7 +216,7 @@ A 节点临时探针 `tools/du8_probe_*.py`、`tools/du8_scan.py`、
 
 ## 10. ROOT 如何接收
 
-1. `git log` 确认最终 commit `03f35e918540c4b8bc0d2730417b412012632ece`
+1. `git log` 确认最终 commit `67b15a60eda6894162523f64fa5e02a619106f07`
    与 `handoff.json.implementation_commits` 对齐；`git status` 应为空。
 2. 跑 §5 的集中回归命令复现 486 passed。
 3. 独立验收建议重点：用 `git diff <base> <final>` 确认白名单外零改动；
