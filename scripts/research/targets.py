@@ -30,7 +30,13 @@ from contracts.evidence import (
 )
 from contracts.source_clock import SourceClockError, source_information_eligibility, validate_source_events
 from forecast.calc import collect_parameter_roles, evaluate_derived_formula
-from research.target_measurement import is_typed_target, validate_typed_target, compare_target_measurement
+from research.target_measurement import (
+    attainment_ratio,
+    compare_target_measurement,
+    is_typed_target,
+    meets_target,
+    validate_typed_target,
+)
 from research.communication_scope import analyze_communication_scope
 
 
@@ -273,6 +279,11 @@ def validate_management_target_coverage(
                 isinstance(unmodeled_reason, str) and unmodeled_reason.strip(),
                 f"invalid management target unmodeled_reason: {target_id}",
             )
+        # A signed YoY growth target keeps its own percent (a decline is not a
+        # positive growth number); ordinary revenue amounts stay non-negative.
+        signed_growth = is_typed_target(target) and target["comparison_basis"].get(
+            "metric_kind"
+        ) == "year_over_year_growth"
         raw_value_low = target.get("raw_target_value_low")
         raw_value_high = target.get("raw_target_value_high")
         if raw_value_kind == "qualitative_range":
@@ -299,7 +310,7 @@ def validate_management_target_coverage(
                 raw_value_high, f"{target_id}.raw_target_value_high"
             )
             require(
-                low_number >= 0 and low_number <= high_number,
+                (signed_growth or low_number >= 0) and low_number <= high_number,
                 f"invalid numeric range for management target: {target_id}",
             )
             require(
@@ -311,7 +322,10 @@ def validate_management_target_coverage(
             raw_value = finite_number(
                 target.get("raw_target_value"), f"{target_id}.raw_target_value"
             )
-            require(raw_value >= 0, f"management target cannot be negative: {target_id}")
+            require(
+                signed_growth or raw_value >= 0,
+                f"management target cannot be negative: {target_id}",
+            )
         measurement_basis = target.get("measurement_basis")
         require(
             measurement_basis in MANAGEMENT_TARGET_MEASUREMENT_BASES,
@@ -746,10 +760,11 @@ def add_management_target_analysis(
                     observed = sum(period_values.values())
                 else:
                     observed = period_values[measurement_periods[0]]
-                if target["comparison"] == "at_least":
-                    meets = observed >= target_value * (1 - tolerance)
-                elif target["comparison"] == "at_most":
-                    meets = observed <= target_value * (1 + tolerance)
+                if target["comparison"] in {"at_least", "at_most"}:
+                    meets = meets_target(
+                        observed, target_value, target_value,
+                        target["comparison"], tolerance,
+                    )
                 else:
                     meets = math.isclose(
                         observed,
@@ -767,9 +782,9 @@ def add_management_target_analysis(
                     "modeled_period_values": period_values,
                     "modeled_value": observed,
                     "target_value": target_value,
-                    "attainment_ratio": None
-                    if target_value == 0
-                    else observed / target_value,
+                    "attainment_ratio": attainment_ratio(
+                        observed, target_value, target_value
+                    ),
                     "meets_target": meets,
                 }
         item["scenario_comparison"] = comparisons

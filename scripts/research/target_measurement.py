@@ -1,4 +1,11 @@
-"""Typed management comparisons over existing RF paths and quarter bridges."""
+"""Typed management comparisons over existing RF paths and quarter bridges.
+
+Money scaling resolves through the one DU5 Currency x Scale description
+(``research.input_quantities``); this module keeps no scale list of its own.
+The comparison contract below is sign-safe: a target's negative sign never
+reverses which side counts as a shortfall, strict comparisons stay strict, and
+a two-ended range keeps both ends instead of becoming a midpoint.
+"""
 from __future__ import annotations
 
 from copy import deepcopy
@@ -7,12 +14,15 @@ import re
 
 from contracts.constants import SCENARIOS
 from contracts.evidence import finite_number, require, validate_claim_ids
+from research.input_quantities import money_scale_factor, same_money_currency
 from research.native_dependencies import scope_components
 
 SCHEMA = "management-target-comparison/1"
 METRICS = {"annual_revenue_level", "quarterly_revenue_level", "year_over_year_growth"}
-_SCALES = {"unit": 1, "units": 1, "thousand": 1e3, "million": 1e6, "billion": 1e9,
-           "trillion": 1e12, "万元": 1e4, "亿元": 1e8, "亿": 1e8}
+# Named diagnostics: a comparison word whose economic meaning cannot be pinned
+# down without guessing is refused by name instead of being silently resolved.
+OPERATOR_RANGE_INCOMPATIBLE = "typed_comparison_operator_range_incompatible"
+ATTAINMENT_RATIO_WITHHELD = "attainment_ratio_withheld_nonpositive_target"
 
 
 def is_typed_target(target: dict) -> bool:
@@ -20,7 +30,14 @@ def is_typed_target(target: dict) -> bool:
 
 
 def normalize_target_bounds(target: dict, data: dict) -> tuple[float, float]:
-    """Convert stated units only; never synthesize a manager dollar target."""
+    """Convert stated units only; never synthesize a manager dollar target.
+
+    Money amounts resolve through the shared DU5 Currency x Scale description,
+    so CNY and RMB are one currency, ``万``/``万元``/``10k`` are one scale, and
+    HKD/USD/RMB still never mix without an FX basis. A growth target is a
+    signed ratio: it keeps its sign (a decline is never rewritten as growth)
+    and never licenses a negative revenue amount.
+    """
     spec = target["comparison_basis"]
     raw = target.get("raw_target_value")
     low = target.get("raw_target_value_low") if raw is None else raw
@@ -37,12 +54,69 @@ def normalize_target_bounds(target: dict, data: dict) -> tuple[float, float]:
     else:
         require(target["raw_unit"] == f"{target['raw_currency']} {target['raw_scale']}",
                 "typed target raw unit must match currency/scale used for normalization")
-        require(target["raw_currency"] == data["currency"], "typed target currency mismatch; reconcile first")
-        require(target["raw_scale"] in _SCALES and data["unit"] in _SCALES, "typed target scale is unsupported")
-        factor = _SCALES[target["raw_scale"]] / _SCALES[data["unit"]]
-        low, high = low * factor, high * factor
+        require(same_money_currency(target["raw_currency"], data["currency"]),
+                "typed target currency mismatch; reconcile first")
+        raw_factor = money_scale_factor(target["raw_scale"])
+        model_factor = money_scale_factor(data["unit"])
+        require(raw_factor is not None and model_factor is not None, "typed target scale is unsupported")
+        low, high = low * raw_factor / model_factor, high * raw_factor / model_factor
     require(low <= high, "typed target range is inverted")
     return low, high
+
+
+def range_comparison_is_defined(comparison: str) -> bool:
+    """Only ``approximately`` has an unambiguous two-ended range meaning.
+
+    ``at_least``/``at_most``/``greater_than``/``less_than`` each name one
+    threshold, and a range names two: whether the floor is the low end or the
+    high end cannot be settled without guessing management's intent. Those
+    combinations carry the named ``OPERATOR_RANGE_INCOMPATIBLE`` diagnostic.
+    """
+    return comparison == "approximately"
+
+
+def acceptance_bound(value: float, tolerance: float, *, lower: bool) -> float:
+    """Tolerance band edge for ``at_least`` (lower) / ``at_most`` (upper).
+
+    A non-negative target keeps the frozen ``value * (1 +/- tolerance)``
+    expression bit for bit. A negative target widens away from zero, so the
+    target's sign never reverses which side counts as a shortfall.
+    """
+    if value >= 0:
+        return value * (1 - tolerance) if lower else value * (1 + tolerance)
+    return value - tolerance * abs(value) if lower else value + tolerance * abs(value)
+
+
+def meets_target(observed: float, low: float, high: float, comparison: str, tolerance: float) -> bool:
+    if low != high:
+        require(
+            range_comparison_is_defined(comparison),
+            f"{OPERATOR_RANGE_INCOMPATIBLE}: comparison {comparison} names one threshold "
+            f"but the target range names two; use approximately or a point target",
+        )
+        return low <= observed <= high
+    if comparison == "greater_than":
+        return observed > low
+    if comparison == "less_than":
+        return observed < low
+    if comparison == "at_least":
+        return observed >= acceptance_bound(low, tolerance, lower=True)
+    if comparison == "at_most":
+        return observed <= acceptance_bound(low, tolerance, lower=False)
+    return math.isclose(observed, low, rel_tol=tolerance, abs_tol=max(abs(low), 1e-12) * tolerance)
+
+
+def attainment_ratio(observed: float | None, low: float, high: float) -> float | None:
+    """Attainment of a point target, withheld where the ratio would mislead.
+
+    ``observed / low`` flips better and worse when ``low`` is negative, and a
+    zero target has no ratio at all. A two-ended range has no single target to
+    divide by (no midpoint is invented). The comparable observed value,
+    ``meets_target`` and the signed difference are never suppressed here.
+    """
+    if observed is None or low != high or low <= 0:
+        return None
+    return observed / low
 
 
 def validate_typed_target(target, data, parameters, claims, sources, used):
@@ -87,6 +161,17 @@ def validate_typed_target(target, data, parameters, claims, sources, used):
     else:
         require(target["measurement_basis"] == "annual_period", "annual comparison measurement basis mismatch")
     require(set(spec) == allowed, "typed comparison fields are not exact")
+    raw_point = target.get("raw_target_value")
+    two_ended = raw_point is None and (
+        target.get("raw_target_value_low") is not None
+        or target.get("raw_target_value_high") is not None
+    )
+    if two_ended and not range_comparison_is_defined(target["comparison"]):
+        require(
+            not modeled,
+            f"{OPERATOR_RANGE_INCOMPATIBLE}: comparison {target['comparison']} names one "
+            f"threshold but the typed target range names two; use approximately or a point target",
+        )
     low, high = normalize_target_bounds(target, data) if modeled else (None, None)
     if modeled and low == high:
         require(target.get("comparison_value") is not None and math.isclose(finite_number(target["comparison_value"], "comparison_value"), low, rel_tol=1e-9, abs_tol=1e-9), "typed comparison normalization mismatch")
@@ -109,6 +194,9 @@ def validate_typed_target(target, data, parameters, claims, sources, used):
     if metric == "year_over_year_growth" and spec.get("base_period") is None:
         normalized["comparison_status"] = "not_comparable"
         normalized["comparison_reason"] = "base_period_unknown"
+    elif two_ended and not range_comparison_is_defined(target["comparison"]):
+        normalized["comparison_status"] = "not_comparable"
+        normalized["comparison_reason"] = "operator_range_incompatible"
     normalized["source_ids"] = list(dict.fromkeys(source_ids))
     normalized["source_publication_dates"] = {sid: sources[sid]["published_date"] for sid in normalized["source_ids"]}
     return normalized
@@ -127,20 +215,6 @@ def _annual_value(result, target, scenario, period):
         return segment["base_revenue"]
     output = segment["scenarios"][scenario]
     return output.get("effective_revenue", output["recognized_revenue"]).get(year)
-
-
-def _meets(observed, low, high, op, tolerance):
-    if low != high:
-        return low <= observed <= high
-    if op == "greater_than":
-        return observed > low
-    if op == "less_than":
-        return observed < low
-    if op == "at_least":
-        return observed >= low * (1 - tolerance)
-    if op == "at_most":
-        return observed <= low * (1 + tolerance)
-    return math.isclose(observed, low, rel_tol=tolerance, abs_tol=max(abs(low), 1e-12) * tolerance)
 
 
 def compare_target_measurement(target: dict, result: dict, parameters: dict | None = None) -> dict:
@@ -178,8 +252,8 @@ def compare_target_measurement(target: dict, result: dict, parameters: dict | No
                "modeled_value": observed, "target_value": low if low == high else None,
                "target_low": low, "target_high": high, "comparison": target["comparison"],
                "comparison_status": "not_comparable" if observed is None else "comparable", "reason": reason,
-               "meets_target": None if observed is None else _meets(observed, low, high, target["comparison"], tolerance),
-               "attainment_ratio": None if observed is None or low == 0 or low != high else observed / low}
+               "meets_target": None if observed is None else meets_target(observed, low, high, target["comparison"], tolerance),
+               "attainment_ratio": attainment_ratio(observed, low, high)}
         if metric == "year_over_year_growth":
             row.update(base_value=denominator, base_period=spec.get("base_period"), numerator_value=numerator,
                        difference_percentage_points=None if observed is None or low != high else (observed - low) * 100)
@@ -189,6 +263,11 @@ def compare_target_measurement(target: dict, result: dict, parameters: dict | No
                 "difference": None if numerator is None else numerator - denominator * (1 + low)}
         else:
             row["difference"] = None if observed is None or low != high else observed - low
+        if row["attainment_ratio"] is None and observed is not None and low == high and low < 0:
+            # A negative point target is genuinely comparable; only the ratio is
+            # withheld because observed/low would flip better and worse. The
+            # signed difference, the status and the verbatim statement carry it.
+            row["reason"] = ATTAINMENT_RATIO_WITHHELD
         if target["treatment"] in {"modeled_scenario", "scenario_boundary"}:
             require(row["meets_target"] is True, "mapped scenario does not satisfy typed management target")
         comparisons[scenario] = row

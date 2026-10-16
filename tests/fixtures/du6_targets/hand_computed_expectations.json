@@ -1,0 +1,378 @@
+{
+  "schema_version": "du6-target-fixtures/1",
+  "description": "Independent hand-computed constants for DU6-RF-TARGET-MEASURES. Every number is derived on paper from the stated formula; no value here is produced by the engine under test.",
+  "provenance": {
+    "source": "hand_computed",
+    "author_line": "DU6-RF-TARGET-MEASURES",
+    "computed_on": "2026-10-16",
+    "note": "Synthetic only. No filing, no company original, no supplier output."
+  },
+  "money_scaling": [
+    {
+      "id": "hk_wan_to_million",
+      "input_value": 72500.0,
+      "input_currency": "HKD",
+      "input_scale": "万",
+      "input_scale_factor": 10000.0,
+      "target_unit_currency": "HKD",
+      "target_unit_scale": "million",
+      "target_unit_scale_factor": 1000000.0,
+      "formula": "72500 * 10000 / 1000000",
+      "expected": 725.0
+    },
+    {
+      "id": "hk_yi_to_million",
+      "input_value": 7.25,
+      "input_currency": "HKD",
+      "input_scale": "亿",
+      "input_scale_factor": 100000000.0,
+      "target_unit_currency": "HKD",
+      "target_unit_scale": "million",
+      "target_unit_scale_factor": 1000000.0,
+      "formula": "7.25 * 1e8 / 1e6",
+      "expected": 725.0
+    },
+    {
+      "id": "hk_baiwan_identity",
+      "input_value": 725.0,
+      "input_currency": "HKD",
+      "input_scale": "百万",
+      "input_scale_factor": 1000000.0,
+      "target_unit_currency": "HKD",
+      "target_unit_scale": "million",
+      "target_unit_scale_factor": 1000000.0,
+      "formula": "725 * 1e6 / 1e6",
+      "expected": 725.0
+    },
+    {
+      "id": "cny_yiyuan_same_currency_rmb_model",
+      "input_value": 500.0,
+      "input_currency": "CNY",
+      "input_scale": "亿元",
+      "input_scale_factor": 100000000.0,
+      "target_unit_currency": "RMB",
+      "target_unit_scale": "亿元",
+      "target_unit_scale_factor": 100000000.0,
+      "formula": "500 * 1e8 / 1e8 (CNY and RMB are one currency)",
+      "expected": 500.0
+    },
+    {
+      "id": "cny_wanyuan_to_rmb_100m",
+      "input_value": 50000.0,
+      "input_currency": "CNY",
+      "input_scale": "万元",
+      "input_scale_factor": 10000.0,
+      "target_unit_currency": "RMB",
+      "target_unit_scale": "100m",
+      "target_unit_scale_factor": 100000000.0,
+      "formula": "50000 * 1e4 / 1e8",
+      "expected": 5.0
+    },
+    {
+      "id": "trillion_to_billion",
+      "input_value": 3.0,
+      "input_currency": "USD",
+      "input_scale": "trillion",
+      "input_scale_factor": 1000000000000.0,
+      "target_unit_currency": "USD",
+      "target_unit_scale": "billion",
+      "target_unit_scale_factor": 1000000000.0,
+      "formula": "3 * 1e12 / 1e9",
+      "expected": 3000.0
+    },
+    {
+      "id": "cny_100m_to_rmb_wanyuan_reverse",
+      "input_value": 0.5,
+      "input_currency": "CNY",
+      "input_scale": "亿元",
+      "input_scale_factor": 100000000.0,
+      "target_unit_currency": "RMB",
+      "target_unit_scale": "万元",
+      "target_unit_scale_factor": 10000.0,
+      "formula": "0.5 * 1e8 / 1e4",
+      "expected": 5000.0
+    }
+  ],
+  "growth_normalization": [
+    {
+      "id": "level_multiple_point_0_9",
+      "raw_ratio_basis": "level_multiple",
+      "raw_value": 0.9,
+      "formula": "0.9 - 1",
+      "expected_low": -0.1,
+      "expected_high": -0.1
+    },
+    {
+      "id": "level_multiple_range_cross_zero",
+      "raw_ratio_basis": "level_multiple",
+      "raw_value_low": 0.9,
+      "raw_value_high": 1.05,
+      "formula": "[0.9-1, 1.05-1]",
+      "expected_low": -0.1,
+      "expected_high": 0.05
+    },
+    {
+      "id": "percent_negative_point",
+      "raw_ratio_basis": "percent",
+      "raw_value": -10.0,
+      "formula": "-10 / 100",
+      "expected_low": -0.1,
+      "expected_high": -0.1
+    },
+    {
+      "id": "percent_cross_zero_range",
+      "raw_ratio_basis": "percent",
+      "raw_value_low": -10.0,
+      "raw_value_high": 5.0,
+      "formula": "[-10/100, 5/100]",
+      "expected_low": -0.1,
+      "expected_high": 0.05
+    },
+    {
+      "id": "fraction_negative_point",
+      "raw_ratio_basis": "fraction",
+      "raw_value": -0.25,
+      "formula": "-0.25 (identity)",
+      "expected_low": -0.25,
+      "expected_high": -0.25
+    }
+  ],
+  "signed_comparison": [
+    {
+      "id": "at_least_negative_point_tolerance_widens_downward",
+      "comparison": "at_least",
+      "target_low": -0.1,
+      "target_high": -0.1,
+      "tolerance": 0.01,
+      "formula": "bound = v - t*abs(v) = -0.1 - 0.01*0.1",
+      "expected_bound": -0.101,
+      "cases": [
+        {
+          "observed": -0.0995,
+          "expected_meets": true,
+          "why": "inside the widened floor"
+        },
+        {
+          "observed": -0.102,
+          "expected_meets": false,
+          "why": "below the widened floor"
+        }
+      ],
+      "legacy_bound_was": -0.099,
+      "legacy_wrongly_rejected": [
+        -0.0995
+      ]
+    },
+    {
+      "id": "at_most_negative_point_tolerance_widens_upward",
+      "comparison": "at_most",
+      "target_low": -0.1,
+      "target_high": -0.1,
+      "tolerance": 0.01,
+      "formula": "bound = v + t*abs(v) = -0.1 + 0.01*0.1",
+      "expected_bound": -0.099,
+      "cases": [
+        {
+          "observed": -0.0995,
+          "expected_meets": true,
+          "why": "inside the widened ceiling"
+        },
+        {
+          "observed": -0.095,
+          "expected_meets": false,
+          "why": "above the widened ceiling"
+        }
+      ],
+      "legacy_bound_was": -0.101,
+      "legacy_wrongly_rejected": [
+        -0.0995
+      ]
+    },
+    {
+      "id": "at_least_positive_point_unchanged",
+      "comparison": "at_least",
+      "target_low": 0.1,
+      "target_high": 0.1,
+      "tolerance": 0.01,
+      "formula": "bound = v - t*abs(v) = 0.1 - 0.01*0.1 = v*(1-t)",
+      "expected_bound": 0.099,
+      "cases": [
+        {
+          "observed": 0.0995,
+          "expected_meets": true,
+          "why": "legacy formula identical"
+        },
+        {
+          "observed": 0.0985,
+          "expected_meets": false,
+          "why": "legacy formula identical"
+        }
+      ]
+    },
+    {
+      "id": "approximately_cross_zero_range",
+      "comparison": "approximately",
+      "target_low": -0.1,
+      "target_high": 0.05,
+      "tolerance": 0.01,
+      "formula": "L <= o <= H (stated band is the tolerance; no midpoint)",
+      "cases": [
+        {
+          "observed": 0.0,
+          "expected_meets": true
+        },
+        {
+          "observed": -0.1,
+          "expected_meets": true
+        },
+        {
+          "observed": 0.05,
+          "expected_meets": true
+        },
+        {
+          "observed": -0.11,
+          "expected_meets": false
+        },
+        {
+          "observed": 0.06,
+          "expected_meets": false
+        }
+      ]
+    },
+    {
+      "id": "greater_than_point_strict",
+      "comparison": "greater_than",
+      "target_low": -0.1,
+      "target_high": -0.1,
+      "tolerance": 0.01,
+      "formula": "o > v (strict, tolerance never widens a strict bound)",
+      "cases": [
+        {
+          "observed": -0.1,
+          "expected_meets": false
+        },
+        {
+          "observed": -0.09,
+          "expected_meets": true
+        },
+        {
+          "observed": -0.1005,
+          "expected_meets": false
+        }
+      ]
+    },
+    {
+      "id": "less_than_point_strict",
+      "comparison": "less_than",
+      "target_low": -0.1,
+      "target_high": -0.1,
+      "tolerance": 0.01,
+      "formula": "o < v (strict)",
+      "cases": [
+        {
+          "observed": -0.1,
+          "expected_meets": false
+        },
+        {
+          "observed": -0.11,
+          "expected_meets": true
+        },
+        {
+          "observed": -0.0995,
+          "expected_meets": false
+        }
+      ]
+    },
+    {
+      "id": "zero_target_at_least",
+      "comparison": "at_least",
+      "target_low": 0.0,
+      "target_high": 0.0,
+      "tolerance": 0.01,
+      "formula": "bound = 0 - t*0 = 0",
+      "expected_bound": 0.0,
+      "cases": [
+        {
+          "observed": 0.0,
+          "expected_meets": true
+        },
+        {
+          "observed": -0.5,
+          "expected_meets": false
+        }
+      ]
+    }
+  ],
+  "operator_range_incompatible": [
+    {
+      "comparison": "at_least",
+      "target_low": -0.1,
+      "target_high": 0.05,
+      "diagnostic": "typed_comparison_operator_range_incompatible"
+    },
+    {
+      "comparison": "at_most",
+      "target_low": -0.1,
+      "target_high": 0.05,
+      "diagnostic": "typed_comparison_operator_range_incompatible"
+    },
+    {
+      "comparison": "greater_than",
+      "target_low": -0.1,
+      "target_high": 0.05,
+      "diagnostic": "typed_comparison_operator_range_incompatible"
+    },
+    {
+      "comparison": "less_than",
+      "target_low": -0.1,
+      "target_high": 0.05,
+      "diagnostic": "typed_comparison_operator_range_incompatible"
+    }
+  ],
+  "attainment_ratio": [
+    {
+      "id": "negative_point_is_withheld",
+      "target": -0.1,
+      "observed": -0.2,
+      "expected_ratio": null,
+      "legacy_ratio_was": 2.0
+    },
+    {
+      "id": "zero_point_is_withheld",
+      "target": 0.0,
+      "observed": 0.0,
+      "expected_ratio": null,
+      "legacy_ratio_was": null
+    },
+    {
+      "id": "positive_point_unchanged",
+      "target": 0.1,
+      "observed": 0.12,
+      "expected_ratio": 1.2,
+      "legacy_ratio_was": 1.2
+    },
+    {
+      "id": "range_is_withheld",
+      "target_low": -0.1,
+      "target_high": 0.05,
+      "observed": 0.0,
+      "expected_ratio": null,
+      "legacy_ratio_was": null
+    }
+  ],
+  "yoy_derived": [
+    {
+      "id": "negative_growth_difference_pp_and_benchmark",
+      "base_revenue": 200.0,
+      "numerator_revenue": 160.0,
+      "target_growth": -0.1,
+      "formula_observed": "160 / 200 - 1",
+      "expected_observed": -0.2,
+      "formula_difference_pp": "(observed - target) * 100",
+      "expected_difference_percentage_points": -10.0,
+      "formula_benchmark": "base * (1 + target)",
+      "expected_derived_revenue_benchmark": 180.0,
+      "expected_benchmark_difference": -20.0
+    }
+  ]
+}

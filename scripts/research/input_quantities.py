@@ -16,6 +16,16 @@ currency spellings. Unknown currencies and spellings stay unknown: a bare
 never resolve. ``validate_input_quantity_for_parameter`` is the single helper
 the sensitivity consumer calls to check a stored record against the
 parameter's real currency/scale/dimension and shock semantics.
+
+DU6: the management-target consumer reuses this same Currency x Scale
+description instead of keeping a second scale list. The scale ladder therefore
+also carries the spellings a target statement may legally use (``trillion`` /
+``万亿``, and the currency-qualified ``万元`` / ``亿元`` word forms) and the
+count-like ``units`` spelling a single-currency amount may use. Those are
+additions to this one table, not a parallel one; the pre-DU5 conversion
+dictionary, the family split and the "no currency, no guess" rule are
+unchanged. ``money_currency``, ``money_scale_factor`` and
+``same_money_currency`` are the shared lookups the target layer calls.
 """
 
 from __future__ import annotations
@@ -55,19 +65,24 @@ _SHARE_ALIASES = {
 _MONEY_CURRENCY_ALIASES = {"usd": "usd", "rmb": "rmb", "cny": "rmb", "hkd": "hkd"}
 _MONEY_SCALE_ALIASES = {
     "unit": "unit",
+    "units": "unit",
     "元": "unit",
     "thousand": "thousand",
     "千": "thousand",
     "10k": "10k",
     "wan": "10k",
     "万": "10k",
+    "万元": "10k",
     "million": "million",
     "百万": "million",
     "100m": "100m",
     "yi": "100m",
     "亿": "100m",
+    "亿元": "100m",
     "billion": "billion",
     "十亿": "billion",
+    "trillion": "trillion",
+    "万亿": "trillion",
 }
 # Scale factors in the currency's base unit (one yuan / one dollar / one HKD).
 _MONEY_SCALE_FACTORS = {
@@ -77,6 +92,7 @@ _MONEY_SCALE_FACTORS = {
     "million": 1_000_000.0,
     "100m": 100_000_000.0,
     "billion": 1_000_000_000.0,
+    "trillion": 1_000_000_000_000.0,
 }
 
 # Count scales (existing vocabulary, unchanged).
@@ -177,6 +193,35 @@ def _units_are_convertible(source: str, target: str) -> bool:
         # Same-currency scale conversion only; USD/HKD/RMB never convert.
         return left["currency"] == right["currency"]
     return True
+
+
+# Shared Currency x Scale lookups (DU6): the target consumer resolves its
+# currency and scale through this one description instead of keeping a second
+# table. They only read; nothing here changes the conversion dictionary or the
+# sensitivity contract.
+
+def money_currency(currency: Any) -> str | None:
+    """Canonical money currency for a spelling, or None when it is unknown.
+
+    ``CNY`` and ``RMB`` are one currency. A spelling with no registered
+    currency (``EUR``, a bare ``万元``) is unknown and never guessed.
+    """
+    return _parameter_money_currency(currency)
+
+
+def money_scale_factor(scale: Any) -> float | None:
+    """Base-unit factor of a spelled money scale, or None when it is unknown."""
+    canonical = _parameter_money_scale(scale)
+    if canonical is None:
+        return None
+    return _MONEY_SCALE_FACTORS[canonical]
+
+
+def same_money_currency(left: Any, right: Any) -> bool:
+    """True only when both spellings resolve to one registered currency."""
+    resolved_left = money_currency(left)
+    resolved_right = money_currency(right)
+    return resolved_left is not None and resolved_left == resolved_right
 
 
 def convert_input_quantity(

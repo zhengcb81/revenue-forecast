@@ -69,3 +69,71 @@ When independent comparisons exist, the output includes the optional count `targ
 ## Downstream boundary
 
 Revenue-forecast owns target discovery, reconciliation and scenario mapping. Financials, valuation and SOTP consume the frozen revenue lineage. They may disclose whether the selected scenario covers a target, but must never reconstruct a second target-driven revenue path.
+
+## Target measurement units (DU6)
+
+A target's raw currency and scale resolve through the single money description in
+`scripts/research/input_quantities.py` (the same Currency x Scale table the input
+quantity and sensitivity contracts use). There is no second scale list.
+
+- `CNY` and `RMB` are one currency; a CNY target compares against an RMB model
+  unit without any conversion record. `USD`, `HKD` and `RMB` never mix without an
+  FX basis, and an unknown currency is never guessed.
+- Scale spellings share one ladder: `unit`/`units`/`元`, `thousand`/`千`,
+  `10k`/`wan`/`万`/`万元`, `million`/`百万`, `100m`/`yi`/`亿`/`亿元`,
+  `billion`/`十亿`, `trillion`/`万亿`. A scale this ladder does not know is
+  refused, not inferred.
+- `raw_unit` must read `"{raw_currency} {raw_scale}"`; a currency-less `万元`
+  still has no calling context and stays unknown.
+
+## Signed growth targets (DU6)
+
+A year-over-year growth target is a signed ratio, not a revenue amount. Record it
+at its own percent: a decline of 10 percent is `-10` (or `level_multiple = 0.9`),
+never `+10`, and never a percentage-point number. Only
+`metric_kind="year_over_year_growth"` accepts a negative raw value or a range
+whose lower end is negative; ordinary revenue amounts stay non-negative and a
+cross-zero range keeps both ends rather than becoming a midpoint.
+
+`build_management_target(..., comparison_spec=...)` installs the typed
+`comparison_basis` and derives `comparison_value` with the same normalization the
+validator and the comparator re-run, so no consumer hand-patches the target
+dictionary. A `comparison_spec` and an evidence-backed `conversion` cannot both
+drive one target.
+
+## Comparison contract (DU6)
+
+With `v` a point target, `[L, H]` a two-ended range (`L < H`) and `t` the
+declared `comparison_tolerance`, the acceptance band always widens away from
+zero. A target's sign never reverses which side counts as a shortfall, and strict
+comparisons stay strict (no tolerance).
+
+| comparison | point target `v` | range `[L, H]` |
+|---|---|---|
+| `at_least` | `observed >= v - t*|v|` | named diagnostic |
+| `at_most` | `observed <= v + t*|v|` | named diagnostic |
+| `approximately` | `isclose(observed, v, rel_tol=t, abs_tol=max(|v|,1e-12)*t)` | `L <= observed <= H` |
+| `greater_than` | `observed > v` | named diagnostic |
+| `less_than` | `observed < v` | named diagnostic |
+
+For a non-negative point target the `at_least`/`at_most` bounds are exactly the
+previously published `v*(1 +/- t)` expressions. For a range, only `approximately`
+has an unambiguous meaning: the stated band is the precision, so tolerance does
+not widen it and no midpoint is invented. Every other operator names one
+threshold against two endpoints and cannot be read without guessing; those
+combinations carry the named diagnostic
+`typed_comparison_operator_range_incompatible`. A target that would be compared
+is refused with it; a target kept only as a gap records
+`comparison_reason="operator_range_incompatible"` alongside
+`comparison_status="not_comparable"` and remains visible in `data_gaps`.
+
+## Attainment ratio (DU6)
+
+`attainment_ratio = observed / target` is reported only for a positive point
+target. It is withheld (`null`) when the target is negative (the ratio would show
+a deeper decline as more than 100 percent attainment), when the target is zero
+(no divisor), and when the target is a range (no midpoint). Withholding it never
+erases a comparable observation: `modeled_value`, `meets_target`,
+`difference_percentage_points` / `difference` and `derived_revenue_benchmark` are
+still computed, and a withheld ratio on a negative point target carries the
+explicit `reason="attainment_ratio_withheld_nonpositive_target"`.
