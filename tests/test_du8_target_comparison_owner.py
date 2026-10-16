@@ -284,80 +284,121 @@ class CallerGuardTests(unittest.TestCase):
         return names
 
     @staticmethod
-    def _asserted_expressions(path: Path) -> list[str]:
-        """Every expression passed as the first argument of a ``require`` call.
+    def _calls_owner(node: ast.AST) -> bool:
+        """Whether *node* is a direct call to the shared comparison owner."""
+        return (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "compare_target_measurement"
+        )
 
-        ``require(condition, message)`` is the only way a caller can reject a
-        result, so the set of asserted expressions is exactly the set of facts
-        the caller verifies. A caller that stops asserting the owner's verdict
-        is re-forking the decision no matter how it spells the arithmetic.
+    @classmethod
+    def _owner_gated_requires(cls, path: Path) -> list[ast.Call]:
+        """``require`` calls whose *condition* is decided by the owner's value.
+
+        A guard is only real when the owner's return value is what the
+        ``require`` tests. The earlier version of this guard asked whether the
+        condition's *source text* mentioned the owner, which a decoy call
+        satisfies: ``require(True or bool(owner(...)), ...)`` keeps the text
+        while the decision is local. This version inspects the AST and demands
+        the owner call be an operand of the comparison itself, with no
+        short-circuit escape hatch that could make the condition true
+        regardless of the owner's value.
         """
         source = path.read_text(encoding="utf-8")
         tree = ast.parse(source)
-        found: list[str] = []
+        gated: list[ast.Call] = []
         for node in ast.walk(tree):
-            if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)):
+            if not (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "require"
+                and node.args
+            ):
                 continue
-            if node.func.id != "require" or not node.args:
+            condition = node.args[0]
+            # An ``or``/``and`` at the top level is an escape hatch: one side
+            # can force the outcome without the owner being consulted.
+            if isinstance(condition, ast.BoolOp):
                 continue
-            found.append(ast.get_source_segment(source, node.args[0]) or "")
-        return found
+            if not isinstance(condition, ast.Compare):
+                continue
+            operands = [condition.left, *condition.comparators]
+            if any(cls._calls_owner(operand) for operand in operands):
+                gated.append(node)
+        return gated
 
     def test_report_asserts_the_owner_result_not_a_local_recompute(self) -> None:
         """The report must bind *both* branches to the owner's return value.
 
-        Checking that the symbol appears somewhere is not enough: the report
-        has two branches (typed and legacy), and the adversarial DU8 review
-        replaced only the legacy delegation with a local band while the typed
-        delegation kept the symbol present, so a presence check stayed green.
-        This guard requires an owner assertion at each comparison site and
-        separately forbids any locally built band.
+        The condition must be a comparison with the owner call as an operand —
+        not merely a string containing the owner's name, and not a boolean
+        expression that can be satisfied without it. This is the invariant the
+        card exists to protect: report validation may not degrade into
+        re-deriving the decision it is supposed to be checking.
         """
-        asserted = self._asserted_expressions(SCRIPTS / "revenue_report.py")
-        owner_assertions = [
-            expr for expr in asserted if "compare_target_measurement(" in expr
-        ]
+        gated = self._owner_gated_requires(SCRIPTS / "revenue_report.py")
         self.assertGreaterEqual(
-            len(owner_assertions),
+            len(gated),
             2,
-            "revenue_report.py must assert the owner's return value in both the "
-            "typed and the legacy comparison branch; found "
-            f"{len(owner_assertions)} owner assertion(s): {owner_assertions}",
+            "revenue_report.py must gate both the typed and the legacy comparison "
+            "branch on the owner's return value; found "
+            f"{len(gated)} owner-gated assertion(s)",
         )
 
-    def test_report_binds_each_branch_to_the_owner(self) -> None:
-        """Each branch of the report's target loop must reach the owner.
+    def test_owner_call_result_is_not_merely_echoed(self) -> None:
+        """Calling the owner and discarding its value is not delegation.
 
-        The typed branch compares ``comparisons == owner(...)``; the legacy
-        branch must do the same rather than re-deriving the decision. Counting
-        assertions inside the loop body catches a rewritten legacy branch even
-        when the typed branch still mentions the owner.
+        The bypass this rejects: assign the owner's return value to an unused
+        name, then assert something locally true. The value must reach the
+        assertion.
         """
         source = (SCRIPTS / "revenue_report.py").read_text(encoding="utf-8")
         tree = ast.parse(source)
-        loop_assertions: list[str] = []
+        # Any assignment whose value is an owner call must have its target read
+        # by a require-gated comparison somewhere in the same function.
         for node in ast.walk(tree):
-            if not isinstance(node, ast.For):
+            if not isinstance(node, ast.FunctionDef):
                 continue
-            segment = ast.get_source_segment(source, node) or ""
-            if "scenario_comparison" not in segment:
+            if node.name not in {"validate_forecast_output", "validate_published_forecast"}:
                 continue
-            for inner in ast.walk(node):
-                if not (
-                    isinstance(inner, ast.Call)
-                    and isinstance(inner.func, ast.Name)
-                    and inner.func.id == "require"
-                    and inner.args
-                ):
-                    continue
-                expr = ast.get_source_segment(source, inner.args[0]) or ""
-                if "comparisons" in expr:
-                    loop_assertions.append(expr)
-        owner_bound = [e for e in loop_assertions if "compare_target_measurement(" in e]
-        self.assertTrue(
-            owner_bound,
-            "the report's target loop never asserts its comparison map against "
-            f"the owner; asserted instead: {loop_assertions}",
+            body = ast.get_source_segment(source, node) or ""
+            if "compare_target_measurement(" not in body:
+                continue
+            gated_in_function = [
+                inner
+                for inner in ast.walk(node)
+                if isinstance(inner, ast.Call)
+                and isinstance(inner.func, ast.Name)
+                and inner.func.id == "require"
+                and inner.args
+                and isinstance(inner.args[0], ast.Compare)
+                and any(
+                    self._calls_owner(operand)
+                    for operand in [inner.args[0].left, *inner.args[0].comparators]
+                )
+            ]
+            self.assertTrue(
+                gated_in_function,
+                f"{node.name} calls the owner but never gates a require on its "
+                "value; the owner's result is being echoed, not used",
+            )
+
+    def test_report_gates_both_branches_on_the_owner(self) -> None:
+        """The typed *and* the legacy branch must each gate on the owner.
+
+        The two branches live at different nesting depths (the legacy one sits
+        under a sibling ``if``), so this checks the whole function rather than
+        a single loop body: it requires two distinct owner-gated ``require``
+        calls, which is exactly the typed + legacy pair.
+        """
+        gated = self._owner_gated_requires(SCRIPTS / "revenue_report.py")
+        lines = sorted({node.lineno for node in gated})
+        self.assertGreaterEqual(
+            len(lines),
+            2,
+            "revenue_report.py must gate both comparison branches on the owner's "
+            f"return value; owner-gated requires found at lines {lines}",
         )
 
     def test_targets_module_uses_the_owner_result_directly(self) -> None:

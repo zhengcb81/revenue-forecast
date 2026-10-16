@@ -24,7 +24,7 @@
 | 白名单外新增 `tests/du8_models.py` | 中 | 移入白名单内的 `tests/fixtures/du8_comparison/models.py` |
 | 缺 ownership 语义测试 | 中 | 新增 `constrained_model`（sum_cap 使 effective ≠ recognized）与两项断言，证明 owner 读约束调整后路径 |
 | 仅测失败路径 sentinel，未测成功路径 | 中 | 新增成功路径 sentinel 测试（用 registry 自身 append 写入链有效记录） |
-| `b-regression-focused.txt` 未覆盖 DU8 套件 | 中 | 已重跑，486 passed 含全部 DU8 套件 |
+| `b-regression-focused.txt` 未覆盖 DU8 套件 | 中 | 已重跑，487 passed 含全部 DU8 套件 |
 
 **审查同时独立确认**（对抗验证结论）：发布数字与形状相对基线**逐字节相同**
 （9 个模型全等、whole-body sha16 一致、schema 3.1/3.2/3.3/3.7–3.10 全等）；
@@ -122,11 +122,11 @@ compare_target_measurement(target, result, parameters=None, *, periods=None) -> 
 ## 5. 实际运行命令
 
 ```text
-# 新单元/锚点/往返套件（107 passed, 6 skipped）
+# 新单元/锚点/往返套件（108 passed, 6 skipped）
 python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py \
   tests/test_du8_hand_anchors.py tests/test_du8_target_report_roundtrip.py -q
 
-# B 节点集中回归（486 passed, 7 skipped，含全部 DU8 套件）
+# B 节点集中回归（487 passed, 7 skipped，含全部 DU8 套件）
 python -X utf8 -B -m pytest tests/test_management_targets.py \
   tests/test_target_measurement_comparison.py tests/test_management_target_semantics.py \
   tests/test_independent_targets.py tests/test_structure_targets.py \
@@ -230,7 +230,7 @@ A 节点临时探针 `tools/du8_probe_*.py`、`tools/du8_scan.py`、
 
 1. `git log` 确认最终 commit `67b15a60eda6894162523f64fa5e02a619106f07`
    与 `handoff.json.implementation_commits` 对齐；`git status` 应为空。
-2. 跑 §5 的集中回归命令复现 486 passed。
+2. 跑 §5 的集中回归命令复现 487 passed。
 3. 独立验收建议重点：用 `git diff <base> <final>` 确认白名单外零改动；
    用 §2 的反例在基线上复核 RED 真实存在；重放
    `receipts/guard-attack-check.txt` 的攻击确认 guard 仍能捕获。
