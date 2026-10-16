@@ -1,3 +1,13 @@
+## ROOT接收收尾 — 2026-10-16
+
+保留作者history正常合入main 794240df并推送；push416PASS/36subtests/47.90s，精确CI38833831553 SUCCESS。定点同步3处技能路径/2份物理副本，SHA与实际HKD缩放核对。ROOT210PASS/9SKIP/59subtests、129旧记录兼容、23项CLI保持，原alert WIP/registry不改。
+
+[发布/安装收据](publication.json)，[整改验收](root-acceptance.md)。下面作者PWF保留交付时历史，旧STOP/未安装不代表当前状态。
+
+**Next Step：** 本卡已交接；ROOT纳入真实摘要及原三/新三预测大节点。组件通过不等于母计划完成，0新增API。
+
+---
+
 # 进度
 
 2026-10-15 ROOT已创建独立稀疏工作树及启动文档，尚未开始实现/测试。源码来自明确committed base；主目录WIP/密钥/原件未复制。
