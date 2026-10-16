@@ -29,7 +29,12 @@ from contracts.evidence import (
     text_sha256,
 )
 from forecast.calc import evaluate_derived_formula
-from research.target_measurement import METRICS, SCHEMA, normalize_target_bounds
+from research.target_measurement import (
+    METRICS,
+    SCHEMA,
+    is_modeled_comparison,
+    normalize_target_bounds,
+)
 
 _QUARTERS = {"Q1", "Q2", "Q3", "Q4", "H1", "H2"}
 _COMMITMENT_STRENGTHS = {"guidance", "goal", "aspiration", "capacity_plan"}
@@ -148,7 +153,7 @@ def build_management_target(
         )
         typed_spec = dict(comparison_spec)
         signed_growth = typed_spec["metric_kind"] == "year_over_year_growth"
-        if not signed_growth:
+        if not signed_growth and is_modeled_comparison(treatment):
             require(
                 isinstance(comparison_currency, str)
                 and comparison_currency.strip()
@@ -191,7 +196,15 @@ def build_management_target(
     resolved_treatment = treatment
     reject_reason = None
     converted = None
-    if measurement_basis in {"quarterly_period", "run_rate_at_period_end"} or conversion is not None:
+    native_quarter = (
+        typed_spec is not None
+        and typed_spec["metric_kind"] == "quarterly_revenue_level"
+        and measurement_basis == "quarterly_period"
+    )
+    if not native_quarter and (
+        measurement_basis in {"quarterly_period", "run_rate_at_period_end"}
+        or conversion is not None
+    ):
         converted = _evaluate_conversion(target_id, raw_value, conversion)
         if converted is None:
             reject_reason = "conversion_requires_evidence_backed_inputs"
@@ -308,11 +321,16 @@ def build_management_target(
             target["comparison_currency"] = comparison_currency
         if comparison_scale is not None:
             target["comparison_scale"] = comparison_scale
-        low, high = normalize_target_bounds(
-            target, {"currency": comparison_currency, "unit": comparison_scale}
-        )
-        target["comparison_value"] = low if low == high else None
-        comparable = True
+        comparable = is_modeled_comparison(resolved_treatment)
+        if comparable:
+            low, high = normalize_target_bounds(
+                target, {"currency": comparison_currency, "unit": comparison_scale}
+            )
+            target["comparison_value"] = low if low == high else None
+        else:
+            # The validator preserves unmodeled raw quantities without FX or
+            # numerical normalization. Construction follows that same contract.
+            target["comparison_value"] = None
 
     claim_id = f"claim_{target_id}"
     target["claim_ids"] = [claim_id]
@@ -334,8 +352,9 @@ def build_management_target(
         claim["content_sha256"] = source_capture["snapshot_sha256"]
         claim["capture_receipt_sha256"] = source_capture["receipt_sha256"]
     if raw_value_kind == "numeric":
+        claim["extracted_value"] = raw_value
+    if raw_value_kind == "numeric" or (typed_spec is not None and raw_value_kind == "numeric_range"):
         claim.update({
-            "extracted_value": raw_value,
             "unit": raw_unit,
             "period": target["target_period"],
         })

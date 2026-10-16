@@ -137,3 +137,8 @@ erases a comparable observation: `modeled_value`, `meets_target`,
 `difference_percentage_points` / `difference` and `derived_revenue_benchmark` are
 still computed, and a withheld ratio on a negative point target carries the
 explicit `reason="attainment_ratio_withheld_nonpositive_target"`.
+
+
+### Builder treatment 与比较值
+
+`comparison_spec`声明数值的含义，不自动决定是否已纳入预测。Builder未显式指定treatment时仍按既有默认保留为unmodeled_data_gap，comparison_value为null，原始带符号值/区间完整保留。要生成供模型或独立benchmark使用的归一化比较值，调用时显式选择对应treatment并提供实际映射/证据；不要在builder返回后改treatment来伪装已经完成比较。季度typed值使用原生季度比较，无需强制年化。

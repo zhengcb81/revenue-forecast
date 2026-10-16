@@ -809,7 +809,7 @@ class TypedBuilderTests(unittest.TestCase):
             "base_period": "FY2026",
             "raw_ratio_basis": "percent",
         }
-        built = self._build(raw_value=-10.0, comparison_spec=spec)
+        built = self._build(raw_value=-10.0, comparison_spec=spec, treatment="independent_benchmark")
         self.assertEqual(built["target"]["comparison_basis"], spec)
         self.assertEqual(built["target"]["comparison_value"], pytest.approx(-0.10))
         self.assertEqual(built["target"]["raw_target_value"], -10.0)
@@ -836,7 +836,7 @@ class TypedBuilderTests(unittest.TestCase):
             "base_period": "FY2026",
             "raw_ratio_basis": "level_multiple",
         }
-        built = self._build(raw_value=0.9, comparison_spec=spec)
+        built = self._build(raw_value=0.9, comparison_spec=spec, treatment="independent_benchmark")
         self.assertEqual(built["target"]["comparison_value"], pytest.approx(-0.10))
 
     def test_range_spec_carries_both_ends_and_no_point_value(self) -> None:
@@ -878,7 +878,7 @@ class TypedBuilderTests(unittest.TestCase):
             "base_period": "FY2026",
             "raw_ratio_basis": "percent",
         }
-        built = self._build(raw_value=-10.0, comparison_spec=spec)
+        built = self._build(raw_value=-10.0, comparison_spec=spec, treatment="independent_benchmark")
         data = growth_document(raw_value=-10.0, comparison_value=-0.10, comparison="approximately",
                                growth_by_scenario={"low": -0.20, "base": -0.10, "high": 0.20})
         data["evidence_claims"].extend(built["claims"])

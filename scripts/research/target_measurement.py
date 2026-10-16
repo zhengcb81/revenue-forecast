@@ -19,10 +19,16 @@ from research.native_dependencies import scope_components
 
 SCHEMA = "management-target-comparison/1"
 METRICS = {"annual_revenue_level", "quarterly_revenue_level", "year_over_year_growth"}
+_MODELED_TREATMENTS = frozenset({"modeled_scenario", "scenario_boundary", "independent_benchmark"})
 # Named diagnostics: a comparison word whose economic meaning cannot be pinned
 # down without guessing is refused by name instead of being silently resolved.
 OPERATOR_RANGE_INCOMPATIBLE = "typed_comparison_operator_range_incompatible"
 ATTAINMENT_RATIO_WITHHELD = "attainment_ratio_withheld_nonpositive_target"
+
+
+def is_modeled_comparison(treatment: str | None) -> bool:
+    """Whether a typed target participates in numerical scenario comparison."""
+    return treatment in _MODELED_TREATMENTS
 
 
 def is_typed_target(target: dict) -> bool:
@@ -59,7 +65,8 @@ def normalize_target_bounds(target: dict, data: dict) -> tuple[float, float]:
         raw_factor = money_scale_factor(target["raw_scale"])
         model_factor = money_scale_factor(data["unit"])
         require(raw_factor is not None and model_factor is not None, "typed target scale is unsupported")
-        low, high = low * raw_factor / model_factor, high * raw_factor / model_factor
+        factor = raw_factor / model_factor
+        low, high = low * factor, high * factor
     require(low <= high, "typed target range is inverted")
     return low, high
 
@@ -129,7 +136,7 @@ def validate_typed_target(target, data, parameters, claims, sources, used):
     require(isinstance(period, str) and re.fullmatch(pattern, period) is not None, "typed comparison period is invalid")
     year = int(period[2:6])
     treatment = target["treatment"]
-    modeled = treatment in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}
+    modeled = is_modeled_comparison(treatment)
     require(target["target_period"] == f"FY{year}", "typed comparison target period mismatch")
     require(bool(target.get("normalization_rationale")), "typed comparison requires normalization rationale")
     if metric != "quarterly_revenue_level":
@@ -224,7 +231,7 @@ def compare_target_measurement(target: dict, result: dict, parameters: dict | No
     tolerance = finite_number(target.get("comparison_tolerance", 0.01), "comparison_tolerance")
     require(0 <= tolerance <= 0.25, "comparison tolerance outside 0..0.25")
     comparisons = {}
-    if target["treatment"] not in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
+    if not is_modeled_comparison(target["treatment"]):
         return comparisons
     low, high = normalize_target_bounds(target, result)
     for scenario in target.get("mapped_scenarios", []):
