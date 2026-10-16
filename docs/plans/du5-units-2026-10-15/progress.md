@@ -19,3 +19,5 @@
 2026-10-15 C 完成：E2E 全绿（receipts/e2e-run.json 23 checks；e2e-cleanup.json sentinel/registry隔离/temp全删）；手算 7.25亿=725百万、5十亿=5000百万及反向与实现一致，725 shock 进入 revenue delta；同数字不同币种/篡改记录被公开 CLI 拒绝；旧 USD/RMB 样例不回归。交付 references/money-unit-conversion.md 与 handoff；commit 后 STOP。
 
 2026-10-15 独立审查：范围/约束1-7/W08/回归数字全过，但发现进程内 run_forecast(mode=formal) 把 12 条写进此前不存在的生产 registry（env 只重定向了子进程）。已修复：驱动对进程内 os.environ 同样重定向并断言默认 registry 前后不变；污染文件按"新输出原先不存在则删除"在逐字节存证（receipts/registry-incident*）后删除；red-first-behavior.json 计数改为 34+16=50 全列。修复后 E2E 重跑 23/23 绿、artifacts/ 全程缺席。事件在 handoff 如实披露待 ROOT 复核。
+
+2026-10-16 复核结论：可接收。五项问题（1高2中1低1备忘）全部修复并经同一独立审查 agent 逐项取证核实（存证链完整性复算通过、E2E 23/23、RED 计数机器比对全等、披露分层诚实）；三个非阻塞建议（verdict 定稿、incident 摘要字段、smoke 命令具体化）已一并收尾。交付完成，STOP 等 ROOT 接收。
