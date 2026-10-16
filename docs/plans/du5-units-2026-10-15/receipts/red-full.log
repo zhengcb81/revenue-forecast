@@ -1,0 +1,1429 @@
+FFFFFFFF.........F [ 13%]
+FFFFFF.FFFFF..FFFFFFFFF.............FF...................s..sss.sss [ 62%]
+.s..s.....F.....................FF..................                     [100%]
+================================== FAILURES ===================================
+_ HkdScaleConversionTests.test_hkd_billion_to_million_and_million_to_thousand _
+
+self = <test_du5_money_unit_registry.HkdScaleConversionTests testMethod=test_hkd_billion_to_million_and_million_to_thousand>
+
+    def test_hkd_billion_to_million_and_million_to_thousand(self) -> None:
+        # 5 HKD billion = 5000 HKD million (x1000); 5 HKD million = 5000
+        # HKD thousand (x1000).
+>       record = convert_input_quantity(5, input_unit="hkd_billion", engine_unit="hkd_million")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_du5_money_unit_registry.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:102: in convert_input_quantity
+    source = _normalize_unit(input_unit, "input_unit")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown input_unit: hkd_billion'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown input_unit: hkd_billion
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ HkdScaleConversionTests.test_hkd_reverse_scaling_and_zero_negative_decimal __
+
+self = <test_du5_money_unit_registry.HkdScaleConversionTests testMethod=test_hkd_reverse_scaling_and_zero_negative_decimal>
+
+    def test_hkd_reverse_scaling_and_zero_negative_decimal(self) -> None:
+        self.assertAlmostEqual(
+>           convert_input_quantity(725, input_unit="hkd_million", engine_unit="hkd_100m")["engine_value"],
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            7.25,
+            places=12,
+        )
+
+tests\test_du5_money_unit_registry.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:102: in convert_input_quantity
+    source = _normalize_unit(input_unit, "input_unit")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown input_unit: hkd_million'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown input_unit: hkd_million
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_______ HkdScaleConversionTests.test_hkd_yi_to_million_is_hand_checked ________
+
+self = <test_du5_money_unit_registry.HkdScaleConversionTests testMethod=test_hkd_yi_to_million_is_hand_checked>
+
+    def test_hkd_yi_to_million_is_hand_checked(self) -> None:
+        # 7.25 HKD yi (1e8) = 725 HKD million.
+>       record = convert_input_quantity(7.25, input_unit="hkd_100m", engine_unit="hkd_million")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_du5_money_unit_registry.py:69: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:102: in convert_input_quantity
+    source = _normalize_unit(input_unit, "input_unit")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown input_unit: hkd_100m'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown input_unit: hkd_100m
+
+scripts\contracts\evidence.py:98: ForecastInputError
+______ RmbWanYiScaleConversionTests.test_cny_is_the_same_currency_as_rmb ______
+
+self = <test_du5_money_unit_registry.RmbWanYiScaleConversionTests testMethod=test_cny_is_the_same_currency_as_rmb>
+
+    def test_cny_is_the_same_currency_as_rmb(self) -> None:
+        """CNY spellings normalize to the existing RMB units, never to USD."""
+>       record = convert_input_quantity(7.25, input_unit="cny_100m", engine_unit="cny_million")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_du5_money_unit_registry.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:102: in convert_input_quantity
+    source = _normalize_unit(input_unit, "input_unit")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown input_unit: cny_100m'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown input_unit: cny_100m
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_____ RmbWanYiScaleConversionTests.test_rmb_shiyi_to_million_and_reverse ______
+
+self = <test_du5_money_unit_registry.RmbWanYiScaleConversionTests testMethod=test_rmb_shiyi_to_million_and_reverse>
+
+    def test_rmb_shiyi_to_million_and_reverse(self) -> None:
+        # 5 RMB shiyi (1e9) = 5000 RMB million; the reverse divides by 1000.
+        self.assertEqual(
+            convert_input_quantity(5, input_unit="rmb_billion", engine_unit="rmb_million")["engine_value"],
+            5000.0,
+        )
+        self.assertAlmostEqual(
+            convert_input_quantity(5000, input_unit="rmb_million", engine_unit="rmb_billion")["engine_value"],
+            5.0,
+            places=12,
+        )
+        self.assertAlmostEqual(
+            convert_input_quantity(725, input_unit="rmb_million", engine_unit="rmb_100m")["engine_value"],
+            7.25,
+            places=12,
+        )
+        self.assertAlmostEqual(
+>           convert_input_quantity(72500, input_unit="rmb_10k", engine_unit="rmb_100m")["engine_value"],
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            7.25,
+            places=12,
+        )
+
+tests\test_du5_money_unit_registry.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:102: in convert_input_quantity
+    source = _normalize_unit(input_unit, "input_unit")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown input_unit: rmb_10k'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown input_unit: rmb_10k
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_________ RmbWanYiScaleConversionTests.test_rmb_yi_to_million_and_wan _________
+
+self = <test_du5_money_unit_registry.RmbWanYiScaleConversionTests testMethod=test_rmb_yi_to_million_and_wan>
+
+    def test_rmb_yi_to_million_and_wan(self) -> None:
+        # 7.25 RMB yi = 725 RMB million = 72500 RMB wan.
+        self.assertEqual(
+            convert_input_quantity(7.25, input_unit="rmb_100m", engine_unit="rmb_million")["engine_value"],
+            725.0,
+        )
+        self.assertEqual(
+>           convert_input_quantity(7.25, input_unit="rmb_100m", engine_unit="rmb_10k")["engine_value"],
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            72500.0,
+        )
+
+tests\test_du5_money_unit_registry.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:103: in convert_input_quantity
+    target = _normalize_unit(engine_unit, "engine_unit")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown engine_unit: rmb_10k'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown engine_unit: rmb_10k
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ RmbWanYiScaleConversionTests.test_zero_negative_and_decimal_rmb_values_convert_by_the_same_algebra _
+
+self = <test_du5_money_unit_registry.RmbWanYiScaleConversionTests testMethod=test_zero_negative_and_decimal_rmb_values_convert_by_the_same_algebra>
+
+    def test_zero_negative_and_decimal_rmb_values_convert_by_the_same_algebra(self) -> None:
+        self.assertEqual(
+>           convert_input_quantity(0, input_unit="rmb_100m", engine_unit="rmb_10k")["engine_value"],
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            0.0,
+        )
+
+tests\test_du5_money_unit_registry.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:103: in convert_input_quantity
+    target = _normalize_unit(engine_unit, "engine_unit")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown engine_unit: rmb_10k'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown engine_unit: rmb_10k
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ CrossCurrencyAndFamilyRejectTests.test_identity_short_circuit_only_applies_to_the_same_unit _
+
+self = <test_du5_money_unit_registry.CrossCurrencyAndFamilyRejectTests testMethod=test_identity_short_circuit_only_applies_to_the_same_unit>
+
+    def test_identity_short_circuit_only_applies_to_the_same_unit(self) -> None:
+        """cny_million and rmb_million name one unit (identity record), while a
+        genuinely different same-currency unit is a real scale conversion."""
+>       record = convert_input_quantity(5, input_unit="cny_million", engine_unit="rmb_million")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_du5_money_unit_registry.py:197: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:102: in convert_input_quantity
+    source = _normalize_unit(input_unit, "input_unit")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown input_unit: cny_million'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown input_unit: cny_million
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ CrossCurrencyAndFamilyRejectTests.test_money_count_and_share_families_never_mix (input_unit='hkd_million', engine_unit='million_units') _
+contracts.evidence.ForecastInputError: unknown input_unit: hkd_million
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du5_money_unit_registry.CrossCurrencyAndFamilyRejectTests testMethod=test_money_count_and_share_families_never_mix>
+
+    def test_money_count_and_share_families_never_mix(self) -> None:
+        incompatible = [
+            ("hkd_million", "million_units"),
+            ("million_units", "hkd_million"),
+            ("rmb_10k", "units"),
+            ("pp", "hkd_million"),
+            ("hkd_million", "pp"),
+            ("usd_million", "basis_point"),
+            ("basis_point", "rmb_100m"),
+        ]
+        for input_unit, engine_unit in incompatible:
+            with self.subTest(input_unit=input_unit, engine_unit=engine_unit):
+>               with self.assertRaisesRegex(ForecastInputError, "incompatible unit conversion"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "incompatible unit conversion" does not match "unknown input_unit: hkd_million"
+
+tests\test_du5_money_unit_registry.py:191: AssertionError
+_ CrossCurrencyAndFamilyRejectTests.test_money_count_and_share_families_never_mix (input_unit='million_units', engine_unit='hkd_million') _
+contracts.evidence.ForecastInputError: unknown engine_unit: hkd_million
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du5_money_unit_registry.CrossCurrencyAndFamilyRejectTests testMethod=test_money_count_and_share_families_never_mix>
+
+    def test_money_count_and_share_families_never_mix(self) -> None:
+        incompatible = [
+            ("hkd_million", "million_units"),
+            ("million_units", "hkd_million"),
+            ("rmb_10k", "units"),
+            ("pp", "hkd_million"),
+            ("hkd_million", "pp"),
+            ("usd_million", "basis_point"),
+            ("basis_point", "rmb_100m"),
+        ]
+        for input_unit, engine_unit in incompatible:
+            with self.subTest(input_unit=input_unit, engine_unit=engine_unit):
+>               with self.assertRaisesRegex(ForecastInputError, "incompatible unit conversion"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "incompatible unit conversion" does not match "unknown engine_unit: hkd_million"
+
+tests\test_du5_money_unit_registry.py:191: AssertionError
+_ CrossCurrencyAndFamilyRejectTests.test_money_count_and_share_families_never_mix (input_unit='rmb_10k', engine_unit='units') _
+contracts.evidence.ForecastInputError: unknown input_unit: rmb_10k
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du5_money_unit_registry.CrossCurrencyAndFamilyRejectTests testMethod=test_money_count_and_share_families_never_mix>
+
+    def test_money_count_and_share_families_never_mix(self) -> None:
+        incompatible = [
+            ("hkd_million", "million_units"),
+            ("million_units", "hkd_million"),
+            ("rmb_10k", "units"),
+            ("pp", "hkd_million"),
+            ("hkd_million", "pp"),
+            ("usd_million", "basis_point"),
+            ("basis_point", "rmb_100m"),
+        ]
+        for input_unit, engine_unit in incompatible:
+            with self.subTest(input_unit=input_unit, engine_unit=engine_unit):
+>               with self.assertRaisesRegex(ForecastInputError, "incompatible unit conversion"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "incompatible unit conversion" does not match "unknown input_unit: rmb_10k"
+
+tests\test_du5_money_unit_registry.py:191: AssertionError
+_ CrossCurrencyAndFamilyRejectTests.test_money_count_and_share_families_never_mix (input_unit='pp', engine_unit='hkd_million') _
+contracts.evidence.ForecastInputError: unknown engine_unit: hkd_million
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du5_money_unit_registry.CrossCurrencyAndFamilyRejectTests testMethod=test_money_count_and_share_families_never_mix>
+
+    def test_money_count_and_share_families_never_mix(self) -> None:
+        incompatible = [
+            ("hkd_million", "million_units"),
+            ("million_units", "hkd_million"),
+            ("rmb_10k", "units"),
+            ("pp", "hkd_million"),
+            ("hkd_million", "pp"),
+            ("usd_million", "basis_point"),
+            ("basis_point", "rmb_100m"),
+        ]
+        for input_unit, engine_unit in incompatible:
+            with self.subTest(input_unit=input_unit, engine_unit=engine_unit):
+>               with self.assertRaisesRegex(ForecastInputError, "incompatible unit conversion"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "incompatible unit conversion" does not match "unknown engine_unit: hkd_million"
+
+tests\test_du5_money_unit_registry.py:191: AssertionError
+_ CrossCurrencyAndFamilyRejectTests.test_money_count_and_share_families_never_mix (input_unit='hkd_million', engine_unit='pp') _
+contracts.evidence.ForecastInputError: unknown input_unit: hkd_million
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du5_money_unit_registry.CrossCurrencyAndFamilyRejectTests testMethod=test_money_count_and_share_families_never_mix>
+
+    def test_money_count_and_share_families_never_mix(self) -> None:
+        incompatible = [
+            ("hkd_million", "million_units"),
+            ("million_units", "hkd_million"),
+            ("rmb_10k", "units"),
+            ("pp", "hkd_million"),
+            ("hkd_million", "pp"),
+            ("usd_million", "basis_point"),
+            ("basis_point", "rmb_100m"),
+        ]
+        for input_unit, engine_unit in incompatible:
+            with self.subTest(input_unit=input_unit, engine_unit=engine_unit):
+>               with self.assertRaisesRegex(ForecastInputError, "incompatible unit conversion"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "incompatible unit conversion" does not match "unknown input_unit: hkd_million"
+
+tests\test_du5_money_unit_registry.py:191: AssertionError
+_ CrossCurrencyAndFamilyRejectTests.test_usd_hkd_rmb_pairs_never_convert (input_unit='usd_million', engine_unit='hkd_million') _
+contracts.evidence.ForecastInputError: unknown engine_unit: hkd_million
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du5_money_unit_registry.CrossCurrencyAndFamilyRejectTests testMethod=test_usd_hkd_rmb_pairs_never_convert>
+
+    def test_usd_hkd_rmb_pairs_never_convert(self) -> None:
+        incompatible = [
+            ("usd_million", "hkd_million"),
+            ("hkd_million", "usd_million"),
+            ("hkd_million", "rmb_million"),
+            ("rmb_million", "hkd_million"),
+            ("usd_billion", "cny_million"),
+            ("cny_100m", "usd_million"),
+        ]
+        for input_unit, engine_unit in incompatible:
+            with self.subTest(input_unit=input_unit, engine_unit=engine_unit):
+>               with self.assertRaisesRegex(ForecastInputError, "incompatible unit conversion"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "incompatible unit conversion" does not match "unknown engine_unit: hkd_million"
+
+tests\test_du5_money_unit_registry.py:176: AssertionError
+_ CrossCurrencyAndFamilyRejectTests.test_usd_hkd_rmb_pairs_never_convert (input_unit='hkd_million', engine_unit='usd_million') _
+contracts.evidence.ForecastInputError: unknown input_unit: hkd_million
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du5_money_unit_registry.CrossCurrencyAndFamilyRejectTests testMethod=test_usd_hkd_rmb_pairs_never_convert>
+
+    def test_usd_hkd_rmb_pairs_never_convert(self) -> None:
+        incompatible = [
+            ("usd_million", "hkd_million"),
+            ("hkd_million", "usd_million"),
+            ("hkd_million", "rmb_million"),
+            ("rmb_million", "hkd_million"),
+            ("usd_billion", "cny_million"),
+            ("cny_100m", "usd_million"),
+        ]
+        for input_unit, engine_unit in incompatible:
+            with self.subTest(input_unit=input_unit, engine_unit=engine_unit):
+>               with self.assertRaisesRegex(ForecastInputError, "incompatible unit conversion"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "incompatible unit conversion" does not match "unknown input_unit: hkd_million"
+
+tests\test_du5_money_unit_registry.py:176: AssertionError
+_ CrossCurrencyAndFamilyRejectTests.test_usd_hkd_rmb_pairs_never_convert (input_unit='hkd_million', engine_unit='rmb_million') _
+contracts.evidence.ForecastInputError: unknown input_unit: hkd_million
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du5_money_unit_registry.CrossCurrencyAndFamilyRejectTests testMethod=test_usd_hkd_rmb_pairs_never_convert>
+
+    def test_usd_hkd_rmb_pairs_never_convert(self) -> None:
+        incompatible = [
+            ("usd_million", "hkd_million"),
+            ("hkd_million", "usd_million"),
+            ("hkd_million", "rmb_million"),
+            ("rmb_million", "hkd_million"),
+            ("usd_billion", "cny_million"),
+            ("cny_100m", "usd_million"),
+        ]
+        for input_unit, engine_unit in incompatible:
+            with self.subTest(input_unit=input_unit, engine_unit=engine_unit):
+>               with self.assertRaisesRegex(ForecastInputError, "incompatible unit conversion"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "incompatible unit conversion" does not match "unknown input_unit: hkd_million"
+
+tests\test_du5_money_unit_registry.py:176: AssertionError
+_ CrossCurrencyAndFamilyRejectTests.test_usd_hkd_rmb_pairs_never_convert (input_unit='rmb_million', engine_unit='hkd_million') _
+contracts.evidence.ForecastInputError: unknown engine_unit: hkd_million
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du5_money_unit_registry.CrossCurrencyAndFamilyRejectTests testMethod=test_usd_hkd_rmb_pairs_never_convert>
+
+    def test_usd_hkd_rmb_pairs_never_convert(self) -> None:
+        incompatible = [
+            ("usd_million", "hkd_million"),
+            ("hkd_million", "usd_million"),
+            ("hkd_million", "rmb_million"),
+            ("rmb_million", "hkd_million"),
+            ("usd_billion", "cny_million"),
+            ("cny_100m", "usd_million"),
+        ]
+        for input_unit, engine_unit in incompatible:
+            with self.subTest(input_unit=input_unit, engine_unit=engine_unit):
+>               with self.assertRaisesRegex(ForecastInputError, "incompatible unit conversion"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "incompatible unit conversion" does not match "unknown engine_unit: hkd_million"
+
+tests\test_du5_money_unit_registry.py:176: AssertionError
+_ CrossCurrencyAndFamilyRejectTests.test_usd_hkd_rmb_pairs_never_convert (input_unit='usd_billion', engine_unit='cny_million') _
+contracts.evidence.ForecastInputError: unknown engine_unit: cny_million
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du5_money_unit_registry.CrossCurrencyAndFamilyRejectTests testMethod=test_usd_hkd_rmb_pairs_never_convert>
+
+    def test_usd_hkd_rmb_pairs_never_convert(self) -> None:
+        incompatible = [
+            ("usd_million", "hkd_million"),
+            ("hkd_million", "usd_million"),
+            ("hkd_million", "rmb_million"),
+            ("rmb_million", "hkd_million"),
+            ("usd_billion", "cny_million"),
+            ("cny_100m", "usd_million"),
+        ]
+        for input_unit, engine_unit in incompatible:
+            with self.subTest(input_unit=input_unit, engine_unit=engine_unit):
+>               with self.assertRaisesRegex(ForecastInputError, "incompatible unit conversion"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "incompatible unit conversion" does not match "unknown engine_unit: cny_million"
+
+tests\test_du5_money_unit_registry.py:176: AssertionError
+_ CrossCurrencyAndFamilyRejectTests.test_usd_hkd_rmb_pairs_never_convert (input_unit='cny_100m', engine_unit='usd_million') _
+contracts.evidence.ForecastInputError: unknown input_unit: cny_100m
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du5_money_unit_registry.CrossCurrencyAndFamilyRejectTests testMethod=test_usd_hkd_rmb_pairs_never_convert>
+
+    def test_usd_hkd_rmb_pairs_never_convert(self) -> None:
+        incompatible = [
+            ("usd_million", "hkd_million"),
+            ("hkd_million", "usd_million"),
+            ("hkd_million", "rmb_million"),
+            ("rmb_million", "hkd_million"),
+            ("usd_billion", "cny_million"),
+            ("cny_100m", "usd_million"),
+        ]
+        for input_unit, engine_unit in incompatible:
+            with self.subTest(input_unit=input_unit, engine_unit=engine_unit):
+>               with self.assertRaisesRegex(ForecastInputError, "incompatible unit conversion"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "incompatible unit conversion" does not match "unknown input_unit: cny_100m"
+
+tests\test_du5_money_unit_registry.py:176: AssertionError
+_ BuilderEngineUnitTests.test_explicit_engine_unit_converts_hkd_shiyi_to_million _
+
+self = <test_du5_money_unit_registry.BuilderEngineUnitTests testMethod=test_explicit_engine_unit_converts_hkd_shiyi_to_million>
+
+    def test_explicit_engine_unit_converts_hkd_shiyi_to_million(self) -> None:
+        # 5 HKD shiyi = 5000 HKD million, hand-computed, and the converted
+        # shock_value is what the engine applies.
+>       test = build_sensitivity_test(
+            parameter_id="revenue", value=5, input_unit="hkd_billion",
+            shock_semantics="absolute", engine_unit="hkd_million",
+        )
+E       TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:394: TypeError
+_ BuilderEngineUnitTests.test_explicit_engine_unit_converts_hkd_yi_to_million _
+
+self = <test_du5_money_unit_registry.BuilderEngineUnitTests testMethod=test_explicit_engine_unit_converts_hkd_yi_to_million>
+
+    def test_explicit_engine_unit_converts_hkd_yi_to_million(self) -> None:
+        # 7.25 HKD yi = 725 HKD million.
+>       test = build_sensitivity_test(
+            parameter_id="revenue", value=7.25, input_unit="hkd_100m",
+            shock_semantics="absolute", engine_unit="hkd_million",
+        )
+E       TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:406: TypeError
+_ BuilderEngineUnitTests.test_explicit_engine_unit_enters_the_real_revenue_delta _
+
+self = <test_du5_money_unit_registry.BuilderEngineUnitTests testMethod=test_explicit_engine_unit_enters_the_real_revenue_delta>
+
+    def test_explicit_engine_unit_enters_the_real_revenue_delta(self) -> None:
+        """The converted shock must move terminal revenue, not sit as metadata.
+    
+        Hand oracle: base terminal is 181.5 (121 + 60.5); the shocked parameter
+        is the 2027 driver at 121. Up: 121 + 725 = 846 -> terminal 906.5.
+        Down: 121 - 725 clamps to 0 -> terminal 60.5 (clamp stays transparent).
+        """
+        data = hkd_document()
+>       test = build_sensitivity_test(
+            parameter_id="0_base_2027", value=7.25, input_unit="hkd_100m",
+            shock_semantics="absolute", engine_unit="hkd_million",
+        )
+E       TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:471: TypeError
+___ BuilderEngineUnitTests.test_explicit_engine_unit_rejects_cross_currency ___
+
+self = <test_du5_money_unit_registry.BuilderEngineUnitTests testMethod=test_explicit_engine_unit_rejects_cross_currency>
+
+    def test_explicit_engine_unit_rejects_cross_currency(self) -> None:
+        with self.assertRaisesRegex(ForecastInputError, "incompatible unit conversion"):
+>           build_sensitivity_test(
+                parameter_id="revenue", value=5, input_unit="hkd_billion",
+                shock_semantics="absolute", engine_unit="usd_million",
+            )
+E           TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:422: TypeError
+_ BuilderEngineUnitTests.test_explicit_engine_unit_rejects_human_spelling_as_engine_target _
+
+self = <test_du5_money_unit_registry.BuilderEngineUnitTests testMethod=test_explicit_engine_unit_rejects_human_spelling_as_engine_target>
+
+    def test_explicit_engine_unit_rejects_human_spelling_as_engine_target(self) -> None:
+        """pp/percent are human spellings; an additive engine shock is
+        ratio or basis_point, and a multiplicative one is the ratio factor.
+        Relabeling 5 pp as shock_value 5 would read as 500 pp."""
+        with self.assertRaises(ForecastInputError):
+>           build_sensitivity_test(
+                parameter_id="growth", value=5, input_unit="pp",
+                shock_semantics="additive", engine_unit="pp",
+            )
+E           TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:448: TypeError
+_______ BuilderEngineUnitTests.test_explicit_engine_unit_reverses_to_yi _______
+
+self = <test_du5_money_unit_registry.BuilderEngineUnitTests testMethod=test_explicit_engine_unit_reverses_to_yi>
+
+    def test_explicit_engine_unit_reverses_to_yi(self) -> None:
+        # 725 HKD million = 7.25 HKD yi (reverse scaling).
+>       test = build_sensitivity_test(
+            parameter_id="revenue", value=725, input_unit="hkd_million",
+            shock_semantics="absolute", engine_unit="hkd_100m",
+        )
+E       TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:414: TypeError
+_ BuilderEngineUnitTests.test_explicit_engine_unit_share_shock_targets_the_engine_contract_unit _
+
+self = <test_du5_money_unit_registry.BuilderEngineUnitTests testMethod=test_explicit_engine_unit_share_shock_targets_the_engine_contract_unit>
+
+    def test_explicit_engine_unit_share_shock_targets_the_engine_contract_unit(self) -> None:
+        # 50 bp additive as a ratio-fraction shock is 0.005 (real conversion),
+        # and as bp stays 50; both keep the additive semantics.
+>       as_ratio = build_sensitivity_test(
+            parameter_id="growth", value=50, input_unit="bp",
+            shock_semantics="additive", engine_unit="ratio",
+        )
+E       TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:430: TypeError
+_ RecordTamperTests.test_tampered_engine_value_value_unit_and_conversion_are_rejected (name='engine_value') _
+
+self = <test_du5_money_unit_registry.RecordTamperTests testMethod=test_tampered_engine_value_value_unit_and_conversion_are_rejected>
+
+    def test_tampered_engine_value_value_unit_and_conversion_are_rejected(self) -> None:
+        mutations = {
+            "engine_value": lambda r: r.update(engine_value=700.0),
+            "value": lambda r: r.update(value=7.0),
+            "input_unit": lambda r: r.update(input_unit="hkd_million"),
+            "engine_unit": lambda r: r.update(engine_unit="hkd_100m"),
+            "conversion": lambda r: r.update(conversion=r["conversion"] + " x 1"),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name):
+>               record = self._record()
+                         ^^^^^^^^^^^^^^
+
+tests\test_du5_money_unit_registry.py:508: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_du5_money_unit_registry.RecordTamperTests testMethod=test_tampered_engine_value_value_unit_and_conversion_are_rejected>
+
+    def _record(self) -> dict:
+>       return build_sensitivity_test(
+            parameter_id="revenue", value=7.25, input_unit="hkd_100m",
+            shock_semantics="absolute", engine_unit="hkd_million",
+        )["input_quantity"]
+E       TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:493: TypeError
+_ RecordTamperTests.test_tampered_engine_value_value_unit_and_conversion_are_rejected (name='value') _
+
+self = <test_du5_money_unit_registry.RecordTamperTests testMethod=test_tampered_engine_value_value_unit_and_conversion_are_rejected>
+
+    def test_tampered_engine_value_value_unit_and_conversion_are_rejected(self) -> None:
+        mutations = {
+            "engine_value": lambda r: r.update(engine_value=700.0),
+            "value": lambda r: r.update(value=7.0),
+            "input_unit": lambda r: r.update(input_unit="hkd_million"),
+            "engine_unit": lambda r: r.update(engine_unit="hkd_100m"),
+            "conversion": lambda r: r.update(conversion=r["conversion"] + " x 1"),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name):
+>               record = self._record()
+                         ^^^^^^^^^^^^^^
+
+tests\test_du5_money_unit_registry.py:508: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_du5_money_unit_registry.RecordTamperTests testMethod=test_tampered_engine_value_value_unit_and_conversion_are_rejected>
+
+    def _record(self) -> dict:
+>       return build_sensitivity_test(
+            parameter_id="revenue", value=7.25, input_unit="hkd_100m",
+            shock_semantics="absolute", engine_unit="hkd_million",
+        )["input_quantity"]
+E       TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:493: TypeError
+_ RecordTamperTests.test_tampered_engine_value_value_unit_and_conversion_are_rejected (name='input_unit') _
+
+self = <test_du5_money_unit_registry.RecordTamperTests testMethod=test_tampered_engine_value_value_unit_and_conversion_are_rejected>
+
+    def test_tampered_engine_value_value_unit_and_conversion_are_rejected(self) -> None:
+        mutations = {
+            "engine_value": lambda r: r.update(engine_value=700.0),
+            "value": lambda r: r.update(value=7.0),
+            "input_unit": lambda r: r.update(input_unit="hkd_million"),
+            "engine_unit": lambda r: r.update(engine_unit="hkd_100m"),
+            "conversion": lambda r: r.update(conversion=r["conversion"] + " x 1"),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name):
+>               record = self._record()
+                         ^^^^^^^^^^^^^^
+
+tests\test_du5_money_unit_registry.py:508: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_du5_money_unit_registry.RecordTamperTests testMethod=test_tampered_engine_value_value_unit_and_conversion_are_rejected>
+
+    def _record(self) -> dict:
+>       return build_sensitivity_test(
+            parameter_id="revenue", value=7.25, input_unit="hkd_100m",
+            shock_semantics="absolute", engine_unit="hkd_million",
+        )["input_quantity"]
+E       TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:493: TypeError
+_ RecordTamperTests.test_tampered_engine_value_value_unit_and_conversion_are_rejected (name='engine_unit') _
+
+self = <test_du5_money_unit_registry.RecordTamperTests testMethod=test_tampered_engine_value_value_unit_and_conversion_are_rejected>
+
+    def test_tampered_engine_value_value_unit_and_conversion_are_rejected(self) -> None:
+        mutations = {
+            "engine_value": lambda r: r.update(engine_value=700.0),
+            "value": lambda r: r.update(value=7.0),
+            "input_unit": lambda r: r.update(input_unit="hkd_million"),
+            "engine_unit": lambda r: r.update(engine_unit="hkd_100m"),
+            "conversion": lambda r: r.update(conversion=r["conversion"] + " x 1"),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name):
+>               record = self._record()
+                         ^^^^^^^^^^^^^^
+
+tests\test_du5_money_unit_registry.py:508: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_du5_money_unit_registry.RecordTamperTests testMethod=test_tampered_engine_value_value_unit_and_conversion_are_rejected>
+
+    def _record(self) -> dict:
+>       return build_sensitivity_test(
+            parameter_id="revenue", value=7.25, input_unit="hkd_100m",
+            shock_semantics="absolute", engine_unit="hkd_million",
+        )["input_quantity"]
+E       TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:493: TypeError
+_ RecordTamperTests.test_tampered_engine_value_value_unit_and_conversion_are_rejected (name='conversion') _
+
+self = <test_du5_money_unit_registry.RecordTamperTests testMethod=test_tampered_engine_value_value_unit_and_conversion_are_rejected>
+
+    def test_tampered_engine_value_value_unit_and_conversion_are_rejected(self) -> None:
+        mutations = {
+            "engine_value": lambda r: r.update(engine_value=700.0),
+            "value": lambda r: r.update(value=7.0),
+            "input_unit": lambda r: r.update(input_unit="hkd_million"),
+            "engine_unit": lambda r: r.update(engine_unit="hkd_100m"),
+            "conversion": lambda r: r.update(conversion=r["conversion"] + " x 1"),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name):
+>               record = self._record()
+                         ^^^^^^^^^^^^^^
+
+tests\test_du5_money_unit_registry.py:508: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_du5_money_unit_registry.RecordTamperTests testMethod=test_tampered_engine_value_value_unit_and_conversion_are_rejected>
+
+    def _record(self) -> dict:
+>       return build_sensitivity_test(
+            parameter_id="revenue", value=7.25, input_unit="hkd_100m",
+            shock_semantics="absolute", engine_unit="hkd_million",
+        )["input_quantity"]
+E       TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:493: TypeError
+_ RecordTamperTests.test_tampered_record_is_rejected_by_the_real_sensitivity_path _
+
+self = <test_du5_money_unit_registry.RecordTamperTests testMethod=test_tampered_record_is_rejected_by_the_real_sensitivity_path>
+
+    def test_tampered_record_is_rejected_by_the_real_sensitivity_path(self) -> None:
+        data = hkd_document()
+>       test = build_sensitivity_test(
+            parameter_id="0_base_2027", value=7.25, input_unit="hkd_100m",
+            shock_semantics="absolute", engine_unit="hkd_million",
+        )
+E       TypeError: build_sensitivity_test() got an unexpected keyword argument 'engine_unit'
+
+tests\test_du5_money_unit_registry.py:515: TypeError
+_ ParameterUnitCompatibilityTests.test_absolute_shock_never_pairs_with_a_share_record _
+contracts.evidence.ForecastInputError: mixed_semantics.input_quantity.engine_value does not match shock_value: 0.0005 != 0.05
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du5_money_unit_registry.ParameterUnitCompatibilityTests testMethod=test_absolute_shock_never_pairs_with_a_share_record>
+
+    def test_absolute_shock_never_pairs_with_a_share_record(self) -> None:
+        data = forecast_document()
+        record = convert_input_quantity(0.05, input_unit="pp", engine_unit="ratio")
+        data["sensitivity_tests"] = [{
+            "name": "mixed_semantics", "parameter_id": "0_base_2027",
+            "shock_type": "absolute", "shock_value": 0.05,
+            "input_quantity": record,
+        }]
+>       with self.assertRaisesRegex(ForecastInputError, "absolute shock"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: "absolute shock" does not match "mixed_semantics.input_quantity.engine_value does not match shock_value: 0.0005 != 0.05"
+
+tests\test_du5_money_unit_registry.py:604: AssertionError
+_ ParameterUnitCompatibilityTests.test_count_record_on_money_parameter_is_rejected _
+
+self = <test_du5_money_unit_registry.ParameterUnitCompatibilityTests testMethod=test_count_record_on_money_parameter_is_rejected>
+
+    def test_count_record_on_money_parameter_is_rejected(self) -> None:
+        data = forecast_document()
+        test = build_sensitivity_test(
+            parameter_id="0_base_2027", value=5, input_unit="million_units",
+            shock_semantics="absolute",
+        )
+        data["sensitivity_tests"] = [test]
+>       with self.assertRaisesRegex(ForecastInputError, "cannot shock"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: ForecastInputError not raised
+
+tests\test_du5_money_unit_registry.py:593: AssertionError
+_ ParameterUnitCompatibilityTests.test_money_record_on_quantity_parameter_is_rejected _
+
+self = <test_du5_money_unit_registry.ParameterUnitCompatibilityTests testMethod=test_money_record_on_quantity_parameter_is_rejected>
+
+    def test_money_record_on_quantity_parameter_is_rejected(self) -> None:
+        data = model_document("volume")
+        test = build_sensitivity_test(
+            parameter_id="volume_saleable_volume_base_2026", value=5,
+            input_unit="usd_million", shock_semantics="absolute",
+        )
+        data["sensitivity_tests"] = [test]
+>       with self.assertRaisesRegex(ForecastInputError, "cannot shock"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: ForecastInputError not raised
+
+tests\test_du5_money_unit_registry.py:571: AssertionError
+_ ParameterUnitCompatibilityTests.test_per_unit_dimension_gives_a_clear_diagnostic _
+
+self = <test_du5_money_unit_registry.ParameterUnitCompatibilityTests testMethod=test_per_unit_dimension_gives_a_clear_diagnostic>
+
+    def test_per_unit_dimension_gives_a_clear_diagnostic(self) -> None:
+        """revenue_per_unit is monetary-per-unit: an absolute money shock
+        would silently drop the denominator and must be diagnosed."""
+        data = model_document("volume")
+        test = build_sensitivity_test(
+            parameter_id="volume_realized_price_base_2026", value=5,
+            input_unit="usd_million", shock_semantics="absolute",
+        )
+        data["sensitivity_tests"] = [test]
+>       with self.assertRaisesRegex(ForecastInputError, "monetary-per-unit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: ForecastInputError not raised
+
+tests\test_du5_money_unit_registry.py:583: AssertionError
+_ ParameterUnitCompatibilityTests.test_relative_shock_never_pairs_with_a_money_record _
+
+self = <test_du5_money_unit_registry.ParameterUnitCompatibilityTests testMethod=test_relative_shock_never_pairs_with_a_money_record>
+
+    def test_relative_shock_never_pairs_with_a_money_record(self) -> None:
+        data = forecast_document()
+        record = convert_input_quantity(0.05, input_unit="usd_million", engine_unit="usd_million")
+        data["sensitivity_tests"] = [{
+            "name": "mixed_relative", "parameter_id": "0_base_2027",
+            "shock_type": "percent", "shock_value": 0.05,
+            "input_quantity": record,
+        }]
+>       with self.assertRaisesRegex(ForecastInputError, "share-of-total"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: ForecastInputError not raised
+
+tests\test_du5_money_unit_registry.py:615: AssertionError
+_ ParameterUnitCompatibilityTests.test_same_number_in_record_currency_and_parameter_currency_passes _
+
+self = <test_du5_money_unit_registry.ParameterUnitCompatibilityTests testMethod=test_same_number_in_record_currency_and_parameter_currency_passes>
+
+    def test_same_number_in_record_currency_and_parameter_currency_passes(self) -> None:
+        data = hkd_document()
+>       test = build_sensitivity_test(
+            parameter_id="0_base_2027", value=5, input_unit="hkd_million",
+            shock_semantics="absolute",
+        )
+
+tests\test_du5_money_unit_registry.py:544: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:258: in build_sensitivity_test
+    unit = _normalize_unit(input_unit, "input_unit")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown input_unit: hkd_million'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown input_unit: hkd_million
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ ParameterUnitCompatibilityTests.test_self_consistent_record_with_wrong_scale_is_rejected _
+
+self = <test_du5_money_unit_registry.ParameterUnitCompatibilityTests testMethod=test_self_consistent_record_with_wrong_scale_is_rejected>
+
+    def test_self_consistent_record_with_wrong_scale_is_rejected(self) -> None:
+        data = forecast_document()  # USD million parameters
+        test = build_sensitivity_test(
+            parameter_id="0_base_2027", value=5, input_unit="usd_thousand",
+            shock_semantics="absolute",
+        )
+        data["sensitivity_tests"] = [test]
+>       with self.assertRaisesRegex(ForecastInputError, "scale"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: ForecastInputError not raised
+
+tests\test_du5_money_unit_registry.py:561: AssertionError
+_ ParameterUnitCompatibilityTests.test_self_consistent_usd_record_on_hkd_parameter_is_rejected _
+
+self = <test_du5_money_unit_registry.ParameterUnitCompatibilityTests testMethod=test_self_consistent_usd_record_on_hkd_parameter_is_rejected>
+
+    def test_self_consistent_usd_record_on_hkd_parameter_is_rejected(self) -> None:
+        data = hkd_document()
+        test = build_sensitivity_test(
+            parameter_id="0_base_2027", value=5, input_unit="usd_million",
+            shock_semantics="absolute",
+        )
+        data["sensitivity_tests"] = [test]
+>       with self.assertRaisesRegex(ForecastInputError, "currency"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: ForecastInputError not raised
+
+tests\test_du5_money_unit_registry.py:539: AssertionError
+_____ ParameterUnitCompatibilityTests.test_usd_rmb_samples_do_not_regress _____
+
+self = <test_du5_money_unit_registry.ParameterUnitCompatibilityTests testMethod=test_usd_rmb_samples_do_not_regress>
+
+    def test_usd_rmb_samples_do_not_regress(self) -> None:
+        """Old USD/RMB public-path behaviour is frozen."""
+        data = forecast_document()  # USD million
+        test = build_sensitivity_test(
+            parameter_id="0_base_2027", value=2.5, input_unit="usd_million",
+            shock_semantics="absolute",
+        )
+        data["sensitivity_tests"] = [test]
+        result = run_forecast(data)
+        sensitivity = result["sensitivities"][0]
+        self.assertEqual(sensitivity["shock_value"], 2.5)
+        self.assertAlmostEqual(sensitivity["requested_values"]["up"], 123.5, places=9)
+        data = re_denominate(forecast_document(), "CNY", "million")
+>       test = build_sensitivity_test(
+            parameter_id="0_base_2027", value=2.5, input_unit="cny_million",
+            shock_semantics="absolute",
+        )
+
+tests\test_du5_money_unit_registry.py:665: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:258: in build_sensitivity_test
+    unit = _normalize_unit(input_unit, "input_unit")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown input_unit: cny_million'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown input_unit: cny_million
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ ParameterUnitCompatibilityTests.test_wan_scale_parameter_context_resolves_currency_less_scale _
+
+self = <test_du5_money_unit_registry.ParameterUnitCompatibilityTests testMethod=test_wan_scale_parameter_context_resolves_currency_less_scale>
+
+    def test_wan_scale_parameter_context_resolves_currency_less_scale(self) -> None:
+        """A parameter scale like 万 is resolved with its explicit currency
+        context (HKD here), while the bare currency-less 万元 spelling stays
+        unknown for input records."""
+        data = re_denominate(forecast_document(), "HKD", "万")
+>       test = build_sensitivity_test(
+            parameter_id="0_base_2027", value=5, input_unit="hkd_wan",
+            shock_semantics="absolute",
+        )
+
+tests\test_du5_money_unit_registry.py:639: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:258: in build_sensitivity_test
+    unit = _normalize_unit(input_unit, "input_unit")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown input_unit: hkd_wan'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown input_unit: hkd_wan
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_____ HelperContractTests.test_matching_parameter_unit_passes_the_helper ______
+
+self = <test_du5_money_unit_registry.HelperContractTests testMethod=test_matching_parameter_unit_passes_the_helper>
+
+    def test_matching_parameter_unit_passes_the_helper(self) -> None:
+        parameter = {
+            "parameter_id": "p", "dimension": "revenue",
+            "currency": "HKD", "scale": "million",
+        }
+>       record = convert_input_quantity(725, input_unit="hkd_million", engine_unit="hkd_million")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_du5_money_unit_registry.py:722: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:102: in convert_input_quantity
+    source = _normalize_unit(input_unit, "input_unit")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown input_unit: hkd_million'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown input_unit: hkd_million
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ HelperContractTests.test_unknown_parameter_currency_is_diagnosed_not_guessed _
+
+self = <test_du5_money_unit_registry.HelperContractTests testMethod=test_unknown_parameter_currency_is_diagnosed_not_guessed>
+
+    def test_unknown_parameter_currency_is_diagnosed_not_guessed(self) -> None:
+        parameter = {
+            "parameter_id": "p", "dimension": "revenue",
+            "currency": "EUR", "scale": "million",
+        }
+        record = convert_input_quantity(5, input_unit="usd_million", engine_unit="usd_million")
+        with self.assertRaisesRegex(ForecastInputError, "cannot be safely interpreted"):
+>           self._helper()(
+            ^^^^^^^^^^^^^^
+                record, parameter=parameter, shock_type="absolute", field="t"
+            )
+
+tests\test_du5_money_unit_registry.py:702: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    @staticmethod
+    def _helper():
+>       from research.input_quantities import validate_input_quantity_for_parameter
+E       ImportError: cannot import name 'validate_input_quantity_for_parameter' from 'research.input_quantities' (C:\Users\郑曾波\Projects\revenue-forecast-du5-units\scripts\research\input_quantities.py)
+
+tests\test_du5_money_unit_registry.py:691: ImportError
+__ HelperContractTests.test_unknown_parameter_scale_is_diagnosed_not_guessed __
+
+self = <test_du5_money_unit_registry.HelperContractTests testMethod=test_unknown_parameter_scale_is_diagnosed_not_guessed>
+
+    def test_unknown_parameter_scale_is_diagnosed_not_guessed(self) -> None:
+        parameter = {
+            "parameter_id": "p", "dimension": "revenue",
+            "currency": "USD", "scale": "model-specific",
+        }
+        record = convert_input_quantity(5, input_unit="usd_million", engine_unit="usd_million")
+        with self.assertRaisesRegex(ForecastInputError, "cannot be safely interpreted"):
+>           self._helper()(
+            ^^^^^^^^^^^^^^
+                record, parameter=parameter, shock_type="absolute", field="t"
+            )
+
+tests\test_du5_money_unit_registry.py:713: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    @staticmethod
+    def _helper():
+>       from research.input_quantities import validate_input_quantity_for_parameter
+E       ImportError: cannot import name 'validate_input_quantity_for_parameter' from 'research.input_quantities' (C:\Users\郑曾波\Projects\revenue-forecast-du5-units\scripts\research\input_quantities.py)
+
+tests\test_du5_money_unit_registry.py:691: ImportError
+_ OldNewUnitCompatibilityTests.test_cny_spellings_are_the_same_currency_as_the_old_rmb_names _
+
+self = <test_input_quantity_conversion.OldNewUnitCompatibilityTests testMethod=test_cny_spellings_are_the_same_currency_as_the_old_rmb_names>
+
+    def test_cny_spellings_are_the_same_currency_as_the_old_rmb_names(self) -> None:
+        from research.input_quantities import convert_input_quantity
+    
+        self.assertAlmostEqual(
+>           convert_input_quantity(7.25, input_unit="cny_100m", engine_unit="cny_million")["engine_value"],
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            725.0,
+            places=12,
+        )
+
+tests\test_input_quantity_conversion.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:102: in convert_input_quantity
+    source = _normalize_unit(input_unit, "input_unit")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown input_unit: cny_100m'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown input_unit: cny_100m
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ OldNewUnitCompatibilityTests.test_new_money_units_follow_the_same_family_rules_as_the_old_ones _
+
+self = <test_input_quantity_conversion.OldNewUnitCompatibilityTests testMethod=test_new_money_units_follow_the_same_family_rules_as_the_old_ones>
+
+    def test_new_money_units_follow_the_same_family_rules_as_the_old_ones(self) -> None:
+        from research.input_quantities import convert_input_quantity
+    
+        self.assertAlmostEqual(
+>           convert_input_quantity(7.25, input_unit="hkd_100m", engine_unit="hkd_million")["engine_value"],
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            725.0,
+            places=12,
+        )
+
+tests\test_input_quantity_conversion.py:189: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\input_quantities.py:102: in convert_input_quantity
+    source = _normalize_unit(input_unit, "input_unit")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\input_quantities.py:87: in _normalize_unit
+    require(canonical is not None, f"unknown {field}: {unit}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'unknown input_unit: hkd_100m'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: unknown input_unit: hkd_100m
+
+scripts\contracts\evidence.py:98: ForecastInputError
+______________ test_unwritten_unit_is_unknown_not_a_guessed_rate ______________
+
+engine = <model_generalization_matrix.native.NativeEngine object at 0x00000209E5D6CF50>
+
+    def test_unwritten_unit_is_unknown_not_a_guessed_rate(engine):
+        """HKD is a written unit name but still never FX-guessed into USD, and a
+        genuinely unwritten spelling stays an unknown unit, never a guessed alias."""
+        from contracts.evidence import ForecastInputError
+    
+>       with pytest.raises(ForecastInputError, match="incompatible unit conversion"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'incompatible unit conversion'
+E         Actual message: 'unknown input_unit: hkd_million'
+
+tools\tests\test_w08_model_combinations.py:296: AssertionError
+______ test_every_combination_case_records_a_native_execution[C01-HKD-L] ______
+
+case_id = 'C01-HKD-L'
+engine = <model_generalization_matrix.native.NativeEngine object at 0x00000209E5C2FA70>
+
+    @pytest.mark.parametrize("case_id", [c.case_id for c in CB.COMBINATION_CASES])
+    def test_every_combination_case_records_a_native_execution(case_id, engine):
+        """A PASS/REJECT_OK case with no native record is NOT_RUN, never a pass."""
+        spec = CB.combination_case_index()[case_id]
+        res = run_case(spec, engine)
+>       assert res.status in {"PASS", "REJECT_OK"}, (
+            case_id,
+            res.diagnostics,
+            res.assertions,
+        )
+E       AssertionError: ('C01-HKD-L', {'seconds': 8.9e-05}, [Assertion(name='unexpected_reject', expected='compute', observed='ForecastInputError: unknown input_unit: hkd_billion', passed=False, kind='reject')])
+E       assert 'FAIL' in {'PASS', 'REJECT_OK'}
+E        +  where 'FAIL' = CaseResult(case_id='C01-HKD-L', cls='C01', vector='legal', mode='draft', boundary='HKD same-currency scaling: 5 HKD bi...rror', 'exception_message': 'unknown input_unit: hkd_billion', 'json_pointers': {}}], diagnostics={'seconds': 8.9e-05}).status
+
+tools\tests\test_w08_model_combinations.py:569: AssertionError
+______ test_every_combination_case_records_a_native_execution[C01-HKD-C] ______
+
+case_id = 'C01-HKD-C'
+engine = <model_generalization_matrix.native.NativeEngine object at 0x00000209E5C65B70>
+
+    @pytest.mark.parametrize("case_id", [c.case_id for c in CB.COMBINATION_CASES])
+    def test_every_combination_case_records_a_native_execution(case_id, engine):
+        """A PASS/REJECT_OK case with no native record is NOT_RUN, never a pass."""
+        spec = CB.combination_case_index()[case_id]
+        res = run_case(spec, engine)
+>       assert res.status in {"PASS", "REJECT_OK"}, (
+            case_id,
+            res.diagnostics,
+            res.assertions,
+        )
+E       AssertionError: ('C01-HKD-C', {'seconds': 0.000127}, [Assertion(name='reject_reason', expected='incompatible unit conversion', observed='unknown input_unit: hkd_million', passed=False, kind='reject')])
+E       assert 'REJECT_MISMATCH' in {'PASS', 'REJECT_OK'}
+E        +  where 'REJECT_MISMATCH' = CaseResult(case_id='C01-HKD-C', cls='C01', vector='counter', mode='draft', boundary='a written HKD unit is still never...ror', 'exception_message': 'unknown input_unit: hkd_million', 'json_pointers': {}}], diagnostics={'seconds': 0.000127}).status
+
+tools\tests\test_w08_model_combinations.py:569: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_du5_money_unit_registry.py::HkdScaleConversionTests::test_hkd_billion_to_million_and_million_to_thousand
+FAILED tests/test_du5_money_unit_registry.py::HkdScaleConversionTests::test_hkd_reverse_scaling_and_zero_negative_decimal
+FAILED tests/test_du5_money_unit_registry.py::HkdScaleConversionTests::test_hkd_yi_to_million_is_hand_checked
+FAILED tests/test_du5_money_unit_registry.py::RmbWanYiScaleConversionTests::test_cny_is_the_same_currency_as_rmb
+FAILED tests/test_du5_money_unit_registry.py::RmbWanYiScaleConversionTests::test_rmb_shiyi_to_million_and_reverse
+FAILED tests/test_du5_money_unit_registry.py::RmbWanYiScaleConversionTests::test_rmb_yi_to_million_and_wan
+FAILED tests/test_du5_money_unit_registry.py::RmbWanYiScaleConversionTests::test_zero_negative_and_decimal_rmb_values_convert_by_the_same_algebra
+FAILED tests/test_du5_money_unit_registry.py::CrossCurrencyAndFamilyRejectTests::test_identity_short_circuit_only_applies_to_the_same_unit
+SUBFAILED(input_unit='hkd_million', engine_unit='million_units') tests/test_du5_money_unit_registry.py::CrossCurrencyAndFamilyRejectTests::test_money_count_and_share_families_never_mix
+SUBFAILED(input_unit='million_units', engine_unit='hkd_million') tests/test_du5_money_unit_registry.py::CrossCurrencyAndFamilyRejectTests::test_money_count_and_share_families_never_mix
+SUBFAILED(input_unit='rmb_10k', engine_unit='units') tests/test_du5_money_unit_registry.py::CrossCurrencyAndFamilyRejectTests::test_money_count_and_share_families_never_mix
+SUBFAILED(input_unit='pp', engine_unit='hkd_million') tests/test_du5_money_unit_registry.py::CrossCurrencyAndFamilyRejectTests::test_money_count_and_share_families_never_mix
+SUBFAILED(input_unit='hkd_million', engine_unit='pp') tests/test_du5_money_unit_registry.py::CrossCurrencyAndFamilyRejectTests::test_money_count_and_share_families_never_mix
+SUBFAILED(input_unit='usd_million', engine_unit='hkd_million') tests/test_du5_money_unit_registry.py::CrossCurrencyAndFamilyRejectTests::test_usd_hkd_rmb_pairs_never_convert
+SUBFAILED(input_unit='hkd_million', engine_unit='usd_million') tests/test_du5_money_unit_registry.py::CrossCurrencyAndFamilyRejectTests::test_usd_hkd_rmb_pairs_never_convert
+SUBFAILED(input_unit='hkd_million', engine_unit='rmb_million') tests/test_du5_money_unit_registry.py::CrossCurrencyAndFamilyRejectTests::test_usd_hkd_rmb_pairs_never_convert
+SUBFAILED(input_unit='rmb_million', engine_unit='hkd_million') tests/test_du5_money_unit_registry.py::CrossCurrencyAndFamilyRejectTests::test_usd_hkd_rmb_pairs_never_convert
+SUBFAILED(input_unit='usd_billion', engine_unit='cny_million') tests/test_du5_money_unit_registry.py::CrossCurrencyAndFamilyRejectTests::test_usd_hkd_rmb_pairs_never_convert
+SUBFAILED(input_unit='cny_100m', engine_unit='usd_million') tests/test_du5_money_unit_registry.py::CrossCurrencyAndFamilyRejectTests::test_usd_hkd_rmb_pairs_never_convert
+FAILED tests/test_du5_money_unit_registry.py::BuilderEngineUnitTests::test_explicit_engine_unit_converts_hkd_shiyi_to_million
+FAILED tests/test_du5_money_unit_registry.py::BuilderEngineUnitTests::test_explicit_engine_unit_converts_hkd_yi_to_million
+FAILED tests/test_du5_money_unit_registry.py::BuilderEngineUnitTests::test_explicit_engine_unit_enters_the_real_revenue_delta
+FAILED tests/test_du5_money_unit_registry.py::BuilderEngineUnitTests::test_explicit_engine_unit_rejects_cross_currency
+FAILED tests/test_du5_money_unit_registry.py::BuilderEngineUnitTests::test_explicit_engine_unit_rejects_human_spelling_as_engine_target
+FAILED tests/test_du5_money_unit_registry.py::BuilderEngineUnitTests::test_explicit_engine_unit_reverses_to_yi
+FAILED tests/test_du5_money_unit_registry.py::BuilderEngineUnitTests::test_explicit_engine_unit_share_shock_targets_the_engine_contract_unit
+SUBFAILED(name='engine_value') tests/test_du5_money_unit_registry.py::RecordTamperTests::test_tampered_engine_value_value_unit_and_conversion_are_rejected
+SUBFAILED(name='value') tests/test_du5_money_unit_registry.py::RecordTamperTests::test_tampered_engine_value_value_unit_and_conversion_are_rejected
+SUBFAILED(name='input_unit') tests/test_du5_money_unit_registry.py::RecordTamperTests::test_tampered_engine_value_value_unit_and_conversion_are_rejected
+SUBFAILED(name='engine_unit') tests/test_du5_money_unit_registry.py::RecordTamperTests::test_tampered_engine_value_value_unit_and_conversion_are_rejected
+SUBFAILED(name='conversion') tests/test_du5_money_unit_registry.py::RecordTamperTests::test_tampered_engine_value_value_unit_and_conversion_are_rejected
+FAILED tests/test_du5_money_unit_registry.py::RecordTamperTests::test_tampered_record_is_rejected_by_the_real_sensitivity_path
+FAILED tests/test_du5_money_unit_registry.py::ParameterUnitCompatibilityTests::test_absolute_shock_never_pairs_with_a_share_record
+FAILED tests/test_du5_money_unit_registry.py::ParameterUnitCompatibilityTests::test_count_record_on_money_parameter_is_rejected
+FAILED tests/test_du5_money_unit_registry.py::ParameterUnitCompatibilityTests::test_money_record_on_quantity_parameter_is_rejected
+FAILED tests/test_du5_money_unit_registry.py::ParameterUnitCompatibilityTests::test_per_unit_dimension_gives_a_clear_diagnostic
+FAILED tests/test_du5_money_unit_registry.py::ParameterUnitCompatibilityTests::test_relative_shock_never_pairs_with_a_money_record
+FAILED tests/test_du5_money_unit_registry.py::ParameterUnitCompatibilityTests::test_same_number_in_record_currency_and_parameter_currency_passes
+FAILED tests/test_du5_money_unit_registry.py::ParameterUnitCompatibilityTests::test_self_consistent_record_with_wrong_scale_is_rejected
+FAILED tests/test_du5_money_unit_registry.py::ParameterUnitCompatibilityTests::test_self_consistent_usd_record_on_hkd_parameter_is_rejected
+FAILED tests/test_du5_money_unit_registry.py::ParameterUnitCompatibilityTests::test_usd_rmb_samples_do_not_regress
+FAILED tests/test_du5_money_unit_registry.py::ParameterUnitCompatibilityTests::test_wan_scale_parameter_context_resolves_currency_less_scale
+FAILED tests/test_du5_money_unit_registry.py::HelperContractTests::test_matching_parameter_unit_passes_the_helper
+FAILED tests/test_du5_money_unit_registry.py::HelperContractTests::test_unknown_parameter_currency_is_diagnosed_not_guessed
+FAILED tests/test_du5_money_unit_registry.py::HelperContractTests::test_unknown_parameter_scale_is_diagnosed_not_guessed
+FAILED tests/test_input_quantity_conversion.py::OldNewUnitCompatibilityTests::test_cny_spellings_are_the_same_currency_as_the_old_rmb_names
+FAILED tests/test_input_quantity_conversion.py::OldNewUnitCompatibilityTests::test_new_money_units_follow_the_same_family_rules_as_the_old_ones
+FAILED tools/tests/test_w08_model_combinations.py::test_unwritten_unit_is_unknown_not_a_guessed_rate
+FAILED tools/tests/test_w08_model_combinations.py::test_every_combination_case_records_a_native_execution[C01-HKD-L]
+FAILED tools/tests/test_w08_model_combinations.py::test_every_combination_case_records_a_native_execution[C01-HKD-C]
+50 failed, 94 passed, 9 skipped, 43 subtests passed in 7.16s

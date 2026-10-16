@@ -19,7 +19,7 @@ from forecast.calc import (
 )
 from forecast.segments import _run_forecast_core
 from model_registry import MODEL_REGISTRY, driver_value_bounds
-from research.input_quantities import validate_input_quantity_record
+from research.input_quantities import validate_input_quantity_for_parameter
 
 
 def _sensitivity_bounds(
@@ -168,8 +168,11 @@ def calculate_sensitivities(
                 f"{name}.input_quantity.engine_value does not match shock_value: "
                 f"{input_quantity.get('engine_value')} != {shock}",
             )
-            validate_input_quantity_record(
-                input_quantity, field=f"{name}.input_quantity"
+            validate_input_quantity_for_parameter(
+                input_quantity,
+                parameter=parameter,
+                shock_type=test["shock_type"],
+                field=f"{name}.input_quantity",
             )
         lower, upper = _sensitivity_bounds(
             parameter, roles.get(parameter_id, set()), ancestor=parameter_id not in direct_refs

@@ -150,6 +150,63 @@ class ConvertInputQuantityTests(unittest.TestCase):
             convert_input_quantity(5, input_unit="usd_million", engine_unit="rmb_million")
 
 
+class OldNewUnitCompatibilityTests(unittest.TestCase):
+    """DU5 vocabulary additions keep the old unit names and records intact."""
+
+    def test_old_canonical_money_names_are_unchanged(self) -> None:
+        from research.input_quantities import convert_input_quantity
+
+        # The pre-DU5 canonical names stay canonical and recompute identically.
+        for value, input_unit, engine_unit, expected in (
+            (5, "usd_thousand", "usd_million", 0.005),
+            (2.5, "rmb_billion", "rmb_million", 2500.0),
+            (7.25, "rmb_100m", "rmb_million", 725.0),
+            (5, "usd_million", "usd_billion", 0.005),
+        ):
+            record = convert_input_quantity(value, input_unit=input_unit, engine_unit=engine_unit)
+            self.assertAlmostEqual(record["engine_value"], expected, places=12)
+            self.assertEqual(record["input_unit"], input_unit)
+            self.assertEqual(record["engine_unit"], engine_unit)
+
+    def test_cny_spellings_are_the_same_currency_as_the_old_rmb_names(self) -> None:
+        from research.input_quantities import convert_input_quantity
+
+        self.assertAlmostEqual(
+            convert_input_quantity(7.25, input_unit="cny_100m", engine_unit="cny_million")["engine_value"],
+            725.0,
+            places=12,
+        )
+        self.assertAlmostEqual(
+            convert_input_quantity(7.25, input_unit="rmb_100m", engine_unit="cny_million")["engine_value"],
+            725.0,
+            places=12,
+        )
+
+    def test_new_money_units_follow_the_same_family_rules_as_the_old_ones(self) -> None:
+        from research.input_quantities import convert_input_quantity
+
+        self.assertAlmostEqual(
+            convert_input_quantity(7.25, input_unit="hkd_100m", engine_unit="hkd_million")["engine_value"],
+            725.0,
+            places=12,
+        )
+        for input_unit, engine_unit in (
+            ("hkd_million", "usd_million"),
+            ("usd_million", "hkd_million"),
+            ("hkd_billion", "rmb_million"),
+            ("hkd_million", "thousand_units"),
+        ):
+            with self.assertRaises(ForecastInputError):
+                convert_input_quantity(5, input_unit=input_unit, engine_unit=engine_unit)
+
+    def test_unknown_spellings_stay_unknown_next_to_the_new_vocabulary(self) -> None:
+        from research.input_quantities import convert_input_quantity
+
+        for bad_unit in ("wan_yuan", "万元", "hkd_mega", "usd_hkd_million"):
+            with self.assertRaises(ForecastInputError):
+                convert_input_quantity(5, input_unit=bad_unit, engine_unit="rmb_million")
+
+
 class BuildSensitivityTestTests(unittest.TestCase):
     """build_sensitivity_test chooses the engine shock_type from unit + semantics."""
 

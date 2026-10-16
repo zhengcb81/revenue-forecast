@@ -1,0 +1,26 @@
+{
+  "receipt": "du5-final-central/1",
+  "command": "python -B -m pytest -q tests/test_du5_money_unit_registry.py tests/test_input_quantity_conversion.py tests/test_sensitivity_dependency_dag.py tools/tests/test_w08_model_combinations.py tests/test_input_semantics_e2e.py tests/test_golden_behavior_lock.py tests/test_w05_dated_contribution_output.py tests/test_w05_dated_contribution_composition.py tools/tests/test_w07_model_generalization.py tools/tests/test_root_w07_model_boundaries.py",
+  "summary": "216 passed, 10 skipped, 67 subtests passed in 28.79s",
+  "exit_code": 0,
+  "raw_log": "receipts/final-central.log",
+  "smoke_suite": {
+    "command": "python tools/pre_push_gate.py smoke portion (30 SMOKE_TESTS)",
+    "summary": "416 passed, 36 subtests passed in 47.80s",
+    "exit_code": 0
+  },
+  "static": {
+    "ruff": "python -m ruff check scripts tests tools -> All checks passed (e2e/ absent in this sparse worktree)",
+    "mypy": "python -m mypy scripts/research/input_quantities.py scripts/analysis/sensitivity.py -> Success: no issues found"
+  },
+  "known_environmental_failures": [
+    {
+      "tests": "tests/test_zr804_platform_shape.py::test_installed_copy_executes_with_canonical_identity[agents|claude|codex]",
+      "cause": "sparse worktree has no agents/claude/codex directories (FileNotFoundError: missing installable directory) in tools/sync_installations.py; unrelated to this card's files and pre-existing in this worktree"
+    }
+  ],
+  "not_run": [
+    "full-repo slow native suites (not part of this card's related set)",
+    "e2e/ ruff target: directory absent from this sparse worktree"
+  ]
+}
