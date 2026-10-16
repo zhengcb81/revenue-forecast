@@ -190,14 +190,31 @@ fixture 的独立脚本，在 `e86488a7` 的临时 worktree 与当前树上跑�
 （缩小声明窗口、改 `measurement_basis`、连同收入路径一起改写并重封 hash），
 全部被拒。
 
-**结构 guard 的反绕过证据（两次攻击）**：
+**结构 guard 的反绕过证据（五路攻击矩阵）**：
 
-- `receipts/guard-attack-check.txt`：把 report 的 legacy 委托整体替换为本地带宽重算
-  （避开旧 guard 的字面量），旧 guard 全绿（19 passed），新 guard **exit 1 捕获**。
-- `receipts/guard-attack-2-producer.txt`：把 `targets.py` 生产端的 owner 委托改成
-  返回空字典，**11 个测试失败**（含行为测试），证明生产端不止靠静态 guard 兜底。
+guard 的语义要求是：`require` 的条件必须是**精确绑定形状**
+`<已发布比较图> == compare_target_measurement(...)`——顶层不得 `or`/`and`
+（短路逃生口）、不得 `not`/三元（可反转或丢弃判定）、不得与无关值作诱饵比较、
+owner 调用不得只被赋值而不参与判定。
 
-两次攻击均在临时副本/可还原写入上执行，事后 `git diff HEAD` 为空，证实已还原。
+| 攻击 | 结果 |
+|---|---|
+| 本地带宽重写（替换 legacy 委托，避开旧字面量） | **CAUGHT** |
+| 诱饵调用：owner 赋给未使用变量 + `require(恒真 or bool(owner(...)))` | **CAUGHT** |
+| owner 仅与 `None` 比较 | **CAUGHT** |
+| `not(owner判定) is False` 包装 | **CAUGHT** |
+| 生产端 `targets.py` 委托替换为 `{}` | **CAUGHT**（11 个测试失败） |
+
+见 `receipts/guard-attack-matrix.txt`（**ESCAPED: NONE**）、
+`receipts/guard-attack-check.txt`、`receipts/guard-attack-3-decoy.txt`、
+`receipts/guard-attack-2-producer.txt`。
+
+**关键教训（记录以免重犯）**："某处出现了 owner 名字"与"结果由 owner 的返回值决定"
+是两回事。前者可被诱饵调用满足——早期版本因此被独立审查攻破，且当时真的能让校验器
+**接受伪造的 `meets_target`**（同时重封 `result_sha256` 与 publication receipt）。
+只有 AST 形状检查能表达后者。
+
+所有攻击均在可还原写入上执行，事后源码文件与 HEAD 逐字节一致，仅 guard 测试本身有意变更。
 
 ## 8. NOT_RUN / 不跑范围
 
