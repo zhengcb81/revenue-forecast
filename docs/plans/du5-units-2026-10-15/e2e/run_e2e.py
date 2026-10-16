@@ -139,9 +139,22 @@ def main() -> int:
     sentinel_text = "du5 sentinel: outputs must not disturb this file\n"
     sentinel.write_text(sentinel_text, encoding="utf-8")
     registry = temp_root / "publications.jsonl"
+    # Redirect the publication registry for THIS process too: in-process
+    # run_forecast(mode="formal") reads os.environ at call time, and the
+    # production artifacts/registry must never receive this run's entries.
+    os.environ["REVENUE_PUBLICATION_REGISTRY"] = str(registry)
     env = dict(os.environ)
     env["REVENUE_PUBLICATION_REGISTRY"] = str(registry)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
+    default_registry = ROOT / "artifacts" / "registry" / "publications.jsonl"
+
+    def registry_state() -> tuple[bool, str]:
+        if not default_registry.exists():
+            return (False, "absent")
+        digest = hashlib.sha256(default_registry.read_bytes()).hexdigest()
+        return (True, digest)
+
+    registry_before = registry_state()
     git_before = subprocess.run(
         ["git", "status", "--porcelain"], capture_output=True, text=True,
         encoding="utf-8", errors="replace", cwd=ROOT,
@@ -290,6 +303,8 @@ def main() -> int:
         # --- restore/cleanup: sentinel intact, temp dirs are ours only -----
         sentinel_ok = sentinel.exists() and sentinel.read_text(encoding="utf-8") == sentinel_text
         registry_isolated = str(registry).startswith(str(temp_root))
+        registry_after = registry_state()
+        default_registry_untouched = registry_after == registry_before
         git_after = subprocess.run(
             ["git", "status", "--porcelain"], capture_output=True, text=True,
             encoding="utf-8", errors="replace", cwd=ROOT,
@@ -318,13 +333,19 @@ def main() -> int:
             "receipt": "du5-cleanup/1",
             "sentinel_intact": sentinel_ok,
             "registry_redirected_into_temp": registry_isolated,
+            "default_registry_before": {"exists": registry_before[0], "sha256": registry_before[1]},
+            "default_registry_after": {"exists": registry_after[0], "sha256": registry_after[1]},
+            "default_registry_untouched": default_registry_untouched,
             "temp_dir_removed": not temp_root.exists(),
             "temp_dir": str(temp_root),
             "git_new_entries_outside_receipts": stray,
         }
         write_json(RECEIPTS / "e2e-cleanup.json", cleanup)
         checks["cleanup"] = cleanup
-        if not (sentinel_ok and registry_isolated and not temp_root.exists() and not stray):
+        if not (
+            sentinel_ok and registry_isolated and default_registry_untouched
+            and not temp_root.exists() and not stray
+        ):
             failures.append("cleanup")
 
     write_json(
