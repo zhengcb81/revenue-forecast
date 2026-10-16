@@ -297,13 +297,24 @@ class CallerGuardTests(unittest.TestCase):
         """``require`` calls whose *condition* is decided by the owner's value.
 
         A guard is only real when the owner's return value is what the
-        ``require`` tests. The earlier version of this guard asked whether the
+        ``require`` tests, and when the *published* comparison map is what it
+        is tested against. The earlier version of this guard asked whether the
         condition's *source text* mentioned the owner, which a decoy call
         satisfies: ``require(True or bool(owner(...)), ...)`` keeps the text
-        while the decision is local. This version inspects the AST and demands
-        the owner call be an operand of the comparison itself, with no
-        short-circuit escape hatch that could make the condition true
-        regardless of the owner's value.
+        while the decision is local.
+
+        This version requires an equality comparison of the form
+        ``<published comparisons> == compare_target_measurement(...)``:
+
+        * the condition must BE a ``Compare`` (no wrapping ``not``/``bool``/
+          ternary that could invert or discard the verdict);
+        * the top level may not be a ``BoolOp`` (an ``or``/``and`` escape hatch
+          can force the outcome without consulting the owner);
+        * the operator must be ``==``/``is`` — a comparison that cannot be
+          satisfied by an unrelated side effect, unlike ``is not None``;
+        * the owner call must be one operand and the published comparison map
+          the other, so a decoy comparison (the owner against itself, or
+          against an unrelated value) does not qualify.
         """
         source = path.read_text(encoding="utf-8")
         tree = ast.parse(source)
@@ -317,15 +328,36 @@ class CallerGuardTests(unittest.TestCase):
             ):
                 continue
             condition = node.args[0]
-            # An ``or``/``and`` at the top level is an escape hatch: one side
-            # can force the outcome without the owner being consulted.
+            # An ``or``/``and`` at the top level is an escape hatch.
             if isinstance(condition, ast.BoolOp):
                 continue
+            # ``not``, ``bool(...)``, ternaries: the verdict could be inverted
+            # or discarded, so none of them count as gating on the value.
             if not isinstance(condition, ast.Compare):
                 continue
+            if not all(
+                isinstance(op, (ast.Eq, ast.Is)) for op in condition.ops
+            ):
+                continue
             operands = [condition.left, *condition.comparators]
-            if any(cls._calls_owner(operand) for operand in operands):
-                gated.append(node)
+            owner_operands = [op for op in operands if cls._calls_owner(op)]
+            if len(owner_operands) != 1:
+                continue
+            # The other operand must be the published comparison map, named by
+            # the target's own output key. Comparing the owner to itself or to
+            # an unrelated value is a decoy, not a binding.
+            others = [
+                op for op in operands
+                if not cls._calls_owner(op)
+            ]
+            if not others:
+                continue
+            if not any(
+                isinstance(op, ast.Name) and op.id == "comparisons"
+                for op in others
+            ):
+                continue
+            gated.append(node)
         return gated
 
     def test_report_asserts_the_owner_result_not_a_local_recompute(self) -> None:
@@ -351,12 +383,11 @@ class CallerGuardTests(unittest.TestCase):
 
         The bypass this rejects: assign the owner's return value to an unused
         name, then assert something locally true. The value must reach the
-        assertion.
+        assertion through the same ``<published map> == owner(...)`` shape the
+        gating test requires, so a decoy call cannot satisfy it.
         """
         source = (SCRIPTS / "revenue_report.py").read_text(encoding="utf-8")
         tree = ast.parse(source)
-        # Any assignment whose value is an owner call must have its target read
-        # by a require-gated comparison somewhere in the same function.
         for node in ast.walk(tree):
             if not isinstance(node, ast.FunctionDef):
                 continue
@@ -367,16 +398,8 @@ class CallerGuardTests(unittest.TestCase):
                 continue
             gated_in_function = [
                 inner
-                for inner in ast.walk(node)
-                if isinstance(inner, ast.Call)
-                and isinstance(inner.func, ast.Name)
-                and inner.func.id == "require"
-                and inner.args
-                and isinstance(inner.args[0], ast.Compare)
-                and any(
-                    self._calls_owner(operand)
-                    for operand in [inner.args[0].left, *inner.args[0].comparators]
-                )
+                for inner in self._owner_gated_requires(SCRIPTS / "revenue_report.py")
+                if node.lineno <= inner.lineno <= (node.end_lineno or node.lineno)
             ]
             self.assertTrue(
                 gated_in_function,
