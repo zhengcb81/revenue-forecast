@@ -1,0 +1,51 @@
+# DU8 清理收据
+
+## 1. 临时诊断件（A 节点，已删除）
+
+A 节点用以下临时探针复现责任分化。它们**从未进入交付**，已在 B 节点结束前删除：
+
+- `tools/du8_probe_divergence.py`
+- `tools/du8_probe_reachable.py`
+- `tools/du8_probe_report.py`
+- `tools/du8_probe_confusion.py`
+- `tools/du8_probe_search.py`
+- `tools/du8_scan.py`
+
+验证（在实现 commit 上执行）：
+
+```text
+git status --porcelain            # 无 tools/du8_* 残留
+Get-ChildItem tools/du8_*         # 不存在
+```
+
+## 2. 测试运行的隔离与恢复
+
+- 全部 pytest 用例写入 pytest `tmp_path`（`test_du8_target_report_roundtrip.py`）
+  或自建临时目录；无测试写入仓内固定路径。
+- 需要真实 CLI 子进程的用例通过
+  `REVENUE_PUBLICATION_REGISTRY=<tmp>/registry/publications.jsonl`
+  把 registry 限定在临时目录，**未触碰真实 registry**。
+- `test_failed_run_leaves_the_isolated_registry_untouched` 专门验证失败路径：
+  开始前写入预存 sentinel `pre-existing-sentinel\n`，运行一个必然被拒绝的模型
+  （`models.broken_model()`，映射情景不达标），断言：
+  1. 子进程退出码非 0；
+  2. registry 文件字节与 sentinel 完全相同；
+  3. 未生成 `out.json`。
+
+## 3. 未产生的外部副作用
+
+- 0 真实 HTTP 请求、0 供应商调用、0 翻译调用、0 付费调用。
+- 0 生产 registry / output / 配置 / 原件写入。
+- 未读取或打印任何环境密钥或 `FMP_API_KEY.txt`。
+- 未创建跨仓工作树；未安装技能；未推远端。
+
+## 4. 仓库清洁性
+
+实现 commit 后 `git status --porcelain` 为空（含 `-uall`）。
+未使用 `--no-verify` / `SKIP`：commit 经过 `.githooks` 的 ruff、
+mypy contract、host assumption guard 三道本地钩子，全部 Passed。
+
+## 5. 未清理项（有意保留）
+
+- `docs/plans/du8-comparison-2026-10-16/receipts/` 下的证据文件为交付物，保留。
+- `tests/fixtures/du8_comparison/` 下的合成模型与手算锚点为交付物，保留。

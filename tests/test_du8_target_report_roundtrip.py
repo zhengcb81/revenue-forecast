@@ -27,18 +27,20 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "tests"))
+sys.path.insert(0, str(ROOT / "tests" / "fixtures" / "du8_comparison"))
 
 from revenue_core import ForecastInputError, canonical_sha256, run_forecast  # noqa: E402
 from research.target_comparison import (  # noqa: E402
     LEGACY_COMPARISON_ROW_KEYS,
     compare_target_measurement,
 )
-from du8_models import (  # noqa: E402
+from models import (  # noqa: E402
     growth_model,
     legacy_annual_model,
     legacy_approximately_model,
     legacy_cumulative_model,
     typed_level_model,
+    typed_quarterly_model,
 )
 
 PYTHON = [sys.executable, "-X", "utf8", "-B"]
@@ -83,6 +85,7 @@ MODELS = {
     "legacy_cumulative": legacy_cumulative_model,
     "typed_level": typed_level_model,
     "typed_growth": growth_model,
+    "typed_quarterly": typed_quarterly_model,
 }
 
 
@@ -155,7 +158,12 @@ def test_tampered_published_comparison_field_is_refused(tmp_path, name, field):
     if field == "modeled_value":
         row[field] = float(row[field]) + 1.0
     elif field == "target_value":
-        row[field] = float(row[field]) + 1.0
+        # A two-ended range target publishes target_value=null and keeps both
+        # ends; moving a point target by one unit is the tamper there.
+        if row[field] is None:
+            row["target_low"] = float(row["target_low"]) + 1.0
+        else:
+            row[field] = float(row[field]) + 1.0
     elif field == "attainment_ratio":
         row[field] = 99.0
     elif field == "meets_target":
@@ -194,17 +202,40 @@ def test_legacy_row_shape_is_frozen_through_the_public_entry(tmp_path):
         assert set(comparison) == LEGACY_COMPARISON_ROW_KEYS
 
 
-def test_failed_run_leaves_the_isolated_registry_untouched(tmp_path):
-    """A refused model must not write a publication record."""
-    from du8_models import broken_model
+def _seed_registry(tmp_path: Path):
+    """Seed an isolated registry with one genuine, chain-valid record.
+
+    The registry is an append-only hash-chained JSONL owned by
+    ``scripts/publication_registry.py``. A hand-written line is refused as
+    tampered (correctly), so the sentinel is produced by that module's own
+    append path — the same one the CLI uses. Returns the registry path and the
+    exact bytes written, so a later run must leave them untouched.
+    """
+    from publication_registry import _append
 
     registry = tmp_path / "registry" / "publications.jsonl"
-    registry.parent.mkdir(parents=True, exist_ok=True)
-    sentinel = "pre-existing-sentinel\n"
-    registry.write_text(sentinel, encoding="utf-8")
+    environment = dict(os.environ)
+    environment["REVENUE_PUBLICATION_REGISTRY"] = str(registry)
+    saved = dict(os.environ)
+    try:
+        os.environ.update(environment)
+        _append(
+            {
+                "schema_version": "du8-sentinel/1",
+                "note": "pre-existing chain-valid record",
+                "created_by": "du8-sentinel",
+            }
+        )
+    finally:
+        os.environ.clear()
+        os.environ.update(saved)
+    return registry, registry.read_text(encoding="utf-8")
 
-    data = broken_model()
-    input_path = tmp_path / "broken.json"
+
+def _run_cli_load(
+    data: dict, tmp_path: Path, registry: Path
+) -> subprocess.CompletedProcess:
+    input_path = tmp_path / "input.json"
     input_path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     environment = dict(os.environ)
     environment.update(
@@ -212,14 +243,100 @@ def test_failed_run_leaves_the_isolated_registry_untouched(tmp_path):
         PYTHONDONTWRITEBYTECODE="1",
         REVENUE_PUBLICATION_REGISTRY=str(registry),
     )
-    completed = subprocess.run(
-        [*PYTHON, str(ROOT / "scripts/revenue_forecast.py"), str(input_path),
-         "--output", str(tmp_path / "out.json"), "--markdown", str(tmp_path / "out.md")],
-        cwd=ROOT, env=environment, capture_output=True, encoding="utf-8", timeout=180, check=False,
+    return subprocess.run(
+        [
+            *PYTHON, str(ROOT / "scripts/revenue_forecast.py"), str(input_path),
+            "--output", str(tmp_path / "out.json"),
+            "--markdown", str(tmp_path / "out.md"),
+        ],
+        cwd=ROOT, env=environment, capture_output=True, encoding="utf-8",
+        timeout=180, check=False,
     )
+
+
+def test_failed_run_leaves_the_isolated_registry_untouched(tmp_path):
+    """A refused model must not write a publication record."""
+    from models import broken_model
+
+    registry, sentinel = _seed_registry(tmp_path)
+    completed = _run_cli_load(broken_model(), tmp_path, registry)
     assert completed.returncode != 0
     assert registry.read_text(encoding="utf-8") == sentinel
     assert not (tmp_path / "out.json").exists()
+
+
+def test_successful_run_preserves_the_preexisting_registry_sentinel(tmp_path):
+    """The success path must keep pre-existing registry bytes intact."""
+    registry, sentinel = _seed_registry(tmp_path)
+    completed = _run_cli_load(legacy_annual_model(), tmp_path, registry)
+    assert completed.returncode == 0, completed.stderr
+    after = registry.read_text(encoding="utf-8")
+    # The pre-existing record is still the first line and was never truncated.
+    assert after.startswith(sentinel)
+    # Every line in the isolated registry is parseable JSONL.
+    for line in after.splitlines():
+        if line.strip():
+            json.loads(line)
+    assert (tmp_path / "out.json").is_file()
+
+
+def test_registry_is_never_written_outside_the_isolated_root(tmp_path):
+    """Whatever the CLI records, it lands only under the isolated temp root."""
+    registry, sentinel = _seed_registry(tmp_path)
+    repo_registry = ROOT / "publications.jsonl"
+    existed_before = repo_registry.exists()
+
+    completed = _run_cli_load(legacy_annual_model(), tmp_path, registry)
+    assert completed.returncode == 0, completed.stderr
+    assert registry.read_text(encoding="utf-8").startswith(sentinel)
+    assert repo_registry.exists() == existed_before, (
+        "the run created or removed a repository-root registry"
+    )
+
+
+def test_unmodeled_default_and_explicit_treatments_are_both_empty(tmp_path):
+    """Unmodeled treatments keep an empty comparison and stay visible as gaps.
+
+    A target is only unmodeled when it is genuinely non-comparable: the
+    validator refuses a comparable target that drops its comparison value, so
+    the fixture must make the target non-comparable (``measurement_basis``
+    ``ambiguous`` with no periods) rather than nulling the value on a
+    comparable one.
+    """
+    from test_management_targets import add_target
+    from test_recognition_bridge import forecast_document
+
+    for label, treatment in (
+        ("explicit_unmodeled_data_gap", "unmodeled_data_gap"),
+        ("explicit_out_of_horizon", "out_of_horizon"),
+    ):
+        data = add_target(forecast_document(), target_value=250.0, period="FY2030",
+                          treatment=treatment)
+        target = data["management_targets"][0]
+        target["mapped_scenarios"] = []
+        target["mapped_parameter_ids"] = []
+        result = run_forecast(data)
+        emitted = result["management_target_coverage"]["targets"][0]
+        assert emitted["scenario_comparison"] == {}, label
+        assert any(
+            gap.startswith(f"management_target:{emitted['target_id']}:")
+            for gap in result["data_gaps"]
+        ), label
+
+
+def test_default_treatment_is_preserved_as_unmodeled(tmp_path):
+    """A target with no explicit treatment is not silently compared."""
+    from test_management_targets import add_target
+    from test_recognition_bridge import forecast_document
+
+    data = add_target(forecast_document(), target_value=250.0, period="FY2030",
+                      treatment="out_of_horizon")
+    target = data["management_targets"][0]
+    target.pop("treatment", None)
+    target.pop("comparison_value", None)
+    with pytest.raises(ForecastInputError):
+        # The ledger requires a declared treatment; nothing is inferred.
+        run_forecast(data)
 
 
 if __name__ == "__main__":

@@ -260,65 +260,257 @@ def _numeric_literals(path: Path) -> set[str]:
     return found
 
 
-def _management_target_blocks(path: Path) -> list[ast.AST]:
-    """Return the AST subtrees that own management-target comparison logic."""
-    tree = ast.parse(path.read_text(encoding="utf-8"))
-    blocks: list[ast.AST] = []
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.If, ast.For)):
-            segment = ast.get_source_segment(path.read_text(encoding="utf-8"), node) or ""
-            if "scenario_comparison" in segment or "management_target_coverage" in segment:
-                blocks.append(node)
-    return blocks
-
-
-def _comparison_calls_in_target_blocks(path: Path) -> list[tuple[int, str]]:
-    """Find comparison *decision* arithmetic inside management-target blocks.
-
-    Independent input binding (an exact ``rel_tol=1e-9, abs_tol=1e-9`` identity
-    check against the result's own revenue path) is required by the card and is
-    deliberately not counted here. What must not exist is a re-derivation of the
-    attainment decision: a tolerance band built from ``comparison_tolerance``,
-    the ``max(1.0, |v|)`` legacy absolute term, or the typed ``|v|,1e-12`` term.
-    """
-    source = path.read_text(encoding="utf-8")
-    lines = source.splitlines()
-    found: list[tuple[int, str]] = []
-    for block in _management_target_blocks(path):
-        for node in ast.walk(block):
-            if isinstance(node, ast.Constant) and isinstance(node.value, float):
-                if node.value in {1.0, 1e-12, 0.25}:
-                    found.append((node.lineno, repr(node.value)))
-            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
-                if node.func.attr != "isclose":
-                    continue
-                keys = {kw.arg for kw in node.keywords}
-                if "abs_tol" in keys:
-                    segment = ast.get_source_segment(source, node) or ""
-                    if "max(" in segment or "comparison_tolerance" in segment:
-                        found.append((node.lineno, "isclose(abs_tol=max(...))"))
-                elif "comparison_tolerance" in "".join(
-                    lines[node.lineno - 1: node.lineno + 3]
-                ):
-                    found.append((node.lineno, "isclose(comparison_tolerance)"))
-    return sorted(set(found))
-
-
 class CallerGuardTests(unittest.TestCase):
-    def test_report_holds_no_inline_target_comparison(self) -> None:
-        path = SCRIPTS / "revenue_report.py"
-        offenders = _comparison_calls_in_target_blocks(path)
-        self.assertEqual(
-            offenders, [],
-            f"revenue_report.py still recomputes the target comparison at {offenders}",
+    """Structural guards that the two callers hold no comparison arithmetic.
+
+    A substring scan is defeatable by ordinary refactoring (renaming a
+    parameter, reordering an expression), which the DU8 adversarial review
+    demonstrated by re-introducing a full second comparison inside the guarded
+    block while every text guard stayed green. These guards are therefore
+    *semantic*: they compile the callers and ask which functions they call.
+    """
+
+    @staticmethod
+    def _called_names(path: Path) -> set[str]:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        names: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                func = node.func
+                if isinstance(func, ast.Name):
+                    names.add(func.id)
+                elif isinstance(func, ast.Attribute):
+                    names.add(func.attr)
+        return names
+
+    @staticmethod
+    def _asserted_expressions(path: Path) -> list[str]:
+        """Every expression passed as the first argument of a ``require`` call.
+
+        ``require(condition, message)`` is the only way a caller can reject a
+        result, so the set of asserted expressions is exactly the set of facts
+        the caller verifies. A caller that stops asserting the owner's verdict
+        is re-forking the decision no matter how it spells the arithmetic.
+        """
+        source = path.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        found: list[str] = []
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)):
+                continue
+            if node.func.id != "require" or not node.args:
+                continue
+            found.append(ast.get_source_segment(source, node.args[0]) or "")
+        return found
+
+    def test_report_asserts_the_owner_result_not_a_local_recompute(self) -> None:
+        """The report must bind *both* branches to the owner's return value.
+
+        Checking that the symbol appears somewhere is not enough: the report
+        has two branches (typed and legacy), and the adversarial DU8 review
+        replaced only the legacy delegation with a local band while the typed
+        delegation kept the symbol present, so a presence check stayed green.
+        This guard requires an owner assertion at each comparison site and
+        separately forbids any locally built band.
+        """
+        asserted = self._asserted_expressions(SCRIPTS / "revenue_report.py")
+        owner_assertions = [
+            expr for expr in asserted if "compare_target_measurement(" in expr
+        ]
+        self.assertGreaterEqual(
+            len(owner_assertions),
+            2,
+            "revenue_report.py must assert the owner's return value in both the "
+            "typed and the legacy comparison branch; found "
+            f"{len(owner_assertions)} owner assertion(s): {owner_assertions}",
         )
 
-    def test_targets_module_holds_no_inline_target_comparison(self) -> None:
-        path = SCRIPTS / "research" / "targets.py"
-        offenders = _comparison_calls_in_target_blocks(path)
+    def test_report_binds_each_branch_to_the_owner(self) -> None:
+        """Each branch of the report's target loop must reach the owner.
+
+        The typed branch compares ``comparisons == owner(...)``; the legacy
+        branch must do the same rather than re-deriving the decision. Counting
+        assertions inside the loop body catches a rewritten legacy branch even
+        when the typed branch still mentions the owner.
+        """
+        source = (SCRIPTS / "revenue_report.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        loop_assertions: list[str] = []
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.For):
+                continue
+            segment = ast.get_source_segment(source, node) or ""
+            if "scenario_comparison" not in segment:
+                continue
+            for inner in ast.walk(node):
+                if not (
+                    isinstance(inner, ast.Call)
+                    and isinstance(inner.func, ast.Name)
+                    and inner.func.id == "require"
+                    and inner.args
+                ):
+                    continue
+                expr = ast.get_source_segment(source, inner.args[0]) or ""
+                if "comparisons" in expr:
+                    loop_assertions.append(expr)
+        owner_bound = [e for e in loop_assertions if "compare_target_measurement(" in e]
+        self.assertTrue(
+            owner_bound,
+            "the report's target loop never asserts its comparison map against "
+            f"the owner; asserted instead: {loop_assertions}",
+        )
+
+    def test_targets_module_uses_the_owner_result_directly(self) -> None:
+        """The producer must *store* the owner's return value, not rebuild it.
+
+        ``add_management_target_analysis`` attaches the comparison to the
+        output, so the contract here is that the stored value IS the owner's
+        return value — an assignment, not a local reconstruction.
+        """
+        source = (SCRIPTS / "research" / "targets.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        assigned_from_owner = False
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Assign):
+                continue
+            value = node.value
+            if not (isinstance(value, ast.Call) and isinstance(value.func, ast.Name)):
+                continue
+            if value.func.id == "compare_target_measurement":
+                assigned_from_owner = True
+        self.assertTrue(
+            assigned_from_owner,
+            "research/targets.py does not store the owner's return value directly; "
+            "the producer comparison is no longer bound to the shared owner",
+        )
+
+    def test_report_never_builds_a_local_target_band(self) -> None:
+        """No expression in the report may combine a tolerance with a target.
+
+        This is shape-based on purpose: it must catch a band written with any
+        variable names, including the ``_floor``/``_ok`` form that defeated the
+        previous substring guard.
+        """
+        source = (SCRIPTS / "revenue_report.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        offenders: list[str] = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.name in {
+                "validate_forecast_output", "validate_published_forecast",
+            }:
+                for inner in ast.walk(node):
+                    if not isinstance(inner, ast.Compare):
+                        continue
+                    segment = ast.get_source_segment(source, inner) or ""
+                    lowered = segment.lower()
+                    if "comparison_tolerance" in lowered or "_tol" in lowered:
+                        offenders.append(f"line {inner.lineno}: {segment[:120]}")
         self.assertEqual(
             offenders, [],
-            f"research/targets.py still recomputes the target comparison at {offenders}",
+            f"revenue_report.py builds a local attainment band: {offenders}",
+        )
+
+    def test_report_delegates_the_comparison_decision(self) -> None:
+        names = self._called_names(SCRIPTS / "revenue_report.py")
+        self.assertIn(
+            "compare_target_measurement",
+            names,
+            "revenue_report.py must call the shared comparison owner",
+        )
+
+    def test_targets_module_delegates_the_comparison_decision(self) -> None:
+        names = self._called_names(SCRIPTS / "research" / "targets.py")
+        self.assertIn(
+            "compare_target_measurement",
+            names,
+            "research/targets.py must call the shared comparison owner",
+        )
+
+    def test_report_does_not_call_the_band_builders_itself(self) -> None:
+        """The report may not reach for either band builder directly."""
+        names = self._called_names(SCRIPTS / "revenue_report.py")
+        for forbidden in ("legacy_meets_target", "legacy_acceptance_bound",
+                          "legacy_target_ratio", "meets_target", "acceptance_bound"):
+            with self.subTest(symbol=forbidden):
+                self.assertNotIn(
+                    forbidden,
+                    names,
+                    f"revenue_report.py must not call {forbidden} directly; "
+                    f"only the owner decides attainment",
+                )
+
+    def test_targets_module_does_not_call_the_band_builders_itself(self) -> None:
+        names = self._called_names(SCRIPTS / "research" / "targets.py")
+        for forbidden in ("legacy_meets_target", "legacy_acceptance_bound",
+                          "legacy_target_ratio", "meets_target", "acceptance_bound"):
+            with self.subTest(symbol=forbidden):
+                self.assertNotIn(
+                    forbidden,
+                    names,
+                    f"research/targets.py must not call {forbidden} directly",
+                )
+
+    def test_the_only_modules_defining_the_band_arithmetic(self) -> None:
+        """Repository-wide: exactly two modules define a comparison band."""
+        defining: set[str] = set()
+        for path in sorted(SCRIPTS.rglob("*.py")):
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef) and node.name in {
+                    "legacy_acceptance_bound", "acceptance_bound",
+                    "legacy_meets_target", "meets_target",
+                }:
+                    defining.add(path.name)
+        self.assertEqual(
+            defining,
+            {"target_comparison.py", "target_measurement.py"},
+            f"unexpected module defines comparison arithmetic: {sorted(defining)}",
+        )
+
+    def test_no_caller_rebuilds_the_target_comparison_band(self) -> None:
+        """A target comparison band is identifiable by its *source*, not its shape.
+
+        The distinguishing input is the declared ``comparison_tolerance`` of a
+        management target. Only the two owner modules may turn that value into
+        a band. Unrelated contracts (document validation, input quantities)
+        legitimately build their own tolerances from other inputs and are not
+        this card's business.
+
+        Renaming a local variable cannot hide this: the check follows the
+        function's own source for the declared tolerance key.
+        """
+        allowed = {"target_comparison.py", "target_measurement.py"}
+        offenders: list[str] = []
+        for path in sorted(SCRIPTS.rglob("*.py")):
+            if path.name in allowed:
+                continue
+            source = path.read_text(encoding="utf-8")
+            if "comparison_tolerance" not in source:
+                continue
+            tree = ast.parse(source)
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.FunctionDef):
+                    continue
+                body = ast.get_source_segment(source, node) or ""
+                if "comparison_tolerance" not in body:
+                    continue
+                for inner in ast.walk(node):
+                    if not (
+                        isinstance(inner, ast.Call)
+                        and isinstance(inner.func, ast.Attribute)
+                        and inner.func.attr in {"isclose", "approx"}
+                    ):
+                        continue
+                    for keyword in inner.keywords:
+                        if keyword.arg != "abs_tol":
+                            continue
+                        segment = ast.get_source_segment(source, keyword.value) or ""
+                        if "1e-9" in segment:
+                            continue
+                        offenders.append(f"{path.name}:{inner.lineno}")
+        self.assertEqual(
+            offenders, [],
+            f"a caller rebuilds the target comparison band at {offenders}",
         )
 
     def test_only_the_owner_defines_the_two_numeric_semantics(self) -> None:
