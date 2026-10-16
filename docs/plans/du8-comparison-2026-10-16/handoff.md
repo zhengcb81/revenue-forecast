@@ -169,6 +169,13 @@ python -X utf8 -B tools/host_assumption_guard.py --roots tests tools scripts
 
 ## 7. 反篡改证据
 
+**行为冻结的独立复核**：`receipts/behaviour-freeze-recheck.txt` 用一个不依赖本卡
+fixture 的独立脚本，在 `e86488a7` 的临时 worktree 与当前树上跑同一组 synthetic 模型
+（legacy annual / legacy approximately / legacy cumulative / typed level），
+比较 `management_target_coverage` 与**整个结果体**（排除 `result_sha256`）的 sha256。
+结果：**DIFFERENCES: NONE**，两个 sha 逐模型完全相同
+（如 legacy_annual `body_sha abac1dfc2256f3aa` 在两树一致）。该 worktree 已删除。
+
 `tests/test_du8_target_comparison_owner.py::LegacyAntiTamperTests` 与
 `tests/test_du8_target_report_roundtrip.py`（参数化到全部 7 个合成模型）对
 `modeled_value`、`target_value`（区间目标改 `target_low`）、`attainment_ratio`、
