@@ -1,0 +1,1172 @@
+F.F.........F..F..F.F.FF.FF..FFF. [ 80%]
+FFFFFFFF                                                                 [100%]
+================================== FAILURES ===================================
+________ SharedMoneyDescriptionTests.test_cny_and_rmb_are_one_currency ________
+
+self = <test_du6_target_measurement_boundaries.SharedMoneyDescriptionTests testMethod=test_cny_and_rmb_are_one_currency>
+
+    def test_cny_and_rmb_are_one_currency(self) -> None:
+>       money_currency, _, same_money_currency = self._shared()
+                                                 ^^^^^^^^^^^^^^
+
+tests\test_du6_target_measurement_boundaries.py:280: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    @staticmethod
+    def _shared():
+>       from research.input_quantities import (
+            money_currency,
+            money_scale_factor,
+            same_money_currency,
+        )
+E       ImportError: cannot import name 'money_currency' from 'research.input_quantities' (C:\Users\郑曾波\Projects\revenue-forecast-du6-targets\scripts\research\input_quantities.py)
+
+tests\test_du6_target_measurement_boundaries.py:255: ImportError
+___ SharedMoneyDescriptionTests.test_scale_aliases_cover_both_vocabularies ____
+
+self = <test_du6_target_measurement_boundaries.SharedMoneyDescriptionTests testMethod=test_scale_aliases_cover_both_vocabularies>
+
+    def test_scale_aliases_cover_both_vocabularies(self) -> None:
+>       _, money_scale_factor, _ = self._shared()
+                                   ^^^^^^^^^^^^^^
+
+tests\test_du6_target_measurement_boundaries.py:264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    @staticmethod
+    def _shared():
+>       from research.input_quantities import (
+            money_currency,
+            money_scale_factor,
+            same_money_currency,
+        )
+E       ImportError: cannot import name 'money_currency' from 'research.input_quantities' (C:\Users\郑曾波\Projects\revenue-forecast-du6-targets\scripts\research\input_quantities.py)
+
+tests\test_du6_target_measurement_boundaries.py:255: ImportError
+_ NormalizeTargetBoundsTests.test_cny_target_is_the_same_currency_as_an_rmb_model (case='cny_yiyuan_same_currency_rmb_model') _
+
+self = <test_du6_target_measurement_boundaries.NormalizeTargetBoundsTests testMethod=test_cny_target_is_the_same_currency_as_an_rmb_model>
+
+    def test_cny_target_is_the_same_currency_as_an_rmb_model(self) -> None:
+        for identifier in ("cny_yiyuan_same_currency_rmb_model", "cny_wanyuan_to_rmb_100m"):
+            case = expectation(identifier)
+            with self.subTest(case=identifier):
+>               low, _ = normalize_target_bounds(
+                    level_target(
+                        raw_value=case["input_value"],
+                        raw_currency=case["input_currency"],
+                        raw_scale=case["input_scale"],
+                    ),
+                    {"currency": case["target_unit_currency"], "unit": case["target_unit_scale"]},
+                )
+
+tests\test_du6_target_measurement_boundaries.py:352: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\target_measurement.py:40: in normalize_target_bounds
+    require(target["raw_currency"] == data["currency"], "typed target currency mismatch; reconcile first")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'typed target currency mismatch; reconcile first'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: typed target currency mismatch; reconcile first
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ NormalizeTargetBoundsTests.test_cny_target_is_the_same_currency_as_an_rmb_model (case='cny_wanyuan_to_rmb_100m') _
+
+self = <test_du6_target_measurement_boundaries.NormalizeTargetBoundsTests testMethod=test_cny_target_is_the_same_currency_as_an_rmb_model>
+
+    def test_cny_target_is_the_same_currency_as_an_rmb_model(self) -> None:
+        for identifier in ("cny_yiyuan_same_currency_rmb_model", "cny_wanyuan_to_rmb_100m"):
+            case = expectation(identifier)
+            with self.subTest(case=identifier):
+>               low, _ = normalize_target_bounds(
+                    level_target(
+                        raw_value=case["input_value"],
+                        raw_currency=case["input_currency"],
+                        raw_scale=case["input_scale"],
+                    ),
+                    {"currency": case["target_unit_currency"], "unit": case["target_unit_scale"]},
+                )
+
+tests\test_du6_target_measurement_boundaries.py:352: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\target_measurement.py:40: in normalize_target_bounds
+    require(target["raw_currency"] == data["currency"], "typed target currency mismatch; reconcile first")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'typed target currency mismatch; reconcile first'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: typed target currency mismatch; reconcile first
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ NormalizeTargetBoundsTests.test_hkd_wan_yi_baiwan_scales_convert_by_hand (scale='万') _
+
+self = <test_du6_target_measurement_boundaries.NormalizeTargetBoundsTests testMethod=test_hkd_wan_yi_baiwan_scales_convert_by_hand>
+
+    def test_hkd_wan_yi_baiwan_scales_convert_by_hand(self) -> None:
+        for identifier, scale in (
+            ("hk_wan_to_million", "万"),
+            ("hk_yi_to_million", "亿"),
+            ("hk_baiwan_identity", "百万"),
+        ):
+            case = expectation(identifier)
+            with self.subTest(scale=scale):
+>               low, high = normalize_target_bounds(
+                    level_target(
+                        raw_value=case["input_value"],
+                        raw_currency=case["input_currency"],
+                        raw_scale=case["input_scale"],
+                    ),
+                    {"currency": case["target_unit_currency"], "unit": case["target_unit_scale"]},
+                )
+
+tests\test_du6_target_measurement_boundaries.py:337: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\target_measurement.py:41: in normalize_target_bounds
+    require(target["raw_scale"] in _SCALES and data["unit"] in _SCALES, "typed target scale is unsupported")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'typed target scale is unsupported'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: typed target scale is unsupported
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ NormalizeTargetBoundsTests.test_hkd_wan_yi_baiwan_scales_convert_by_hand (scale='百万') _
+
+self = <test_du6_target_measurement_boundaries.NormalizeTargetBoundsTests testMethod=test_hkd_wan_yi_baiwan_scales_convert_by_hand>
+
+    def test_hkd_wan_yi_baiwan_scales_convert_by_hand(self) -> None:
+        for identifier, scale in (
+            ("hk_wan_to_million", "万"),
+            ("hk_yi_to_million", "亿"),
+            ("hk_baiwan_identity", "百万"),
+        ):
+            case = expectation(identifier)
+            with self.subTest(scale=scale):
+>               low, high = normalize_target_bounds(
+                    level_target(
+                        raw_value=case["input_value"],
+                        raw_currency=case["input_currency"],
+                        raw_scale=case["input_scale"],
+                    ),
+                    {"currency": case["target_unit_currency"], "unit": case["target_unit_scale"]},
+                )
+
+tests\test_du6_target_measurement_boundaries.py:337: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\target_measurement.py:41: in normalize_target_bounds
+    require(target["raw_scale"] in _SCALES and data["unit"] in _SCALES, "typed target scale is unsupported")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'typed target scale is unsupported'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: typed target scale is unsupported
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ NormalizeTargetBoundsTests.test_same_currency_scale_conversion_runs_in_both_directions (case='cny_wanyuan_to_rmb_100m') _
+
+self = <test_du6_target_measurement_boundaries.NormalizeTargetBoundsTests testMethod=test_same_currency_scale_conversion_runs_in_both_directions>
+
+    def test_same_currency_scale_conversion_runs_in_both_directions(self) -> None:
+        for identifier in ("cny_wanyuan_to_rmb_100m", "cny_100m_to_rmb_wanyuan_reverse"):
+            case = expectation(identifier)
+            with self.subTest(case=identifier):
+>               low, high = normalize_target_bounds(
+                    level_target(
+                        raw_value=case["input_value"],
+                        raw_currency=case["input_currency"],
+                        raw_scale=case["input_scale"],
+                    ),
+                    {"currency": case["target_unit_currency"], "unit": case["target_unit_scale"]},
+                )
+
+tests\test_du6_target_measurement_boundaries.py:366: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\target_measurement.py:40: in normalize_target_bounds
+    require(target["raw_currency"] == data["currency"], "typed target currency mismatch; reconcile first")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'typed target currency mismatch; reconcile first'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: typed target currency mismatch; reconcile first
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ NormalizeTargetBoundsTests.test_same_currency_scale_conversion_runs_in_both_directions (case='cny_100m_to_rmb_wanyuan_reverse') _
+
+self = <test_du6_target_measurement_boundaries.NormalizeTargetBoundsTests testMethod=test_same_currency_scale_conversion_runs_in_both_directions>
+
+    def test_same_currency_scale_conversion_runs_in_both_directions(self) -> None:
+        for identifier in ("cny_wanyuan_to_rmb_100m", "cny_100m_to_rmb_wanyuan_reverse"):
+            case = expectation(identifier)
+            with self.subTest(case=identifier):
+>               low, high = normalize_target_bounds(
+                    level_target(
+                        raw_value=case["input_value"],
+                        raw_currency=case["input_currency"],
+                        raw_scale=case["input_scale"],
+                    ),
+                    {"currency": case["target_unit_currency"], "unit": case["target_unit_scale"]},
+                )
+
+tests\test_du6_target_measurement_boundaries.py:366: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\research\target_measurement.py:40: in normalize_target_bounds
+    require(target["raw_currency"] == data["currency"], "typed target currency mismatch; reconcile first")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'typed target currency mismatch; reconcile first'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: typed target currency mismatch; reconcile first
+
+scripts\contracts\evidence.py:98: ForecastInputError
+__ SignedComparisonTruthTableTests.test_at_most_negative_point_widens_upward __
+
+self = <test_du6_target_measurement_boundaries.SignedComparisonTruthTableTests testMethod=test_at_most_negative_point_widens_upward>
+
+    def test_at_most_negative_point_widens_upward(self) -> None:
+        result = self._growth_result({"low": -0.0995, "base": -0.095, "high": -0.20})
+        target = self._target(comparison="at_most", low=-0.10, high=-0.10, tolerance=0.01)
+        rows = self._rows(target, result)
+>       self.assertTrue(rows["low"]["meets_target"])
+E       AssertionError: False is not true
+
+tests\test_du6_target_measurement_boundaries.py:516: AssertionError
+_ SignedComparisonTruthTableTests.test_attainment_ratio_is_withheld_only_where_it_would_mislead (case='negative_point_is_withheld') _
+
+self = <test_du6_target_measurement_boundaries.SignedComparisonTruthTableTests testMethod=test_attainment_ratio_is_withheld_only_where_it_would_mislead>
+
+    def test_attainment_ratio_is_withheld_only_where_it_would_mislead(self) -> None:
+        for identifier in (
+            "negative_point_is_withheld",
+            "zero_point_is_withheld",
+            "positive_point_unchanged",
+        ):
+            case = expectation(identifier)
+            with self.subTest(case=identifier):
+                result = self._growth_result({
+                    "low": case["observed"], "base": case["observed"], "high": case["observed"],
+                })
+                rows = self._rows(
+                    self._target(comparison="approximately", low=case["target"], high=case["target"]),
+                    result,
+                )
+                if case["expected_ratio"] is None:
+>                   self.assertEqual(rows["low"]["attainment_ratio"], None)
+E                   AssertionError: 1.9999999999999996 != None
+
+tests\test_du6_target_measurement_boundaries.py:586: AssertionError
+_ SignedComparisonTruthTableTests.test_operator_on_a_two_ended_range_is_a_named_diagnostic (comparison='at_least') _
+
+self = <test_du6_target_measurement_boundaries.SignedComparisonTruthTableTests testMethod=test_operator_on_a_two_ended_range_is_a_named_diagnostic>
+
+    def test_operator_on_a_two_ended_range_is_a_named_diagnostic(self) -> None:
+        result = self._growth_result({"low": 0.0, "base": 0.1, "high": 0.2})
+        for comparison in ("at_least", "at_most", "greater_than", "less_than"):
+            with self.subTest(comparison=comparison):
+>               with self.assertRaisesRegex(
+                    ForecastInputError, "typed_comparison_operator_range_incompatible"
+                ):
+E               AssertionError: ForecastInputError not raised
+
+tests\test_du6_target_measurement_boundaries.py:565: AssertionError
+_ SignedComparisonTruthTableTests.test_operator_on_a_two_ended_range_is_a_named_diagnostic (comparison='at_most') _
+
+self = <test_du6_target_measurement_boundaries.SignedComparisonTruthTableTests testMethod=test_operator_on_a_two_ended_range_is_a_named_diagnostic>
+
+    def test_operator_on_a_two_ended_range_is_a_named_diagnostic(self) -> None:
+        result = self._growth_result({"low": 0.0, "base": 0.1, "high": 0.2})
+        for comparison in ("at_least", "at_most", "greater_than", "less_than"):
+            with self.subTest(comparison=comparison):
+>               with self.assertRaisesRegex(
+                    ForecastInputError, "typed_comparison_operator_range_incompatible"
+                ):
+E               AssertionError: ForecastInputError not raised
+
+tests\test_du6_target_measurement_boundaries.py:565: AssertionError
+_ SignedComparisonTruthTableTests.test_operator_on_a_two_ended_range_is_a_named_diagnostic (comparison='greater_than') _
+
+self = <test_du6_target_measurement_boundaries.SignedComparisonTruthTableTests testMethod=test_operator_on_a_two_ended_range_is_a_named_diagnostic>
+
+    def test_operator_on_a_two_ended_range_is_a_named_diagnostic(self) -> None:
+        result = self._growth_result({"low": 0.0, "base": 0.1, "high": 0.2})
+        for comparison in ("at_least", "at_most", "greater_than", "less_than"):
+            with self.subTest(comparison=comparison):
+>               with self.assertRaisesRegex(
+                    ForecastInputError, "typed_comparison_operator_range_incompatible"
+                ):
+E               AssertionError: ForecastInputError not raised
+
+tests\test_du6_target_measurement_boundaries.py:565: AssertionError
+_ SignedComparisonTruthTableTests.test_operator_on_a_two_ended_range_is_a_named_diagnostic (comparison='less_than') _
+
+self = <test_du6_target_measurement_boundaries.SignedComparisonTruthTableTests testMethod=test_operator_on_a_two_ended_range_is_a_named_diagnostic>
+
+    def test_operator_on_a_two_ended_range_is_a_named_diagnostic(self) -> None:
+        result = self._growth_result({"low": 0.0, "base": 0.1, "high": 0.2})
+        for comparison in ("at_least", "at_most", "greater_than", "less_than"):
+            with self.subTest(comparison=comparison):
+>               with self.assertRaisesRegex(
+                    ForecastInputError, "typed_comparison_operator_range_incompatible"
+                ):
+E               AssertionError: ForecastInputError not raised
+
+tests\test_du6_target_measurement_boundaries.py:565: AssertionError
+_ SignedComparisonTruthTableTests.test_point_tolerance_widens_away_from_zero_for_negative_targets _
+
+self = <test_du6_target_measurement_boundaries.SignedComparisonTruthTableTests testMethod=test_point_tolerance_widens_away_from_zero_for_negative_targets>
+
+    def test_point_tolerance_widens_away_from_zero_for_negative_targets(self) -> None:
+        result = self._growth_result({"low": -0.0995, "base": -0.102, "high": -0.20})
+        target = self._target(comparison="at_least", low=-0.10, high=-0.10, tolerance=0.01)
+        rows = self._rows(target, result)
+>       self.assertTrue(rows["low"]["meets_target"], expectation(
+            "at_least_negative_point_tolerance_widens_downward"))
+E       AssertionError: False is not true : {'id': 'at_least_negative_point_tolerance_widens_downward', 'comparison': 'at_least', 'target_low': -0.1, 'target_high': -0.1, 'tolerance': 0.01, 'formula': 'bound = v - t*abs(v) = -0.1 - 0.01*0.1', 'expected_bound': -0.101, 'cases': [{'observed': -0.0995, 'expected_meets': True, 'why': 'inside the widened floor'}, {'observed': -0.102, 'expected_meets': False, 'why': 'below the widened floor'}], 'legacy_bound_was': -0.099, 'legacy_wrongly_rejected': [-0.0995]}
+
+tests\test_du6_target_measurement_boundaries.py:506: AssertionError
+_ SignedComparisonTruthTableTests.test_yoy_difference_pp_and_derived_benchmark_stay_comparable _
+
+self = <test_du6_target_measurement_boundaries.SignedComparisonTruthTableTests testMethod=test_yoy_difference_pp_and_derived_benchmark_stay_comparable>
+
+    def test_yoy_difference_pp_and_derived_benchmark_stay_comparable(self) -> None:
+        case = expectation("negative_growth_difference_pp_and_benchmark")
+        result = self._growth_result({
+            "low": case["expected_observed"], "base": case["expected_observed"],
+            "high": case["expected_observed"],
+        }, company_levels=(200.0, 300.0, 400.0))
+        rows = self._rows(self._target(comparison="approximately", low=case["target_growth"],
+                                       high=case["target_growth"]), result)
+        row = rows["low"]
+        self.assertEqual(row["modeled_value"], pytest.approx(case["expected_observed"]))
+        self.assertEqual(row["difference_percentage_points"],
+                         pytest.approx(case["expected_difference_percentage_points"]))
+        self.assertEqual(row["derived_revenue_benchmark"]["value"],
+                         pytest.approx(case["expected_derived_revenue_benchmark"]))
+        self.assertEqual(row["derived_revenue_benchmark"]["difference"],
+                         pytest.approx(case["expected_benchmark_difference"]))
+>       self.assertEqual(row["attainment_ratio"], None)
+E       AssertionError: 1.9999999999999996 != None
+
+tests\test_du6_target_measurement_boundaries.py:609: AssertionError
+______ EngineEntryTests.test_cny_target_on_an_rmb_model_runs_end_to_end _______
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_cny_target_on_an_rmb_model_runs_end_to_end>
+
+    def test_cny_target_on_an_rmb_model_runs_end_to_end(self) -> None:
+        data = money_target_document(raw_value=500, comparison_value=500, raw_currency="CNY",
+                                     raw_scale="亿元", model_currency="RMB", model_unit="亿元")
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_du6_target_measurement_boundaries.py:731: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1141: in validate_document
+    management_target_coverage = validate_management_target_coverage(
+scripts\research\targets.py:495: in validate_management_target_coverage
+    normalized_targets[target_id] = validate_typed_target(
+scripts\research\target_measurement.py:90: in validate_typed_target
+    low, high = normalize_target_bounds(target, data) if modeled else (None, None)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\target_measurement.py:40: in normalize_target_bounds
+    require(target["raw_currency"] == data["currency"], "typed target currency mismatch; reconcile first")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'typed target currency mismatch; reconcile first'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: typed target currency mismatch; reconcile first
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ EngineEntryTests.test_cross_zero_range_enters_and_compares_without_a_midpoint _
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_cross_zero_range_enters_and_compares_without_a_midpoint>
+
+    def test_cross_zero_range_enters_and_compares_without_a_midpoint(self) -> None:
+        data = growth_document(raw_value_low=-10.0, raw_value_high=5.0,
+                               comparison="approximately",
+                               growth_by_scenario={"low": -0.20, "base": -0.02, "high": 0.20})
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_du6_target_measurement_boundaries.py:645: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1141: in validate_document
+    management_target_coverage = validate_management_target_coverage(
+scripts\research\targets.py:301: in validate_management_target_coverage
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'invalid numeric range for management target: signed_growth_target'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: invalid numeric range for management target: signed_growth_target
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ EngineEntryTests.test_hkd_target_scale_aliases_normalize_against_the_model_unit _
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_hkd_target_scale_aliases_normalize_against_the_model_unit>
+
+    def test_hkd_target_scale_aliases_normalize_against_the_model_unit(self) -> None:
+        data = money_target_document(raw_value=72500, comparison_value=725, raw_currency="HKD",
+                                     raw_scale="万", model_currency="HKD", model_unit="million")
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_du6_target_measurement_boundaries.py:739: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1141: in validate_document
+    management_target_coverage = validate_management_target_coverage(
+scripts\research\targets.py:495: in validate_management_target_coverage
+    normalized_targets[target_id] = validate_typed_target(
+scripts\research\target_measurement.py:90: in validate_typed_target
+    low, high = normalize_target_bounds(target, data) if modeled else (None, None)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\target_measurement.py:41: in normalize_target_bounds
+    require(target["raw_scale"] in _SCALES and data["unit"] in _SCALES, "typed target scale is unsupported")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'typed target scale is unsupported'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: typed target scale is unsupported
+
+scripts\contracts\evidence.py:98: ForecastInputError
+__ EngineEntryTests.test_negative_growth_range_lower_bound_is_not_an_amount ___
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_negative_growth_range_lower_bound_is_not_an_amount>
+
+    def test_negative_growth_range_lower_bound_is_not_an_amount(self) -> None:
+        data = growth_document(raw_value_low=-10.0, raw_value_high=5.0,
+                               comparison="approximately", treatment="unmodeled_data_gap")
+>       run_forecast(data)
+
+tests\test_du6_target_measurement_boundaries.py:663: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1141: in validate_document
+    management_target_coverage = validate_management_target_coverage(
+scripts\research\targets.py:301: in validate_management_target_coverage
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'invalid numeric range for management target: signed_growth_target'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: invalid numeric range for management target: signed_growth_target
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ EngineEntryTests.test_negative_growth_target_enters_the_engine_at_its_own_percent _
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_negative_growth_target_enters_the_engine_at_its_own_percent>
+
+    def test_negative_growth_target_enters_the_engine_at_its_own_percent(self) -> None:
+        data = growth_document(raw_value=-10.0, comparison_value=-0.10, comparison="approximately",
+                               growth_by_scenario={"low": -0.20, "base": -0.10, "high": 0.20})
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_du6_target_measurement_boundaries.py:621: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1141: in validate_document
+    management_target_coverage = validate_management_target_coverage(
+scripts\research\targets.py:314: in validate_management_target_coverage
+    require(raw_value >= 0, f"management target cannot be negative: {target_id}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'management target cannot be negative: signed_growth_target'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: management target cannot be negative: signed_growth_target
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ EngineEntryTests.test_operator_on_a_two_ended_range_is_refused_before_any_comparison (comparison='at_least') _
+contracts.evidence.ForecastInputError: invalid numeric range for management target: signed_growth_target
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_operator_on_a_two_ended_range_is_refused_before_any_comparison>
+
+    def test_operator_on_a_two_ended_range_is_refused_before_any_comparison(self) -> None:
+        for comparison in ("at_least", "at_most", "greater_than", "less_than"):
+            data = growth_document(raw_value_low=-10.0, raw_value_high=5.0, comparison=comparison)
+            with self.subTest(comparison=comparison):
+>               with self.assertRaisesRegex(
+                    ForecastInputError, "typed_comparison_operator_range_incompatible"
+                ):
+E               AssertionError: "typed_comparison_operator_range_incompatible" does not match "invalid numeric range for management target: signed_growth_target"
+
+tests\test_du6_target_measurement_boundaries.py:681: AssertionError
+_ EngineEntryTests.test_operator_on_a_two_ended_range_is_refused_before_any_comparison (comparison='at_most') _
+contracts.evidence.ForecastInputError: invalid numeric range for management target: signed_growth_target
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_operator_on_a_two_ended_range_is_refused_before_any_comparison>
+
+    def test_operator_on_a_two_ended_range_is_refused_before_any_comparison(self) -> None:
+        for comparison in ("at_least", "at_most", "greater_than", "less_than"):
+            data = growth_document(raw_value_low=-10.0, raw_value_high=5.0, comparison=comparison)
+            with self.subTest(comparison=comparison):
+>               with self.assertRaisesRegex(
+                    ForecastInputError, "typed_comparison_operator_range_incompatible"
+                ):
+E               AssertionError: "typed_comparison_operator_range_incompatible" does not match "invalid numeric range for management target: signed_growth_target"
+
+tests\test_du6_target_measurement_boundaries.py:681: AssertionError
+_ EngineEntryTests.test_operator_on_a_two_ended_range_is_refused_before_any_comparison (comparison='greater_than') _
+contracts.evidence.ForecastInputError: invalid numeric range for management target: signed_growth_target
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_operator_on_a_two_ended_range_is_refused_before_any_comparison>
+
+    def test_operator_on_a_two_ended_range_is_refused_before_any_comparison(self) -> None:
+        for comparison in ("at_least", "at_most", "greater_than", "less_than"):
+            data = growth_document(raw_value_low=-10.0, raw_value_high=5.0, comparison=comparison)
+            with self.subTest(comparison=comparison):
+>               with self.assertRaisesRegex(
+                    ForecastInputError, "typed_comparison_operator_range_incompatible"
+                ):
+E               AssertionError: "typed_comparison_operator_range_incompatible" does not match "invalid numeric range for management target: signed_growth_target"
+
+tests\test_du6_target_measurement_boundaries.py:681: AssertionError
+_ EngineEntryTests.test_operator_on_a_two_ended_range_is_refused_before_any_comparison (comparison='less_than') _
+contracts.evidence.ForecastInputError: invalid numeric range for management target: signed_growth_target
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_operator_on_a_two_ended_range_is_refused_before_any_comparison>
+
+    def test_operator_on_a_two_ended_range_is_refused_before_any_comparison(self) -> None:
+        for comparison in ("at_least", "at_most", "greater_than", "less_than"):
+            data = growth_document(raw_value_low=-10.0, raw_value_high=5.0, comparison=comparison)
+            with self.subTest(comparison=comparison):
+>               with self.assertRaisesRegex(
+                    ForecastInputError, "typed_comparison_operator_range_incompatible"
+                ):
+E               AssertionError: "typed_comparison_operator_range_incompatible" does not match "invalid numeric range for management target: signed_growth_target"
+
+tests\test_du6_target_measurement_boundaries.py:681: AssertionError
+_ EngineEntryTests.test_original_scope_quarter_and_schema_rejections_are_preserved _
+contracts.evidence.ForecastInputError: management target cannot be negative: signed_growth_target
+
+During handling of the above exception, another exception occurred:
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_original_scope_quarter_and_schema_rejections_are_preserved>
+
+    def test_original_scope_quarter_and_schema_rejections_are_preserved(self) -> None:
+        data = growth_document(raw_value=-10.0, comparison_value=-0.10, comparison="approximately")
+        data["management_targets"][0]["scope"] = {"type": "segment", "name": "Segment Z"}
+>       with self.assertRaisesRegex(ForecastInputError, "unknown management target segment"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: "unknown management target segment" does not match "management target cannot be negative: signed_growth_target"
+
+tests\test_du6_target_measurement_boundaries.py:712: AssertionError
+_______ EngineEntryTests.test_unknown_base_period_stays_a_named_reason ________
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_unknown_base_period_stays_a_named_reason>
+
+    def test_unknown_base_period_stays_a_named_reason(self) -> None:
+        data = growth_document(raw_value=-10.0, comparison_value=-0.10, comparison="approximately",
+                               base_period=None,
+                               growth_by_scenario={"low": -0.20, "base": -0.10, "high": 0.20})
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_du6_target_measurement_boundaries.py:669: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1141: in validate_document
+    management_target_coverage = validate_management_target_coverage(
+scripts\research\targets.py:314: in validate_management_target_coverage
+    require(raw_value >= 0, f"management target cannot be negative: {target_id}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'management target cannot be negative: signed_growth_target'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: management target cannot be negative: signed_growth_target
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_ EngineEntryTests.test_unmodeled_operator_range_is_preserved_with_the_named_reason _
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_unmodeled_operator_range_is_preserved_with_the_named_reason>
+
+    def test_unmodeled_operator_range_is_preserved_with_the_named_reason(self) -> None:
+        data = growth_document(raw_value_low=-10.0, raw_value_high=5.0, comparison="at_least",
+                               treatment="unmodeled_data_gap")
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_du6_target_measurement_boundaries.py:689: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1141: in validate_document
+    management_target_coverage = validate_management_target_coverage(
+scripts\research\targets.py:301: in validate_management_target_coverage
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'invalid numeric range for management target: signed_growth_target'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: invalid numeric range for management target: signed_growth_target
+
+scripts\contracts\evidence.py:98: ForecastInputError
+___ EngineEntryTests.test_zero_base_revenue_stays_a_nonpositive_base_reason ___
+
+self = <test_du6_target_measurement_boundaries.EngineEntryTests testMethod=test_zero_base_revenue_stays_a_nonpositive_base_reason>
+
+    def test_zero_base_revenue_stays_a_nonpositive_base_reason(self) -> None:
+        data = growth_document(raw_value=-10.0, comparison_value=-0.10, comparison="approximately",
+                               growth_by_scenario={"low": -0.10, "base": -0.10, "high": -0.10})
+        for parameter in data["parameters"]:
+            if parameter["period"] == "FY2026" and parameter["dimension"] == "revenue":
+                parameter["value"] = 0.0
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_du6_target_measurement_boundaries.py:701: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1141: in validate_document
+    management_target_coverage = validate_management_target_coverage(
+scripts\research\targets.py:314: in validate_management_target_coverage
+    require(raw_value >= 0, f"management target cannot be negative: {target_id}")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'management target cannot be negative: signed_growth_target'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: management target cannot be negative: signed_growth_target
+
+scripts\contracts\evidence.py:98: ForecastInputError
+____ TypedBuilderTests.test_builder_output_needs_no_hand_patch_to_validate ____
+
+self = <test_du6_target_measurement_boundaries.TypedBuilderTests testMethod=test_builder_output_needs_no_hand_patch_to_validate>
+
+    def test_builder_output_needs_no_hand_patch_to_validate(self) -> None:
+        spec = {
+            "schema_version": "management-target-comparison/1",
+            "metric_kind": "year_over_year_growth",
+            "period": "FY2027",
+            "base_period": "FY2026",
+            "raw_ratio_basis": "percent",
+        }
+>       built = self._build(raw_value=-10.0, comparison_spec=spec)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_du6_target_measurement_boundaries.py:881: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_du6_target_measurement_boundaries.TypedBuilderTests testMethod=test_builder_output_needs_no_hand_patch_to_validate>
+overrides = {'raw_value': -10.0, 'comparison_spec': {'schema_version': 'management-target-comparison/1', 'metric_kind': 'year_over_year_growth', 'period': 'FY2027', 'base_period': 'FY2026', ...}}
+
+    def _build(self, **overrides):
+        from research.input_targets import build_management_target
+    
+        kwargs = self._kwargs(**overrides)
+        statement = kwargs.pop("statement")
+>       return build_management_target(statement, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: build_management_target() got an unexpected keyword argument 'normalization_rationale'
+
+tests\test_du6_target_measurement_boundaries.py:795: TypeError
+_ TypedBuilderTests.test_comparison_spec_conflicts_with_a_conversion_are_named _
+
+self = <test_du6_target_measurement_boundaries.TypedBuilderTests testMethod=test_comparison_spec_conflicts_with_a_conversion_are_named>
+
+    def test_comparison_spec_conflicts_with_a_conversion_are_named(self) -> None:
+        spec = {
+            "schema_version": "management-target-comparison/1",
+            "metric_kind": "year_over_year_growth",
+            "period": "FY2027",
+            "base_period": "FY2026",
+            "raw_ratio_basis": "percent",
+        }
+        conversion = {
+            "comparison_basis": "annual_recognized_revenue",
+            "parameter_ids": ["p1"],
+            "formula": "x0 * x1",
+            "parameter_values": [1.0],
+        }
+        with self.assertRaisesRegex(ForecastInputError, "typed_comparison_spec_conflicts_with_conversion"):
+>           self._build(raw_value=-10.0, comparison_spec=spec, conversion=conversion)
+
+tests\test_du6_target_measurement_boundaries.py:871: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _build(self, **overrides):
+        from research.input_targets import build_management_target
+    
+        kwargs = self._kwargs(**overrides)
+        statement = kwargs.pop("statement")
+>       return build_management_target(statement, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: build_management_target() got an unexpected keyword argument 'normalization_rationale'
+
+tests\test_du6_target_measurement_boundaries.py:795: TypeError
+_ TypedBuilderTests.test_default_call_shape_is_unchanged_for_a_positive_amount _
+
+self = <test_du6_target_measurement_boundaries.TypedBuilderTests testMethod=test_default_call_shape_is_unchanged_for_a_positive_amount>
+
+    def test_default_call_shape_is_unchanged_for_a_positive_amount(self) -> None:
+>       built = self._build(raw_value=144.0, raw_unit="USD million", raw_currency="USD",
+                            raw_scale="million", statement="Reach USD 144 million.")
+
+tests\test_du6_target_measurement_boundaries.py:798: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_du6_target_measurement_boundaries.TypedBuilderTests testMethod=test_default_call_shape_is_unchanged_for_a_positive_amount>
+overrides = {'raw_value': 144.0, 'raw_unit': 'USD million', 'raw_currency': 'USD', 'raw_scale': 'million', ...}
+
+    def _build(self, **overrides):
+        from research.input_targets import build_management_target
+    
+        kwargs = self._kwargs(**overrides)
+        statement = kwargs.pop("statement")
+>       return build_management_target(statement, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: build_management_target() got an unexpected keyword argument 'normalization_rationale'
+
+tests\test_du6_target_measurement_boundaries.py:795: TypeError
+__ TypedBuilderTests.test_level_multiple_spec_normalizes_to_a_signed_growth ___
+
+self = <test_du6_target_measurement_boundaries.TypedBuilderTests testMethod=test_level_multiple_spec_normalizes_to_a_signed_growth>
+
+    def test_level_multiple_spec_normalizes_to_a_signed_growth(self) -> None:
+        spec = {
+            "schema_version": "management-target-comparison/1",
+            "metric_kind": "year_over_year_growth",
+            "period": "FY2027",
+            "base_period": "FY2026",
+            "raw_ratio_basis": "level_multiple",
+        }
+>       built = self._build(raw_value=0.9, comparison_spec=spec)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_du6_target_measurement_boundaries.py:839: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_du6_target_measurement_boundaries.TypedBuilderTests testMethod=test_level_multiple_spec_normalizes_to_a_signed_growth>
+overrides = {'raw_value': 0.9, 'comparison_spec': {'schema_version': 'management-target-comparison/1', 'metric_kind': 'year_over_year_growth', 'period': 'FY2027', 'base_period': 'FY2026', ...}}
+
+    def _build(self, **overrides):
+        from research.input_targets import build_management_target
+    
+        kwargs = self._kwargs(**overrides)
+        statement = kwargs.pop("statement")
+>       return build_management_target(statement, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: build_management_target() got an unexpected keyword argument 'normalization_rationale'
+
+tests\test_du6_target_measurement_boundaries.py:795: TypeError
+_ TypedBuilderTests.test_negative_revenue_amount_is_still_refused_by_the_builder _
+
+self = <test_du6_target_measurement_boundaries.TypedBuilderTests testMethod=test_negative_revenue_amount_is_still_refused_by_the_builder>
+
+    def test_negative_revenue_amount_is_still_refused_by_the_builder(self) -> None:
+        spec = {
+            "schema_version": "management-target-comparison/1",
+            "metric_kind": "annual_revenue_level",
+            "period": "FY2027",
+        }
+        with self.assertRaisesRegex(ForecastInputError, "cannot be negative"):
+>           self._build(raw_value=-10.0, raw_unit="USD million", raw_currency="USD",
+                        raw_scale="million", comparison_currency="USD",
+                        comparison_scale="million", comparison_spec=spec,
+                        statement="Reach negative USD 10 million.")
+
+tests\test_du6_target_measurement_boundaries.py:824: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _build(self, **overrides):
+        from research.input_targets import build_management_target
+    
+        kwargs = self._kwargs(**overrides)
+        statement = kwargs.pop("statement")
+>       return build_management_target(statement, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: build_management_target() got an unexpected keyword argument 'normalization_rationale'
+
+tests\test_du6_target_measurement_boundaries.py:795: TypeError
+___ TypedBuilderTests.test_range_spec_carries_both_ends_and_no_point_value ____
+
+self = <test_du6_target_measurement_boundaries.TypedBuilderTests testMethod=test_range_spec_carries_both_ends_and_no_point_value>
+
+    def test_range_spec_carries_both_ends_and_no_point_value(self) -> None:
+        spec = {
+            "schema_version": "management-target-comparison/1",
+            "metric_kind": "year_over_year_growth",
+            "period": "FY2027",
+            "base_period": "FY2026",
+            "raw_ratio_basis": "percent",
+        }
+>       built = self._build(raw_value=None, raw_value_low=-10.0, raw_value_high=5.0,
+                            comparison_spec=spec)
+
+tests\test_du6_target_measurement_boundaries.py:850: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_du6_target_measurement_boundaries.TypedBuilderTests testMethod=test_range_spec_carries_both_ends_and_no_point_value>
+overrides = {'raw_value': None, 'raw_value_low': -10.0, 'raw_value_high': 5.0, 'comparison_spec': {'schema_version': 'management-target-comparison/1', 'metric_kind': 'year_over_year_growth', 'period': 'FY2027', 'base_period': 'FY2026', ...}}
+
+    def _build(self, **overrides):
+        from research.input_targets import build_management_target
+    
+        kwargs = self._kwargs(**overrides)
+        statement = kwargs.pop("statement")
+>       return build_management_target(statement, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: build_management_target() got an unexpected keyword argument 'normalization_rationale'
+
+tests\test_du6_target_measurement_boundaries.py:795: TypeError
+_ TypedBuilderTests.test_signed_growth_is_accepted_only_with_a_growth_comparison_spec _
+
+self = <test_du6_target_measurement_boundaries.TypedBuilderTests testMethod=test_signed_growth_is_accepted_only_with_a_growth_comparison_spec>
+
+    def test_signed_growth_is_accepted_only_with_a_growth_comparison_spec(self) -> None:
+        spec = {
+            "schema_version": "management-target-comparison/1",
+            "metric_kind": "year_over_year_growth",
+            "period": "FY2027",
+            "base_period": "FY2026",
+            "raw_ratio_basis": "percent",
+        }
+>       built = self._build(raw_value=-10.0, comparison_spec=spec)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_du6_target_measurement_boundaries.py:812: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_du6_target_measurement_boundaries.TypedBuilderTests testMethod=test_signed_growth_is_accepted_only_with_a_growth_comparison_spec>
+overrides = {'raw_value': -10.0, 'comparison_spec': {'schema_version': 'management-target-comparison/1', 'metric_kind': 'year_over_year_growth', 'period': 'FY2027', 'base_period': 'FY2026', ...}}
+
+    def _build(self, **overrides):
+        from research.input_targets import build_management_target
+    
+        kwargs = self._kwargs(**overrides)
+        statement = kwargs.pop("statement")
+>       return build_management_target(statement, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: build_management_target() got an unexpected keyword argument 'normalization_rationale'
+
+tests\test_du6_target_measurement_boundaries.py:795: TypeError
+=========================== short test summary info ===========================
+FAILED tests/test_du6_target_measurement_boundaries.py::SharedMoneyDescriptionTests::test_cny_and_rmb_are_one_currency
+FAILED tests/test_du6_target_measurement_boundaries.py::SharedMoneyDescriptionTests::test_scale_aliases_cover_both_vocabularies
+SUBFAILED(case='cny_yiyuan_same_currency_rmb_model') tests/test_du6_target_measurement_boundaries.py::NormalizeTargetBoundsTests::test_cny_target_is_the_same_currency_as_an_rmb_model
+SUBFAILED(case='cny_wanyuan_to_rmb_100m') tests/test_du6_target_measurement_boundaries.py::NormalizeTargetBoundsTests::test_cny_target_is_the_same_currency_as_an_rmb_model
+SUBFAILED(scale='万') tests/test_du6_target_measurement_boundaries.py::NormalizeTargetBoundsTests::test_hkd_wan_yi_baiwan_scales_convert_by_hand
+SUBFAILED(scale='百万') tests/test_du6_target_measurement_boundaries.py::NormalizeTargetBoundsTests::test_hkd_wan_yi_baiwan_scales_convert_by_hand
+SUBFAILED(case='cny_wanyuan_to_rmb_100m') tests/test_du6_target_measurement_boundaries.py::NormalizeTargetBoundsTests::test_same_currency_scale_conversion_runs_in_both_directions
+SUBFAILED(case='cny_100m_to_rmb_wanyuan_reverse') tests/test_du6_target_measurement_boundaries.py::NormalizeTargetBoundsTests::test_same_currency_scale_conversion_runs_in_both_directions
+FAILED tests/test_du6_target_measurement_boundaries.py::SignedComparisonTruthTableTests::test_at_most_negative_point_widens_upward
+SUBFAILED(case='negative_point_is_withheld') tests/test_du6_target_measurement_boundaries.py::SignedComparisonTruthTableTests::test_attainment_ratio_is_withheld_only_where_it_would_mislead
+SUBFAILED(comparison='at_least') tests/test_du6_target_measurement_boundaries.py::SignedComparisonTruthTableTests::test_operator_on_a_two_ended_range_is_a_named_diagnostic
+SUBFAILED(comparison='at_most') tests/test_du6_target_measurement_boundaries.py::SignedComparisonTruthTableTests::test_operator_on_a_two_ended_range_is_a_named_diagnostic
+SUBFAILED(comparison='greater_than') tests/test_du6_target_measurement_boundaries.py::SignedComparisonTruthTableTests::test_operator_on_a_two_ended_range_is_a_named_diagnostic
+SUBFAILED(comparison='less_than') tests/test_du6_target_measurement_boundaries.py::SignedComparisonTruthTableTests::test_operator_on_a_two_ended_range_is_a_named_diagnostic
+FAILED tests/test_du6_target_measurement_boundaries.py::SignedComparisonTruthTableTests::test_point_tolerance_widens_away_from_zero_for_negative_targets
+FAILED tests/test_du6_target_measurement_boundaries.py::SignedComparisonTruthTableTests::test_yoy_difference_pp_and_derived_benchmark_stay_comparable
+FAILED tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_cny_target_on_an_rmb_model_runs_end_to_end
+FAILED tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_cross_zero_range_enters_and_compares_without_a_midpoint
+FAILED tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_hkd_target_scale_aliases_normalize_against_the_model_unit
+FAILED tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_negative_growth_range_lower_bound_is_not_an_amount
+FAILED tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_negative_growth_target_enters_the_engine_at_its_own_percent
+SUBFAILED(comparison='at_least') tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_operator_on_a_two_ended_range_is_refused_before_any_comparison
+SUBFAILED(comparison='at_most') tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_operator_on_a_two_ended_range_is_refused_before_any_comparison
+SUBFAILED(comparison='greater_than') tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_operator_on_a_two_ended_range_is_refused_before_any_comparison
+SUBFAILED(comparison='less_than') tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_operator_on_a_two_ended_range_is_refused_before_any_comparison
+FAILED tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_original_scope_quarter_and_schema_rejections_are_preserved
+FAILED tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_unknown_base_period_stays_a_named_reason
+FAILED tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_unmodeled_operator_range_is_preserved_with_the_named_reason
+FAILED tests/test_du6_target_measurement_boundaries.py::EngineEntryTests::test_zero_base_revenue_stays_a_nonpositive_base_reason
+FAILED tests/test_du6_target_measurement_boundaries.py::TypedBuilderTests::test_builder_output_needs_no_hand_patch_to_validate
+FAILED tests/test_du6_target_measurement_boundaries.py::TypedBuilderTests::test_comparison_spec_conflicts_with_a_conversion_are_named
+FAILED tests/test_du6_target_measurement_boundaries.py::TypedBuilderTests::test_default_call_shape_is_unchanged_for_a_positive_amount
+FAILED tests/test_du6_target_measurement_boundaries.py::TypedBuilderTests::test_level_multiple_spec_normalizes_to_a_signed_growth
+FAILED tests/test_du6_target_measurement_boundaries.py::TypedBuilderTests::test_negative_revenue_amount_is_still_refused_by_the_builder
+FAILED tests/test_du6_target_measurement_boundaries.py::TypedBuilderTests::test_range_spec_carries_both_ends_and_no_point_value
+FAILED tests/test_du6_target_measurement_boundaries.py::TypedBuilderTests::test_signed_growth_is_accepted_only_with_a_growth_comparison_spec
+36 failed, 20 passed, 24 subtests passed in 2.76s
