@@ -1,0 +1,246 @@
+{
+  "schema_version": "du6-handoff/1",
+  "card_id": "DU6-RF-TARGET-MEASURES",
+  "base_commit": "5122107bbc86c3d1e79886b372700c05d19bb349",
+  "branch": "codex/du6-rf-targets-20261016",
+  "seed_commit": "75a7fb0cd5b2536680306d56ca89b2eebdd05770",
+  "implementation_commits": [
+    "62c90520624c8cea00c565e300a5d441f0f05803"
+  ],
+  "changed_paths": [
+    "scripts/research/target_measurement.py",
+    "scripts/research/input_targets.py",
+    "scripts/research/targets.py",
+    "scripts/research/input_quantities.py",
+    "tests/test_du6_target_measurement_boundaries.py",
+    "tests/fixtures/du6_targets/hand_computed_expectations.json",
+    "tests/fixtures/du6_targets/m1_hkd_wan_positive_amount.json",
+    "tests/fixtures/du6_targets/m2_cny_yi_same_currency.json",
+    "tests/fixtures/du6_targets/m3_negative_yoy.json",
+    "tests/fixtures/du6_targets/m4_cross_zero_growth_range.json",
+    "tests/fixtures/du6_targets/m5_run_rate_cc_gap.json",
+    "references/management-targets.md",
+    "docs/plans/du6-targets-2026-10-16/INTERFACES.md",
+    "docs/plans/du6-targets-2026-10-16/findings.md",
+    "docs/plans/du6-targets-2026-10-16/progress.md",
+    "docs/plans/du6-targets-2026-10-16/task_plan.md",
+    "docs/plans/du6-targets-2026-10-16/c_node_cli_run.py",
+    "docs/plans/du6-targets-2026-10-16/receipts/*"
+  ],
+  "changed_paths_detail": [
+    {
+      "path": "scripts/research/target_measurement.py",
+      "necessary": "共因所在：私有 _SCALES、字符串币种比较、负目标容差方向反转、attainment_ratio 颠倒、operator×range 无合同",
+      "sha256": "3cfe23e7f3a19925eb3f22b0f317a79fcdbe6843c56923536c07b84219b17333"
+    },
+    {
+      "path": "scripts/research/input_targets.py",
+      "necessary": "typed 构建入口：负增长被非负闸挡住、消费者须手工 patch comparison_basis",
+      "sha256": "3728d50bc78f965f6dc9f98a9c4a0ba3c34e797663ceefa315dbbe9b73582d09"
+    },
+    {
+      "path": "scripts/research/targets.py",
+      "necessary": "typed validator 前的非负闸 + 非 typed 达标判断重复实现容差语义",
+      "sha256": "4e1a04fd9041cb2ad62056b62630a5c5ebfc864c80846ab647a78fd7f53eba53"
+    },
+    {
+      "path": "scripts/research/input_quantities.py",
+      "necessary": "唯一 Currency×Scale 描述所在地；目标层需要的有限别名与共享查询只能长在这里，不能开第二张表",
+      "sha256": "dc20d7d1999e0722a48ccc9b7275ef7acb930e17b1e770f8ef20af1002e4c581"
+    },
+    {
+      "path": "tests/test_du6_target_measurement_boundaries.py",
+      "necessary": "本卡新增测试（唯一新增测试文件）",
+      "sha256": "4c8abff39b2ba2a9ab871d3440328535c2effdd8403711b36ed790dfb9df7396"
+    },
+    {
+      "path": "tests/fixtures/du6_targets/hand_computed_expectations.json",
+      "necessary": "独立手算期望（不来自被测代码）",
+      "sha256": "1943fb62fa18892e4dee145090f9318b3fc906c9a0875b318301286f69352ed3"
+    },
+    {
+      "path": "tests/fixtures/du6_targets/m1_hkd_wan_positive_amount.json",
+      "necessary": "C 节点合成模型 1（HKD 万→百万同币缩放正金额目标）",
+      "sha256": "ec5b5519c859c5cf5d974012aeaa1ff569b611a8405b84c65f929807a71cc00b"
+    },
+    {
+      "path": "tests/fixtures/du6_targets/m2_cny_yi_same_currency.json",
+      "necessary": "C 节点合成模型 2（CNY 亿元 on RMB 模型，同币）",
+      "sha256": "fa0f2c5365d49aba7d60401bc1cdbfecc51b6d7b12746649bfb4b2344d2b81e8"
+    },
+    {
+      "path": "tests/fixtures/du6_targets/m3_negative_yoy.json",
+      "necessary": "C 节点合成模型 3（负同比，builder 产出，无手工 patch）",
+      "sha256": "06ea5fe0303aab61cc9db2fa6e5a9451b6f8ce533cbbead3b427b197f2d44789"
+    },
+    {
+      "path": "tests/fixtures/du6_targets/m4_cross_zero_growth_range.json",
+      "necessary": "C 节点合成模型 4（跨零区间目标，两端保留）",
+      "sha256": "8594b7e23a29e6b0c6a5fefabd1946e11735e2d173d4eade2966c054c33d879d"
+    },
+    {
+      "path": "tests/fixtures/du6_targets/m5_run_rate_cc_gap.json",
+      "necessary": "C 节点合成模型 5（run-rate/CC 无支持转换，必须保持具名 gap）",
+      "sha256": "a4960ef963faf3165f77d2b779185737f05988bd3dcabfacca9dcca1da31a62d"
+    },
+    {
+      "path": "references/management-targets.md",
+      "necessary": "白名单内文档：单位、带符号增长、比较合同、attainment_ratio 四节",
+      "sha256": "87f32d48b02a6b801267c71060260f2f3060da83f5e71cb82af765aa54fa6a91"
+    },
+    {
+      "path": "docs/plans/du6-targets-2026-10-16/c_node_cli_run.py",
+      "necessary": "C 节点端到端脚本（自持隔离 registry，父/子进程都显式设置）",
+      "sha256": "见 receipts/fixture-shas.txt 之后的 git 对象；未参与源码职责"
+    }
+  ],
+  "entrypoints": [
+    "python -B scripts/revenue_forecast.py INPUT --validate-only",
+    "python -B scripts/revenue_forecast.py INPUT --output OUT.json --markdown OUT.md",
+    "python -B docs/plans/du6-targets-2026-10-16/c_node_cli_run.py"
+  ],
+  "interfaces_reused": [
+    "research.input_quantities 的 DU5 Currency×Scale 描述与 convert_input_quantity / validate_input_quantity_record / validate_input_quantity_for_parameter / build_sensitivity_test 合同（全部保持）",
+    "research.target_measurement.normalize_target_bounds(target, data) -> tuple[float, float]（形状不变）",
+    "research.target_measurement.compare_target_measurement(target, result, parameters=None) -> dict（management-target-comparison/1 行形状逐键不变）",
+    "research.input_targets.build_management_target(...) -> {target, claims, notes}（缺省调用形状与旧语义不变）",
+    "rf-input-quantity/1 与 DU5 sensitivity 合同（未改）",
+    "revenue_core.run_forecast / revenue_report.validate_published_forecast / render_markdown（只读消费）"
+  ],
+  "interfaces_changed": [
+    {
+      "kind": "additive",
+      "where": "research.input_quantities",
+      "what": "新增公开查询 money_currency(currency) -> str|None、money_scale_factor(scale) -> float|None、same_money_currency(a, b) -> bool；_MONEY_SCALE_ALIASES/_MONEY_SCALE_FACTORS 追加有限别名 trillion/万亿(1e12)、万元->10k、亿元->100m、units->unit。既有条目、家族划分、裸量 unknown 规则、sensitivity 责任全部保留。"
+    },
+    {
+      "kind": "additive",
+      "where": "research.target_measurement",
+      "what": "新增 range_comparison_is_defined / acceptance_bound / meets_target / attainment_ratio，常量 OPERATOR_RANGE_INCOMPATIBLE、ATTAINMENT_RATIO_WITHHELD；删除私有 _SCALES。normalize_target_bounds 与 compare_target_measurement 的签名与输出形状不变。"
+    },
+    {
+      "kind": "additive",
+      "where": "research.input_targets",
+      "what": "build_management_target 新增可选入参 comparison_spec: dict|None 与 normalization_rationale: str|None；与 conversion 互斥（具名诊断 typed_comparison_spec_conflicts_with_conversion）。缺省调用逐字节不变。"
+    },
+    {
+      "kind": "additive",
+      "where": "research.targets",
+      "what": "typed 年度同比增长目标允许带符号 raw 单值/区间下界；非 typed 达标判断与 attainment_ratio 改调共享语义（正目标与旧式 v*(1±t) 逐位一致）。"
+    },
+    {
+      "kind": "diagnostic",
+      "where": "research.target_measurement",
+      "what": "新增具名诊断 typed_comparison_operator_range_incompatible（会比较的目标在验证期拒；只作缺口保留的目标记 comparison_reason=operator_range_incompatible 且 comparison_status=not_comparable）与显式原因 attainment_ratio_withheld_nonpositive_target（仅负点目标的可比行）。"
+    }
+  ],
+  "red_receipts": [
+    {
+      "receipt": "receipts/red-run.txt",
+      "kind": "首个行为 RED",
+      "result": "32 failed / 18 passed / 24 subtests passed",
+      "note": "18 个通过项全部是「旧正确行为必须保持」的对照断言，不是实现效果。"
+    },
+    {
+      "receipt": "receipts/red-reverify-after-implement.txt",
+      "kind": "实现后回退复核（源码回退到 HEAD 重跑最终版测试）",
+      "result": "36 failed / 20 passed / 24 subtests passed",
+      "note": "证明 32 条原 RED 中 31 条在无实现时依然失败（断言未被削弱）。唯一差异 test_strict_comparisons_stay_strict_for_negative_points 是 A 节点测试伪影：严格比较在 HEAD 上对点目标本就严格，原 RED 由测试浮点噪声造成，已改为精确二进制分数的保持断言。差异清单见 receipts/red_old.txt / receipts/red_new.txt。"
+    }
+  ],
+  "tests": [
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/test_du6_target_measurement_boundaries.py tests/test_management_targets.py tests/test_management_target_semantics.py tests/test_target_measurement_comparison.py tests/test_independent_targets.py tests/test_input_quantity_conversion.py tests/test_du5_money_unit_registry.py tests/test_du5_root_unit_boundaries.py tests/test_input_semantics_e2e.py --basetemp <OWNED_TEMP>/pytest",
+      "env": "REVENUE_PUBLICATION_REGISTRY=<OWNED_TEMP>/registry.jsonl, PYTHONDONTWRITEBYTECODE=1",
+      "exit_code": 0,
+      "passed": 193,
+      "failed": 0,
+      "skipped": 0,
+      "subtests_passed": 119,
+      "seconds": 10.29,
+      "receipt": "receipts/central-regression-final.txt"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/test_golden_behavior_lock.py tests/test_output_report.py tests/test_data_contract.py tests/test_management_operation_clock.py tests/test_native_research_bindings.py tests/test_m3_period_flow_consumers.py tests/test_research_evidence_roles.py --basetemp <OWNED_TEMP>/pytest",
+      "env": "同上",
+      "exit_code": 0,
+      "passed": 117,
+      "failed": 0,
+      "skipped": 1,
+      "note": "金标未刷新；相邻面只读加固检查，不在卡列集中命令内。",
+      "receipt": "receipts/adjacent-regression.txt"
+    },
+    {
+      "command": "python -B docs/plans/du6-targets-2026-10-16/c_node_cli_run.py",
+      "exit_code": 0,
+      "passed": 5,
+      "failed": 0,
+      "note": "5 合成模型 validate-only 与正式 JSON/Markdown 全 exit 0；4 负控全 exit 2 具名拒。",
+      "receipt": "receipts/c-receipt.json"
+    }
+  ],
+  "test_commands_real_argv_note": "上述 <OWNED_TEMP> 实际为 C:/Users/郑曾波/Projects/revenue-forecast-du6-targets/.du6-tmp（本次运行已删除，见 cleanup_receipt）。集中回归命令逐字来自施工卡 B 节。",
+  "fixtures": [
+    {
+      "path": "tests/fixtures/du6_targets/hand_computed_expectations.json",
+      "kind": "synthetic",
+      "hand_computed_source": "手工推导，逐条带 formula 字段；不来自被测代码",
+      "sha256": "1943fb62fa18892e4dee145090f9318b3fc906c9a0875b318301286f69352ed3"
+    },
+    {
+      "path": "tests/fixtures/du6_targets/m1..m5*.json",
+      "kind": "synthetic",
+      "hand_computed_source": "C 节点 5 份合成模型，由 c_node_cli_run.py 用既有原生夹具（forecast_document/add_target）派生；无公司名称硬编码、无原文湖、无旧大输出",
+      "sha256": "见 changed_paths_detail"
+    }
+  ],
+  "independent_review": [
+    {
+      "receipt": "receipts/independent-quality-check.json",
+      "what": "独立手算试读 51 项，全过",
+      "limits": "脚本不导入被测代码；raw/statement/comparison_value/区间两端为绝对手算锚定。但 pp 差、derived benchmark、band 成员的 expected 由已发布 JSON 的 modeled_value/base_value 反推，属公式级独立，不是绝对值锚定——若 modeled_value 自洽而错，此项抓不到。措辞不应强于「独立公式核对 + 关键值手算锚定」。"
+    },
+    {
+      "receipt": "本次会话独立 agent 接收审查",
+      "what": "逐条核对施工卡 2/3/4/5/6 与 INTERFACES.md，并独立复跑集中回归得 193 passed + 119 subtests",
+      "outcome": "代码实现通过；提出 7 项待办，其中 5 项已在本 handoff 前完成（SHA 澄清、清理、task_plan 对齐、回归 argv、registry 自持），2 项转 root_integration_steps"
+    }
+  ],
+  "old_failures_preserved": true,
+  "old_behavior_comparison": {
+    "typed_row_shape": "management-target-comparison/1 每 scenario 行键集逐键未变（含同比 base_value/base_period/numerator_value/difference_percentage_points/derived_revenue_benchmark 与金额 difference）",
+    "non_typed_row_shape": "7 键未变",
+    "spec_field_set": "validate_typed_target 的 allowed 集未变",
+    "positive_tolerance": "正/零目标的 at_least/at_most 仍用 v*(1±t) 原式，逐位一致；仅负目标改用向零外放宽",
+    "positive_attainment": "正点目标 attainment_ratio 仍 observed/target；零目标仍 None；区间仍 None",
+    "approximately_range": "区间 approximately 仍是 L<=o<=H（不按容差外扩、不造中点）",
+    "du5_freeze": "LegacyFreezeTests 129 组旧 record/旧 builder 输出重推导通过；裸 万元/wan/亿/百万 仍 unknown",
+    "golden": "tests/golden_behavior_hashes.json 未改动、未刷新",
+    "old_tests": "卡列 8 个旧测试文件 0 修改、0 删断言"
+  },
+  "supplier_calls": 0,
+  "production_writes": 0,
+  "cleanup_receipt": "receipts/cleanup-receipt.json",
+  "known_limits": [
+    "operator×range 合同只定义了 approximately；at_least/at_most/greater_than/less_than 配双边区间给具名不兼容诊断而非猜测。若业务上确需「at_least [L,H]」这类表达，需要先有一份可引用的口径定义再扩合同。",
+    "comparison_spec 与 conversion 互斥：一份目标不能同时靠 typed 比较合同与证据化转换驱动。当前夹具未覆盖「季度 typed + 证据化年化转换」的组合，若需要由 ROOT 另开卡。",
+    "非 typed 的 approximately 仍用 abs_tol=max(1.0,|v|)*t，typed 用 max(|v|,1e-12)*t：两者是历史既有的两个口径，revenue_report.py 对非 typed 独立重算用前者，统一它会打破 output 验证，故未动。若要统一需 ROOT 协调只读文件 revenue_report.py。",
+    "独立手算试读的 pp/derived/meets 三项是公式级独立（见 independent_review.limits），不是绝对值锚定。",
+    "references/money-unit-conversion.md（白名单外）的 scale 词汇表未列 DU6 新增拼写，需 ROOT 一处最小文档补充。",
+    "本次只做了单测 + 合成 E2E；不得读作「全部公司预测通过」。未做任何真实公司预测、未做全仓回归、未做备份恢复演练。"
+  ],
+  "not_run": [
+    "全仓 pytest（卡要求不每 commit 全仓跑；只跑了卡列集中命令 + 相邻面 7 个文件）",
+    "真实公司预测 / 真实供应商采集（本卡 0 供应商，离线合成）",
+    "tools/ 下的 e2e runner（run_target_measurement_e2e.py）未在 C 节点复跑，其既有测试已在集中回归中通过",
+    "Windows 全量路径/权限矩阵；只对本次自有临时文件解除只读并删除"
+  ],
+  "root_integration_steps": [
+    "ROOT 验收 62c90520624c8cea00c565e300a5d441f0f05803（本线不并主线、不推安装副本、不改 CI）",
+    "【最小文档补充】references/money-unit-conversion.md 的 scale ladder 补 `trillion`/`万亿`(1e12)，并注明 `万元->10k`、`亿元->100m`、`units->unit` 是目标层合法拼写（详见 references/management-targets.md）。该文件在本线白名单外，作者未动。",
+    "如需统一非 typed 与 typed 的 approximately abs_tol 口径，需 ROOT 协调只读文件 scripts/revenue_report.py（本线未动）",
+    "本线 PWF 已写 A/B/C 三节点收据与交接；不需要新增人工签收 JSON / private-public / 授权文件",
+    "registry：本线全程只写隔离 registry，仓库默认 artifacts/registry/publications.jsonl 从未存在；ROOT 合流时无需清理"
+  ],
+  "claims_not_made": "未声称全部公司预测通过；未声称独立手算为绝对值独立；未声称夹具 SHA 全程不变（RED 后有测试脚手架修正与夹具手算笔误更正，逐条说明见 findings.md）。"
+}
