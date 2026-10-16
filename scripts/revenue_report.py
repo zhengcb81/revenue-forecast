@@ -34,7 +34,12 @@ from contracts.evidence import scenario_ordered
 from analysis.confidence import validate_confidence_recomputation
 from contracts.annual_consumption import validate_annual_consumption
 from forecast.calc import opening_base_bridge, scenario_forecast_parameter_ids
-from research.target_measurement import is_typed_target, compare_target_measurement
+from research.target_comparison import (
+    LEGACY_COMPARISON_ROW_KEYS,
+    LEGACY_COMPARISON_ROW_KEYS_31,
+    compare_target_measurement,
+    is_typed_target,
+)
 from research.targets import validate_management_target_coverage, add_management_target_analysis
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
 from revenue_publication import (
@@ -958,7 +963,24 @@ def _validate_forecast_output(
                     set(comparisons) == set(target.get("mapped_scenarios", [])),
                     f"management target scenario comparison mismatch: {target_id}",
                 )
+                # Independent input binding first: the row is rebuilt from the
+                # result's own revenue paths and the target's declared periods,
+                # so a fabricated row cannot be laundered by re-running the
+                # owner on the fabricated value. Only after that binding holds
+                # is the owner's decision compared.
                 for scenario, comparison in comparisons.items():
+                    # Schema 3.1 published a four-key comparison row; 3.2+
+                    # added the measurement basis/periods/period values. Both
+                    # shapes are frozen and neither may gain or lose a key.
+                    expected_keys = (
+                        LEGACY_COMPARISON_ROW_KEYS_31
+                        if result["schema_version"] == "3.1"
+                        else LEGACY_COMPARISON_ROW_KEYS
+                    )
+                    require(
+                        set(comparison) == expected_keys,
+                        f"management target comparison row shape mismatch: {target_id}/{scenario}",
+                    )
                     if target["scope"]["type"] == "company":
                         revenue_path = result["consolidated_forecast"][scenario][
                             "annual_revenue"
@@ -968,6 +990,7 @@ def _validate_forecast_output(
                             segment_index[target["scope"]["name"]], scenario
                         )
                     if result["schema_version"] == "3.1":
+                        periods = [target["target_period"]]
                         year = str(int(target["target_period"][2:]))
                         modeled_value = float(revenue_path[year])
                     else:
@@ -1013,39 +1036,17 @@ def _validate_forecast_output(
                         ),
                         f"management target comparison value mismatch: {target_id}/{scenario}",
                     )
-                    expected_ratio = (
-                        None if target_value == 0 else modeled_value / target_value
-                    )
-                    require(
-                        (
-                            expected_ratio is None
-                            and comparison["attainment_ratio"] is None
-                        )
-                        or math.isclose(
-                            expected_ratio,
-                            float(comparison["attainment_ratio"]),
-                            rel_tol=1e-9,
-                            abs_tol=1e-9,
-                        ),
-                        f"management target attainment mismatch: {target_id}/{scenario}",
-                    )
-                    comparison_op = target.get("comparison", "at_least")
-                    tolerance_val = float(target.get("comparison_tolerance", 0.01))
-                    if comparison_op == "at_least":
-                        expected_meets = modeled_value >= target_value * (1 - tolerance_val)
-                    elif comparison_op == "at_most":
-                        expected_meets = modeled_value <= target_value * (1 + tolerance_val)
-                    else:
-                        expected_meets = math.isclose(
-                            modeled_value,
-                            target_value,
-                            rel_tol=tolerance_val,
-                            abs_tol=max(1.0, abs(target_value)) * tolerance_val,
-                        )
-                    require(
-                        comparison.get("meets_target") is expected_meets,
-                        f"management target meets_target recomputation mismatch: {target_id}/{scenario}",
-                    )
+                require(
+                    comparisons
+                    == compare_target_measurement(
+                        target,
+                        result,
+                        periods=[target["target_period"]]
+                        if result["schema_version"] == "3.1"
+                        else target["measurement_periods"],
+                    ),
+                    f"management target comparison recomputation mismatch: {target_id}",
+                )
             else:
                 require(
                     not comparisons,

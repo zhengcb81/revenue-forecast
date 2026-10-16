@@ -45,3 +45,29 @@ python -X utf8 -B tools/run_target_measurement_e2e.py --input <new-input.json> -
 ```
 
 依次运行 native validate、compute/render 和 snapshot，并将 registry 限定在新 output root。commands.json 记录实际命令、exit 和耗时。该 recipe 无来源或模型调用。它不证明原始来源真实或经济范围完成；MAIN 真实 source/narrative 消费与四路研究审查仍是 M2/M3 的工作。
+
+## 比较计算的唯一 owner (DU8)
+
+typed 与 legacy 的比较计算现在只有一个 owner：`scripts/research/target_comparison.py`。
+`research/targets.py` 生产情景比较、`revenue_report.py` 校验发布比较时都调用它，
+不再各自内联公式。分支由 `is_typed_target`（`comparison_basis` 是否为 dict）这一
+**声明形状**决定，不从输入数值大小或正负猜测。
+
+两条历史语义作为同 owner 内的显式兼容路径并存，**不合并**：
+
+- typed：`max(|v|, 1e-12) * t` 的 `approximately` 绝对项；`at_least`/`at_most`
+  对负目标向外放宽；`attainment_ratio` 仅在正点目标给出。
+- legacy：`max(1.0, |v|) * t` 的绝对项；`at_least`/`at_most` 逐字保留
+  `v * (1 ∓ t)`；`attainment_ratio` 仅对 `v == 0` 置 null。
+
+两者在 `|v| < 1` 及负点目标上有意不同。合并会静默改写已发布结果，故差异在 owner
+内具名保留。兼容矩阵：legacy 行键集
+`{measurement_basis, measurement_periods, modeled_period_values, modeled_value,
+target_value, attainment_ratio, meets_target}`；schema 3.1 的 legacy 行只有
+`{modeled_value, target_value, attainment_ratio, meets_target}`；typed 行与
+DU6 契约完全不变。
+
+报告校验仍保留独立输入绑定：它从输出自己的收入路径与目标声明期间重建每期值并与
+发布行逐字段比对，然后才与 owner 判定比对。因此伪造 `modeled_value`、
+`target_value`、`attainment_ratio`、`meets_target`、`measurement_periods`、
+`modeled_period_values` 仍会被拒绝；不得以"双方同函数"为由删除该绑定。

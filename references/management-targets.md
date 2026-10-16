@@ -142,3 +142,34 @@ explicit `reason="attainment_ratio_withheld_nonpositive_target"`.
 ### Builder treatment 与比较值
 
 `comparison_spec`声明数值的含义，不自动决定是否已纳入预测。Builder未显式指定treatment时仍按既有默认保留为unmodeled_data_gap，comparison_value为null，原始带符号值/区间完整保留。要生成供模型或独立benchmark使用的归一化比较值，调用时显式选择对应treatment并提供实际映射/证据；不要在builder返回后改treatment来伪装已经完成比较。季度typed值使用原生季度比较，无需强制年化。
+
+## 比较计算的唯一 owner (DU8)
+
+比较"某情景是否达标"的判断只有一处实现：`scripts/research/target_comparison.py`。
+`research/targets.py`（生产）与`revenue_report.py`（报告校验）都只调用它，
+不再各自内联一份公式。分支由声明的输入形状`is_typed_target`决定
+（`comparison_basis`是否为dict），**不从数值大小或正负猜测**。
+
+两条历史数值语义作为同一owner内的**显式兼容路径**并存，不做合并：
+
+| 路径 | 适用 | `approximately` 的 abs_tol | `at_least`/`at_most` | `attainment_ratio` |
+|---|---|---|---|---|
+| typed | 有 `comparison_basis` dict | `max(|v|, 1e-12) * t` | 负目标向外放宽 | 仅正点目标；区间/零/负为 `null` |
+| legacy | 旧目标（无 dict） | `max(1.0, |v|) * t` | `v * (1 ∓ t)`，**逐字保留** | 仅 `v == 0` 为 `null` |
+
+两者在`|v| < 1`以及负点目标上**有意不同**：legacy 的绝对项是固定一个单位的下限，
+typed 的是`|v|`本身，且只有 typed 接受负点目标。合并它们会静默改写已发布结果，
+因此差异在此具名保留，而不靠输入大小选分支。
+
+兼容矩阵（DU8 冻结，均不改动）：legacy 行键集
+`{measurement_basis, measurement_periods, modeled_period_values, modeled_value,
+target_value, attainment_ratio, meets_target}`；schema 3.1 的 legacy 行只有
+`{modeled_value, target_value, attainment_ratio, meets_target}` 四键；
+typed `management-target-comparison/1` 行键集与全部数值语义保持 DU6 原样。
+
+报告侧保留**独立输入绑定**：它仍从输出自己的收入路径和目标的声明期间重建每期值，
+再与发布行逐字段比对（`rel_tol=1e-9, abs_tol=1e-9`），最后才与 owner 的判定比对。
+因此"双方调同一函数"不会使报告失去抓伪造结果的能力——伪造的
+`modeled_value`/`target_value`/`attainment_ratio`/`meets_target`/
+`measurement_periods`/`modeled_period_values` 仍被独立锚点拒绝。
+不得以"owner 已算过"为由删除该绑定。
