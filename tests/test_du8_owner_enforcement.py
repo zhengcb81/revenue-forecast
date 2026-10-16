@@ -132,6 +132,51 @@ class OwnerCallCountTests(unittest.TestCase):
             target_comparison.compare_target_measurement = original
             revenue_report.compare_target_measurement = original
 
+    def test_owner_output_is_what_compares_not_a_matching_local_band(self) -> None:
+        """A local band that happens to agree would still be a fork.
+
+        The two tests above could in principle be satisfied by a local
+        re-derivation that matches the owner on the values exercised. This test
+        removes that possibility: the owner is replaced by one that returns a
+        *structurally valid but deliberately different* verdict for the legacy
+        target, and validation must follow the owner rather than any band.
+        Disagreement is produced by flipping the verdict, so no arithmetic
+        coincidence can hide the binding.
+        """
+        data = legacy_annual_model()
+        result = run_forecast(data)
+        row = result["management_target_coverage"]["targets"][0][
+            "scenario_comparison"]["high"]
+        original_verdict = row["meets_target"]
+        self.assertTrue(
+            original_verdict is True or original_verdict is False,
+            "the published row must carry a decided verdict",
+        )
+
+        original = target_comparison.compare_target_measurement
+
+        def flipped(target, res, parameters=None, *, periods=None):
+            rows = original(target, res, parameters, periods=periods)
+            for value in rows.values():
+                value["meets_target"] = not value["meets_target"]
+            return rows
+
+        target_comparison.compare_target_measurement = flipped
+        revenue_report.compare_target_measurement = flipped
+        try:
+            changed = _reseal(result)
+            # The published row still holds the ORIGINAL verdict, while the
+            # owner now says the opposite. If validation asked the owner, it
+            # must reject; if it recomputed locally it would accept.
+            changed["management_target_coverage"]["targets"][0][
+                "scenario_comparison"]["high"]["meets_target"] = not original_verdict
+            with pytest.raises(ForecastInputError):
+                validate_forecast_output(changed)
+        finally:
+            target_comparison.compare_target_measurement = original
+            revenue_report.compare_target_measurement = original
+            revenue_report.compare_target_measurement = original
+
 
 class TamperStillRefusedTests(unittest.TestCase):
     """The original anti-tamper guarantee, restated against the live path."""

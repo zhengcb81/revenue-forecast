@@ -122,7 +122,7 @@ compare_target_measurement(target, result, parameters=None, *, periods=None) -> 
 ## 5. 实际运行命令
 
 ```text
-# 新单元/锚点/往返套件（108 passed, 6 skipped）
+# 新单元/锚点/往返套件（113 passed, 6 skipped）
 python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py \
   tests/test_du8_hand_anchors.py tests/test_du8_target_report_roundtrip.py -q
 
