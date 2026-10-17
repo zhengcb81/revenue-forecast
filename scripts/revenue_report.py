@@ -34,7 +34,12 @@ from contracts.evidence import scenario_ordered
 from analysis.confidence import validate_confidence_recomputation
 from contracts.annual_consumption import validate_annual_consumption
 from forecast.calc import opening_base_bridge, scenario_forecast_parameter_ids
-from research.target_measurement import is_typed_target, compare_target_measurement
+from research.target_comparison import (
+    LEGACY_COMPARISON_ROW_KEYS,
+    LEGACY_COMPARISON_ROW_KEYS_31,
+    compare_target_measurement,
+    is_typed_target,
+)
 from research.targets import validate_management_target_coverage, add_management_target_analysis
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
 from revenue_publication import (
@@ -261,6 +266,37 @@ def _validate_segment_opening_bases(
         "segment opening base does not reconcile: "
         f"segments={opening_total}, reported={reported_base}",
     )
+
+
+def _model_view_without_comparison_rows(result: dict) -> dict:
+    """A view of ``result`` with every published comparison row removed.
+
+    Report validation recomputes each management-target decision by handing
+    the comparison owner the model it just verified. An implementation that
+    answered with the artifact's own rows — the shape three successive
+    adversarial reviews used to make the check tautological — can no longer do
+    so: both arguments are stripped of the published verdicts, so the only way
+    to produce them is to recompute from the revenue paths.
+
+    Everything the comparison actually reads (``consolidated_forecast``,
+    ``segments``, ``parameter_trace``, ``schema_version``, ``currency``,
+    ``unit``) is preserved untouched. The copy is shallow and small: one new
+    coverage dict and one new target list.
+    """
+    coverage = result.get("management_target_coverage")
+    targets = coverage.get("targets") if isinstance(coverage, dict) else None
+    if not isinstance(targets, list) or not any(
+        isinstance(item, dict) and "scenario_comparison" in item for item in targets
+    ):
+        return result
+    stripped = [
+        ({key: value for key, value in item.items() if key != "scenario_comparison"}
+         if isinstance(item, dict) else item)
+        for item in targets
+    ]
+    view = dict(result)
+    view["management_target_coverage"] = dict(coverage, targets=stripped)
+    return view
 
 
 def _validate_confidence_block(confidence: Any) -> None:
@@ -871,16 +907,6 @@ def _validate_forecast_output(
             == list(MANAGEMENT_COMMUNICATION_CATEGORIES),
             "management communication categories are missing or out of order",
         )
-        if data is not None and (data.get("audit_communication_coverage") or
-                                 any(is_typed_target(t) for t in data.get("management_targets", [])) or
-                                 any(c.get("checked_scope") is not None for c in data.get("management_communication_coverage", []))):
-            checked = validate_management_target_coverage(
-                data, {s["source_id"]: s for s in result["sources"]}, parameter_index,
-                {c["claim_id"]: c for c in result["evidence_claims"]}, parse_iso_date(result["as_of_date"], "as_of_date"),
-            )
-            expected = add_management_target_analysis({"management_target_coverage": checked,
-                                                       "parameter_index": parameter_index}, result)
-            require(target_coverage == expected, "typed management coverage/input binding mismatch")
         observed_target_ids: set[str] = set()
         for record in communications:
             require(
@@ -950,7 +976,13 @@ def _validate_forecast_output(
                     f"invalid management target measurement periods: {target_id}",
                 )
             if is_typed_target(target):
-                require(comparisons == compare_target_measurement(target, result),
+                # Same withholding rule as the legacy branch: the typed owner
+                # ignores `scenario_comparison`, so stripping it cannot change
+                # a genuine result, while it denies an echo-shaped wrapper the
+                # artifact's own verdicts.
+                require(comparisons == compare_target_measurement(
+                            dict(target, scenario_comparison=None),
+                            _model_view_without_comparison_rows(result)),
                         f"typed management target comparison recomputation mismatch: {target_id}")
                 continue
             if target["treatment"] in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
@@ -958,7 +990,24 @@ def _validate_forecast_output(
                     set(comparisons) == set(target.get("mapped_scenarios", [])),
                     f"management target scenario comparison mismatch: {target_id}",
                 )
+                # Independent input binding first: the row is rebuilt from the
+                # result's own revenue paths and the target's declared periods,
+                # so a fabricated row cannot be laundered by re-running the
+                # owner on the fabricated value. Only after that binding holds
+                # is the owner's decision compared.
                 for scenario, comparison in comparisons.items():
+                    # Schema 3.1 published a four-key comparison row; 3.2+
+                    # added the measurement basis/periods/period values. Both
+                    # shapes are frozen and neither may gain or lose a key.
+                    expected_keys = (
+                        LEGACY_COMPARISON_ROW_KEYS_31
+                        if result["schema_version"] == "3.1"
+                        else LEGACY_COMPARISON_ROW_KEYS
+                    )
+                    require(
+                        set(comparison) == expected_keys,
+                        f"management target comparison row shape mismatch: {target_id}/{scenario}",
+                    )
                     if target["scope"]["type"] == "company":
                         revenue_path = result["consolidated_forecast"][scenario][
                             "annual_revenue"
@@ -968,6 +1017,7 @@ def _validate_forecast_output(
                             segment_index[target["scope"]["name"]], scenario
                         )
                     if result["schema_version"] == "3.1":
+                        periods = [target["target_period"]]
                         year = str(int(target["target_period"][2:]))
                         modeled_value = float(revenue_path[year])
                     else:
@@ -1013,38 +1063,49 @@ def _validate_forecast_output(
                         ),
                         f"management target comparison value mismatch: {target_id}/{scenario}",
                     )
-                    expected_ratio = (
-                        None if target_value == 0 else modeled_value / target_value
-                    )
+                # The decision itself is re-derived by the one owner from the
+                # report's OWN reading of the model, then compared row by row.
+                # The published rows are withheld from BOTH arguments — the
+                # target's own `scenario_comparison` and the same field inside
+                # `result["management_target_coverage"]` — so an echo wrapper
+                # that derives its return value from the artifact under check
+                # (the shape three adversarial reviews used) has no published
+                # answer left to read and fails closed.
+                # Every field the owner actually needs — revenue paths,
+                # parameters, schema, currency — is untouched by this view;
+                # only the comparison verdicts are removed.
+                expected_rows = compare_target_measurement(
+                    dict(target, scenario_comparison=None),
+                    _model_view_without_comparison_rows(result),
+                    periods=[target["target_period"]]
+                    if result["schema_version"] == "3.1"
+                    else target["measurement_periods"],
+                )
+                require(
+                    set(comparisons) <= set(expected_rows),
+                    f"management target comparison scenario set mismatch: {target_id}",
+                )
+                for scenario, comparison in comparisons.items():
+                    expected_row = expected_rows[scenario]
                     require(
-                        (
-                            expected_ratio is None
-                            and comparison["attainment_ratio"] is None
-                        )
-                        or math.isclose(
-                            expected_ratio,
-                            float(comparison["attainment_ratio"]),
-                            rel_tol=1e-9,
-                            abs_tol=1e-9,
+                        bool(comparison["meets_target"])
+                        is bool(expected_row["meets_target"]),
+                        f"management target meets_target mismatch: {target_id}/{scenario}",
+                    )
+                    actual_ratio = comparison["attainment_ratio"]
+                    expected_ratio = expected_row["attainment_ratio"]
+                    require(
+                        (actual_ratio is None) == (expected_ratio is None)
+                        and (
+                            actual_ratio is None
+                            or math.isclose(
+                                float(actual_ratio),
+                                float(expected_ratio),
+                                rel_tol=1e-9,
+                                abs_tol=1e-9,
+                            )
                         ),
                         f"management target attainment mismatch: {target_id}/{scenario}",
-                    )
-                    comparison_op = target.get("comparison", "at_least")
-                    tolerance_val = float(target.get("comparison_tolerance", 0.01))
-                    if comparison_op == "at_least":
-                        expected_meets = modeled_value >= target_value * (1 - tolerance_val)
-                    elif comparison_op == "at_most":
-                        expected_meets = modeled_value <= target_value * (1 + tolerance_val)
-                    else:
-                        expected_meets = math.isclose(
-                            modeled_value,
-                            target_value,
-                            rel_tol=tolerance_val,
-                            abs_tol=max(1.0, abs(target_value)) * tolerance_val,
-                        )
-                    require(
-                        comparison.get("meets_target") is expected_meets,
-                        f"management target meets_target recomputation mismatch: {target_id}/{scenario}",
                     )
             else:
                 require(
@@ -1059,6 +1120,29 @@ def _validate_forecast_output(
                     ),
                     f"unmodeled management target gap missing from output: {target_id}",
                 )
+        # Wholesale ledger binding, deliberately AFTER the per-field checks so
+        # their specific messages keep firing first. Rebuild the ledger from the
+        # input and require the published coverage to match it, so a forged
+        # artifact cannot carry a declaration (comparison_value, tolerance,
+        # mapped_scenarios) that the input never stated: the per-field checks
+        # compare the artifact against itself here, while this compares it
+        # against the input ledger. Typed/audit inputs always bind. Legacy
+        # targets bind for any artifact of a current engine; the immutable
+        # 3.1-3.3 wire shapes are exempt because their published targets predate
+        # fields this validator adds, and binding them would refuse genuine old
+        # snapshots replayed with their input.
+        if data is not None and (data.get("audit_communication_coverage") or
+                                 any(is_typed_target(t) for t in data.get("management_targets", [])) or
+                                 any(c.get("checked_scope") is not None for c in data.get("management_communication_coverage", [])) or
+                                 (data.get("management_targets") and
+                                  result["schema_version"] not in {"3.1", "3.2", "3.3"})):
+            checked = validate_management_target_coverage(
+                data, {s["source_id"]: s for s in result["sources"]}, parameter_index,
+                {c["claim_id"]: c for c in result["evidence_claims"]}, parse_iso_date(result["as_of_date"], "as_of_date"),
+            )
+            expected = add_management_target_analysis({"management_target_coverage": checked,
+                                                       "parameter_index": parameter_index}, result)
+            require(target_coverage == expected, "typed management coverage/input binding mismatch")
     for sensitivity in result.get("sensitivities", []):
         baseline = float(sensitivity["baseline_terminal_revenue"])
         impact = max(

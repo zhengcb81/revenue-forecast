@@ -30,13 +30,11 @@ from contracts.evidence import (
 )
 from contracts.source_clock import SourceClockError, source_information_eligibility, validate_source_events
 from forecast.calc import collect_parameter_roles, evaluate_derived_formula
-from research.target_measurement import (
-    attainment_ratio,
+from research.target_comparison import (
     compare_target_measurement,
     is_typed_target,
-    meets_target,
-    validate_typed_target,
 )
+from research.target_measurement import validate_typed_target
 from research.communication_scope import analyze_communication_scope
 
 
@@ -719,75 +717,18 @@ def validate_management_target_coverage(
 def add_management_target_analysis(
     validated: dict[str, Any], result: dict[str, Any]
 ) -> dict[str, Any]:
-    """Attach scenario attainment to the already validated target ledger."""
+    """Attach scenario attainment to the already validated target ledger.
+
+    Both branches delegate to the one comparison owner in
+    :mod:`research.target_comparison`; this function decides *which* target is
+    compared, never *how* attainment is computed.
+    """
     output_targets = []
-    segment_index = {segment["name"]: segment for segment in result["segments"]}
     for target in validated["management_target_coverage"]["targets"]:
         item = copy.deepcopy(target)
-        comparisons: dict[str, Any] = {}
-        if is_typed_target(target):
-            item["scenario_comparison"] = compare_target_measurement(target, result, validated["parameter_index"])
-            output_targets.append(item)
-            continue
-        if target["treatment"] in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
-            measurement_periods = list(target["measurement_periods"])
-            target_value = float(target["comparison_value"])
-            tolerance = finite_number(
-                target.get("comparison_tolerance", 0.01),
-                f"{target['target_id']}.comparison_tolerance",
-            )
-            require(
-                0 <= tolerance <= 0.25,
-                f"management target comparison_tolerance outside 0..0.25: {target['target_id']}",
-            )
-            for scenario in target["mapped_scenarios"]:
-                if target["scope"]["type"] == "company":
-                    revenue_path = result["consolidated_forecast"][scenario][
-                        "annual_revenue"
-                    ]
-                else:
-                    scenario_output = segment_index[target["scope"]["name"]][
-                        "scenarios"
-                    ][scenario]
-                    revenue_path = scenario_output.get(
-                        "effective_revenue", scenario_output["recognized_revenue"]
-                    )
-                period_values = {
-                    period: float(revenue_path[period[2:]])
-                    for period in measurement_periods
-                }
-                if target["measurement_basis"] == "cumulative_periods":
-                    observed = sum(period_values.values())
-                else:
-                    observed = period_values[measurement_periods[0]]
-                if target["comparison"] in {"at_least", "at_most"}:
-                    meets = meets_target(
-                        observed, target_value, target_value,
-                        target["comparison"], tolerance,
-                    )
-                else:
-                    meets = math.isclose(
-                        observed,
-                        target_value,
-                        rel_tol=tolerance,
-                        abs_tol=max(1.0, abs(target_value)) * tolerance,
-                    )
-                require(
-                    meets or target["treatment"] == "independent_benchmark",
-                    f"mapped scenario does not satisfy management target: {target['target_id']}/{scenario}",
-                )
-                comparisons[scenario] = {
-                    "measurement_basis": target["measurement_basis"],
-                    "measurement_periods": measurement_periods,
-                    "modeled_period_values": period_values,
-                    "modeled_value": observed,
-                    "target_value": target_value,
-                    "attainment_ratio": attainment_ratio(
-                        observed, target_value, target_value
-                    ),
-                    "meets_target": meets,
-                }
-        item["scenario_comparison"] = comparisons
+        item["scenario_comparison"] = compare_target_measurement(
+            target, result, validated["parameter_index"]
+        )
         output_targets.append(item)
     return {
         "communications": copy.deepcopy(
