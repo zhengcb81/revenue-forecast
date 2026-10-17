@@ -50,7 +50,23 @@ from models import legacy_annual_model, legacy_approximately_model  # noqa: E402
 
 
 def _reseal(result: dict) -> dict:
+    """Re-sign a tampered artifact completely.
+
+    Re-sealing ONLY ``result_sha256`` lets a rejection be backstopped by the
+    publication receipt, which is checked *after* the comparison block: a
+    tautological comparison would then appear to have caught the forgery while
+    the receipt hash did the real work. Every tamper test here re-signs the
+    receipt too, so a rejection can only come from the comparison binding.
+    """
     out = copy.deepcopy(result)
+    receipt = out.get("publication_receipt")
+    if isinstance(receipt, dict):
+        from revenue_publication import _payload_sha256, _receipt_sha256
+
+        receipt.pop("receipt_sha256", None)
+        receipt.pop("validated_payload_sha256", None)
+        receipt["validated_payload_sha256"] = _payload_sha256(out)
+        receipt["receipt_sha256"] = _receipt_sha256(receipt)
     out["result_sha256"] = canonical_sha256(
         {key: value for key, value in out.items() if key != "result_sha256"}
     )
@@ -340,6 +356,188 @@ class TamperStillRefusedTests(unittest.TestCase):
         row["meets_target"] = not row["meets_target"]
         with pytest.raises(ForecastInputError):
             validate_published_forecast(tampered, data)
+
+
+class FullyResealedForgeryTests(unittest.TestCase):
+    """Forgeries with the publication receipt re-signed as well.
+
+    Every earlier tamper test re-sealed only ``result_sha256``. Because the
+    receipt is checked *after* the comparison block, a tautological comparison
+    would then still appear to reject the forgery — the receipt hash would be
+    doing the work, not the ownership binding. These tests re-sign both, so the
+    only thing that can refuse the artifact is the comparison itself, and they
+    assert the refusal *names* the comparison rather than the receipt.
+    """
+
+    @staticmethod
+    def _refusal(exc: Exception) -> str:
+        message = str(exc)
+        assert "receipt" not in message.lower() and "payload" not in message.lower(), (
+            f"the forgery was refused by the receipt hash, not by the comparison "
+            f"binding: {message}"
+        )
+        return message
+
+    @staticmethod
+    def _echo_published_rows(target, res, parameters=None, *, periods=None):
+        """The adversarial shadow: hand back the artifact's own rows.
+
+        An implementation that returns what it is supposed to be checking makes
+        the comparison tautological — the shape that defeated three earlier
+        structural guards.
+        """
+        for item in res.get("management_target_coverage", {}).get("targets", []):
+            if item.get("target_id") == target.get("target_id"):
+                return {key: dict(value) for key, value in
+                        (item.get("scenario_comparison") or {}).items()}
+        return {}
+
+    def test_favorable_verdict_forgery_on_a_legacy_benchmark_is_refused(self) -> None:
+        """Flip every unmet verdict False->True and re-sign everything.
+
+        This is the direction an attacker wants. An independent benchmark may
+        legitimately publish ``meets_target: false``, so flipping it to True is
+        the highest-value pure-verdict forgery, and it must be refused by the
+        recomputed comparison alone.
+        """
+        from test_independent_targets import benchmark_document
+
+        data = benchmark_document()
+        result = run_forecast(data)
+        forged = _reseal(result)
+        rows = forged["management_target_coverage"]["targets"][0][
+            "scenario_comparison"]
+        self.assertTrue(
+            all(row["meets_target"] is False for row in rows.values()),
+            "this fixture must start unmet so the forgery is in the desired "
+            "direction",
+        )
+        for row in rows.values():
+            row["meets_target"] = True
+        with pytest.raises(ForecastInputError) as excinfo:
+            validate_forecast_output(forged)
+        self._refusal(excinfo.value)
+
+    def test_single_verdict_forgery_on_a_legacy_benchmark_is_refused(self) -> None:
+        from test_independent_targets import benchmark_document
+
+        result = run_forecast(benchmark_document())
+        forged = _reseal(result)
+        rows = forged["management_target_coverage"]["targets"][0][
+            "scenario_comparison"]
+        rows["high"]["meets_target"] = True
+        with pytest.raises(ForecastInputError) as excinfo:
+            validate_forecast_output(forged)
+        self._refusal(excinfo.value)
+
+    def test_lowered_declaration_cannot_make_an_unmet_target_met(self) -> None:
+        """The artifact's declaration must match the input ledger.
+
+        The per-field checks compare the artifact against itself, so a forged
+        ``comparison_value`` with rows regenerated honestly passes them all.
+        Only the wholesale ledger binding refuses it — which is why the
+        binding now covers legacy targets, not just typed ones.
+        """
+        data = legacy_annual_model()
+        result = run_forecast(data)
+        forged = copy.deepcopy(result)
+        for target in forged["management_target_coverage"]["targets"]:
+            target["comparison_value"] = 1.0
+            target["raw_target_value"] = 1.0
+            target["scenario_comparison"] = target_comparison.compare_target_measurement(
+                dict(target, scenario_comparison=None), forged)
+        sealed = _reseal(forged)
+        with pytest.raises(ForecastInputError) as excinfo:
+            validate_forecast_output(sealed)
+        message = self._refusal(excinfo.value)
+        self.assertIn("coverage/input binding", message)
+
+    def test_dropped_scenarios_cannot_hide_an_unmet_one(self) -> None:
+        """Removing a losing scenario from the artifact must be refused."""
+        from test_independent_targets import benchmark_document
+
+        result = run_forecast(benchmark_document())
+        forged = copy.deepcopy(result)
+        for target in forged["management_target_coverage"]["targets"]:
+            target["mapped_scenarios"] = ["high"]
+            target["scenario_comparison"] = target_comparison.compare_target_measurement(
+                dict(target, scenario_comparison=None), forged)
+        sealed = _reseal(forged)
+        with pytest.raises(ForecastInputError) as excinfo:
+            validate_forecast_output(sealed)
+        message = self._refusal(excinfo.value)
+        self.assertIn("coverage/input binding", message)
+
+    def test_lowered_typed_declaration_is_refused(self) -> None:
+        from models import typed_level_model
+
+        result = run_forecast(typed_level_model())
+        forged = copy.deepcopy(result)
+        for target in forged["management_target_coverage"]["targets"]:
+            target["comparison_value"] = 1.0
+        sealed = _reseal(forged)
+        with pytest.raises(ForecastInputError):
+            validate_forecast_output(sealed)
+
+    def test_shadowing_the_report_branch_cannot_forge_a_verdict(self) -> None:
+        """The last shelter: shadow the report's owner call itself.
+
+        An adversarial review showed that replacing the report's binding with a
+        local re-derivation keeps every *structural* guard green: the code is
+        still shaped like a delegation while the verdict is self-consistent.
+        What refuses such an artifact is the input binding, which re-derives
+        the comparison from the model rather than from the published rows. This
+        test plants that exact shadow and requires the forgery to be refused,
+        so the guarantee rests on input re-derivation and not on the report's
+        own delegation remaining in place.
+        """
+        from test_independent_targets import benchmark_document
+
+        result = run_forecast(benchmark_document())
+        data = benchmark_document()
+        forged = _reseal(result)
+        rows = forged["management_target_coverage"]["targets"][0][
+            "scenario_comparison"]
+        self.assertTrue(
+            all(row["meets_target"] is False for row in rows.values()))
+        for row in rows.values():
+            row["meets_target"] = True
+
+        original = revenue_report.compare_target_measurement
+        revenue_report.compare_target_measurement = self._echo_published_rows
+        try:
+            with pytest.raises(ForecastInputError) as excinfo:
+                validate_published_forecast(forged, data)
+        finally:
+            revenue_report.compare_target_measurement = original
+        self._refusal(excinfo.value)
+
+    def test_a_local_band_cannot_forge_a_verdict(self) -> None:
+        """A shadow that re-derives attainment locally is refused the same way.
+
+        This is the shape that evaded the structural guards. Whatever the
+        shadow returns, the published rows must still be re-derived from the
+        model's revenue data; a forged verdict is refused, and the refusal is
+        not the publication-receipt hash (checked last) doing the work.
+        """
+        from test_independent_targets import benchmark_document
+
+        result = run_forecast(benchmark_document())
+        data = benchmark_document()
+        forged = _reseal(result)
+        rows = forged["management_target_coverage"]["targets"][0][
+            "scenario_comparison"]
+        for row in rows.values():
+            row["meets_target"] = True
+
+        original = revenue_report.compare_target_measurement
+        revenue_report.compare_target_measurement = self._echo_published_rows
+        try:
+            with pytest.raises(ForecastInputError) as excinfo:
+                validate_published_forecast(forged, data)
+        finally:
+            revenue_report.compare_target_measurement = original
+        self._refusal(excinfo.value)
 
 
 if __name__ == "__main__":

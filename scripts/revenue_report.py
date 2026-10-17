@@ -907,16 +907,6 @@ def _validate_forecast_output(
             == list(MANAGEMENT_COMMUNICATION_CATEGORIES),
             "management communication categories are missing or out of order",
         )
-        if data is not None and (data.get("audit_communication_coverage") or
-                                 any(is_typed_target(t) for t in data.get("management_targets", [])) or
-                                 any(c.get("checked_scope") is not None for c in data.get("management_communication_coverage", []))):
-            checked = validate_management_target_coverage(
-                data, {s["source_id"]: s for s in result["sources"]}, parameter_index,
-                {c["claim_id"]: c for c in result["evidence_claims"]}, parse_iso_date(result["as_of_date"], "as_of_date"),
-            )
-            expected = add_management_target_analysis({"management_target_coverage": checked,
-                                                       "parameter_index": parameter_index}, result)
-            require(target_coverage == expected, "typed management coverage/input binding mismatch")
         observed_target_ids: set[str] = set()
         for record in communications:
             require(
@@ -1130,6 +1120,29 @@ def _validate_forecast_output(
                     ),
                     f"unmodeled management target gap missing from output: {target_id}",
                 )
+        # Wholesale ledger binding, deliberately AFTER the per-field checks so
+        # their specific messages keep firing first. Rebuild the ledger from the
+        # input and require the published coverage to match it, so a forged
+        # artifact cannot carry a declaration (comparison_value, tolerance,
+        # mapped_scenarios) that the input never stated: the per-field checks
+        # compare the artifact against itself here, while this compares it
+        # against the input ledger. Typed/audit inputs always bind. Legacy
+        # targets bind for any artifact of a current engine; the immutable
+        # 3.1-3.3 wire shapes are exempt because their published targets predate
+        # fields this validator adds, and binding them would refuse genuine old
+        # snapshots replayed with their input.
+        if data is not None and (data.get("audit_communication_coverage") or
+                                 any(is_typed_target(t) for t in data.get("management_targets", [])) or
+                                 any(c.get("checked_scope") is not None for c in data.get("management_communication_coverage", [])) or
+                                 (data.get("management_targets") and
+                                  result["schema_version"] not in {"3.1", "3.2", "3.3"})):
+            checked = validate_management_target_coverage(
+                data, {s["source_id"]: s for s in result["sources"]}, parameter_index,
+                {c["claim_id"]: c for c in result["evidence_claims"]}, parse_iso_date(result["as_of_date"], "as_of_date"),
+            )
+            expected = add_management_target_analysis({"management_target_coverage": checked,
+                                                       "parameter_index": parameter_index}, result)
+            require(target_coverage == expected, "typed management coverage/input binding mismatch")
     for sensitivity in result.get("sensitivities", []):
         baseline = float(sensitivity["baseline_terminal_revenue"])
         impact = max(

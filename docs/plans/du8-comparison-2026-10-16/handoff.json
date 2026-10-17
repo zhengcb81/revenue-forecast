@@ -33,6 +33,24 @@
     "docs/plans/du8-comparison-2026-10-16/handoff.json",
     "docs/plans/du8-comparison-2026-10-16/handoff.md",
     "docs/plans/du8-comparison-2026-10-16/progress.md",
+    "docs/plans/du8-comparison-2026-10-16/receipts/b-regression-focused.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/behaviour-freeze-after-report-fix.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/behaviour-freeze-recheck.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/c-du8-suites.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/c-gates.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/cleanup.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-2-producer.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-3-decoy.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-4-escape.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-5-echo.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-6-result-echo.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-7-hybrid.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-check.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-matrix.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/red-before.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/wider-preexisting-baseline.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/wider-preexisting-with-change.txt",
+    "docs/plans/du8-comparison-2026-10-16/task_plan.md",
     "references/management-targets.md",
     "scripts/research/target_comparison.py",
     "scripts/research/targets.py",
@@ -84,7 +102,7 @@
     {
       "command": "python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py tests/test_du8_owner_enforcement.py tests/test_du8_hand_anchors.py tests/test_du8_target_report_roundtrip.py -q",
       "exit_code": 0,
-      "passed": 118,
+      "passed": 125,
       "failed": 0,
       "skipped": 6,
       "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/c-du8-suites.txt"
@@ -92,7 +110,7 @@
     {
       "command": "python -X utf8 -B -m pytest <26 adjacent suites> -q",
       "exit_code": 0,
-      "passed": 497,
+      "passed": 504,
       "failed": 0,
       "skipped": 7,
       "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/b-regression-focused.txt"
@@ -176,6 +194,14 @@
       "failed": 0,
       "skipped": 0,
       "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-7-hybrid.txt"
+    },
+    {
+      "command": "python -X utf8 -B tools/du8_shadow_receipt.py",
+      "exit_code": 0,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-5-shadow.txt"
     }
   ],
   "red_receipts": [
@@ -221,7 +247,7 @@
     "the report binds modeled_value/target_value with rel_tol=1e-9 and abs_tol=1e-9, so a drift below that band is accepted; this is the pre-existing identity tolerance, not a comparison tolerance",
     "receipts/wider-preexisting-*.txt record 17 pre-existing failures that are byte-identical between baseline e86488a7 and the implementation commit",
     "two independent adversarial reviews of 4fcdbb5c found: (1) the first guard suite was defeatable by rewriting the legacy delegation while the typed branch kept the owner symbol, now fixed and reproduced as receipts/guard-attack-check.txt; (2) typed_level_model did not set comparison_basis and so silently exercised the legacy path, now fixed and asserted by test_typed_and_legacy_models_really_take_different_paths; (3) the handoff was uncommitted with a fabricated commit SHA, now corrected",
-    "the receipt b-regression-focused.txt covers all 26 adjacent suites including the three DU8 suites (486 passed, 7 skipped)",
+    "the receipt b-regression-focused.txt covers all 26 adjacent suites including the three DU8 suites (504 passed, 7 skipped)",
     "a hybrid wrapper that echoes when rows are present but genuinely recomputes when they are stripped passes the guard suite (it is behaviourally the real code on the validation path); receipts/guard-attack-7-hybrid.txt confirms every tampered meets_target is still REJECTED in that configuration - the guarantee is that no wrapper can make a forgery accepted, not that no wrapper exists"
   ],
   "not_run": [
