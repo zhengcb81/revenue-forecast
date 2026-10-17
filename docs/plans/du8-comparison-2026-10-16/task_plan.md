@@ -3,7 +3,7 @@
 状态：**A/B/C 完成，两轮独立对抗审查的 findings 全部修复，源码已冻结，STOP 等待 ROOT 独立验收与并线。**
 工作目录`C:/Users/郑曾波/Projects/revenue-forecast-du8-comparison`；分支`codex/du8-rf-comparison-20261016`；
 源码基线`0feea9b097747165a37009ad4a7ed5616cf46c38`；冻结源码见 `handoff.json.frozen_source_tree`
-（`git diff 03f35e91 <HEAD> -- scripts tests` 为空）。
+（发布数字/形状相对基线逐字节一致，见两份 behaviour-freeze 收据；源码字节并非冻结对象，报告侧校验形状在审查后重塑）。
 
 PLAN_ID：`du8-comparison-2026-10-16`；计划目录为本目录，先读施工卡/INTERFACES/findings/progress，不恢复其他根计划。
 

@@ -35,5 +35,5 @@
 
 ## 状态
 
-工作树干净，最终 commit `03f35e918540c4b8bc0d2730417b412012632ece`。
+工作树干净；tip 见 `git log`，完整 commit 清单见 `handoff.json.implementation_commits` 与 `handoff_commits`。
 0 供应商 / 0 网络 / 0 付费 / 0 生产写入。**STOP，等待 ROOT 独立验收与并线。**

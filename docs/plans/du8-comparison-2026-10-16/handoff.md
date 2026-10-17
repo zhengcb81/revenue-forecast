@@ -247,7 +247,7 @@ owner 调用不得只被赋值而不参与判定。
 publication receipt）被拒：legacy 报 `management target meets_target mismatch`，
 typed 报 `typed management coverage/input binding mismatch`
 
-所有攻击均在可还原写入上执行，事后源码文件与 HEAD 逐字节一致，仅 guard 测试本身有意变更。
+所有攻击均在可还原写入上执行；每次收据都记录 `restored: True`，即写入攻击前后源码内容一致，无残留修改。
 
 ## 8. NOT_RUN / 不跑范围
 
@@ -283,8 +283,9 @@ A 节点临时探针 `tools/du8_probe_*.py`、`tools/du8_scan.py`、
 ## 10. ROOT 如何接收
 
 1. `git log` 确认 tip 不早于 `handoff.json.implementation_commits` 的最后一项；
-   `git status --porcelain -uall` 应为空。源码自 `03f35e91` 冻结，见
-   `handoff.json.frozen_source_tree`。
+   `git status --porcelain -uall` 应为空。注意：冻结的是**发布产物**，
+   不是源码字节——报告侧校验形状在 `03f35e91` 之后因对抗审查改过三次，
+   但发布数字/形状逐字节不变，见 `handoff.json.frozen_source_tree`。
 2. 跑 §5 的集中回归命令复现 497 passed。
 3. 独立验收建议重点：用 `git diff <base> <final>` 确认白名单外零改动；
    用 §2 的反例在基线上复核 RED 真实存在；重放
