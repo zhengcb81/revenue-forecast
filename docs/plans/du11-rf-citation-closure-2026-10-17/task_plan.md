@@ -98,7 +98,13 @@ never rewritten to make a change pass.
       construction; groups-only determinism; exact legacy messages; projected parent
       identity; RED regenerated against the frozen tests; owned root + basetemp deletion
       receipted; PWF reconciled) and re-run the card + regression suites and all gates.
-- [ ] Round 2: the same reviewer re-checks the new frozen source SHA; 0 unresolved issues.
+- [x] Round 2: **FAIL** — 0 blocking, 1 new should-fix (a valid `unread.counts` plus one
+      unreadable page/unit list raised a raw `TypeError` instead of `null`, a regression in
+      the B1 leniency fix), 2 doc nits. Report: `receipts/D-reviewer-2.md`. Round-1 findings
+      B1/S1–S6 all verified FIXED.
+- [x] Fix R2-1 (availability `None` keeps the counts unknown) and the two doc nits; add an
+      8-case regression over the four unread lists; re-run the suites and gates.
+- [ ] Round 3: the same reviewer re-checks the final source SHA; 0 unresolved issues.
 - [ ] Only then write COMPLETE + `handoff.json`; author-branch commits only, no merge, no
       push, no cleanup of this worktree; STOP.
 
@@ -131,7 +137,8 @@ never rewritten to make a change pass.
 | Review round 1: committed RED was stale vs the frozen tests | 1 | Regenerated against byte-exact baseline consumers in an outside scratch tree: 27 failed / 10 passed, all behavioural |
 | Review round 1: E2E left its owned root and the handoff deletion claim was unreceipted | 1 | Fixture now deletes the owned root (`root_removed: true`); basetemp deletion is receipted |
 | Review round 1: projected parent matched only the content SHA | 1 | Parent identity is now `source_id` + `parent_content_sha256` + subject `projection_id`; cross-parent regression added |
-| Review round 1: PWF/handoff were stale or premature | 1 | Phases, decisions, matrix, receipts and handoff reconciled; status kept `IMPLEMENTED_REVIEW_PENDING` until round 2 |
+| Review round 1: PWF/handoff were stale or premature | 1 | Phases, decisions, matrix, receipts and handoff reconciled; status kept `IMPLEMENTED_REVIEW_PENDING` until the final round |
+| Review round 2: `unread.counts` compared against a `None` availability | 1 | Availability `None` keeps the counts unknown; 8-case regression added |
 | `Expand-Archive` of a `git archive` of the whole repo failed on long `.planning` paths | 1 | Abandoned the whole-repo archive; built the RED scratch tree from `scripts/` + `tests/` + the frozen wire plus the two baseline consumer files |
 
 ## Next Step

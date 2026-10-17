@@ -201,7 +201,7 @@ def _unread_trace(reading: dict | None) -> dict:
         available = {"opaque_pages": pages["opaque_pages"], "deferred_pages": pages["deferred_pages"],
                      "deferred_unit_ids": units["deferred_unit_ids"],
                      "unassigned_unit_ids": units["unassigned_unit_ids"]}
-        if all(value is not None and value >= available[name]
+        if all(value is not None and available[name] is not None and value >= available[name]
                for name, value in candidate.items()):
             resolved = candidate
     native_scan = unread.get("native_scan")

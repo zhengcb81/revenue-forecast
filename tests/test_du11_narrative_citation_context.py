@@ -74,6 +74,25 @@ def test_free_form_layout_is_reduced_to_null_never_to_a_refusal(layout):
     assert resolve_span(context, span_id=span_id(context, "answer"))["closure"] == "citation_view"
 
 
+@pytest.mark.parametrize("name", list(("opaque_pages", "deferred_pages",
+                                       "deferred_unit_ids", "unassigned_unit_ids")))
+@pytest.mark.parametrize("broken", ["wrong-type", "missing"])
+def test_unreadable_unread_list_degrades_the_counts_to_null(name, broken):
+    """A valid `counts` block plus one unreadable list is a null, never a TypeError."""
+    context = validated("2").to_dict()
+    unread = context["reading_context"]["unread"]
+    if broken == "wrong-type":
+        unread[name] = "not-a-list"
+    else:
+        del unread[name]
+    trace = reading_trace(context)
+    assert trace["unread"]["counts"] is None
+    assert trace["unread"]["limited"] is None
+    assert trace["unread"][name] is None
+    assert trace["unread"]["structure_complete"] is False
+    assert resolve_span(context, span_id=span_id(context, "answer"))["closure"] == "citation_view"
+
+
 def test_unread_material_is_a_diagnostic_not_a_refusal():
     context = validated("2").to_dict()
     trace = reading_trace(context)

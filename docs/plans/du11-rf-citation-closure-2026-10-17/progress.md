@@ -48,9 +48,9 @@
 
 | command | result |
 |---------|--------|
-| `python -m pytest -q tests/test_du11_narrative_citation_*.py` (5 modules, 60 cases) | all passed; see `receipts/B-final-tests.json` |
+| `python -m pytest -q tests/test_du11_narrative_citation_*.py` (5 modules, 74 cases: 5/32/26/5/6) | all passed; see `receipts/B-final-tests.json` |
 | card 12-module central regression command | 279 passed, 3 skipped |
-| authoritative 20-module run (`--basetemp` in an owned temp dir, `DU11_PWF_RECEIPTS` set) | **366 passed, 4 skipped**, exit 0, 99.37 s (`receipts/B-final-tests.log`) |
+| authoritative 20-module run (`--basetemp` in an owned temp dir, `DU11_PWF_RECEIPTS` set) | **374 passed, 4 skipped**, exit 0, 85.79 s (`receipts/B-final-tests.log`) |
 | `python -m ruff check scripts tests tools` | all checks passed |
 | `python -m mypy scripts/contracts/ scripts/schema_compatibility.py scripts/filing_fetch_client.py scripts/trust_anchor.py` | success, 11 files |
 | `python tools/pre_push_gate.py` (the repo's own CI gate: ruff + mypy + 30 smoke modules) | GREEN — `416 passed, 36 subtests passed`, exit 0 (`receipts/C-prepush-gate.txt`) |
@@ -84,8 +84,14 @@
   the E2E deletes its owned root and the basetemp deletion is receipted; the RED was
   regenerated against byte-exact baseline consumers (27 failed / 10 passed, all behavioural);
   the PWF and handoff were reconciled and the status kept `IMPLEMENTED_REVIEW_PENDING`.
-- Author round-1 commit: `1ada02e4`; round-2 fixes are committed as a second implementation
-  commit and re-reviewed by the same agent against the new SHAs.
+- Author round-1 commit: `1ada02e4`; round-1 fixes: `1ae6c3b5`.
+- Round 2 (same agent): 0 blocking, 1 new should-fix (a valid `unread.counts` plus one
+  unreadable page/unit list raised a raw `TypeError` instead of `null` — a regression in the
+  B1 leniency fix), 2 doc nits; every round-1 finding verified FIXED
+  (`receipts/D-reviewer-2.md`). Fixed: availability `None` keeps the counts unknown, 8-case
+  regression over the four unread lists, the error-code table re-joined, the case count
+  corrected. Round-2 fixes are committed as the third implementation commit and re-reviewed
+  by the same agent against the final SHAs.
 
 ### Errors encountered (session)
 

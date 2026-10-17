@@ -1,7 +1,7 @@
 {
-  "schema_version": "du11-test-receipt/2",
+  "schema_version": "du11-test-receipt/3",
   "authoritative_run": {
-    "when": "2026-10-17 (after the round-1 independent review fixes)",
+    "when": "2026-10-17 (final, after both independent-review rounds)",
     "python": "C:/Miniconda/python.exe",
     "command": "python -m pytest -q --tb=short -p no:cacheprovider --basetemp <owned temp> <20 modules>",
     "modules": [
@@ -27,11 +27,12 @@
       "tests/test_narrative_container_lineage.py"
     ],
     "exit_code": 0,
-    "passed": 366,
+    "passed": 374,
     "skipped": 4,
     "failed": 0,
-    "pytest_seconds": 99.37,
-    "wall_seconds": 106.0,
+    "pytest_seconds": 85.79,
+    "wall_seconds": 91.1,
+    "card_modules_cases": {"wire": 5, "context": 32, "consumption": 26, "projection": 5, "e2e": 6},
     "log": "receipts/B-final-tests.log"
   },
   "gates": {
@@ -65,7 +66,11 @@
     "directory": "receipts/restore-*.json",
     "count": 6,
     "rule": "owned tmp_path/du11-owned root, fixed sentinel + pre-existing out/existing.json, byte SHA and mtime recorded before the test, byte-identical restore asserted, every created file/directory removed, and the owned root itself deleted (`root_removed: true`)",
-    "basetemp_receipt": "receipts/C-basetemp.txt (created, deleted, verified absent)"
+    "basetemp_receipts": ["receipts/C-basetemp.txt", "receipts/C-basetemp-3.txt (final run: created, deleted, verified absent)"]
+  },
+  "review_rounds": {
+    "round_1": "receipts/D-reviewer-1.md (FAIL: 1 blocking + 6 should-fix + 10 nits, all addressed)",
+    "round_2": "receipts/D-reviewer-2.md (FAIL: 0 blocking + 1 new should-fix R2-1 + 2 doc nits, addressed; all round-1 findings verified FIXED)"
   },
   "network_provider_model_counts": {
     "network_requests": 0,
@@ -74,11 +79,11 @@
     "local_reader_process_calls": "recorded per E2E test in the owned tree calls.log and asserted by count; socket/urlopen hard-fail in the test process"
   },
   "source_sha256": {
-    "scripts/narrative_citation_context.py": "8e0843a4145aa06e599894e8d6f596fc3ec267f21456f3aadd55af361559d21a",
+    "scripts/narrative_citation_context.py": "3699df45774a9db0a1ad1b8440db00a3a09efa3f6db8d40bc7bad38120d018f5",
     "scripts/source_narrative_context.py": "ee271c3f5be61b2c7df845b60f7962422fd45808c0c38b727a700ecc93ede259",
     "scripts/research/input_evidence.py": "c0a321f9ca905023846dafa4fe7c35b74e7d3cedc5e77bbd6882168579f338ed",
     "tests/test_du11_narrative_citation_wire.py": "f63ccfa381dfeb80d13c837f05a897305ee0749923e69ca77dc11122dbfdc620",
-    "tests/test_du11_narrative_citation_context.py": "f4f9354a6bf4cfa4831bde65c41c88b0a807b383f7855dc17473b1ffaa1e857e",
+    "tests/test_du11_narrative_citation_context.py": "bac9badb89d7852f5684981189bc0db1f41c4806597f1ce8a222b32f708013ed",
     "tests/test_du11_narrative_citation_consumption.py": "cbd44c769240e341cb309856dc4f481aa28947fd073ea05de349cc6a00cbb7f7",
     "tests/test_du11_narrative_citation_projection.py": "55c071be5f6023faf6d369707267241ee88434b28635b3e97f25afe412607756",
     "tests/test_du11_narrative_citation_e2e.py": "cac76fe54690e34a7dfa49de2ac1bd493fbbd50030a3a952e80c4adc1361f24d",

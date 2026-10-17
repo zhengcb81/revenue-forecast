@@ -154,7 +154,18 @@ structure it consumes is retained because entry 2 legitimately accepts an unvali
 trace is separately versioned; the offline guard covers the test process, while the only
 child processes are the local stub reader and the calculator.
 
-## 11. Upstream gaps found (reported, not patched across repos)
+## 11. Independent review round 2
+
+`receipts/D-reviewer-2.md` — 0 blocking, 1 new should-fix, 2 new nits; all round-1 findings
+verified FIXED (B1, S1–S6, nits N1–N4/N8), N5/N6/N7/N9/N10 accepted as documented.
+
+| finding | root cause | fix |
+|---------|-----------|-----|
+| R2-1 (should-fix): a valid `unread.counts` plus one unreadable page/unit list raised a raw `TypeError` in the counts comparison | the B1 leniency fix compared against a `None` availability when a list was missing/malformed | availability `None` now keeps the counts unknown (`null`); 8-case regression over the four lists × wrong-type/missing |
+| R2-2 (nit): the groups-only paragraph split the frozen error-code table | doc edit landed mid-table | paragraph moved below the table |
+| R2-3 (nit): `progress.md` said 60 card cases | stale count from the previous round | corrected to the real per-module collection (5/32/26/5/6) |
+
+## 12. Upstream gaps found (reported, not patched across repos)
 
 1. `narrative-ref/3` + `narrative-read-receipt/3` publish **no** publication or availability
    fact (only `observed_at`). Entry 2's formal source+capture needs `published_date`

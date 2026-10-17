@@ -61,8 +61,8 @@ install directories, `assurance/runs/**`.
 - RED before the change: `receipts/A-red-baseline.txt` — **27 failed, 10 passed** on
   byte-exact baseline consumers, every failure behavioural (no harness crash).
 - Final: `receipts/B-final-tests.json` and `receipts/B-final-tests.log` —
-  `366 passed, 4 skipped`, exit 0, 99.37 s (5 card modules + the 15-module central
-  regression), `ruff` 0, `mypy` 0.
+  `374 passed, 4 skipped`, exit 0, 85.79 s (5 card modules = 74 cases, plus the 15-module
+  central regression), `ruff` 0, `mypy` 0.
 - The repository's own CI gate `python tools/pre_push_gate.py` is GREEN
   (`416 passed, 36 subtests passed`, exit 0) — `receipts/C-prepush-gate.txt`.
 - Round-1 independent review: `receipts/D-reviewer-1.md` (FAIL, 1 blocking + 6 should-fix;

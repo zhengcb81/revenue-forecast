@@ -48,14 +48,14 @@ All are raised by `scripts/narrative_citation_context.py` as
 | `narrative_citation_view_not_support` | the explicitly named view has the span in `context_evidence_ids` (or nowhere) |
 | `narrative_citation_view_ambiguous` | no explicit view, but the span is `support` in more than one legal view of one group |
 | `narrative_citation_span_invalid` | a projected `/3` span lacks its own `parent_content_sha256`, `source_locator` or `pointer` |
+| `narrative_citation_context_only` | no legal view has the span as support; it is only ever `context` |
+| `narrative_citation_source_role_refused` | the span's transported `source_role` is `analyst` or `investor_question`, so it cannot be support for an RF parameter claim |
 
 **Groups-only reads never become an ambiguity gate.** `du-production-reading/1` publishes
 no support/context partition, so a span that belongs to several groups is consumed with the
 published-first group recorded deterministically (`closure: "reading_group"`, its
 `group_id`); `citation_group_id` may name another. Nothing is promoted and nothing is
 silently invented.
-| `narrative_citation_context_only` | no legal view has the span as support; it is only ever `context` |
-| `narrative_citation_source_role_refused` | the span's transported `source_role` is `analyst` or `investor_question`, so it cannot be support for an RF parameter claim |
 
 Entry 1 raises these as `ValueError` (they are `ValueError`s) and keeps its existing
 messages for the pre-existing failures. Entry 2 converts them to `ForecastInputError`
