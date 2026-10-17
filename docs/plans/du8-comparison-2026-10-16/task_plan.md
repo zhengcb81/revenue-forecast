@@ -1,3 +1,9 @@
+## ROOT当前接收状态 — 2026-10-17
+
+作者最终8845bc18完整历史已接收，ROOT修复b41dceef，558PASS/7SKIP。最终独审PASS/0未解决，绑定12文件SHA；主线并入/推送待完成。[当前接收与后续](ROOT_RECEPTION.md)。以下作者旧计数/冻结版本均为历史，不作当前验收证据。
+
+---
+
 # DU8-RF-COMPARISON
 
 状态：**A/B/C 完成，两轮独立对抗审查的 findings 全部修复，源码已冻结，STOP 等待 ROOT 独立验收与并线。**

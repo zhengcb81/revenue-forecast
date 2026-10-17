@@ -1,0 +1,373 @@
+{
+  "reviewer": "/root/du8_rf_root_review",
+  "reviewed_author_head": "8845bc18",
+  "source": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-du8-root-reception",
+  "sha256_before": {
+    "scripts/research/target_comparison.py": "a3389665e6656f0b2168fa740a25faaaf950a5f689302d10c99930f50f375b2c",
+    "scripts/research/targets.py": "c157ad9f2752eb18db28e1c716403ca06faf4edc79476a3299ea133e5f843b87",
+    "scripts/revenue_report.py": "302a5a4f84b1dcaa9aceb248a5f093b3f18944e2027c8a338170e94b78bc9c24",
+    "tests/fixtures/du8_comparison/models.py": "06b2f8c52e2e7fff5c6edfb320743485d89be0dde3381ba1af53c04d70695ac6",
+    "tests/test_du8_owner_enforcement.py": "695c8e63a4b3dc84f041fb34c4fa036d179753653e116fafe8b40bcd6383ecd1"
+  },
+  "sha256_after": {
+    "scripts/research/target_comparison.py": "a3389665e6656f0b2168fa740a25faaaf950a5f689302d10c99930f50f375b2c",
+    "scripts/research/targets.py": "c157ad9f2752eb18db28e1c716403ca06faf4edc79476a3299ea133e5f843b87",
+    "scripts/revenue_report.py": "302a5a4f84b1dcaa9aceb248a5f093b3f18944e2027c8a338170e94b78bc9c24",
+    "tests/fixtures/du8_comparison/models.py": "06b2f8c52e2e7fff5c6edfb320743485d89be0dde3381ba1af53c04d70695ac6",
+    "tests/test_du8_owner_enforcement.py": "695c8e63a4b3dc84f041fb34c4fa036d179753653e116fafe8b40bcd6383ecd1"
+  },
+  "unchanged": true,
+  "sentinel_unchanged": true,
+  "owned_temp_removed": true,
+  "supplier_calls": 0,
+  "http_calls": 0,
+  "results": [
+    {
+      "case": "legacy_annual_model",
+      "clean": "PASS",
+      "first_row": {
+        "measurement_basis": "annual_period",
+        "measurement_periods": [
+          "FY2027"
+        ],
+        "modeled_period_values": {
+          "FY2027": 144.0
+        },
+        "modeled_value": 144.0,
+        "target_value": 144.0,
+        "attainment_ratio": 1.0,
+        "meets_target": true
+      }
+    },
+    {
+      "case": "legacy_annual_model",
+      "field": "meets_target",
+      "replacement": 1,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_annual_model",
+      "field": "meets_target",
+      "replacement": 2,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_annual_model",
+      "field": "meets_target",
+      "replacement": "False",
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_annual_model",
+      "field": "modeled_value",
+      "replacement": 987654321.0,
+      "outcome": "REJECTED: ForecastInputError: management target modeled value mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_annual_model",
+      "field": "attainment_ratio",
+      "replacement": 998.0,
+      "outcome": "REJECTED: ForecastInputError: management target attainment mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "typed_level_model",
+      "clean": "PASS",
+      "first_row": {
+        "metric_kind": "annual_revenue_level",
+        "period": "FY2027",
+        "unit": "USD million",
+        "modeled_value": 100.0,
+        "target_value": 1000.0,
+        "target_low": 1000.0,
+        "target_high": 1000.0,
+        "comparison": "at_least",
+        "comparison_status": "comparable",
+        "reason": null,
+        "meets_target": false,
+        "attainment_ratio": 0.1,
+        "difference": -900.0
+      }
+    },
+    {
+      "case": "typed_level_model",
+      "field": "meets_target",
+      "replacement": 0,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/low"
+    },
+    {
+      "case": "typed_level_model",
+      "field": "meets_target",
+      "replacement": 0,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/low"
+    },
+    {
+      "case": "typed_level_model",
+      "field": "meets_target",
+      "replacement": "",
+      "outcome": "REJECTED: ForecastInputError: typed management target comparison recomputation mismatch: five_year_revenue_goal"
+    },
+    {
+      "case": "typed_level_model",
+      "field": "modeled_value",
+      "replacement": 987654321.0,
+      "outcome": "REJECTED: ForecastInputError: typed management target comparison recomputation mismatch: five_year_revenue_goal"
+    },
+    {
+      "case": "typed_level_model",
+      "field": "attainment_ratio",
+      "replacement": 998.0,
+      "outcome": "REJECTED: ForecastInputError: typed management target comparison recomputation mismatch: five_year_revenue_goal"
+    },
+    {
+      "case": "typed_quarterly_model",
+      "clean": "PASS",
+      "first_row": {
+        "metric_kind": "quarterly_revenue_level",
+        "period": "FY2026Q3",
+        "unit": "USD million",
+        "modeled_value": 105840.0,
+        "target_value": null,
+        "target_low": 105840.0,
+        "target_high": 110160.0,
+        "comparison": "approximately",
+        "comparison_status": "comparable",
+        "reason": null,
+        "meets_target": true,
+        "attainment_ratio": null,
+        "difference": null
+      }
+    },
+    {
+      "case": "typed_quarterly_model",
+      "field": "meets_target",
+      "replacement": 1,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/low"
+    },
+    {
+      "case": "typed_quarterly_model",
+      "field": "meets_target",
+      "replacement": 2,
+      "outcome": "REJECTED: ForecastInputError: typed management target comparison recomputation mismatch: five_year_revenue_goal"
+    },
+    {
+      "case": "typed_quarterly_model",
+      "field": "meets_target",
+      "replacement": "False",
+      "outcome": "REJECTED: ForecastInputError: typed management target comparison recomputation mismatch: five_year_revenue_goal"
+    },
+    {
+      "case": "typed_quarterly_model",
+      "field": "modeled_value",
+      "replacement": 987654321.0,
+      "outcome": "REJECTED: ForecastInputError: typed management target comparison recomputation mismatch: five_year_revenue_goal"
+    },
+    {
+      "case": "typed_quarterly_model",
+      "field": "attainment_ratio",
+      "replacement": 998.0,
+      "outcome": "REJECTED: ForecastInputError: typed management target comparison recomputation mismatch: five_year_revenue_goal"
+    },
+    {
+      "case": "growth_model",
+      "clean": "PASS",
+      "first_row": {
+        "metric_kind": "year_over_year_growth",
+        "period": "FY2027",
+        "unit": "ratio",
+        "modeled_value": 0.0,
+        "target_value": 0.1,
+        "target_low": 0.1,
+        "target_high": 0.1,
+        "comparison": "approximately",
+        "comparison_status": "comparable",
+        "reason": null,
+        "meets_target": false,
+        "attainment_ratio": 0.0,
+        "base_value": 100.0,
+        "base_period": "FY2026",
+        "numerator_value": 100.0,
+        "difference_percentage_points": -10.0,
+        "derived_revenue_benchmark": {
+          "origin": "analyst_derived",
+          "value": 110.00000000000001,
+          "unit": "USD million",
+          "formula": "scenario_base_revenue * (1 + normalized_growth_target)",
+          "difference": -10.000000000000014
+        }
+      }
+    },
+    {
+      "case": "growth_model",
+      "field": "meets_target",
+      "replacement": 0,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/low"
+    },
+    {
+      "case": "growth_model",
+      "field": "meets_target",
+      "replacement": 0,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/low"
+    },
+    {
+      "case": "growth_model",
+      "field": "meets_target",
+      "replacement": "",
+      "outcome": "REJECTED: ForecastInputError: typed management target comparison recomputation mismatch: five_year_revenue_goal"
+    },
+    {
+      "case": "growth_model",
+      "field": "modeled_value",
+      "replacement": 987654321.0,
+      "outcome": "REJECTED: ForecastInputError: typed management target comparison recomputation mismatch: five_year_revenue_goal"
+    },
+    {
+      "case": "growth_model",
+      "field": "attainment_ratio",
+      "replacement": 998.0,
+      "outcome": "REJECTED: ForecastInputError: typed management target comparison recomputation mismatch: five_year_revenue_goal"
+    },
+    {
+      "case": "constrained_model",
+      "clean": "PASS",
+      "first_row": {
+        "measurement_basis": "annual_period",
+        "measurement_periods": [
+          "FY2027"
+        ],
+        "modeled_period_values": {
+          "FY2027": 113.33333333333333
+        },
+        "modeled_value": 113.33333333333333,
+        "target_value": 144.0,
+        "attainment_ratio": 0.787037037037037,
+        "meets_target": true
+      }
+    },
+    {
+      "case": "constrained_model",
+      "field": "meets_target",
+      "replacement": 1,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/base"
+    },
+    {
+      "case": "constrained_model",
+      "field": "meets_target",
+      "replacement": 2,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/base"
+    },
+    {
+      "case": "constrained_model",
+      "field": "meets_target",
+      "replacement": "False",
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/base"
+    },
+    {
+      "case": "constrained_model",
+      "field": "modeled_value",
+      "replacement": 987654321.0,
+      "outcome": "REJECTED: ForecastInputError: management target modeled value mismatch: five_year_revenue_goal/base"
+    },
+    {
+      "case": "constrained_model",
+      "field": "attainment_ratio",
+      "replacement": 998.0,
+      "outcome": "REJECTED: ForecastInputError: management target attainment mismatch: five_year_revenue_goal/base"
+    },
+    {
+      "case": "legacy_approximately_model",
+      "clean": "PASS",
+      "first_row": {
+        "measurement_basis": "annual_period",
+        "measurement_periods": [
+          "FY2027"
+        ],
+        "modeled_period_values": {
+          "FY2027": 0.4905
+        },
+        "modeled_value": 0.4905,
+        "target_value": 0.5,
+        "attainment_ratio": 0.981,
+        "meets_target": true
+      }
+    },
+    {
+      "case": "legacy_approximately_model",
+      "field": "meets_target",
+      "replacement": 1,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_approximately_model",
+      "field": "meets_target",
+      "replacement": 2,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_approximately_model",
+      "field": "meets_target",
+      "replacement": "False",
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_approximately_model",
+      "field": "modeled_value",
+      "replacement": 987654321.0,
+      "outcome": "REJECTED: ForecastInputError: management target modeled value mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_approximately_model",
+      "field": "attainment_ratio",
+      "replacement": 998.0,
+      "outcome": "REJECTED: ForecastInputError: management target attainment mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_cumulative_model",
+      "clean": "PASS",
+      "first_row": {
+        "measurement_basis": "cumulative_periods",
+        "measurement_periods": [
+          "FY2026",
+          "FY2027"
+        ],
+        "modeled_period_values": {
+          "FY2026": 120.0,
+          "FY2027": 144.0
+        },
+        "modeled_value": 264.0,
+        "target_value": 260.0,
+        "attainment_ratio": 1.0153846153846153,
+        "meets_target": true
+      }
+    },
+    {
+      "case": "legacy_cumulative_model",
+      "field": "meets_target",
+      "replacement": 1,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_cumulative_model",
+      "field": "meets_target",
+      "replacement": 2,
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_cumulative_model",
+      "field": "meets_target",
+      "replacement": "False",
+      "outcome": "REJECTED: ForecastInputError: management target meets_target mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_cumulative_model",
+      "field": "modeled_value",
+      "replacement": 987654321.0,
+      "outcome": "REJECTED: ForecastInputError: management target modeled value mismatch: five_year_revenue_goal/high"
+    },
+    {
+      "case": "legacy_cumulative_model",
+      "field": "attainment_ratio",
+      "replacement": 998.0,
+      "outcome": "REJECTED: ForecastInputError: management target attainment mismatch: five_year_revenue_goal/high"
+    }
+  ]
+}
