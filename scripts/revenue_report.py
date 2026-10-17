@@ -268,6 +268,19 @@ def _validate_segment_opening_bases(
     )
 
 
+def _require_target_decision_identity(actual: dict, expected: dict, target_id: str) -> None:
+    """Keep JSON boolean decisions and typed unknown/null distinct from numbers.
+
+    Python dictionary equality treats 0/1 as False/True. Compare the owner's
+    bool/None singleton directly after row/scenario shape checks instead.
+    """
+    for scenario, row in actual.items():
+        require(
+            row["meets_target"] is expected[scenario]["meets_target"],
+            f"management target meets_target mismatch: {target_id}/{scenario}",
+        )
+
+
 def _model_view_without_comparison_rows(result: dict) -> dict:
     """A view of ``result`` with every published comparison row removed.
 
@@ -980,10 +993,15 @@ def _validate_forecast_output(
                 # ignores `scenario_comparison`, so stripping it cannot change
                 # a genuine result, while it denies an echo-shaped wrapper the
                 # artifact's own verdicts.
-                require(comparisons == compare_target_measurement(
-                            dict(target, scenario_comparison=None),
-                            _model_view_without_comparison_rows(result)),
-                        f"typed management target comparison recomputation mismatch: {target_id}")
+                expected_rows = compare_target_measurement(
+                    dict(target, scenario_comparison=None),
+                    _model_view_without_comparison_rows(result),
+                )
+                require(
+                    comparisons == expected_rows,
+                    f"typed management target comparison recomputation mismatch: {target_id}",
+                )
+                _require_target_decision_identity(comparisons, expected_rows, target_id)
                 continue
             if target["treatment"] in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
                 require(
@@ -1085,13 +1103,9 @@ def _validate_forecast_output(
                     set(comparisons) <= set(expected_rows),
                     f"management target comparison scenario set mismatch: {target_id}",
                 )
+                _require_target_decision_identity(comparisons, expected_rows, target_id)
                 for scenario, comparison in comparisons.items():
                     expected_row = expected_rows[scenario]
-                    require(
-                        bool(comparison["meets_target"])
-                        is bool(expected_row["meets_target"]),
-                        f"management target meets_target mismatch: {target_id}/{scenario}",
-                    )
                     actual_ratio = comparison["attainment_ratio"]
                     expected_ratio = expected_row["attainment_ratio"]
                     require(
