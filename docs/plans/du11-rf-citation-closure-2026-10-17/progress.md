@@ -90,8 +90,11 @@
   B1 leniency fix), 2 doc nits; every round-1 finding verified FIXED
   (`receipts/D-reviewer-2.md`). Fixed: availability `None` keeps the counts unknown, 8-case
   regression over the four unread lists, the error-code table re-joined, the case count
-  corrected. Round-2 fixes are committed as the third implementation commit and re-reviewed
-  by the same agent against the final SHAs.
+  corrected. Round-2 fixes commit: `f1f7d068`.
+- Round 3 (same agent): **PASS** — 0 unresolved blocking / should-fix / nits
+  (`receipts/D-reviewer-3.md`); the reviewer recomputed all nine decisive SHA-256 and re-ran
+  every command, and re-confirmed compatibility and prediction equality.
+- Final delivery: COMPLETE + `handoff.json`; author branch only, nothing merged/pushed/cleaned.
 
 ### Errors encountered (session)
 

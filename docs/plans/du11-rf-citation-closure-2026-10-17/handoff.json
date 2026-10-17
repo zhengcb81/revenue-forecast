@@ -1,0 +1,213 @@
+{
+  "schema_version": "du11-handoff/1",
+  "card_id": "du11-rf-citation-closure",
+  "card_path": "C:/Users/郑曾波/Projects/company-wiki/docs/plans/document-understanding-2026-10-13/parallel/du11-2026-10-17/du11_rf_citation_closure.md",
+  "status": "COMPLETE",
+  "status_note": "Source frozen and independently reviewed to 0 unresolved issues. Author branch only: nothing merged, pushed or cleaned; ROOT owns the final merge/install synchronization.",
+  "base_commit": "568fb9256885eb31a0f76d9ead59fd0f98575073",
+  "branch": "codex/du11-rf-citation-closure",
+  "worktree": "C:/Users/郑曾波/Projects/revenue-forecast-du11-citation-closure",
+  "implementation_commits": [
+    {
+      "sha": "1ada02e41c2f16717f8fd0013d972cd279370714",
+      "role": "implementation (adapter + both entries + trace + card tests + frozen E2E)"
+    },
+    {
+      "sha": "1ae6c3b50501d53fdbcd20d341a081e87d80ebd8",
+      "role": "round-1 review fixes (coverage leniency, groups-only determinism, legacy messages, projected parent identity, owned-root deletion, regenerated RED, PWF reconciliation)"
+    },
+    {
+      "sha": "f1f7d0683726098c9f5b5614ca26f4beb64898aa",
+      "role": "round-2 review fixes (unread counts stay unknown when a list is unreadable + 8-case regression, error-code table, case count)"
+    }
+  ],
+  "final_delivery_commit": null,
+  "final_delivery_commit_rule": "The pure-documentation handoff commit (this file, COMPLETE, D-reviewer-3.md) is the HEAD of the author branch. It cannot carry its own SHA without a second commit loop; ROOT reads `git rev-parse HEAD`, confirms the tree diff versus f1f7d068 touches only `docs/plans/du11-rf-citation-closure-2026-10-17/**`, and verifies the frozen source SHA256 set below is unchanged.",
+  "changed_paths": {
+    "added": [
+      "scripts/narrative_citation_context.py",
+      "tests/test_du11_narrative_citation_wire.py",
+      "tests/test_du11_narrative_citation_context.py",
+      "tests/test_du11_narrative_citation_consumption.py",
+      "tests/test_du11_narrative_citation_projection.py",
+      "tests/test_du11_narrative_citation_e2e.py",
+      "tests/fixtures/du11_narrative_citation/synthetic_reading2.json",
+      "docs/plans/du11-rf-citation-closure-2026-10-17/task_plan.md",
+      "docs/plans/du11-rf-citation-closure-2026-10-17/findings.md",
+      "docs/plans/du11-rf-citation-closure-2026-10-17/progress.md",
+      "docs/plans/du11-rf-citation-closure-2026-10-17/INTERFACES.md",
+      "docs/plans/du11-rf-citation-closure-2026-10-17/handoff.md",
+      "docs/plans/du11-rf-citation-closure-2026-10-17/handoff.json",
+      "docs/plans/du11-rf-citation-closure-2026-10-17/receipts/**"
+    ],
+    "modified": [
+      "scripts/source_narrative_context.py",
+      "scripts/research/input_evidence.py"
+    ]
+  },
+  "allowed_scope_confirmed": {
+    "card_whitelist": [
+      "scripts/source_narrative_context.py",
+      "scripts/research/input_evidence.py",
+      "scripts/company_wiki_narrative_contracts.py (allowed, deliberately untouched)",
+      "new pure module scripts/narrative_citation_context.py",
+      "new tests/test_du11_narrative_citation_*.py",
+      "new tests/fixtures/du11_narrative_citation/",
+      "docs/plans/du11-rf-citation-closure-2026-10-17/**"
+    ],
+    "outside_whitelist_paths": [],
+    "existing_tests_modified": 0,
+    "company_wiki_narrative_contracts_untouched": true,
+    "out_of_scope_untouched": "forecast/formula code, research targets, release gates, install dirs, CWP/FF/ET repos, assurance/runs, .codegraph, goldens"
+  },
+  "interface": {
+    "frozen_in": "docs/plans/du11-rf-citation-closure-2026-10-17/INTERFACES.md",
+    "trace_schema": "revenue-narrative-citation-trace/1",
+    "optional_binding_fields": ["citation_group_id (str)", "citation_view (0-based int)"],
+    "error_codes": [
+      "narrative_citation_binding_fields",
+      "narrative_citation_span_unknown",
+      "narrative_citation_reading_invalid",
+      "narrative_citation_group_unknown",
+      "narrative_citation_group_ambiguous",
+      "narrative_citation_view_unknown",
+      "narrative_citation_view_not_support",
+      "narrative_citation_view_ambiguous",
+      "narrative_citation_span_invalid",
+      "narrative_citation_context_only",
+      "narrative_citation_source_role_refused"
+    ],
+    "input_compatibility": "revenue-narrative-context/1 and /3, with no reading_context, du-production-reading/1 or /2 - all old wire shapes work; no CWP schema upgraded or rewritten",
+    "output_compatibility": "claims, sources, parameter claim/source ids, formula refs and the old receipt keys are unchanged; the versioned citation trace is additive; old binding-field refusal text preserved; coverage values never gate"
+  },
+  "tests": {
+    "authoritative": {
+      "command": "python -m pytest -q --tb=short -p no:cacheprovider --basetemp <owned temp> <20 modules>",
+      "exit_code": 0,
+      "passed": 374,
+      "skipped": 4,
+      "failed": 0,
+      "pytest_seconds": 85.79,
+      "modules": 20,
+      "log": "receipts/B-final-tests.log",
+      "details": "receipts/B-final-tests.json"
+    },
+    "card_modules": {
+      "count": 5,
+      "cases": {"wire": 5, "context": 32, "consumption": 26, "projection": 5, "e2e": 6},
+      "total": 74,
+      "exit_code": 0
+    },
+    "central_regression": {
+      "modules": 12,
+      "passed": 279,
+      "skipped": 3,
+      "exit_code": 0
+    },
+    "gates": {
+      "ruff": {"command": "python -m ruff check scripts tests tools", "exit_code": 0},
+      "mypy": {"command": "python -m mypy scripts/contracts/ scripts/schema_compatibility.py scripts/filing_fetch_client.py scripts/trust_anchor.py", "exit_code": 0, "files": 11},
+      "pre_push_gate": {"command": "python tools/pre_push_gate.py", "exit_code": 0, "passed": 416, "subtests": 36, "log": "receipts/C-prepush-gate.txt"}
+    }
+  },
+  "red_mapping": [
+    {"red": "KeyError 'citation_trace' on a legal public /2 wire: consumed claim formed, group/view closure and coverage diagnostics lost", "fix": "pure adapter + versioned citation trace in the receipt and in bind_parameter_evidence; regression test_public_reading_wire_consume_keeps_view_closure_and_bounded_coverage"},
+    {"red": "DID NOT RAISE: a context-only table header/unit span consumed as support", "fix": "narrative_citation_context_only refusal (both entries)"},
+    {"red": "DID NOT RAISE: an analyst question consumed as a management fact", "fix": "narrative_citation_source_role_refused (both entries)"},
+    {"red": "DID NOT RAISE: the first of two legal citation views taken silently", "fix": "narrative_citation_view_ambiguous/group_ambiguous + explicit citation_view/citation_group_id"},
+    {"red": "projected /3 wire refused with an unnamed reason and without parent/pointer", "fix": "span-owned parent/locator/pointer resolution; the publication gap is named (source_availability_unknown) instead of invented"},
+    {"red": "coverage diagnostics (unread/opaque/deferred/sampling/layout) absent", "fix": "reading_trace with null-vs-zero semantics and a diagnostic-only contract"}
+  ],
+  "red_evidence": {
+    "method": "scratch tree outside the repo: current scripts/tests + frozen wire, the two consumer files restored byte-exactly from 568fb925, new adapter absent",
+    "result": "27 failed, 10 passed, exit 1, every failure behavioural",
+    "log": "receipts/A-red-baseline.txt",
+    "note": "the pure adapter is new code and therefore has no pre-change RED; the consumption-level RED covers its behaviour"
+  },
+  "end_to_end": {
+    "real_layer": [
+      "company_wiki_narrative_reader.read_narrative_context (real bounded child process)",
+      "company_wiki_narrative_contracts.validate_narrative_response (byte/SHA/receipt/identity)",
+      "source_narrative_context.consume_narrative_input",
+      "research.input_evidence.bind_parameter_evidence",
+      "scripts/revenue_forecast.py CLI (input contract + calculation)",
+      "scripts/narrative_source_preparation.py read CLI"
+    ],
+    "fake_layer": [
+      "the CWP reader implementation behind the published module path company_wiki.source_catalog.narrative_transport_cli (local stub on PYTHONPATH)",
+      "the frozen public wire it replays (docs/plans/shared-reading-consumer-2026-10-14/fixtures/actual-090-*, the synthetic 'Acme business update' fixture)"
+    ],
+    "hierarchy_recorded": "transport/contract acceptance over a frozen synthetic public wire and a local fake CWP process - NOT real company-data quality acceptance",
+    "positive_checks": "identical consolidated_forecast and segments on baseline vs consumed input, new claim present, trace group_only with the wire's real unread/deferred/layout diagnostics",
+    "negative_controls": [
+      "bad bytes -> artifact_bytes_mismatch",
+      "provider unavailable -> reader_unavailable",
+      "reader timeout -> reader_timeout",
+      "wrong as-of -> receipt_request_mismatch",
+      "foreign parent source SHA -> 'does not bind to the input source capture'",
+      "stale input as-of -> 'information date does not match input'"
+    ]
+  },
+  "upstream": {
+    "cwp_public_interface_commit": "34a7dd71aaa49d18c13fcdd300ce79581114ca5b",
+    "et_reference_commit": "2584b7eed062a9a30254bc06b4f19ab5471b414e",
+    "extracted_sources": 0,
+    "company_originals_copied": 0,
+    "note": "no CWP/ET source, company root, transcript, real config or historic receipt was extracted, imported or copied; the fake reader replaces only the process behind the published CLI module path"
+  },
+  "restore_and_cleanup": {
+    "owned_root": "pytest tmp_path/du11-owned with a fixed sentinel + a pre-existing out/existing.json",
+    "receipts": 6,
+    "receipt_dir": "docs/plans/du11-rf-citation-closure-2026-10-17/receipts/restore-*.json",
+    "all_restored": true,
+    "all_root_removed": true,
+    "basetemp_receipts": ["receipts/C-basetemp.txt", "receipts/C-basetemp-3.txt"],
+    "basetemp_absent": true,
+    "residue": "none in the repo tree; no scratch tree, probe or basetemp left behind"
+  },
+  "resource_counts": {
+    "network_requests": 0,
+    "paid_api_calls": 0,
+    "llm_calls": 0,
+    "translations": 0,
+    "secret_values_read": 0,
+    "real_original_documents_read": 0,
+    "local_reader_process_calls": "asserted per E2E test via the owned calls.log"
+  },
+  "independent_review": {
+    "reviewer": "independent agent 7169d35a-e592-406b-9310-60f657e2beba (separate context, not the author)",
+    "rounds": [
+      {"round": 1, "reviewed_commit": "1ada02e41c2f16717f8fd0013d972cd279370714", "verdict": "FAIL", "blocking": 1, "should_fix": 6, "nits": 10, "report": "receipts/D-reviewer-1.md"},
+      {"round": 2, "reviewed_commit": "1ae6c3b50501d53fdbcd20d341a081e87d80ebd8", "verdict": "FAIL", "blocking": 0, "should_fix": 1, "nits": 2, "report": "receipts/D-reviewer-2.md"},
+      {"round": 3, "reviewed_commit": "f1f7d0683726098c9f5b5614ca26f4beb64898aa", "verdict": "PASS", "blocking": 0, "should_fix": 0, "nits": 0, "report": "receipts/D-reviewer-3.md"}
+    ],
+    "unresolved": 0,
+    "reviewed_source_sha256": {
+      "scripts/narrative_citation_context.py": "3699df45774a9db0a1ad1b8440db00a3a09efa3f6db8d40bc7bad38120d018f5",
+      "scripts/source_narrative_context.py": "ee271c3f5be61b2c7df845b60f7962422fd45808c0c38b727a700ecc93ede259",
+      "scripts/research/input_evidence.py": "c0a321f9ca905023846dafa4fe7c35b74e7d3cedc5e77bbd6882168579f338ed",
+      "tests/test_du11_narrative_citation_wire.py": "f63ccfa381dfeb80d13c837f05a897305ee0749923e69ca77dc11122dbfdc620",
+      "tests/test_du11_narrative_citation_context.py": "bac9badb89d7852f5684981189bc0db1f41c4806597f1ce8a222b32f708013ed",
+      "tests/test_du11_narrative_citation_consumption.py": "cbd44c769240e341cb309856dc4f481aa28947fd073ea05de349cc6a00cbb7f7",
+      "tests/test_du11_narrative_citation_projection.py": "55c071be5f6023faf6d369707267241ee88434b28635b3e97f25afe412607756",
+      "tests/test_du11_narrative_citation_e2e.py": "cac76fe54690e34a7dfa49de2ac1bd493fbbd50030a3a952e80c4adc1361f24d",
+      "tests/fixtures/du11_narrative_citation/synthetic_reading2.json": "368c9776402bb39497db1b95863c528ba0190b043f19905f62039f40de95c7de"
+    },
+    "reviewer_independence": "working source commit frozen before the review; the author fixed findings only and the same reviewer re-checked each new SHA; the reviewer wrote only its reports and one temp probe"
+  },
+  "limitations": [
+    "Entry 2 (bind_parameter_evidence) cannot complete a formal RF source for a projected /3 context: the projected wire publishes no publication/availability fact, so it resolves the real parent/pointer and refuses with source_availability_unknown. Interface need recorded for ROOT (CWP to publish publication or availability for official_json projections).",
+    "Entry 2's trace.reading describes the first narrative read of that call; per-claim artifact binding stays in the existing lineage. A caller that needs a second read's coverage must read it again.",
+    "RF does not interpret DU layout/semantic coverage; the trace only retains bounded counts and never claims complete reading coverage.",
+    "The /2 view closure is proven with the synthetic descriptor wire (validated by the real contract); the frozen public wire is /1 (group-only closure). No real CWP-produced /2 artifact exists in this repo.",
+    "The E2E proves transport/contract behaviour over a frozen synthetic public wire with a local fake CWP process, not real company-data quality.",
+    "The offline guard hard-fails socket/urlopen in the pytest process; its child processes are the local stub reader and the revenue calculator, which need no network.",
+    "The citation trace is additive under the unchanged receipt schema versions; a strict external consumer that requires an exact key set would see one new key."
+  ],
+  "root_wiring_notes": [
+    "CWP keeps owning production assembly; RF consumes only the validated published wire. No CWP schema change is required by this card.",
+    "The new trace is additive: ROOT can persist/display receipt.citation_trace and bind_parameter_evidence(...).citation_trace without changing any existing field.",
+    "If ROOT wants entry 2 to bind /3 projections end to end, CWP must publish the publication/availability fact for official_json projections; the reproduction and interface need are in findings.md.",
+    "Installed skill copies, release gates and publication registries were not touched; merge, push and installation synchronization remain ROOT work."
+  ]
+}

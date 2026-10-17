@@ -86,7 +86,7 @@ never rewritten to make a change pass.
       deletion of the owned root and of the owned pytest basetemp.
 
 ### Phase D — independent final quality review and handoff
-**Status:** in_progress
+**Status:** complete
 
 - [x] Freeze the source commit; hand the complete diff to an independent reviewer agent.
 - [x] Round 1: **FAIL** — 1 blocking (free-form `layout_coverage.complete` became a hard
@@ -104,10 +104,10 @@ never rewritten to make a change pass.
       B1/S1–S6 all verified FIXED.
 - [x] Fix R2-1 (availability `None` keeps the counts unknown) and the two doc nits; add an
       8-case regression over the four unread lists; re-run the suites and gates.
-- [ ] Round 3: the same reviewer re-checks the final source SHA; 0 unresolved issues.
-- [ ] Only then write COMPLETE + `handoff.json`; author-branch commits only, no merge, no
-      push, no cleanup of this worktree; STOP.
-
+- [x] Round 3: the same reviewer re-checks the final source SHA — **PASS**, 0 unresolved
+      blocking / should-fix / nits (`receipts/D-reviewer-3.md`).
+- [x] Write COMPLETE + `handoff.json`; author-branch commits only, no merge, no push, no
+      cleanup of this worktree; STOP.
 ## Decisions
 
 | # | Decision | Why |
@@ -143,5 +143,5 @@ never rewritten to make a change pass.
 
 ## Next Step
 
-Reviewer round 2 re-checks the new frozen source SHA; if 0 unresolved, write COMPLETE and
-`handoff.json`, commit only the card whitelist on the author branch, and STOP.
+None — the card is COMPLETE on the author branch. ROOT verifies HEAD and the frozen source
+SHAs (`handoff.json`), then performs the merge, push and installation synchronization.

@@ -1,9 +1,9 @@
 # DU11-RF-CITATION-CLOSURE — handoff
 
-Status: **IMPLEMENTED_REVIEW_PENDING** — source is frozen and every card artifact exists,
-but the independent review gate is not closed yet: round 1 returned FAIL (1 blocking + 6
-should-fix), all findings were fixed at their shared root cause, and the same reviewer is
-re-checking the new source SHA. Only a clean round 2 turns this into COMPLETE.
+Status: **COMPLETE** — source frozen, three independent review rounds closed at **0
+unresolved** (round 1 FAIL → round 2 FAIL with one new should-fix → round 3 **PASS**).
+Author branch only: nothing merged, pushed or cleaned; ROOT owns merge, push and install
+synchronization. Machine-readable record: `handoff.json`.
 
 | item | value |
 |------|-------|
@@ -11,8 +11,9 @@ re-checking the new source SHA. Only a clean round 2 turns this into COMPLETE.
 | repo / worktree | `C:/Users/郑曾波/Projects/revenue-forecast-du11-citation-closure` |
 | branch | `codex/du11-rf-citation-closure` |
 | base commit | `568fb9256885eb31a0f76d9ead59fd0f98575073` |
-| implementation commits | round 1 `1ada02e41c2f16717f8fd0013d972cd279370714`; round 2 (review fixes) = the commit carrying this file's reviewed source SHAs, see `receipts/B-final-tests.json` |
-| delivery | one pure-documentation handoff commit after the review closes; ROOT verifies `git rev-parse HEAD` and the frozen source SHAs |
+| implementation commits | `1ada02e4` (implementation), `1ae6c3b5` (round-1 fixes), `f1f7d068` (round-2 fixes) |
+| reviewed source | `f1f7d068` — nine SHA-256 in `receipts/B-final-tests.json`, recomputed by the reviewer |
+| delivery | one pure-documentation handoff commit after the review closed; ROOT verifies `git rev-parse HEAD` and the frozen source SHAs |
 | PWF | `docs/plans/du11-rf-citation-closure-2026-10-17/` (`task_plan.md`, `findings.md`, `progress.md`, `INTERFACES.md`, `receipts/`) |
 
 ## What changed (exactly the card whitelist)
@@ -116,10 +117,12 @@ contract/transport acceptance — **not** real company-data quality acceptance.
 
 - Round 1: `receipts/D-reviewer-1.md` — FAIL (1 blocking, 6 should-fix, 10 nits).
   All blocking/should-fix findings fixed at the shared root cause; nits either fixed
-  (fixture now has a separate unit span; two-view groups consume in both directions
-  positively; the wire module carries its own contract tests; null-vs-zero tightened;
-  RED/handoff/receipt hygiene corrected) or recorded with their reason in
-  `findings.md` §10.
-- Round 2: the same reviewer re-checks the new frozen source SHA. `handoff.json` records its
-  identity, report path, reviewed SHAs and the unresolved count; it is written only after a
-  clean round 2.
+  (separate unit span; both directions of a two-view group consumed positively; the wire
+  module carries its own contract tests; null-vs-zero tightened; RED/handoff/receipt hygiene
+  corrected) or recorded with their reason in `findings.md` §10.
+- Round 2: `receipts/D-reviewer-2.md` — FAIL (0 blocking, 1 new should-fix R2-1, 2 doc nits);
+  every round-1 finding verified FIXED. R2-1 fixed with an 8-case regression.
+- Round 3: `receipts/D-reviewer-3.md` — **PASS**, 0 unresolved blocking / should-fix / nits;
+  reviewer recomputed all nine decisive SHA-256 and re-ran every command.
+- `handoff.json.independent_review` records the reviewer identity, the three reviewed
+  commits, the report paths and the unresolved count.
