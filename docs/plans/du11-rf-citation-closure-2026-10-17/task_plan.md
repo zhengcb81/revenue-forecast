@@ -34,63 +34,73 @@ never rewritten to make a change pass.
 ## Phases
 
 ### Phase A — investigation and real-behaviour RED
-**Status:** in_progress
+**Status:** complete
 
 - [x] Confirm baseline / main-repo WIP untouched; worktree + branch from the fixed commit.
 - [x] CodeGraph structural query on the initialised RF index; record the index gap.
 - [x] Locate both real parameter-binding entry points and their call chains.
-- [ ] Determine how format/claim validators carry the new trace (avoid a second validator).
-- [ ] RED on a legal public bundle through `validate_narrative_response` → real consume:
+- [x] Determine how format/claim validators carry the new trace (avoid a second validator).
+- [x] RED on a legal public bundle through `validate_narrative_response` → real consume:
       consumed claim forms but context closure and coverage diagnostics are lost.
-- [ ] Independent hand calculation counterexamples: question span as management fact,
+- [x] Independent hand calculation counterexamples: question span as management fact,
       first-view-wins on several legal views, table row losing its unit/header/footnote.
-- [ ] Freeze the optional view-selection field, trace schema, error codes and the
+- [x] Freeze the optional view-selection field, trace schema, error codes and the
       compatibility matrix in `INTERFACES.md`.
 
 ### Phase B — shared root-cause implementation and central regression
-**Status:** pending
+**Status:** complete
 
-- [ ] One pure view/context closure adapter (`scripts/narrative_citation_context.py`)
+- [x] One pure view/context closure adapter (`scripts/narrative_citation_context.py`)
       used by both entry points; no second authoritative copy of parameter/formula/source state.
-- [ ] Cover: legacy legal single span without `reading_context`; `reading/1`;
+- [x] Cover: legacy legal single span without `reading_context`; `reading/1`;
       `reading/2` Q/A both directions and explicit wrong attribution; table row +
       unit/header/footnote; several groups under one parent; ambiguous view;
       missing/duplicate/cross support-context ID; foreign parent / source SHA;
       projected v3 `source_locator`/`pointer`; unread/opaque/deferred and sampling
       counts/`limited`; empty binding / `not_consumed`; unique context choice tied to the
       real formula dependency.
-- [ ] Unread material is not a refusal condition; real binding errors are named refusals;
+- [x] Unread material is not a refusal condition; real binding errors are named refusals;
       no extra original read and no LLM call.
-- [ ] Parameter/formula/prediction values provably unchanged on identical input.
-- [ ] Central regression: new card tests + `test_source_preparation_complete_result`,
+- [x] Parameter/formula/prediction values provably unchanged on identical input.
+- [x] Central regression: new card tests + `test_source_preparation_complete_result`,
       `test_architecture_dependency_uses`, `test_w04_public_consumer`,
       `test_citation_attribution_narrative_contract`,
       `test_shared_reading_narrative_contract`, `test_source_clock`,
       `test_evidence_input_lineage`, `test_input_semantics_e2e`,
       `test_narrative_source_preparation_transport/e2e`,
-      `test_company_wiki_narrative_reader`, plus ruff/mypy gates.
+      `test_company_wiki_narrative_reader`, plus ruff/mypy gates and
+      `python tools/pre_push_gate.py` (the repository's own CI gate).
 
 ### Phase C — isolated E2E and delivery
-**Status:** pending
+**Status:** complete
 
-- [ ] Independent temporary tree: real RF public reader → byte verification → consume →
+- [x] Independent temporary tree: real RF public reader → byte verification → consume →
       existing input validation / public calculation entry, with a frozen legal public
       bundle and a local fake reader *only* at the public CWP process boundary.
-- [ ] `narrative_source_preparation.py` read CLI run; exported context still complete.
-- [ ] Same old input: prediction values unchanged and the new trace semantics correct.
-- [ ] Negative controls: bad bytes/SHA, wrong parent/as-of, source unavailable, read timeout.
+- [x] `narrative_source_preparation.py` read CLI run; exported context still complete.
+- [x] Same old input: prediction values unchanged and the new trace semantics correct.
+- [x] Negative controls: bad bytes/SHA, wrong parent/as-of, source unavailable, read timeout.
       No extra download, parse or model call.
-- [ ] Real hierarchy recorded; no fake source described as real company quality acceptance.
-- [ ] Restore receipts (sentinel / manifest / bytes / mtime / cleanup) executed.
+- [x] Real hierarchy recorded; no fake source described as real company quality acceptance.
+- [x] Restore receipts (sentinel / manifest / bytes / mtime / cleanup) executed, including
+      deletion of the owned root and of the owned pytest basetemp.
 
 ### Phase D — independent final quality review and handoff
-**Status:** pending
+**Status:** in_progress
 
-- [ ] Freeze the source commit; hand the complete diff to an independent reviewer agent.
-- [ ] Fix every finding at its shared root cause, re-run the related tests, have the same
-      reviewer re-check the final reviewed source SHA.
-- [ ] 0 unresolved issues → COMPLETE + `handoff.md` / `handoff.json` / `receipts/`.
-- [ ] Only author-branch commits; no merge, no push, no cleanup of this worktree; STOP.
+- [x] Freeze the source commit; hand the complete diff to an independent reviewer agent.
+- [x] Round 1: **FAIL** — 1 blocking (free-form `layout_coverage.complete` became a hard
+      refusal, i.e. a coverage gate), 6 should-fix (groups-only ambiguity gate and stale
+      matrix; three legacy entry-2 error texts; stale RED receipt; owned root not deleted;
+      loose projected parent match; stale PWF/handoff). Report:
+      `receipts/D-reviewer-1.md`.
+- [x] Fix every finding at its shared root cause (coverage parsing is now lenient by
+      construction; groups-only determinism; exact legacy messages; projected parent
+      identity; RED regenerated against the frozen tests; owned root + basetemp deletion
+      receipted; PWF reconciled) and re-run the card + regression suites and all gates.
+- [ ] Round 2: the same reviewer re-checks the new frozen source SHA; 0 unresolved issues.
+- [ ] Only then write COMPLETE + `handoff.json`; author-branch commits only, no merge, no
+      push, no cleanup of this worktree; STOP.
 
 ## Decisions
 
@@ -104,7 +114,10 @@ never rewritten to make a change pass.
 | D6 | Reading coverage (unread / opaque / deferred / sampling / layout) is diagnostic only | Card: coverage shortfall must not become a prediction permission gate |
 | D7 | Entry 2 keeps its own formal source+capture derivation; only the pure closure logic is shared | Card: do not copy a second authoritative source/parameter state |
 | D8 | Entry 2 on `revenue-narrative-context/3` resolves the real span parent/pointer but ends in a named source-clock refusal (no publication fact on the projected wire) | Honest: `narrative-ref/3` + `narrative-read-receipt/3` carry no publication/availability fact; upstream interface need recorded for ROOT instead of inventing one |
-| D9 | `consume_narrative_input` gains optional `reader_command` forwarded to the existing reader | Card: reuse the existing process transport/validator; fake reader must sit at the public CWP process boundary, so the reader seam must be reachable from the real consumption entry |
+| D9 | `consume_narrative_input`'s signature stays unchanged; no test-only reader seam is added | Card: do not invent a second CLI/transport/manager. The Phase C fake reader sits behind the existing published CWP module path on `PYTHONPATH`, so the real transport and validator still run |
+| D10 | Coverage parsing is lenient by construction: only groups/views (the support-vs-context decision) are strict; every coverage value degrades to `null` | Review round 1 blocking finding: a free-form `layout_coverage.complete` had become a coverage gate, which the card forbids. The fix is structural, not a special case |
+| D11 | For a groups-only (`reading/1`) read, a span in several groups consumes with the published-first group recorded; `citation_group_id` can name another | Groups carry no support/context semantics, so this is not a silent semantic pick; refusing would be a new gate the baseline did not have (review S1) |
+| D12 | A projected `/3` span must match its parent on both `source_id` and `parent_content_sha256` (and its `projection_id` on the subject) | Review S5: a re-signed span must not borrow another original, the same identity the wire validator enforces |
 
 ## Errors encountered
 
@@ -112,8 +125,16 @@ never rewritten to make a change pass.
 |-------|---------|------------|
 | `git worktree add` reported exit code 1 although the checkout finished | 1 | Verified `rev-parse HEAD` / branch / clean status; exit code was the progress-writer stderr, not a checkout failure |
 | CodeGraph `query` returns `[]` for every narrative symbol | 1 | Recorded the index gap (246 indexed files, `scripts/`/`tests/`/`tools/` empty); used the located source files instead of rebuilding an index (card forbids creating/altering it) |
+| Independent review round 1: free-form `layout_coverage.complete` refused a legal wire | 1 | Structural fix: groups/views strict, every coverage value lenient `null`; validated-wire regression added |
+| Review round 1: groups-only span in two groups became a new gate | 1 | Deterministic published-first group recorded; matrix row updated; regression added |
+| Review round 1: three legacy entry-2 error texts changed | 1 | Old `require` pair and exact texts restored on the non-projected path; text-lock regression added |
+| Review round 1: committed RED was stale vs the frozen tests | 1 | Regenerated against byte-exact baseline consumers in an outside scratch tree: 27 failed / 10 passed, all behavioural |
+| Review round 1: E2E left its owned root and the handoff deletion claim was unreceipted | 1 | Fixture now deletes the owned root (`root_removed: true`); basetemp deletion is receipted |
+| Review round 1: projected parent matched only the content SHA | 1 | Parent identity is now `source_id` + `parent_content_sha256` + subject `projection_id`; cross-parent regression added |
+| Review round 1: PWF/handoff were stale or premature | 1 | Phases, decisions, matrix, receipts and handoff reconciled; status kept `IMPLEMENTED_REVIEW_PENDING` until round 2 |
+| `Expand-Archive` of a `git archive` of the whole repo failed on long `.planning` paths | 1 | Abandoned the whole-repo archive; built the RED scratch tree from `scripts/` + `tests/` + the frozen wire plus the two baseline consumer files |
 
 ## Next Step
 
-Finish Phase A: confirm how validators carry the new trace, write the RED tests, freeze
-`INTERFACES.md`.
+Reviewer round 2 re-checks the new frozen source SHA; if 0 unresolved, write COMPLETE and
+`handoff.json`, commit only the card whitelist on the author branch, and STOP.

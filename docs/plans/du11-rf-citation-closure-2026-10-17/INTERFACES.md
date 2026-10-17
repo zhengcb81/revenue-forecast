@@ -43,11 +43,17 @@ All are raised by `scripts/narrative_citation_context.py` as
 | `narrative_citation_span_unknown` | the bound span is not a transported span of this context |
 | `narrative_citation_reading_invalid` | a `reading_context` the resolver would have to trust is malformed: unknown schema, non-list groups, group member not transported, view partition not disjoint/complete, duplicate or missing id |
 | `narrative_citation_group_unknown` | `citation_group_id` does not name a group that contains the span |
-| `narrative_citation_group_ambiguous` | the span is support in more than one legal group (or, without views, belongs to more than one group) and no `citation_group_id` was given |
+| `narrative_citation_group_ambiguous` | in a `du-production-reading/2` context the span is `support` in more than one legal group and no `citation_group_id` was given |
 | `narrative_citation_view_unknown` | `citation_view` out of range for the resolved group (or named while the reading context has no views) |
 | `narrative_citation_view_not_support` | the explicitly named view has the span in `context_evidence_ids` (or nowhere) |
 | `narrative_citation_view_ambiguous` | no explicit view, but the span is `support` in more than one legal view of one group |
 | `narrative_citation_span_invalid` | a projected `/3` span lacks its own `parent_content_sha256`, `source_locator` or `pointer` |
+
+**Groups-only reads never become an ambiguity gate.** `du-production-reading/1` publishes
+no support/context partition, so a span that belongs to several groups is consumed with the
+published-first group recorded deterministically (`closure: "reading_group"`, its
+`group_id`); `citation_group_id` may name another. Nothing is promoted and nothing is
+silently invented.
 | `narrative_citation_context_only` | no legal view has the span as support; it is only ever `context` |
 | `narrative_citation_source_role_refused` | the span's transported `source_role` is `analyst` or `investor_question`, so it cannot be support for an RF parameter claim |
 
@@ -114,12 +120,18 @@ unchanged, and the trace is joined to them by `claim_id`.
     }
   ],
   "counts": {"dependencies": 1, "view_closed": 1, "group_only": 0, "ungrouped": 0,
-             "context_evidence": 1, "context_evidence_limited": 0}
+             "context_evidence": 1, "context_evidence_unknown": 0,
+             "context_evidence_limited": 0}
 }
 ```
 
 Rules frozen with the shape:
 
+- **Coverage parsing never gates.** The reading groups/views decide support vs context and
+  are strict. Every *coverage* value (the `unread` block, `deferred`/`deferred_count`/
+  `deferred_limited`, `selection_diagnostics`, `layout_coverage`) is a diagnostic: a value
+  the adapter cannot read as a count/boolean/list is reported as `null`, never as a refusal.
+  A legal wire with `layout_coverage = {"complete": "partial"}` still consumes.
 - `status`: `not_consumed` with no dependency; `closed` when every dependency is
   `citation_view`; `group_only` when every dependency is `reading_group`; `ungrouped` when
   every dependency is `ungrouped`; `partial` for any mixture.
@@ -127,8 +139,12 @@ Rules frozen with the shape:
   (`du-production-reading/1`), `source_owned_views` (`du-production-reading/2` with views).
 - **Unknown stays `null`**, never `0`/`false`: without the optional sampling block
   `unread.counts`, `unread.limited`, `deferred.count`, `deferred.limited` and
-  `selection_diagnostics` are `null`. Page/unit lists that are published are counted even
-  without sampling (`unread.opaque_pages` … are ints).
+  `selection_diagnostics` are `null`; with no reading context the page/unit counts are
+  `null` and `deferred.listed` is `null`; a non-view closure has
+  `context_evidence_ids`, `context_evidence_count`, `context_evidence` **and**
+  `context_evidence_limited` all `null` (there is no partition to bound). The trace `counts`
+  block therefore separates `context_evidence` (sum over dependencies that do have a
+  published partition) from `context_evidence_unknown` (dependencies without one).
 - `context_evidence` is a bounded projection (cap **32** entries) of the chosen view's
   context spans: transported `span_id`, `locator` and `source_role` only — no source text is
   copied into RF. Over the cap, `context_evidence_limited` is `true` and
@@ -137,6 +153,15 @@ Rules frozen with the shape:
   chosen closure) does not carry them. `projected` is
   `{"parent_source_id", "parent_sha256", "source_locator", "pointer"}` for a `/3` span and
   `null` otherwise; it always comes from that span's own binding, never from another parent.
+  Entry 2 additionally requires both the span's `source_id` **and**
+  `parent_content_sha256` to match one `parent_source_refs` entry (the same identity the wire
+  validator enforces) and the span's `projection_id` to match the subject `item_key`, so a
+  re-signed span cannot borrow another original.
+- **Both directions of a two-view group are supported.** A `du-production-reading/2` group
+  whose two views point in opposite directions resolves each side to its own
+  support/context pair. For a Q/A pair the view that makes the analyst question the support
+  is structurally legal but is then refused by the `source_role` rule (a question is not a
+  company fact); a two-view group over two company statements consumes in both directions.
 - `coverage_note` is a constant label, not a judgement: RF never claims complete reading
   coverage, including when no `reading_context` exists.
 - Entry 2 can technically receive several different narrative reads in one call. Its
@@ -192,7 +217,7 @@ After: the same four keys with identical values, plus
 | # | wire | entry 1 | entry 2 | trace |
 |---|------|---------|---------|-------|
 | C1 | `/1`, no `reading_context` | unchanged consume | unchanged | `reading.present=false`, `attribution="absent"`, deps `ungrouped`, counts/limited `null` |
-| C2 | `/1`, `reading/1` | consume; group closure only | consume; group closure only | `group_only`, no support/context ids |
+| C2 | `/1`, `reading/1` | consume; group closure only (several groups → the published-first group is recorded, `citation_group_id` may name another) | same | `group_only`, no support/context ids |
 | C3 | `/1`, `reading/2` | support view required; context-only/ambiguous/question refused | same codes | `closed`, view ids preserved |
 | C4 | `/3`, `reading/1` | consume; parent + original `source_locator`/`pointer` recorded | span parent resolved, then named source-clock refusal (below) | deps carry `projected` |
 | C5 | `/3`, `reading/2` | as C4 with view ids | as C4 | `closed` + `projected` |

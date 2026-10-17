@@ -13,7 +13,8 @@
     "Segment revenue by region",
     "Region | FY2026 revenue (USD million)",
     "Overseas | 1,240",
-    "Note: overseas revenue excludes intercompany sales."
+    "Note: overseas revenue excludes intercompany sales.",
+    "Amounts are in USD million unless stated."
   ],
   "spans": [
     {"key": "question", "line": 2, "paragraph": 2, "role": "investor_question",
@@ -27,7 +28,9 @@
     {"key": "table_row", "line": 6, "table": 1, "row": 2, "role": "company_filing",
      "unit_kind": "table_row", "section": "regional_table"},
     {"key": "footnote", "line": 7, "paragraph": 7, "role": "company_filing",
-     "unit_kind": "footnote", "section": "regional_table"}
+     "unit_kind": "footnote", "section": "regional_table"},
+    {"key": "unit_note", "line": 8, "paragraph": 8, "role": "company_filing",
+     "unit_kind": "unit_declaration", "section": "regional_table"}
   ],
   "groups": [
     {"group_id": "urn:company-wiki:reading-group:sha256:qa-exchange", "kind": "qa_exchange",
@@ -37,10 +40,11 @@
        {"support": ["question"], "context": ["answer"]}
      ]},
     {"group_id": "urn:company-wiki:reading-group:sha256:segment-table", "kind": "table_region",
-     "section_role": "business", "members": ["table_header", "table_row", "footnote"],
+     "section_role": "business",
+     "members": ["table_header", "table_row", "footnote", "unit_note"],
      "views": [
-       {"support": ["table_row"], "context": ["table_header", "footnote"]},
-       {"support": ["table_row", "footnote"], "context": ["table_header"]}
+       {"support": ["table_row"], "context": ["table_header", "footnote", "unit_note"]},
+       {"support": ["table_row", "footnote"], "context": ["table_header", "unit_note"]}
      ]}
   ],
   "summary_claims": [

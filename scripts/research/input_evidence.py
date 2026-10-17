@@ -260,19 +260,29 @@ def _citation_call(function, *args, **kwargs):
 
 
 def _projected_parent(context: dict[str, Any], span: dict[str, Any]) -> dict[str, Any]:
-    """A projected span keeps its own original parent; nothing is merged."""
+    """A projected span keeps its own original parent; nothing is merged.
+
+    Both the span's own ``source_id`` and the declared parent hash must agree, the
+    same identity the wire validator enforces, so a re-signed cross-parent binding
+    cannot borrow another original.
+    """
     parents = context.get("parent_source_refs")
     require(isinstance(parents, list) and parents,
             "narrative_context has no parent source references")
     structured = span.get("structured_value")
     parent_sha = structured.get("parent_content_sha256") if isinstance(structured, dict) else None
     parent = next((item for item in parents if isinstance(item, dict)
+                   and item.get("source_id") == span.get("source_id")
                    and item.get("content_sha256") == parent_sha), None)
     require(parent is not None,
             "narrative span does not bind any projected parent source")
     require(isinstance(structured.get("source_locator"), str) and structured["source_locator"].strip()
             and isinstance(structured.get("pointer"), str) and structured["pointer"].strip(),
             "narrative span has no original source locator or pointer")
+    subject = context.get("subject_binding")
+    if isinstance(subject, dict) and "item_key" in subject:
+        require(structured.get("projection_id") == subject["item_key"],
+                "narrative span does not bind its projected subject")
     return parent
 
 
@@ -315,13 +325,21 @@ def _bind_narrative_span(
     )
 
     projected = context.get("schema_version") == "revenue-narrative-context/3"
+    receipt = context.get("read_receipt")
+    narrative_ref = context.get("narrative_ref")
+    if projected:
+        require(isinstance(receipt, dict) and isinstance(narrative_ref, dict),
+                "narrative_context is missing its read receipt or narrative reference")
+    else:
+        manifest = context.get("manifest")
+        source_ref = context.get("source_ref")
+        require(isinstance(receipt, dict) and isinstance(manifest, dict),
+                "narrative_context is missing its read receipt or manifest")
+        require(isinstance(source_ref, dict) and isinstance(narrative_ref, dict),
+                "narrative_context is missing its source or narrative reference")
     group_id, view = _citation_call(citation_selection, binding)
     resolution = _citation_call(resolve_span, context, span_id=span_id,
                                 group_id=group_id, view=view)
-    receipt = context.get("read_receipt")
-    narrative_ref = context.get("narrative_ref")
-    require(isinstance(receipt, dict) and isinstance(narrative_ref, dict),
-            "narrative_context is missing its read receipt or narrative reference")
     if projected:
         parent = _projected_parent(context, span)
         content_sha256 = parent.get("content_sha256")
@@ -332,10 +350,6 @@ def _bind_narrative_span(
         title, publisher, url = metadata.get("title") or "Narrative source", "company-wiki", None
         locator = span["structured_value"]["source_locator"]
     else:
-        manifest = context.get("manifest")
-        source_ref = context.get("source_ref")
-        require(isinstance(manifest, dict) and isinstance(source_ref, dict),
-                "narrative_context is missing its manifest or source reference")
         content_sha256 = source_ref.get("content_sha256")
         require(
             manifest.get("content_sha256") == content_sha256,

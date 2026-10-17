@@ -23,6 +23,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import socket
 import subprocess
 import sys
@@ -120,6 +121,7 @@ def owned(tmp_path):
     removed = _remove(root, created)
     assert snapshot(root) == baseline
     assert sorted(path.name for path in root.iterdir()) == ["out", "sentinel.bin"]
+    restored = snapshot(root) == baseline
     directory = os.environ.get("DU11_PWF_RECEIPTS")
     test_name = os.environ.get("PYTEST_CURRENT_TEST", "")
     if directory and test_name:
@@ -133,12 +135,20 @@ def owned(tmp_path):
             "sentinel_sha256": hashlib.sha256(SENTINEL).hexdigest(),
             "created": created,
             "removed": removed,
-            "restored": snapshot(root) == baseline,
+            "restored": restored,
             "residual_directories": sorted(path.name for path in root.iterdir()),
+            "root_removed": None,
         }
         name = hashlib.sha256(test_name.encode("utf-8")).hexdigest()[:16]
-        (Path(directory) / f"restore-{name}.json").write_text(
-            json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        target = Path(directory) / f"restore-{name}.json"
+        target.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    # The card requires the owned TemporaryDirectory itself to be deleted, not
+    # only its contents; the outer pytest tmp_path stays pytest's business.
+    shutil.rmtree(root)
+    assert not root.exists()
+    if directory and test_name:
+        receipt["root_removed"] = not root.exists()
+        target.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 @pytest.fixture(autouse=True)

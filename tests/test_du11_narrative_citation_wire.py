@@ -13,9 +13,12 @@ import json
 from pathlib import Path
 import sys
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from company_wiki_narrative_contracts import (  # noqa: E402
+    NarrativeTransportError,
     SPAN_PREFIX,
     canonical_bytes,
     validate_narrative_response,
@@ -380,3 +383,43 @@ def span(context: dict, key: str, desc: dict | None = None) -> dict:
     data = descriptor() if desc is None else desc
     index = [spec["key"] for spec in data["spans"]].index(key)
     return context["evidence_spans"][index]
+
+
+# ---------------------------------------------------------------------------
+# The builder itself: every variant must pass the real published wire contract
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("reading,schema,groups,views", [
+    ("2", "du-production-reading/2", 2, 4),
+    ("1", "du-production-reading/1", 2, 0),
+    (None, None, 0, 0),
+])
+def test_synthetic_descriptor_builds_a_legal_public_wire(reading, schema, groups, views):
+    context = validated(reading).to_dict()
+    assert context["schema_version"] == "revenue-narrative-context/1"
+    assert context["quality_status"] == "verified"
+    assert len(context["evidence_spans"]) == len(descriptor()["spans"])
+    if schema is None:
+        assert "reading_context" not in context
+        return
+    assert context["reading_context"]["schema_version"] == schema
+    assert len(context["reading_context"]["groups"]) == groups
+    assert sum(len(group.get("citation_views", []))
+               for group in context["reading_context"]["groups"]) == views
+
+
+def test_resigned_wire_moves_the_artifact_hash_and_keeps_bytes_canonical():
+    request, body, receipt = wire("2")
+    bundle = json.loads(body)
+    bundle["source_metadata"]["title"] = "ACME business update (revised)"
+    moved, new_body, new_receipt = resign(request, bundle, json.loads(receipt))
+    assert moved["narrative_ref"]["artifact_sha256"] == hashlib.sha256(new_body).hexdigest()
+    assert moved["narrative_ref"]["artifact_sha256"] != request["narrative_ref"]["artifact_sha256"]
+    assert validate_narrative_response(moved, new_body, new_receipt).to_dict()["source_metadata"]["title"] == (
+        "ACME business update (revised)")
+
+
+def test_tampered_body_is_refused_by_the_real_contract():
+    request, body, receipt = wire("2")
+    with pytest.raises(NarrativeTransportError):
+        validate_narrative_response(request, body[:-1] + b"X", receipt)

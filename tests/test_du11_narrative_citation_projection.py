@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -21,6 +22,10 @@ from test_recognition_bridge import forecast_document  # noqa: E402
 from test_shared_reading_narrative_contract import projected_context  # noqa: E402
 
 PARAMETER = "0_base_2026"
+
+
+def hashing(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
 
 
 def view_wire(*, two_parents=False):
@@ -140,3 +145,37 @@ def test_projection_without_reading_views_keeps_group_closure_only():
     assert dependency["closure"] == "reading_group"
     assert dependency["support_evidence_ids"] is None
     assert dependency["projected"]["pointer"] == "/records/0/answer"
+
+
+def test_entry_two_cannot_borrow_a_foreign_projected_parent():
+    """Even a re-signed span cannot point its own hash at the other original."""
+    from company_wiki_narrative_contracts import SPAN_PREFIX, canonical_bytes
+    from contracts.evidence import ForecastInputError
+    from research.input_evidence import bind_parameter_evidence
+
+    context = load(two_parents=True)
+    tampered = deepcopy(context.to_dict())
+    span = tampered["evidence_spans"][0]
+    foreign = next(item for item in tampered["parent_source_refs"]
+                   if item["source_id"] != span["source_id"])
+    span["structured_value"]["parent_content_sha256"] = foreign["content_sha256"]
+    span["output_sha256"] = hashing(canonical_bytes(
+        {"raw_text": span["raw_text"], "structured_value": span["structured_value"]}))
+    old = context.to_dict()["evidence_spans"][0]["span_id"]
+    span["span_id"] = SPAN_PREFIX + hashing(canonical_bytes(
+        {"source_id": span["source_id"], "locator": span["locator"],
+         "output_sha256": span["output_sha256"]}))
+    for group in tampered["reading_context"]["groups"]:
+        group["evidence_ids"] = [span["span_id"] if key == old else key for key in group["evidence_ids"]]
+        for view in group.get("citation_views", []):
+            for field in ("support_evidence_ids", "context_evidence_ids"):
+                view[field] = [span["span_id"] if key == old else key for key in view[field]]
+    entry = {"role": "mechanism_direction", "source_id": "narrative_transcript",
+             "narrative_context": tampered, "span_id": span["span_id"]}
+    parameter = {"parameter_id": PARAMETER, "kind": "analyst_assumption", "value": 110,
+                 "unit": "USD million", "period": "FY2026", "dimension": "revenue",
+                 "scenario": "base", "definition": "segment A base revenue",
+                 "rationale": "driver", "source_ids": [], "claim_ids": []}
+    with pytest.raises(ForecastInputError, match="does not bind any projected parent source"):
+        bind_parameter_evidence(parameter, evidence_bindings=[entry], source=None,
+                                verified_by="du11-test", verified_date=tampered["as_of_date"])

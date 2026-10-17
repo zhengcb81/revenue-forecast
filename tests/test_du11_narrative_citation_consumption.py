@@ -125,7 +125,8 @@ def test_public_reading_wire_consume_keeps_view_closure_and_bounded_coverage():
     assert dependency["context_evidence_limited"] is False
     assert dependency["projected"] is None
     assert trace["counts"] == {"dependencies": 1, "view_closed": 1, "group_only": 0,
-                               "ungrouped": 0, "context_evidence": 1, "context_evidence_limited": 0}
+                               "ungrouped": 0, "context_evidence": 1,
+                               "context_evidence_unknown": 0, "context_evidence_limited": 0}
     # The claim itself keeps its published shape; context is never promoted into it.
     claim = next(item for item in updated["evidence_claims"] if item["claim_id"] == "du11_cl")
     assert_legacy_claim_shape(claim)
@@ -178,15 +179,18 @@ def test_two_legal_views_require_an_explicit_selection():
     dependency = first["citation_trace"]["dependencies"][0]
     assert dependency["view_index"] == 0
     assert dependency["support_evidence_ids"] == [span_id(value, "table_row")]
-    assert dependency["context_evidence_ids"] == [span_id(value, "table_header"), span_id(value, "footnote")]
+    assert dependency["context_evidence_ids"] == [
+        span_id(value, "table_header"), span_id(value, "footnote"), span_id(value, "unit_note")]
     assert [item["span_id"] for item in dependency["context_evidence"]] == [
-        span_id(value, "table_header"), span_id(value, "footnote")]
-    assert dependency["context_evidence_count"] == 2
+        span_id(value, "table_header"), span_id(value, "footnote"), span_id(value, "unit_note")]
+    assert [item["source_role"] for item in dependency["context_evidence"]] == [
+        "company_filing", "company_filing", "company_filing"]
+    assert dependency["context_evidence_count"] == 3
     _, second = consume(context, [binding(value, "table_row", citation_view=1)])
     other = second["citation_trace"]["dependencies"][0]
     assert other["view_index"] == 1
     assert other["support_evidence_ids"] == [span_id(value, "table_row"), span_id(value, "footnote")]
-    assert other["context_evidence_ids"] == [span_id(value, "table_header")]
+    assert other["context_evidence_ids"] == [span_id(value, "table_header"), span_id(value, "unit_note")]
 
 
 def test_bad_explicit_selection_is_named_instead_of_guessed():
@@ -217,7 +221,7 @@ def test_context_evidence_projection_is_bounded_and_counted():
     context = validate_narrative_response(request, body, receipt)
     _, consumed = consume(context, [binding(context.to_dict(), "table_row", citation_view=0)])
     dependency = consumed["citation_trace"]["dependencies"][0]
-    assert dependency["context_evidence_count"] == 42
+    assert dependency["context_evidence_count"] == 43
     assert len(dependency["context_evidence"]) == 32
     assert dependency["context_evidence_limited"] is True
     assert consumed["citation_trace"]["counts"]["context_evidence_limited"] == 1
@@ -256,7 +260,7 @@ def test_absent_reading_context_never_claims_complete_coverage():
     assert trace["reading"]["unread"]["limited"] is None
     assert trace["reading"]["unread"]["structure_complete"] is None
     assert trace["reading"]["unread"]["opaque_pages"] is None
-    assert trace["reading"]["deferred"] == {"count": None, "listed": 0, "limited": None}
+    assert trace["reading"]["deferred"] == {"count": None, "listed": None, "limited": None}
     assert trace["reading"]["selection_diagnostics"] is None
     assert trace["reading"]["layout_complete"] is None
     assert trace["status"] == "ungrouped"
@@ -343,6 +347,38 @@ def test_reader_receipt_for_metadata_only_read_carries_the_same_trace():
     assert receipt["citation_trace"]["reading"]["attribution"] == "source_owned_views"
 
 
+@pytest.mark.parametrize("layout", [{"complete": "partial"}, {"complete": 1}, {"complete": None}, {}])
+def test_free_form_layout_diagnostic_never_gates_consumption(layout):
+    """`layout_coverage` is a free-form wire dict; an unreadable value is a null."""
+    request, body, receipt = wire("2")
+    bundle = json.loads(body)
+    bundle["reading_context"]["layout_coverage"] = layout
+    request, body, receipt = resign(request, bundle, json.loads(receipt))
+    context = validate_narrative_response(request, body, receipt)
+    value = context.to_dict()
+    updated, consumed = consume(context, [binding(value, "answer")])
+    assert consumed["status"] == "consumed"
+    assert consumed["citation_trace"]["reading"]["layout_complete"] is None
+    assert consumed["citation_trace"]["status"] == "closed"
+
+
+def test_groups_only_span_in_two_groups_is_recorded_deterministically():
+    data = descriptor()
+    data["groups"].append({"group_id": "urn:company-wiki:reading-group:sha256:alt-answer",
+                           "kind": "paragraph_event", "section_role": "business",
+                           "members": ["answer"]})
+    request, body, receipt = wire("1", data)
+    context = validate_narrative_response(request, body, receipt)
+    value = context.to_dict()
+    first_id = value["reading_context"]["groups"][0]["group_id"]
+    alt_id = value["reading_context"]["groups"][-1]["group_id"]
+    _, plain = consume(context, [binding(value, "answer")])
+    dependency = plain["citation_trace"]["dependencies"][0]
+    assert dependency["closure"] == "reading_group" and dependency["group_id"] == first_id
+    _, named = consume(context, [binding(value, "answer", citation_group_id=alt_id)])
+    assert named["citation_trace"]["dependencies"][0]["group_id"] == alt_id
+
+
 # ---------------------------------------------------------------------------
 # A-RED: the second real entry shares the same closure semantics
 # ---------------------------------------------------------------------------
@@ -414,6 +450,19 @@ def test_entry_two_unvalidated_context_cannot_smuggle_a_promotion():
     first["support_evidence_ids"].append(first["support_evidence_ids"][0])
     with pytest.raises(ForecastInputError, match="narrative_citation_reading_invalid"):
         entry_two(context, "answer", narrative_context=duplicate)
+
+
+@pytest.mark.parametrize(("missing", "message"), [
+    ("manifest", "narrative_context is missing its read receipt or manifest"),
+    ("source_ref", "narrative_context is missing its source or narrative reference"),
+    ("narrative_ref", "narrative_context is missing its source or narrative reference"),
+])
+def test_entry_two_legacy_refusals_keep_their_published_text(missing, message):
+    context = validated("2")
+    broken = deepcopy(context.to_dict())
+    del broken[missing]
+    with pytest.raises(ForecastInputError, match=message):
+        entry_two(context, "answer", narrative_context=broken)
 
 
 def test_entry_two_projected_wire_resolves_parent_and_names_the_publication_gap():

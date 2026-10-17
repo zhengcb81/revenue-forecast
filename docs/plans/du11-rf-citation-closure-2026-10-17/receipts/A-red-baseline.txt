@@ -1,46 +1,93 @@
-﻿FFFFFFFFFFFFFFFFFF                                                       [100%]
+# DU11 A-RED — frozen card tests against the fixed baseline consumers
+#
+# Reproduced on 2026-10-17 (second run, after the independent review flagged the
+# first receipt as stale). Method: a scratch tree outside this repository holds the
+# current `scripts/` + `tests/` and the frozen public wire, while
+# `scripts/source_narrative_context.py` and `scripts/research/input_evidence.py` are
+# restored byte-exactly from 568fb925 and the new adapter module is absent. So these
+# are the FINAL card tests against the BASELINE consumption entries.
+#
+# Result: 27 failed, 10 passed, exit 1 — every failure is behavioural
+# (`KeyError: 'citation_trace'`, `DID NOT RAISE` for a context-only header / a
+# question span / two legal views, the wrong projected-wire reason, or the legacy
+# message lock). No harness error, no import error, no source-string assertion.
+#
+# `tests/test_du11_narrative_citation_context.py` is deliberately absent here: it is
+# the new pure adapter and cannot exist before the implementation; its behaviour is
+# covered by the consumption-level RED above.
+#
+# Command (scratch tree):
+#   python -m pytest -q --tb=line -p no:cacheprovider \
+#     tests/test_du11_narrative_citation_consumption.py \
+#     tests/test_du11_narrative_citation_projection.py \
+#     tests/test_du11_narrative_citation_e2e.py
+#
+# ---------------------------------------------------------------------------
+
+F.FFFFFFFFFFFFFFFFFFFF...FF.FFFF.....                                    [100%]
 ================================== FAILURES ===================================
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
-E   TypeError: 'NarrativeContext' object is not subscriptable
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:69: TypeError: 'NarrativeContext' object is not subscriptable
 E   KeyError: 'citation_trace'
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:340: KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:92: KeyError: 'citation_trace'
+E   Failed: DID NOT RAISE ValueError
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:159: Failed: DID NOT RAISE ValueError
+E   Failed: DID NOT RAISE ValueError
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:165: Failed: DID NOT RAISE ValueError
+E   Failed: DID NOT RAISE ValueError
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:176: Failed: DID NOT RAISE ValueError
+E   AssertionError: Regex pattern did not match.
+      Expected regex: 'narrative_citation_view_unknown'
+      Actual message: 'narrative binding fields are invalid'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:199: AssertionError: Regex pattern did not match.
+E   ValueError: narrative binding fields are invalid
+<baseline-temp-tree>\scripts\source_narrative_context.py:105: ValueError: narrative binding fields are invalid
 E   KeyError: 'citation_trace'
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:371: KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:238: KeyError: 'citation_trace'
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:254: KeyError: 'citation_trace'
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:283: KeyError: 'citation_trace'
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:297: KeyError: 'citation_trace'
+E   ValueError: narrative binding fields are invalid
+<baseline-temp-tree>\scripts\source_narrative_context.py:105: ValueError: narrative binding fields are invalid
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:331: KeyError: 'citation_trace'
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:345: KeyError: 'citation_trace'
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:361: KeyError: 'citation_trace'
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:361: KeyError: 'citation_trace'
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:361: KeyError: 'citation_trace'
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:361: KeyError: 'citation_trace'
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:376: KeyError: 'citation_trace'
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:408: KeyError: 'citation_trace'
 E   Failed: DID NOT RAISE ForecastInputError
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:388: Failed: DID NOT RAISE ForecastInputError
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:425: Failed: DID NOT RAISE ForecastInputError
 E   Failed: DID NOT RAISE ForecastInputError
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:404: Failed: DID NOT RAISE ForecastInputError
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:441: Failed: DID NOT RAISE ForecastInputError
 E   AssertionError: Regex pattern did not match.
       Expected regex: 'source_availability_unknown'
       Actual message: 'narrative_context is missing its read receipt or manifest'
-C:\Users\֣����\Projects\revenue-forecast-du11-citation-closure\tests\test_du11_narrative_citation_consumption.py:427: AssertionError: Regex pattern did not match.
+<baseline-temp-tree>\tests\test_du11_narrative_citation_consumption.py:477: AssertionError: Regex pattern did not match.
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_projection.py:93: KeyError: 'citation_trace'
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_projection.py:127: KeyError: 'citation_trace'
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_projection.py:141: KeyError: 'citation_trace'
+E   AssertionError: Regex pattern did not match.
+      Expected regex: 'does not bind any projected parent source'
+      Actual message: 'narrative_context is missing its read receipt or manifest'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_projection.py:179: AssertionError: Regex pattern did not match.
+E   KeyError: 'citation_trace'
+<baseline-temp-tree>\tests\test_du11_narrative_citation_e2e.py:250: KeyError: 'citation_trace'
 =========================== short test summary info ===========================
 FAILED tests/test_du11_narrative_citation_consumption.py::test_public_reading_wire_consume_keeps_view_closure_and_bounded_coverage
-FAILED tests/test_du11_narrative_citation_consumption.py::test_prediction_values_are_identical_before_and_after_the_trace
 FAILED tests/test_du11_narrative_citation_consumption.py::test_context_only_table_header_cannot_become_support
 FAILED tests/test_du11_narrative_citation_consumption.py::test_question_span_cannot_become_a_management_fact
 FAILED tests/test_du11_narrative_citation_consumption.py::test_two_legal_views_require_an_explicit_selection
@@ -53,8 +100,18 @@ FAILED tests/test_du11_narrative_citation_consumption.py::test_ungrouped_legal_s
 FAILED tests/test_du11_narrative_citation_consumption.py::test_two_groups_under_one_parent_keep_their_own_closure
 FAILED tests/test_du11_narrative_citation_consumption.py::test_empty_bindings_stay_not_consumed_with_diagnostics
 FAILED tests/test_du11_narrative_citation_consumption.py::test_reader_receipt_for_metadata_only_read_carries_the_same_trace
+FAILED tests/test_du11_narrative_citation_consumption.py::test_free_form_layout_diagnostic_never_gates_consumption[layout0]
+FAILED tests/test_du11_narrative_citation_consumption.py::test_free_form_layout_diagnostic_never_gates_consumption[layout1]
+FAILED tests/test_du11_narrative_citation_consumption.py::test_free_form_layout_diagnostic_never_gates_consumption[layout2]
+FAILED tests/test_du11_narrative_citation_consumption.py::test_free_form_layout_diagnostic_never_gates_consumption[layout3]
+FAILED tests/test_du11_narrative_citation_consumption.py::test_groups_only_span_in_two_groups_is_recorded_deterministically
 FAILED tests/test_du11_narrative_citation_consumption.py::test_entry_two_binding_keeps_the_same_closure
 FAILED tests/test_du11_narrative_citation_consumption.py::test_entry_two_refuses_context_and_question_support_with_the_same_codes
 FAILED tests/test_du11_narrative_citation_consumption.py::test_entry_two_unvalidated_context_cannot_smuggle_a_promotion
 FAILED tests/test_du11_narrative_citation_consumption.py::test_entry_two_projected_wire_resolves_parent_and_names_the_publication_gap
-18 failed in 1.93s
+FAILED tests/test_du11_narrative_citation_projection.py::test_projected_span_binds_its_own_parent_locator_and_pointer
+FAILED tests/test_du11_narrative_citation_projection.py::test_two_projected_parents_are_never_stitched_into_one_claim
+FAILED tests/test_du11_narrative_citation_projection.py::test_projection_without_reading_views_keeps_group_closure_only
+FAILED tests/test_du11_narrative_citation_projection.py::test_entry_two_cannot_borrow_a_foreign_projected_parent
+FAILED tests/test_du11_narrative_citation_e2e.py::test_frozen_public_wire_survives_the_real_reader_consumer_and_calculator
+27 failed, 10 passed in 9.80s

@@ -118,7 +118,43 @@ native_scan,structure_complete}` + optional sampling `unread.{counts,limited}`; 
 `layout_coverage` (free dict). `_reading_sample` proves `limited == (count > len(list))`, so
 `null` (unknown) must stay `null` and is never inferred as `0`.
 
-## 7. Upstream gaps found (reported, not patched across repos)
+## 8. Frozen upstream interface dependencies
+
+- Declared CWP public-interface commit: `34a7dd71aaa49d18c13fcdd300ce79581114ca5b`;
+  declared ET reference commit: `2584b7eed062a9a30254bc06b4f19ab5471b414e`.
+- **Nothing was extracted or imported from either repository.** This card needs no real
+  CWP/ET CLI round trip: the Phase C reader boundary is the *published module path*
+  (`company_wiki.source_catalog.narrative_transport_cli`) replayed by a local stub process,
+  and every byte still crosses the real RF validator. No CWP source file, company root,
+  transcript, real config or historic receipt was copied into this worktree.
+- The frozen public wire used end to end (`docs/plans/shared-reading-consumer-2026-10-14/
+  fixtures/actual-090-*`) lives in this repository and therefore carries no upstream drift;
+  its `du-production-reading/1` shape is the one CWP published for that card.
+
+## 10. Independent review round 1 (adversarial) and what it taught
+
+`receipts/D-reviewer-1.md` — verdict FAIL: 1 blocking, 6 should-fix, 10 nits. Every finding
+reproduced by the reviewer itself; all fixed at the shared root cause:
+
+| finding | root cause | fix |
+|---------|-----------|-----|
+| B1: a wire-valid `layout_coverage = {"complete": "partial"}` was refused | coverage values were parsed as strict invariants, although only the support/context partition has to be right | coverage parsing is now lenient by construction (`null`), groups/views stay strict; a validated-wire regression asserts consumption with four different free-form layout values |
+| S1: a `/1` span in two groups became a new gate | the "no silent view pick" rule leaked into group-only membership, where no semantics are attached | published-first group recorded deterministically, `citation_group_id` may name another, matrix row updated |
+| S2: three legacy entry-2 messages were reworded | the `/3` branch split the old `require` pair | old pair and exact texts restored on the non-projected path, text-lock regression added |
+| S3: the committed RED was captured before the final test helper | receipt not regenerated after the tests were frozen | regenerated against byte-exact baseline consumers: 27 failed / 10 passed, all behavioural |
+| S4: the E2E kept its owned root | the fixture only restored contents | fixture deletes the owned root (`root_removed: true`); the owned basetemp deletion is receipted |
+| S5: projected parent matched only the content hash | the lookup re-implemented the wire's identity too loosely | `source_id` + `parent_content_sha256` + subject `projection_id`; cross-parent regression added |
+| S6: stale/premature PWF and a missing `handoff.json` | docs not reconciled after implementation | phases/decisions/matrix/handoff reconciled; COMPLETE only after round 2 |
+
+Rejected as observations only (recorded, not changed): RF never interprets DU layout
+semantics and does not copy source text into the trace; the adapter's narrow re-check of the
+structure it consumes is retained because entry 2 legitimately accepts an unvalidated dict
+(it is not a second wire authority); the trace is additive under
+`revenue-narrative-consumption/1` because the card asks for old-wire compatibility and the
+trace is separately versioned; the offline guard covers the test process, while the only
+child processes are the local stub reader and the calculator.
+
+## 11. Upstream gaps found (reported, not patched across repos)
 
 1. `narrative-ref/3` + `narrative-read-receipt/3` publish **no** publication or availability
    fact (only `observed_at`). Entry 2's formal source+capture needs `published_date`

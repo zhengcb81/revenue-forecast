@@ -62,7 +62,16 @@ def test_reading_trace_reports_attribution_and_never_claims_completeness():
     assert absent["present"] is False and absent["attribution"] == "absent"
     assert all(absent["unread"][key] is None for key in
                ("counts", "limited", "opaque_pages", "structure_complete"))
-    assert absent["deferred"] == {"count": None, "listed": 0, "limited": None}
+    assert absent["deferred"] == {"count": None, "listed": None, "limited": None}
+
+
+@pytest.mark.parametrize("layout", [{"complete": "partial"}, {"complete": 1},
+                                    {"complete": []}, "not-an-object", {"nested": {}}])
+def test_free_form_layout_is_reduced_to_null_never_to_a_refusal(layout):
+    context = validated("2").to_dict()
+    context["reading_context"]["layout_coverage"] = layout
+    assert reading_trace(context)["layout_complete"] is None
+    assert resolve_span(context, span_id=span_id(context, "answer"))["closure"] == "citation_view"
 
 
 def test_unread_material_is_a_diagnostic_not_a_refusal():
@@ -86,8 +95,24 @@ def test_two_legal_views_need_the_view_index_and_never_the_first_element():
     first = resolve_span(context, span_id=row, group_id=table, view=0)
     second = resolve_span(context, span_id=row, group_id=table, view=1)
     assert first["support_evidence_ids"] != second["support_evidence_ids"]
-    assert first["context_evidence_ids"] == [span_id(context, "table_header"), span_id(context, "footnote")]
-    assert second["context_evidence_ids"] == [span_id(context, "table_header")]
+    assert first["context_evidence_ids"] == [
+        span_id(context, "table_header"), span_id(context, "footnote"), span_id(context, "unit_note")]
+    assert second["context_evidence_ids"] == [
+        span_id(context, "table_header"), span_id(context, "unit_note")]
+
+
+def test_both_legal_directions_of_a_two_view_group_resolve_positively():
+    spans = [minimal_span("a", role="company_filing"), minimal_span("b", role="company_filing")]
+    group = {"group_id": "g", "kind": "qa_exchange", "section_role": "business",
+             "evidence_ids": ["a", "b"],
+             "citation_views": [
+                 {"support_evidence_ids": ["a"], "context_evidence_ids": ["b"]},
+                 {"support_evidence_ids": ["b"], "context_evidence_ids": ["a"]}]}
+    context = minimal(groups=[group], spans=spans)
+    first = resolve_span(context, span_id="a")
+    second = resolve_span(context, span_id="b")
+    assert (first["view_index"], first["support_evidence_ids"], first["context_evidence_ids"]) == (0, ["a"], ["b"])
+    assert (second["view_index"], second["support_evidence_ids"], second["context_evidence_ids"]) == (1, ["b"], ["a"])
 
 
 def test_context_only_span_and_question_role_are_refused():
@@ -218,7 +243,9 @@ def test_trace_status_counts_and_json_shape():
     assert mixed["status"] == "partial"
     assert mixed["counts"] == {"dependencies": 2, "view_closed": 1, "group_only": 0,
                                "ungrouped": 1, "context_evidence": 1,
+                               "context_evidence_unknown": 1,
                                "context_evidence_limited": 0}
+    assert free["context_evidence_limited"] is None
     assert trace_status([]) == "not_consumed"
     json.dumps(mixed, sort_keys=True, allow_nan=False)
     assert CONTEXT_EVIDENCE_LIMIT == 32

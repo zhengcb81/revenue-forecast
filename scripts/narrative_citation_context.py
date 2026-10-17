@@ -165,81 +165,67 @@ def _groups(value: dict | None) -> tuple[dict | None, list[dict], str]:
     return reading, groups, ATTRIBUTION[reading["schema_version"]]
 
 
-def _count(value: Any, name: str) -> int | None:
-    if value is None:
+def _count(value: Any) -> int | None:
+    """A published count, or ``None`` when the wire does not carry a usable one."""
+    return value if type(value) is int and value >= 0 else None
+
+
+def _page_count(value: Any) -> int | None:
+    if not isinstance(value, list) or any(type(page) is not int or page < 1 for page in value):
         return None
-    if type(value) is not int or value < 0:
-        _fail("narrative_citation_reading_invalid", f"{name} is not a non-negative integer")
-    return value
+    return len(value)
+
+
+def _id_count(value: Any) -> int | None:
+    if not isinstance(value, list) or any(not _identifier(item) for item in value):
+        return None
+    return len(value)
 
 
 def _unread_trace(reading: dict | None) -> dict:
-    if reading is None:
-        return {
-            "counts": None,
-            "limited": None,
-            "opaque_pages": None,
-            "deferred_pages": None,
-            "deferred_unit_ids": None,
-            "unassigned_unit_ids": None,
-            "native_scan": None,
-            "structure_complete": None,
-        }
-    unread = reading.get("unread")
+    """Coverage is a diagnostic: an unreadable or malformed block degrades to ``null``."""
+    unread = reading.get("unread") if reading is not None else None
     if not _object(unread):
-        _fail("narrative_citation_reading_invalid", "reading unread block is not an object")
-    for name in ("deferred_unit_ids", "unassigned_unit_ids"):
-        _id_list(unread.get(name), field=f"unread.{name}")
-    for name in ("opaque_pages", "deferred_pages"):
-        pages = unread.get(name)
-        if not isinstance(pages, list) or any(type(page) is not int or page < 1 for page in pages):
-            _fail("narrative_citation_reading_invalid", f"unread.{name} is not a page list")
+        return {
+            "counts": None, "limited": None, "opaque_pages": None, "deferred_pages": None,
+            "deferred_unit_ids": None, "unassigned_unit_ids": None,
+            "native_scan": None, "structure_complete": None,
+        }
+    pages = {name: _page_count(unread.get(name)) for name in ("opaque_pages", "deferred_pages")}
+    units = {name: _id_count(unread.get(name)) for name in ("deferred_unit_ids", "unassigned_unit_ids")}
     counts = unread.get("counts")
     limited = unread.get("limited")
-    if counts is not None:
-        if not _object(counts) or set(counts) != set(UNREAD_LISTS):
-            _fail("narrative_citation_reading_invalid", "unread counts are not complete")
-        for name in UNREAD_LISTS:
-            value = _count(counts[name], f"unread.counts.{name}")
-            if value is None or value < len(unread[name]):
-                _fail("narrative_citation_reading_invalid", f"unread.counts.{name} undercounts")
-    if limited is not None and type(limited) is not bool:
-        _fail("narrative_citation_reading_invalid", "unread.limited is not a boolean")
-    if counts is not None and limited is None:
-        counts = None
+    resolved: dict | None = None
+    if _object(counts) and set(counts) == set(UNREAD_LISTS) and type(limited) is bool:
+        candidate = {name: _count(counts[name]) for name in UNREAD_LISTS}
+        available = {"opaque_pages": pages["opaque_pages"], "deferred_pages": pages["deferred_pages"],
+                     "deferred_unit_ids": units["deferred_unit_ids"],
+                     "unassigned_unit_ids": units["unassigned_unit_ids"]}
+        if all(value is not None and value >= available[name]
+               for name, value in candidate.items()):
+            resolved = candidate
     native_scan = unread.get("native_scan")
     structure = unread.get("structure_complete")
-    if native_scan is not None and not _nonempty_text(native_scan):
-        _fail("narrative_citation_reading_invalid", "unread.native_scan is not text")
-    if structure is not None and type(structure) is not bool:
-        _fail("narrative_citation_reading_invalid", "unread.structure_complete is not a boolean")
     return {
-        "counts": dict(counts) if counts is not None else None,
-        "limited": limited,
-        "opaque_pages": len(unread["opaque_pages"]),
-        "deferred_pages": len(unread["deferred_pages"]),
-        "deferred_unit_ids": len(unread["deferred_unit_ids"]),
-        "unassigned_unit_ids": len(unread["unassigned_unit_ids"]),
-        "native_scan": native_scan,
-        "structure_complete": structure,
+        "counts": resolved,
+        "limited": limited if resolved is not None else None,
+        "opaque_pages": pages["opaque_pages"],
+        "deferred_pages": pages["deferred_pages"],
+        "deferred_unit_ids": units["deferred_unit_ids"],
+        "unassigned_unit_ids": units["unassigned_unit_ids"],
+        "native_scan": native_scan if _nonempty_text(native_scan) else None,
+        "structure_complete": structure if type(structure) is bool else None,
     }
 
 
 def _deferred_trace(reading: dict | None) -> dict:
-    if reading is None:
-        return {"count": None, "listed": 0, "limited": None}
-    deferred = reading.get("deferred")
-    if not isinstance(deferred, list):
-        _fail("narrative_citation_reading_invalid", "reading deferred block is not a list")
-    count = _count(reading.get("deferred_count"), "deferred_count")
-    limited = reading.get("deferred_limited")
-    if limited is not None and type(limited) is not bool:
-        _fail("narrative_citation_reading_invalid", "deferred_limited is not a boolean")
-    if count is not None and count < len(deferred):
-        _fail("narrative_citation_reading_invalid", "deferred_count undercounts the list")
-    if count is not None and limited is None:
-        count = None
-    return {"count": count, "listed": len(deferred), "limited": limited}
+    deferred = reading.get("deferred") if reading is not None else None
+    listed = len(deferred) if isinstance(deferred, list) else None
+    count = _count(reading.get("deferred_count")) if reading is not None else None
+    limited = reading.get("deferred_limited") if reading is not None else None
+    if listed is None or count is None or count < listed or type(limited) is not bool:
+        return {"count": None, "listed": listed, "limited": None}
+    return {"count": count, "listed": listed, "limited": limited}
 
 
 def _diagnostics_trace(reading: dict | None) -> list[dict] | None:
@@ -247,12 +233,13 @@ def _diagnostics_trace(reading: dict | None) -> list[dict] | None:
         return None
     rows = reading["selection_diagnostics"]
     if not isinstance(rows, list):
-        _fail("narrative_citation_reading_invalid", "selection_diagnostics is not a list")
+        return None
     result = []
     for row in rows:
-        if not _object(row) or not _nonempty_text(row.get("code")) or _count(row.get("count"), "count") is None:
-            _fail("narrative_citation_reading_invalid", "a selection diagnostic is malformed")
-        result.append({"code": row["code"], "count": row["count"]})
+        count = _count(row.get("count")) if _object(row) else None
+        if count is None or not _nonempty_text(row.get("code")):
+            return None
+        result.append({"code": row["code"], "count": count})
     return result
 
 
@@ -260,12 +247,8 @@ def _layout_complete(reading: dict | None) -> bool | None:
     if reading is None:
         return None
     layout = reading.get("layout_coverage")
-    if not _object(layout):
-        _fail("narrative_citation_reading_invalid", "layout_coverage is not an object")
-    complete = layout.get("complete")
-    if complete is not None and type(complete) is not bool:
-        _fail("narrative_citation_reading_invalid", "layout_coverage.complete is not a boolean")
-    return complete
+    complete = layout.get("complete") if _object(layout) else None
+    return complete if type(complete) is bool else None
 
 
 def reading_trace(value: dict | None) -> dict:
@@ -340,7 +323,7 @@ def _resolution(span: dict, *, closure: str, projected: bool, group: dict | None
         "context_evidence_ids": context_ids,
         "context_evidence": evidence,
         "context_evidence_count": None if context_ids is None else len(context_ids),
-        "context_evidence_limited": False,
+        "context_evidence_limited": None if context_ids is None else False,
         "projected": _projected(span, projected),
     }
 
@@ -421,12 +404,12 @@ def resolve_span(value: dict, *, span_id: str, group_id: str | None = None,
             _fail("narrative_citation_view_unknown", "this reading context has no citation views")
         if not candidates:
             resolution = _resolution(span, closure="ungrouped", projected=projected)
-        elif len(candidates) == 1:
+        else:
+            # A groups-only reading publishes no support/context partition, so the
+            # published-first group is recorded deterministically (no semantic
+            # promotion); ``citation_group_id`` can name another one.
             resolution = _resolution(span, closure="reading_group", projected=projected,
                                      group=candidates[0])
-        else:
-            _fail("narrative_citation_group_ambiguous",
-                  "the span belongs to more than one reading group")
     if resolution["source_role"] in QUESTION_ROLES:
         _fail("narrative_citation_source_role_refused",
               f"source_role {resolution['source_role']} cannot support an RF parameter claim")
@@ -472,6 +455,7 @@ def trace_status(dependencies: list[dict]) -> str:
 def citation_trace(value: dict | None, *, dependencies: list[dict] | None = None) -> dict:
     """The versioned citation trace; the only place the closure is retained."""
     entries = [dict(item) for item in (dependencies or [])]
+    known = [item for item in entries if item.get("context_evidence_count") is not None]
     return {
         "schema_version": TRACE_SCHEMA,
         "status": trace_status(entries),
@@ -482,7 +466,8 @@ def citation_trace(value: dict | None, *, dependencies: list[dict] | None = None
             "view_closed": sum(item.get("closure") == "citation_view" for item in entries),
             "group_only": sum(item.get("closure") == "reading_group" for item in entries),
             "ungrouped": sum(item.get("closure") == "ungrouped" for item in entries),
-            "context_evidence": sum(item.get("context_evidence_count") or 0 for item in entries),
-            "context_evidence_limited": sum(bool(item.get("context_evidence_limited")) for item in entries),
+            "context_evidence": sum(item["context_evidence_count"] for item in known),
+            "context_evidence_unknown": len(entries) - len(known),
+            "context_evidence_limited": sum(bool(item.get("context_evidence_limited")) for item in known),
         },
     }
