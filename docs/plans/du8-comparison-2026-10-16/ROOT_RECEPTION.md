@@ -1,6 +1,6 @@
 # DU8 RF ROOT接收 — 2026-10-17
 
-状态：最终独审PASS、未解决0，主线发布进行中。作者最终8845bc18，ROOT保留完整历史合流6bd53b78；ROOT修复b41dceef。原handoff中最终67b15a60/125等为历史，不代表当前源码或测试；不得按其冻结声明接收。
+状态：最终独审PASS、未解决0，main/origin已正常发布且精确CI成功，技能定点同步与清理完成。作者最终8845bc18，ROOT保留完整历史合流6bd53b78；ROOT修复b41dceef。原handoff中最终67b15a60/125等为历史，不代表当前源码或测试；不得按其冻结声明接收。
 
 ## 实际改进与最终回归
 
@@ -19,3 +19,9 @@ ROOT独审发现Python bool()和dict==可把0/1当false/true，共用report边�
 ## 最终独立审查
 
 [独立报告](du8_rf_root_review.md)绑定b41dceef，12源/测试原始SHA和Git blob一致（CRLF/LF分别列出）。7正常模型、35篡改全部拒绝、38行为及4owner消费检查通过；代码未变不重复测试。独立脚本原始路径为审查工作区，归档脚本是历史探针，不在归档目录直接执行/覆盖原收据；固定57回归和原CLI套件可从干净检出复现。
+
+## 发布与安装完成
+
+main/origin已正常发布c984a8fa，pre-push416PASS＋36subtests、36.90秒；[精确CI39016431219](https://github.com/zhengcb81/revenue-forecast/actions/runs/39016431219) SUCCESS。三份.agents/.claude/.codex各4文件先核旧主线后定点同步，6正常模型/6数字伪装拒绝通过，实际导入安装目录而非仓库源码。配置/output及其他文件保留。发布收据见receipts/root-reception/publication.json。
+
+本次ROOT临时接收工区已用正常git worktree remove移除，核对确为本轮绝对路径、树干净、全部历史已并入main才移除，未force、未删作者树；清理约866MB逻辑检出文件（不冒称磁盘实际可用空间增长相同）。main既有3条告警WIP和147output元数据未变。随后收据脚本一次默认GBK读取中文路径报错、缺收据级联导致空commit未创建；改明确UTF8复核并补收据，没有重复删目录或改源码。后续只补此发布文档，工程仍冻结b41dceef；返回CWP生产接线，不能以本包通过宣称真实PDF/正式摘要已完成。
