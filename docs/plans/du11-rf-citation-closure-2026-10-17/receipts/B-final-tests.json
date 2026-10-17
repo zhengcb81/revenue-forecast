@@ -1,0 +1,82 @@
+{
+  "schema_version": "du11-test-receipt/1",
+  "authoritative_run": {
+    "when": "2026-10-17",
+    "python": "C:/Miniconda/python.exe",
+    "command": "python -m pytest -q --tb=short -p no:cacheprovider --basetemp <owned temp> <19 modules>",
+    "modules": [
+      "tests/test_du11_narrative_citation_context.py",
+      "tests/test_du11_narrative_citation_consumption.py",
+      "tests/test_du11_narrative_citation_projection.py",
+      "tests/test_du11_narrative_citation_e2e.py",
+      "tests/test_du11_narrative_citation_wire.py",
+      "tests/test_source_preparation_complete_result.py",
+      "tests/test_architecture_dependency_uses.py",
+      "tests/test_w04_public_consumer.py",
+      "tests/test_citation_attribution_narrative_contract.py",
+      "tests/test_shared_reading_narrative_contract.py",
+      "tests/test_source_clock.py",
+      "tests/test_evidence_input_lineage.py",
+      "tests/test_input_semantics_e2e.py",
+      "tests/test_narrative_source_preparation_transport.py",
+      "tests/test_narrative_source_preparation_e2e.py",
+      "tests/test_company_wiki_narrative_reader.py",
+      "tests/test_company_wiki_narrative_process.py",
+      "tests/test_source_preparation.py",
+      "tests/test_source_preparation_deadline.py",
+      "tests/test_narrative_container_lineage.py"
+    ],
+    "exit_code": 0,
+    "passed": 346,
+    "skipped": 4,
+    "failed": 0,
+    "pytest_seconds": 93.83,
+    "wall_seconds": 100.6,
+    "log": "receipts/B-final-tests.log"
+  },
+  "gates": {
+    "ruff": {"command": "python -m ruff check scripts tests tools", "exit_code": 0},
+    "mypy": {"command": "python -m mypy scripts/contracts/ scripts/schema_compatibility.py scripts/filing_fetch_client.py scripts/trust_anchor.py", "exit_code": 0, "files": 11}
+  },
+  "card_tests": {
+    "pure_adapter": "tests/test_du11_narrative_citation_context.py",
+    "consumption_both_entries": "tests/test_du11_narrative_citation_consumption.py",
+    "projected_v3": "tests/test_du11_narrative_citation_projection.py",
+    "isolated_e2e": "tests/test_du11_narrative_citation_e2e.py",
+    "synthetic_wire_builder": "tests/test_du11_narrative_citation_wire.py",
+    "fixture": "tests/fixtures/du11_narrative_citation/synthetic_reading2.json"
+  },
+  "red_evidence": {
+    "log": "receipts/A-red-baseline.txt",
+    "result": "18 failed on the fixed baseline before any production change",
+    "failures": [
+      "KeyError: 'citation_trace' (closure and coverage diagnostics lost)",
+      "DID NOT RAISE (context-only table header consumed as support)",
+      "DID NOT RAISE (question span consumed as a management fact)",
+      "DID NOT RAISE (the first of several legal citation views is taken silently)",
+      "projected wire refused with the wrong, unnamed reason and without its parent/pointer"
+    ]
+  },
+  "restore_receipts": {
+    "directory": "receipts/restore-*.json",
+    "count": 6,
+    "rule": "owned tmp_path/du11-owned root, fixed sentinel + pre-existing out/existing.json, byte SHA and mtime recorded before the test and compared after cleanup"
+  },
+  "network_provider_model_counts": {
+    "network_requests": 0,
+    "provider_http_calls": 0,
+    "llm_calls": 0,
+    "local_reader_process_calls": "recorded per E2E test in the owned tree calls.log and asserted by count"
+  },
+  "source_sha256": {
+    "scripts/narrative_citation_context.py": "5655afe94fbfd20009490a531f272cf99cfc8db1c7d92947f188063d056b9d55",
+    "scripts/source_narrative_context.py": "ee271c3f5be61b2c7df845b60f7962422fd45808c0c38b727a700ecc93ede259",
+    "scripts/research/input_evidence.py": "a252dd383886fc04ff228863427c4fada0c4dac4dfacfadf2a290d33501d5920",
+    "tests/test_du11_narrative_citation_wire.py": "5e960cb7faaf28418933aa7c10b552a460729303d89f57af8d9efb6c0bd2ba91",
+    "tests/test_du11_narrative_citation_context.py": "797bf9e4236c90de7498da2b6068ef0fa13d706f68d808b49e5c9a1275fdcb4f",
+    "tests/test_du11_narrative_citation_consumption.py": "6e30900e9635cac0db7adfd7d91b59ec82af1259001ee68aeb46e0aa34da4db4",
+    "tests/test_du11_narrative_citation_projection.py": "3b565ae429c0ae00a5c5f291ec7f71f8f551abee959f34e4c2202cd22b129ba2",
+    "tests/test_du11_narrative_citation_e2e.py": "3c4cf4b7f40a893005579e748b6ccc8796eb914123aaaeeb545e1379c16cce23",
+    "tests/fixtures/du11_narrative_citation/synthetic_reading2.json": "5173793191d646db4222a9a8b915bdaa54b579ef19db6802b602d5fd47d8561a"
+  }
+}

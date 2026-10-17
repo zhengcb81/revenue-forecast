@@ -2,7 +2,10 @@
 
 This module never resolves paths, downloads, parses originals, or starts a model.
 The existing reader verifies the bundle once; this adapter only links excerpts
-selected by the caller to an existing revenue calculation graph.
+selected by the caller to an existing revenue calculation graph. The source
+owner's support/context closure and a bounded coverage diagnostic are retained in
+a versioned citation trace; the claim fields and the formula dependencies stay
+exactly as they were.
 """
 from __future__ import annotations
 
@@ -15,6 +18,12 @@ from contracts.evidence import text_sha256
 from contracts.source_clock import utc_timestamp
 from forecast.calc import collect_parameter_roles
 from forecast.dependencies import parameter_formula_refs
+from narrative_citation_context import (
+    NarrativeCitationError, citation_dependency, citation_trace, resolve_span, selection,
+)
+
+BASE_BINDING_FIELDS = {"span_id", "claim_id", "parameter_id", "support_type"}
+SELECTION_FIELDS = {"citation_group_id", "citation_view"}
 
 
 def _read_time(value: dict) -> str:
@@ -32,6 +41,7 @@ def narrative_read_receipt(context: NarrativeContext) -> dict:
         receipt.update(subject_ref=value["narrative_ref"]["subject_ref"],
                        parent_count=value["read_receipt"]["parent_count"],
                        lineage_sha256=value["read_receipt"]["lineage_sha256"])
+    receipt["citation_trace"] = citation_trace(value)
     return receipt
 
 
@@ -74,6 +84,22 @@ def _claim(binding: dict, span: dict, source: dict, verified_date: str, verified
             "verified_date": verified_date}
 
 
+def _binding_selection(binding: dict) -> tuple[str | None, int | None]:
+    """Keep the old field refusal, with a named code for citation selection fields."""
+    missing = BASE_BINDING_FIELDS - set(binding)
+    if missing:
+        raise ValueError("narrative binding fields are invalid")
+    extra = set(binding) - BASE_BINDING_FIELDS
+    if extra - SELECTION_FIELDS:
+        if any(isinstance(key, str) and key.startswith("citation_") for key in extra):
+            raise NarrativeCitationError(
+                "narrative_citation_binding_fields",
+                f"unsupported citation selection fields: {sorted(str(key) for key in extra - SELECTION_FIELDS)}",
+            )
+        raise ValueError("narrative binding fields are invalid")
+    return selection(binding)
+
+
 def consume_narrative_input(
     data: dict, *, request: dict, bindings: list[dict], source_id: str,
     catalog_config: Path, timeout_seconds: float = 30, verified_by: str = "RF narrative reader",
@@ -83,6 +109,7 @@ def consume_narrative_input(
     A metadata reference or an unreferenced summary yields not_consumed. No
     assumption value or evidence role is inferred from a summary's existence.
     Invalid/unavailable references propagate the existing bounded read failure.
+    A span the source attributes to the context partition never becomes support.
     """
     context = read_narrative_context(request, catalog_config=catalog_config,
                                      timeout_seconds=timeout_seconds)
@@ -100,9 +127,9 @@ def consume_narrative_input(
     verified_date = utc_timestamp(_read_time(value), "narrative read_at").date().isoformat()
     claims = updated.setdefault("evidence_claims", [])
     claim_ids = {item["claim_id"] for item in claims}
+    trace_dependencies: list[dict] = []
     for binding in bindings:
-        if set(binding) != {"span_id", "claim_id", "parameter_id", "support_type"}:
-            raise ValueError("narrative binding fields are invalid")
+        group_id, view = _binding_selection(binding)
         pid, cid = binding["parameter_id"], binding["claim_id"]
         if pid not in used or cid in claim_ids or binding["span_id"] not in spans:
             raise ValueError("narrative binding requires a unique claim and a used parameter/span")
@@ -112,6 +139,8 @@ def consume_narrative_input(
         formula_refs = _formula_refs(updated, pid, index)
         if not formula_refs:
             raise ValueError("narrative binding does not reach an actual segment formula")
+        resolution = resolve_span(value, span_id=binding["span_id"],
+                                  group_id=group_id, view=view)
         claims.append(_claim(binding, span, source, verified_date, verified_by, projected=projected))
         claim_ids.add(cid)
         parameter = index[pid]
@@ -128,6 +157,8 @@ def consume_narrative_input(
         if projected:
             receipt["dependencies"][-1].update(source_locator=span["structured_value"]["source_locator"],
                 pointer=span["structured_value"]["pointer"], subject_ref=value["narrative_ref"]["subject_ref"])
+        trace_dependencies.append(citation_dependency(resolution=resolution, claim_id=cid, parameter_id=pid))
     if receipt["dependencies"]:
         receipt["status"] = "consumed"
+    receipt["citation_trace"] = citation_trace(value, dependencies=trace_dependencies)
     return updated, receipt

@@ -5,7 +5,11 @@ explicit role (history / mechanism direction / numeric range / peer analogy /
 counter comparison / conversion assumption). Direction is never a value, a
 peer analogy never counts as company mechanism, and a NarrativeRef span is
 only usable once it becomes a formal source+claim dependency of the
-parameter — a file that merely exists is not consumption. The machine checks
+parameter — a file that merely exists is not consumption. A NarrativeRef span
+also reuses the source owner's support/context partition: a span the source
+attributes to the context partition (a question, a table header/unit, a
+footnote) never becomes support evidence, and the closure is retained in the
+same versioned citation trace the other RF entry emits. The machine checks
 here are structural; the economic semantics remain with MAIN's independent
 review.
 """
@@ -30,6 +34,13 @@ from contracts.source_clock import (
     SourceClockError, iso_date, qualify_source_information, utc_timestamp, validate_source_events,
 )
 from company_wiki_narrative_contracts import SPAN_PREFIX
+from narrative_citation_context import (
+    NarrativeCitationError,
+    citation_dependency,
+    citation_trace,
+    resolve_span,
+    selection as citation_selection,
+)
 import hashlib
 
 VALID_SUPPORT_TYPES = {"exact_value", "rationale_support", "policy_support"}
@@ -70,6 +81,8 @@ def bind_parameter_evidence(
     new_sources: list[dict[str, Any]] = []
     lineage: list[dict[str, Any]] = []
     roles: list[str] = []
+    trace_dependencies: list[dict[str, Any]] = []
+    reading_value: dict[str, Any] | None = None
     for position, binding in enumerate(evidence_bindings):
         require(isinstance(binding, dict), "evidence binding must be an object")
         role = binding.get("role")
@@ -119,7 +132,7 @@ def bind_parameter_evidence(
 
         narrative_context = binding.get("narrative_context")
         if narrative_context is not None:
-            bound_source, capture = _bind_narrative_span(
+            bound_source, capture, resolution = _bind_narrative_span(
                 parameter_id, binding, narrative_context
             )
             new_sources.append(bound_source)
@@ -133,6 +146,8 @@ def bind_parameter_evidence(
                 "narrative_span_id": capture["span_id"],
                 "narrative_artifact": capture["artifact_version_id"],
             }
+            if reading_value is None:
+                reading_value = narrative_context
         else:
             require(
                 source is not None and classic_capture is not None,
@@ -179,6 +194,10 @@ def bind_parameter_evidence(
                 )
                 claim[field] = binding[field]
         claims.append(claim)
+        if narrative_context is not None:
+            trace_dependencies.append(citation_dependency(
+                resolution=resolution, claim_id=claim_id, parameter_id=parameter_id
+            ))
         lineage_entry.update({
             "role": role,
             "claim_id": claim_id,
@@ -204,7 +223,8 @@ def bind_parameter_evidence(
     updated["source_ids"] = list(dict.fromkeys(
         list(parameter.get("source_ids", [])) + [c["source_id"] for c in claims]
     ))
-    return {"parameter": updated, "claims": claims, "sources": new_sources, "lineage": lineage}
+    return {"parameter": updated, "claims": claims, "sources": new_sources, "lineage": lineage,
+            "citation_trace": citation_trace(reading_value, dependencies=trace_dependencies)}
 
 
 def _validated_capture(source: dict[str, Any]) -> dict[str, Any]:
@@ -231,11 +251,36 @@ def _canonical_bytes(value: Any) -> bytes:
     ).encode("utf-8")
 
 
+def _citation_call(function, *args, **kwargs):
+    """The shared adapter's named refusal becomes this entry's public error type."""
+    try:
+        return function(*args, **kwargs)
+    except NarrativeCitationError as exc:
+        raise ForecastInputError(str(exc)) from exc
+
+
+def _projected_parent(context: dict[str, Any], span: dict[str, Any]) -> dict[str, Any]:
+    """A projected span keeps its own original parent; nothing is merged."""
+    parents = context.get("parent_source_refs")
+    require(isinstance(parents, list) and parents,
+            "narrative_context has no parent source references")
+    structured = span.get("structured_value")
+    parent_sha = structured.get("parent_content_sha256") if isinstance(structured, dict) else None
+    parent = next((item for item in parents if isinstance(item, dict)
+                   and item.get("content_sha256") == parent_sha), None)
+    require(parent is not None,
+            "narrative span does not bind any projected parent source")
+    require(isinstance(structured.get("source_locator"), str) and structured["source_locator"].strip()
+            and isinstance(structured.get("pointer"), str) and structured["pointer"].strip(),
+            "narrative span has no original source locator or pointer")
+    return parent
+
+
 def _bind_narrative_span(
     parameter_id: str, binding: dict[str, Any], context: dict[str, Any]
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Validate a NarrativeRef span against the published wire contract and
-    derive a formal revenue source + capture from it."""
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """Validate a NarrativeRef span against the published wire contract, reuse the
+    source owner's citation closure and derive a formal revenue source + capture."""
     require(isinstance(context, dict), "narrative_context must be an object")
     spans = context.get("evidence_spans")
     require(
@@ -269,21 +314,39 @@ def _bind_narrative_span(
         "span_identity_mismatch: span id does not bind its source, locator and text",
     )
 
+    projected = context.get("schema_version") == "revenue-narrative-context/3"
+    group_id, view = _citation_call(citation_selection, binding)
+    resolution = _citation_call(resolve_span, context, span_id=span_id,
+                                group_id=group_id, view=view)
     receipt = context.get("read_receipt")
-    manifest = context.get("manifest")
-    source_ref = context.get("source_ref")
     narrative_ref = context.get("narrative_ref")
-    require(isinstance(receipt, dict) and isinstance(manifest, dict),
-            "narrative_context is missing its read receipt or manifest")
-    require(isinstance(source_ref, dict) and isinstance(narrative_ref, dict),
-            "narrative_context is missing its source or narrative reference")
-    content_sha256 = source_ref.get("content_sha256")
-    require(
-        manifest.get("content_sha256") == content_sha256,
-        "narrative manifest/source content hash mismatch",
-    )
-    published_date = manifest.get("published_date")
-    read_at = receipt.get("read_at")
+    require(isinstance(receipt, dict) and isinstance(narrative_ref, dict),
+            "narrative_context is missing its read receipt or narrative reference")
+    if projected:
+        parent = _projected_parent(context, span)
+        content_sha256 = parent.get("content_sha256")
+        published_date = None
+        read_at = receipt.get("observed_at")
+        metadata = context.get("source_metadata")
+        metadata = metadata if isinstance(metadata, dict) else {}
+        title, publisher, url = metadata.get("title") or "Narrative source", "company-wiki", None
+        locator = span["structured_value"]["source_locator"]
+    else:
+        manifest = context.get("manifest")
+        source_ref = context.get("source_ref")
+        require(isinstance(manifest, dict) and isinstance(source_ref, dict),
+                "narrative_context is missing its manifest or source reference")
+        content_sha256 = source_ref.get("content_sha256")
+        require(
+            manifest.get("content_sha256") == content_sha256,
+            "narrative manifest/source content hash mismatch",
+        )
+        published_date = manifest.get("published_date")
+        read_at = receipt.get("read_at")
+        title = manifest.get("title") or "Narrative source"
+        publisher = manifest.get("collector_name") or "company-wiki"
+        url = manifest.get("source_url")
+        locator = span["locator"]
     try:
         information = qualify_source_information(source_sha256=content_sha256,
             published_date=published_date, as_of=iso_date(receipt.get("as_of_date"), "narrative as_of_date"))
@@ -321,20 +384,20 @@ def _bind_narrative_span(
     bound_source = {
         "source_id": source_label,
         "source_type": "earnings_transcript",
-        "title": manifest.get("title") or "Narrative source",
-        "publisher": manifest.get("collector_name") or "company-wiki",
-        "url": manifest.get("source_url"),
+        "title": title,
+        "publisher": publisher,
+        "url": url,
         "published_date": published_date,
         "accessed_date": captured_date,
-        "page_or_section": span["locator"],
+        "page_or_section": locator,
         "capture": capture,
     }
     details = {
         "excerpt": raw_text.strip(),
-        "locator": span["locator"],
+        "locator": locator,
         "content_sha256": content_sha256,
         "receipt_sha256": capture["receipt_sha256"],
         "span_id": span_id,
         "artifact_version_id": narrative_ref.get("artifact_version_id"),
     }
-    return bound_source, details
+    return bound_source, details, resolution
