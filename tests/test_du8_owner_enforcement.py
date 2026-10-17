@@ -170,17 +170,25 @@ class InputIndependenceTests(unittest.TestCase):
         """The legacy decision must be recomputed, not read back.
 
         This is the property that survives every bypass found so far: the
-        report must hand the owner a target whose stored comparison rows are
-        withheld, so an echo wrapper has nothing to echo. The spy records what
-        the owner actually received.
+        report must hand the owner a view with NO published comparison rows in
+        either argument — the target's own ``scenario_comparison`` or the same
+        field inside ``result["management_target_coverage"]`` — so an echo
+        wrapper has nothing to echo wherever it looks. The spy records what the
+        owner actually received.
         """
         data = legacy_annual_model()
         result = run_forecast(data)
         original = target_comparison.compare_target_measurement
-        supplies: list[object] = []
+        supplies: list[tuple] = []
 
         def spy(target, res, parameters=None, *, periods=None):
-            supplies.append(target.get("scenario_comparison"))
+            coverage = res.get("management_target_coverage") or {}
+            published = [
+                (item.get("scenario_comparison"))
+                for item in coverage.get("targets", [])
+                if isinstance(item, dict)
+            ]
+            supplies.append((target.get("scenario_comparison"), published))
             return original(target, res, parameters, periods=periods)
 
         target_comparison.compare_target_measurement = spy
@@ -193,10 +201,13 @@ class InputIndependenceTests(unittest.TestCase):
 
         self.assertTrue(supplies, "the owner was never asked to compute")
         self.assertTrue(
-            any(supplied is None for supplied in supplies),
-            "no owner call withheld the stored comparison rows; the decision "
-            f"may be read back from the artifact instead of recomputed "
-            f"(supplied values: {supplies})",
+            any(
+                target_rows is None and not any(published)
+                for target_rows, published in supplies
+            ),
+            "every owner call still carried published comparison rows in the "
+            f"target or in the result view; the decision may be read back "
+            f"from the artifact instead of recomputed (supplied: {supplies})",
         )
 
 

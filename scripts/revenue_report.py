@@ -268,6 +268,37 @@ def _validate_segment_opening_bases(
     )
 
 
+def _model_view_without_comparison_rows(result: dict) -> dict:
+    """A view of ``result`` with every published comparison row removed.
+
+    Report validation recomputes each management-target decision by handing
+    the comparison owner the model it just verified. An implementation that
+    answered with the artifact's own rows — the shape three successive
+    adversarial reviews used to make the check tautological — can no longer do
+    so: both arguments are stripped of the published verdicts, so the only way
+    to produce them is to recompute from the revenue paths.
+
+    Everything the comparison actually reads (``consolidated_forecast``,
+    ``segments``, ``parameter_trace``, ``schema_version``, ``currency``,
+    ``unit``) is preserved untouched. The copy is shallow and small: one new
+    coverage dict and one new target list.
+    """
+    coverage = result.get("management_target_coverage")
+    targets = coverage.get("targets") if isinstance(coverage, dict) else None
+    if not isinstance(targets, list) or not any(
+        isinstance(item, dict) and "scenario_comparison" in item for item in targets
+    ):
+        return result
+    stripped = [
+        ({key: value for key, value in item.items() if key != "scenario_comparison"}
+         if isinstance(item, dict) else item)
+        for item in targets
+    ]
+    view = dict(result)
+    view["management_target_coverage"] = dict(coverage, targets=stripped)
+    return view
+
+
 def _validate_confidence_block(confidence: Any) -> None:
     """Recompute confidence score/rating/gates (FC-1204-b)."""
     require(
@@ -955,7 +986,13 @@ def _validate_forecast_output(
                     f"invalid management target measurement periods: {target_id}",
                 )
             if is_typed_target(target):
-                require(comparisons == compare_target_measurement(target, result),
+                # Same withholding rule as the legacy branch: the typed owner
+                # ignores `scenario_comparison`, so stripping it cannot change
+                # a genuine result, while it denies an echo-shaped wrapper the
+                # artifact's own verdicts.
+                require(comparisons == compare_target_measurement(
+                            dict(target, scenario_comparison=None),
+                            _model_view_without_comparison_rows(result)),
                         f"typed management target comparison recomputation mismatch: {target_id}")
                 continue
             if target["treatment"] in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
@@ -1038,17 +1075,18 @@ def _validate_forecast_output(
                     )
                 # The decision itself is re-derived by the one owner from the
                 # report's OWN reading of the model, then compared row by row.
-                # The stored rows are withheld from the owner, so this cannot
-                # become a self-confirming comparison: the observed values were
-                # computed here from the model, not echoed from the artifact.
-                #
-                # This shape replaced a plain `comparisons == owner(target)`
-                # check, which successive adversarial reviews defeated (decoy
-                # call, unreachable binding, echo wrapper): each satisfied it by
-                # returning something derived from the artifact under check.
+                # The published rows are withheld from BOTH arguments — the
+                # target's own `scenario_comparison` and the same field inside
+                # `result["management_target_coverage"]` — so an echo wrapper
+                # that derives its return value from the artifact under check
+                # (the shape three adversarial reviews used) has no published
+                # answer left to read and fails closed.
+                # Every field the owner actually needs — revenue paths,
+                # parameters, schema, currency — is untouched by this view;
+                # only the comparison verdicts are removed.
                 expected_rows = compare_target_measurement(
                     dict(target, scenario_comparison=None),
-                    result,
+                    _model_view_without_comparison_rows(result),
                     periods=[target["target_period"]]
                     if result["schema_version"] == "3.1"
                     else target["measurement_periods"],

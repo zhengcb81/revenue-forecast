@@ -213,33 +213,39 @@ owner 调用不得只被赋值而不参与判定。
 **关键教训（记录以免重犯）**："某处出现了 owner 名字"与"结果由 owner 的返回值决定"
 是两回事。前者可被诱饵调用满足。
 
-**为什么最终改变了报告侧的校验形状**：静态 guard 与"调用/可毒化"式行为断言
-连续被三轮独立审查攻破：
+**最终结论：报告侧不再"调用一次并比较"，而是"扣留答案后重算"**
 
-1. 计数"源文本包含 owner 名字" → 诱饵调用
-   `require(恒真 or bool(owner(...)))` 即可满足；
-2. 计数"形状正确的 `comparisons == owner(...)` 站点" → **不可达分支**
-   `if target["treatment"] == "__never__":` 加一个忠于 owner 的本地带宽即可满足；
-3. 断言"owner 被调用且可毒化" → **回声包装器**：先调用真 owner，再返回一个由
-   **被校验工件自身的行**推导出的映射，使等式退化为恒真。
+三轮独立审查用三种方式攻破了先前的形状检查，共同点是实现可以**返回一个源自被校验
+工件自身**的值，使等式退化为恒真：诱饵调用、不可达绑定、回声包装器。
 
-三者的共同点是都能被"返回一个源自工件自身"的值满足。**根治办法不在加 guard，
-而在报告侧的校验形状本身**：报告现在向 owner 请求**基于自己读到的模型**重算的行
-（传入 `dict(target, scenario_comparison=None)`，即**扣留已发布行**），
-再逐行比对 `meets_target` 与 `attainment_ratio`。owner 看不到工件的答案，
-因此回声无法满足。
+根治办法不在加 guard，而在**扣留答案**：报告在向 owner 请求重算时，把
+`target["scenario_comparison"]` 与 `result["management_target_coverage"]` **两处**
+的已发布行都置空（`dict(target, scenario_comparison=None)` +
+`_model_view_without_comparison_rows(result)`）。owner 需要的模型输入（收入路径、
+参数、schema、币种）原样保留，只扣留判定结论本身。回声包装器因此**无答案可回声**，
+只能真正重算——而真正重算正是本卡要求的形态。typed 与 legacy 两分支统一如此。
+
+**唯一必须守住的不变量是：任何包装器都不能让伪造被接受。** 这正是施工卡
+"报告验证还必须能抓伪造结果"的本意。
 
 | 攻击 | 静态 guard | 行为断言 | 伪造 `meets_target` 端到端 |
 |---|---|---|---|
 | 本地带宽重写 | CAUGHT | CAUGHT | 拒绝 |
 | 诱饵 `or` 调用 | CAUGHT | CAUGHT | 拒绝 |
 | 不可达绑定 + 忠实本地带宽 | 全绿 | **CAUGHT** | 拒绝 |
-| **回声包装器**（审查发现的最强攻击） | — | **CAUGHT（23 failed）** | **拒绝** |
+| 回声包装器（从 target 行回声） | — | **CAUGHT（23 failed）** | 拒绝 |
+| 回声包装器（从 result[coverage] 回声） | — | **CAUGHT（23 failed）** | 拒绝 |
+| 混合包装器（有行时回声、被扣留时真算） | 全绿 | 全绿 | **拒绝** |
 
-`receipts/guard-attack-5-echo.txt` 记录了关键对比：未改动的树上，翻转 `meets_target`
-并重封 `result_sha256` 与 publication receipt 会被拒（
-`management target meets_target mismatch`）；装上回声包装器后，行为断言 23 个失败，
-篡改同样被拒——**不再有"全绿却接受伪造"的窗口**。
+混合包装器在被扣留后返回的是真重算结果，行为上与真代码等价，因此**全绿是合理的**
+——它此时就是真代码。关键不在"是否存在包装器"，而在**无论如何包装，伪造都无法通过**：
+`receipts/guard-attack-7-hybrid.txt` 记录该配置下三种模型的伪造全部被拒；
+`receipts/guard-attack-6-result-echo.txt` 记录从 `result[coverage]` 回声同样被 23 个
+行为断言拦下。
+
+未改动的树上，同样的篡改（翻转 `meets_target` 并重封 `result_sha256` 与
+publication receipt）被拒：legacy 报 `management target meets_target mismatch`，
+typed 报 `typed management coverage/input binding mismatch`
 
 所有攻击均在可还原写入上执行，事后源码文件与 HEAD 逐字节一致，仅 guard 测试本身有意变更。
 
@@ -267,13 +273,18 @@ sentinel 用 `scripts/publication_registry.py` 自身的 append 写入**链有�
 预存字节保留、每行仍可解析、仓根不产生 registry 文件。
 A 节点临时探针 `tools/du8_probe_*.py`、`tools/du8_scan.py`、
 `tools/du8_guard_attack_check.py`、`tools/du8_attack_debug.py`
-均在交付前删除，未入 commit；攻击复现结论保存在
-`receipts/guard-attack-check.txt`。
+均在交付前删除，未入 commit；随后新增的临时攻击复现工具
+`tools/du8_decoy_attack.py`、`tools/du8_all_attacks.py`、`tools/du8_escape_check.py`、
+`tools/du8_echo_check.py`、`tools/du8_final_attacks.py`、`tools/du8_typed_hole.py`、
+`tools/du8_result_echo_check.py`、`tools/du8_hybrid_check.py`、
+`tools/du8_verify_freeze.py`、`tools/du8_freeze_recheck2.py` 同样已删除。
+`git status` 空即为佐证；每次攻击的结论保存在 `receipts/guard-attack-*.txt`。
 
 ## 10. ROOT 如何接收
 
-1. `git log` 确认最终 commit `67b15a60eda6894162523f64fa5e02a619106f07`
-   与 `handoff.json.implementation_commits` 对齐；`git status` 应为空。
+1. `git log` 确认 tip 不早于 `handoff.json.implementation_commits` 的最后一项；
+   `git status --porcelain -uall` 应为空。源码自 `03f35e91` 冻结，见
+   `handoff.json.frozen_source_tree`。
 2. 跑 §5 的集中回归命令复现 497 passed。
 3. 独立验收建议重点：用 `git diff <base> <final>` 确认白名单外零改动；
    用 §2 的反例在基线上复核 RED 真实存在；重放

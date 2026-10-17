@@ -5,14 +5,27 @@
   "branch": "codex/du8-rf-comparison-20261016",
   "implementation_commits": [
     "4fcdbb5ca8a9ebd3d69708ec4427a64801abd1f2",
-    "03f35e918540c4b8bc0d2730417b412012632ece"
+    "03f35e918540c4b8bc0d2730417b412012632ece",
+    "67b15a60eda6894162523f64fa5e02a619106f07",
+    "af149bf16db1933ea7cfa31d2f5aeb158e6af568",
+    "b649a25acea5fbda4c73c30dfb18fb8c74b6c725",
+    "9368064d39e8c8dbdcde5d7798bf741395dd72d6",
+    "8ccdda359493474d521bfd409c526aa9b1e5ea28",
+    "6de6a0c45bf738a295e1161f06edb6a5e3b2bdc2"
   ],
   "handoff_commits": [
     "7f286d811d5cd80f1f7e4339a0961671b125428a",
-    "67b15a60eda6894162523f64fa5e02a619106f07",
     "158842595eec45822220190ff9139c42eb285947",
+    "6182093bf4de07b3d5bd441ca337fac1061df2cb",
     "a957f63619760026975cbceee0206d0d50063c37",
-    "af149bf16db1933ea7cfa31d2f5aeb158e6af568"
+    "788c62193398f347ea9fe04367e3760bf45fc5af",
+    "5117f870c962f28365581609d2e67e8a5149f030",
+    "e86cac1ec1bc9bce211dc3bcf1096c6be37da872",
+    "1aad0262e66bd63f876cabb31933248d9b2437d3",
+    "bbdebf6447d7c932310a3b01753103d29b3f0efb",
+    "67af0a4dbffbacfd8a6186f153d5cf39e709653e",
+    "e7d987953134a2575006739d112eee53634ce151",
+    "5a92b84336433482c24589889ef097f3a9e22d65"
   ],
   "frozen_source_tree": "scripts/ is byte-identical from 03f35e91 onward: run `git diff 03f35e91 <HEAD> -- scripts` and expect no output. tests/test_du8_target_comparison_owner.py was hardened three times after that commit in response to independent adversarial review; every other test and fixture file is byte-identical from 03f35e91 onward. Verify the whole tree with `git diff 03f35e91 <HEAD> --stat -- scripts tests`.",
   "changed_paths": [
@@ -69,7 +82,7 @@
   },
   "tests": [
     {
-      "command": "python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py tests/test_du8_owner_enforcement.py tests/test_du8_owner_enforcement.py tests/test_du8_hand_anchors.py tests/test_du8_target_report_roundtrip.py -q",
+      "command": "python -X utf8 -B -m pytest tests/test_du8_target_comparison_owner.py tests/test_du8_owner_enforcement.py tests/test_du8_hand_anchors.py tests/test_du8_target_report_roundtrip.py -q",
       "exit_code": 0,
       "passed": 118,
       "failed": 0,
@@ -147,6 +160,22 @@
       "failed": 23,
       "skipped": 0,
       "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-5-echo.txt"
+    },
+    {
+      "command": "python -X utf8 -B tools/du8_result_echo_check.py  (adversarial: echo rows from the target, then from result[coverage])",
+      "exit_code": 0,
+      "passed": 0,
+      "failed": 23,
+      "skipped": 0,
+      "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-6-result-echo.txt"
+    },
+    {
+      "command": "python -X utf8 -B tools/du8_hybrid_check.py  (adversarial: hybrid wrapper, echo-when-rows-present, recompute-when-stripped)",
+      "exit_code": 0,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "receipt": "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-7-hybrid.txt"
     }
   ],
   "red_receipts": [
@@ -160,7 +189,9 @@
     "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-matrix.txt",
     "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-4-escape.txt",
     "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-5-echo.txt",
-    "docs/plans/du8-comparison-2026-10-16/receipts/behaviour-freeze-after-report-fix.txt"
+    "docs/plans/du8-comparison-2026-10-16/receipts/behaviour-freeze-after-report-fix.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-6-result-echo.txt",
+    "docs/plans/du8-comparison-2026-10-16/receipts/guard-attack-7-hybrid.txt"
   ],
   "independent_expected_basis": [
     "tests/fixtures/du8_comparison/hand_anchors.py recomputes every frozen constant with decimal and imports no production comparison code",
@@ -190,7 +221,8 @@
     "the report binds modeled_value/target_value with rel_tol=1e-9 and abs_tol=1e-9, so a drift below that band is accepted; this is the pre-existing identity tolerance, not a comparison tolerance",
     "receipts/wider-preexisting-*.txt record 17 pre-existing failures that are byte-identical between baseline e86488a7 and the implementation commit",
     "two independent adversarial reviews of 4fcdbb5c found: (1) the first guard suite was defeatable by rewriting the legacy delegation while the typed branch kept the owner symbol, now fixed and reproduced as receipts/guard-attack-check.txt; (2) typed_level_model did not set comparison_basis and so silently exercised the legacy path, now fixed and asserted by test_typed_and_legacy_models_really_take_different_paths; (3) the handoff was uncommitted with a fabricated commit SHA, now corrected",
-    "the receipt b-regression-focused.txt covers all 26 adjacent suites including the three DU8 suites (486 passed, 7 skipped)"
+    "the receipt b-regression-focused.txt covers all 26 adjacent suites including the three DU8 suites (486 passed, 7 skipped)",
+    "a hybrid wrapper that echoes when rows are present but genuinely recomputes when they are stripped passes the guard suite (it is behaviourally the real code on the validation path); receipts/guard-attack-7-hybrid.txt confirms every tampered meets_target is still REJECTED in that configuration - the guarantee is that no wrapper can make a forgery accepted, not that no wrapper exists"
   ],
   "not_run": [
     "real company data, real filings, any supplier or network call (0 by design)",
