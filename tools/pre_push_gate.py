@@ -101,6 +101,8 @@ SMOKE_TESTS = (
     "tests/test_schema_compatibility.py",
     "tests/test_research_support_diagnostics.py",
     "tests/test_scoped_calibration_support.py",
+    "tests/test_r1_source_boundary.py",
+    "tests/test_r1_target_scope.py",
 )
 
 

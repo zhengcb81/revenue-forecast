@@ -25,10 +25,9 @@ repos:
           scripts/trust_anchor.py
         language: system
         pass_filenames: false
-        # Run only when one of the checked modules is staged.
-        files: >-
-          ^scripts/(contracts/|schema_compatibility\.py|filing_fetch_client\.py|
-          trust_anchor\.py)
+        # Public contracts import other scripts transitively; any runtime change
+        # triggers the same small existing check, without adding another gate.
+        files: ^scripts/.*\.py$
 
       # FC-1307-a, vendored from company-wiki/scripts/host_assumption_guard.py
       # (byte-identical; tests/test_fc1307a_host_assumption_gate.py checks the drift
