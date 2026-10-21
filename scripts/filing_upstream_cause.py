@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 from decimal import Decimal, InvalidOperation
 from typing import Any
@@ -13,7 +14,14 @@ STAGES = OPERATIONS | {"source_query", "source_operation", "ambiguous", "not_fou
                        "source_reader", "source_record", "narrative_reader"}
 RETRY_SCOPES = frozenset({"none", "catalog_contention", "caller_decision"})
 # Versioned public vocabulary, not runtime imports of a provider's private files.
-CODES = frozenset({
+LOCAL_SOURCE_CODES = frozenset({
+    "catalog_unavailable", "reader_unavailable", "local_candidate_limit", "local_prepare_deadline",
+    "local_source_group_limit", "local_discovery_entry_limit", "local_metadata_byte_limit",
+    "local_metadata_changed", "local_metadata_unreadable", "local_metadata_incomplete",
+    "local_original_registration_failed", "local_source_changed", "placeholder_not_hydrated",
+    "publication_date_unknown",
+})
+CODES = LOCAL_SOURCE_CODES | frozenset({
     "catalog_locked", "catalog_busy", "db_timeout", "worker_paused", "legacy_evidence_archived", "fatal",
     "maintenance_operation_retired", "producer_start_failed", "producer_deadline_exceeded",
     "producer_output_exceeded", "producer_transport_failure", "unknown",
@@ -27,7 +35,7 @@ CODES = frozenset({
     "acquisition_budget_exceeded", "acquisition_validation_failed", "canonical_import_failed",
     "local_metadata_gap", "no_registered_local_source", "no_local_match", "source_not_found", "invalid_producer_schema",
 })
-ACQUISITION_CODES = CODES - {"catalog_locked", "catalog_busy", "db_timeout", "worker_paused", "legacy_evidence_archived", "fatal",
+ACQUISITION_CODES = CODES - LOCAL_SOURCE_CODES - {"catalog_locked", "catalog_busy", "db_timeout", "worker_paused", "legacy_evidence_archived", "fatal",
     "maintenance_operation_retired", "producer_start_failed", "producer_deadline_exceeded", "producer_output_exceeded",
     "producer_transport_failure", "unknown", "local_metadata_gap", "no_registered_local_source", "no_local_match",
     "source_not_found", "invalid_producer_schema"}
@@ -270,12 +278,125 @@ def validated_acquisition_observation(value: Any) -> dict[str, Any] | None:
     return result
 
 
+def validated_companion_observation(value: Any) -> dict[str, Any] | None:
+    """Preserve an undispatched companion separately from the filing failure.
+
+    These are observed zero-dispatch states, not provider capability claims.
+    A malformed object is omitted whole; arbitrary child bodies never become
+    public error text. Completed companion outcomes stay in the full success
+    envelope and are not reinterpreted here.
+    """
+    if not isinstance(value, dict):
+        return None
+    status = value.get("status")
+    if not isinstance(status, str):
+        return None
+    if status == "not_requested":
+        return dict(value) if set(value) <= {"status", "retryable"} and value.get("retryable", False) is False else None
+    if status in {"period_unresolved", "not_applicable", "request_error"}:
+        reasons = {"period_unresolved": "exact_fy_q_required",
+                   "not_applicable": "filing_not_capture_ready",
+                   "request_error": "invalid_companion_request"}
+        return dict(value) if (set(value) == {"status", "reason", "retryable"}
+            and value["reason"] == reasons[status] and value["retryable"] is False) else None
+    required = {"status", "reason", "retryable", "intent", "fiscal_year", "fiscal_quarter",
+                "provider_started", "provider_requests", "provider_response_bytes", "provider_usage_complete"}
+    if (status != "not_run" or not required <= set(value)
+            or not set(value) <= required | {"provider", "acquisition_limits"}
+            or value["reason"] != "filing_failed_before_companion_dispatch"
+            or value["retryable"] is not False or value["provider_started"] is not False
+            or type(value["provider_requests"]) is not int or value["provider_requests"] != 0
+            or type(value["provider_response_bytes"]) is not int or value["provider_response_bytes"] != 0
+            or value["provider_usage_complete"] is not True
+            or not isinstance(value["intent"], str) or value["intent"] not in {"reuse_only", "fetch_if_missing"}
+            or type(value["fiscal_year"]) is not int or not 1900 <= value["fiscal_year"] <= 2100
+            or type(value["fiscal_quarter"]) is not int or value["fiscal_quarter"] not in {1, 2, 3, 4}
+            or value.get("provider") not in (None, "fmp")):
+        return None
+    limits = value.get("acquisition_limits")
+    if limits is not None:
+        if (not isinstance(limits, dict) or set(limits) != {"max_bytes", "timeout_seconds", "max_cost_usd"}
+                or type(limits["max_bytes"]) is not int or limits["max_bytes"] <= 0
+                or type(limits["timeout_seconds"]) not in (int, float)
+                or not math.isfinite(limits["timeout_seconds"]) or limits["timeout_seconds"] <= 0
+                or not isinstance(limits["max_cost_usd"], str)
+                or re.fullmatch(r"(?:0|[1-9][0-9]*)(?:\.[0-9]{1,2})?", limits["max_cost_usd"]) is None):
+            return None
+    elif value["intent"] == "fetch_if_missing":
+        return None
+    return {**value, **({"acquisition_limits": dict(limits)} if limits is not None else {})}
+
+
+def validated_filing_fetch_failure(value: Any) -> dict[str, Any] | None:
+    """Retain the small pathless public FF failure, not arbitrary stderr.
+
+    Unknown or unsafe payloads keep their separate safe diagnostics but are not
+    propagated as a complete sidecar. No identity lookup or source IO occurs.
+    """
+    fields = {"schema_version", "status", "request_period", "filing", "transcript", "calls", "downloads"}
+    if (not isinstance(value, dict) or not fields <= set(value)
+            or not set(value) <= fields | {"acquisition_observation"}
+            or value["schema_version"] != "2.0" or not isinstance(value["status"], str)
+            or value["status"] not in FAILURE_STATUSES):
+        return None
+    filing = value["filing"]
+    allowed = {"status", "reason", "retryable", "upstream_cause", "acquisition_failure",
+               "stage", "attempts", "request_diagnostic", "producer_exit_code"}
+    if (not isinstance(filing, dict) or not {"status", "reason", "retryable"} <= set(filing)
+            or not set(filing) <= allowed or filing["status"] != value["status"]
+            or type(filing["retryable"]) is not bool):
+        return None
+    reason = filing["reason"]
+    if (not isinstance(reason, str) or not 0 < len(reason) <= 512
+            or any(ord(c) < 32 for c in reason) or any(c in reason for c in ("/", "\\", "?", "="))):
+        return None
+    for key, validator in (("upstream_cause", validated_cause), ("acquisition_failure", validated_acquisition_failure),
+                           ("request_diagnostic", validated_request_diagnostic)):
+        if key in filing and validator(filing[key]) is None:
+            return None
+    if "stage" in filing and (not isinstance(filing["stage"], str) or filing["stage"] not in STAGES):
+        return None
+    for key in ("attempts", "producer_exit_code"):
+        if key in filing and type(filing[key]) is not int:
+            return None
+    if any(type(value[k]) is not int or value[k] < 0 for k in ("calls", "downloads")):
+        return None
+    period = value["request_period"]
+    if (not isinstance(period, dict) or set(period) != {"mode", "fiscal_year", "fiscal_period", "as_of_date"}
+            or not isinstance(period["mode"], str) or period["mode"] not in {"exact", "latest_as_of"}
+            or (period["fiscal_year"] is not None and (type(period["fiscal_year"]) is not int or not 1900 <= period["fiscal_year"] <= 2200))
+            or (period["fiscal_period"] is not None and not _candidate_token(period["fiscal_period"], maximum=32))
+            or not isinstance(period["as_of_date"], str) or re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", period["as_of_date"]) is None):
+        return None
+    companion = validated_companion_observation(value["transcript"])
+    if companion is None:
+        return None
+    if "acquisition_observation" in value and validated_acquisition_observation(value["acquisition_observation"]) is None:
+        return None
+    # A bounded JSON copy also rejects non-wire types and cannot share mutable
+    # option/limit dictionaries with a caller's request.
+    try:
+        encoded = json.dumps(value, ensure_ascii=False, allow_nan=False)
+    except (ValueError, TypeError, RecursionError):
+        return None
+    return json.loads(encoded) if len(encoded.encode("utf-8")) <= 16384 else None
+
+
 def failure_observation(payload: Any) -> dict[str, Any]:
     """Only allowlisted observed facts cross both RF subprocess boundaries."""
     if not isinstance(payload, dict):
         return {}
     detail = failure_detail(payload)
     result: dict[str, Any] = {}
+    companion = validated_companion_observation(payload.get("transcript", payload.get("companion_observation")))
+    if companion is not None:
+        result["companion_observation"] = companion
+    complete = validated_filing_fetch_failure(payload.get("filing_fetch_result", payload))
+    if complete is not None:
+        result["filing_fetch_result"] = complete
+    exit_code = detail.get("producer_exit_code")
+    if type(exit_code) is int:
+        result["producer_exit_code"] = exit_code
     cause = validated_cause(detail.get("upstream_cause"))
     diagnostic = validated_request_diagnostic(detail.get("request_diagnostic"))
     receipt = validated_acquisition_failure(detail.get("acquisition_failure"))

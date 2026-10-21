@@ -67,7 +67,7 @@ def validate_availability_evidence(value: Any, source_sha256: str | None) -> dic
         raise SourceClockError("source_availability_invalid: proof fields are not exact")
     if value["schema_version"] != AVAILABILITY_SCHEMA_VERSION:
         raise SourceClockError("source_availability_invalid: unsupported proof schema")
-    if value["basis"] not in {"prior_verified_capture", "primary_archive"}:
+    if value["basis"] not in {"prior_verified_capture", "primary_archive", "current_verified_open"}:
         raise SourceClockError("source_availability_invalid: unsupported proof basis")
     digest = value["source_sha256"]
     if not isinstance(digest, str) or not _SHA.fullmatch(digest):

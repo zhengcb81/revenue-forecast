@@ -56,6 +56,9 @@ class _ClientError(RuntimeError):
         source_failure_reason: str | None = None,
         acquisition_observation: dict[str, Any] | None = None,
         request_diagnostic: dict[str, Any] | None = None,
+        companion_observation: dict[str, Any] | None = None,
+        filing_fetch_result: dict[str, Any] | None = None,
+        producer_exit_code: int | None = None,
     ) -> None:
         super().__init__(message)
         self.status = status if isinstance(status, str) and status in FAILURE_STATUSES else None
@@ -65,7 +68,12 @@ class _ClientError(RuntimeError):
         observed = failure_observation({"upstream_cause": upstream_cause, "acquisition_failure": acquisition_failure,
                                        "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads,
                                        "source_failure_reason": source_failure_reason,
-                                       "acquisition_observation": acquisition_observation, "request_diagnostic": request_diagnostic})
+                                       "acquisition_observation": acquisition_observation, "request_diagnostic": request_diagnostic,
+                                       "companion_observation": companion_observation,
+                                       "filing_fetch_result": filing_fetch_result, "producer_exit_code": producer_exit_code})
+        self.companion_observation = observed.get("companion_observation")
+        self.filing_fetch_result = observed.get("filing_fetch_result")
+        self.producer_exit_code = observed.get("producer_exit_code")
         self.request_diagnostic = observed.get("request_diagnostic")
         self.upstream_cause = observed.get("upstream_cause")
         self.acquisition_failure = observed.get("acquisition_failure")
@@ -363,6 +371,9 @@ def _emit_error(
     source_failure_reason: str | None = None,
     acquisition_observation: dict[str, Any] | None = None,
     request_diagnostic: dict[str, Any] | None = None,
+    companion_observation: dict[str, Any] | None = None,
+    filing_fetch_result: dict[str, Any] | None = None,
+    producer_exit_code: int | None = None,
 ) -> None:
     """Write a structured error document to stderr (success stream on stdout)."""
     payload: dict[str, Any] = {
@@ -376,7 +387,9 @@ def _emit_error(
     payload.update(failure_observation({"upstream_cause": upstream_cause, "acquisition_failure": acquisition_failure,
                                        "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads,
                                        "source_failure_reason": source_failure_reason,
-                                       "acquisition_observation": acquisition_observation, "request_diagnostic": request_diagnostic}))
+                                       "acquisition_observation": acquisition_observation, "request_diagnostic": request_diagnostic,
+                                       "companion_observation": companion_observation,
+                                       "filing_fetch_result": filing_fetch_result, "producer_exit_code": producer_exit_code}))
     sys.stderr.write(json.dumps(payload, ensure_ascii=False))
     sys.stderr.write("\n")
 
@@ -465,6 +478,9 @@ def main(argv: list[str] | None = None) -> int:
             source_failure_reason=exc.source_failure_reason,
             acquisition_observation=exc.acquisition_observation,
             request_diagnostic=exc.request_diagnostic,
+            companion_observation=exc.companion_observation,
+            filing_fetch_result=exc.filing_fetch_result,
+            producer_exit_code=exc.producer_exit_code,
         )
         return 2
 
