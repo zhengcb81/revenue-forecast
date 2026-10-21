@@ -23,7 +23,7 @@ For every material or contextually relevant revenue statement record:
 - raw value, currency, scale and unit exactly as communicated;
 - measurement basis: `annual_period`, `run_rate_at_period_end`, `cumulative_periods`, or `ambiguous`;
 - explicit `measurement_periods` used by the model and a rationale for translating the source wording into those periods;
-- metric definition and company/segment/custom scope;
+- metric definition and company/segment/explicit segment_group/custom scope;
 - whether its perimeter is `matched`, `reconciled`, or `mismatch` versus recognized revenue;
 - normalized comparison value in the model currency/unit and the normalization rationale when comparable;
 - treatment: `modeled_scenario`, `scenario_boundary`, `independent_benchmark`, `sensitivity_only`, `unmodeled_data_gap`, or `out_of_horizon`;
@@ -173,3 +173,45 @@ typed `management-target-comparison/1` 行键集与全部数值语义保持 DU6 
 `modeled_value`/`target_value`/`attainment_ratio`/`meets_target`/
 `measurement_periods`/`modeled_period_values` 仍被独立锚点拒绝。
 不得以"owner 已算过"为由删除该绑定。
+
+
+## Typed ratio dimensions and selected native segments (R1)
+
+A typed `year_over_year_growth` raw quantity uses `raw_currency="dimensionless"`;
+CNY, USD and HKD belong to revenue amounts, not a growth ratio. Formal validation
+rejects monetary raw currencies even when a typed target is an unmodeled gap.
+The canonical target has `comparison_currency=null` and `comparison_scale=null`;
+the comparison row's unit is `ratio`. A separately derived revenue benchmark
+retains the model's actual currency and scale. Raw input bytes are not rewritten.
+Legacy qualitative targets without a typed comparison spec retain their previous
+interpretation; pure arithmetic helper callers may omit unused metadata but
+cannot pass an explicitly wrong raw currency. Existing `raw_ratio_basis` values
+remain `percent`, `fraction` (decimal ratio), and `level_multiple`. A change in
+percentage points is not itself a year-over-year growth level.
+
+For a management target covering an explicit subset of the existing flat native
+segments, use a typed comparison with:
+
+```json
+{"type":"segment_group","name":"Continuing services","segment_names":["Services A","Services B"]}
+```
+
+Member names must each exist exactly once. Empty, duplicate, unknown or nested
+members, reused base-parameter aliases, and extra adjustment selections are
+refused by named diagnostics. This is a selector over existing external-revenue
+contributions, not a new forecast segment, hierarchical aggregation engine or
+an inferred group based on its display name. Actual economic perimeter and
+overlap still require source evidence; names alone cannot prove disjointness.
+The existing native monetary/period/FX checks continue to apply.
+
+The shared scope resolver supplies validation, actual parameter ancestry and
+measurement. Annual levels sum the selected members' existing effective revenue
+(with the historical recognized-revenue fallback). YoY growth sums the *same*
+members in the base and forecast periods; company adjustments and excluded
+businesses are not silently added. Every selected member must be represented
+by the annual target's mapped native ancestry; a quarterly group uses the
+existing per-scenario quarter ancestry contract. Missing member periods are
+unknown, never zero-filled; missing or nonpositive growth denominators remain
+named comparison gaps. A two-ended management range still has no invented
+midpoint. Legacy `custom` scopes remain unresolved and cannot silently acquire
+members. Independent benchmarks continue to report missed guidance honestly.

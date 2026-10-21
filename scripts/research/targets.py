@@ -35,6 +35,7 @@ from research.target_comparison import (
     is_typed_target,
 )
 from research.target_measurement import validate_typed_target
+from research.target_scope import resolve_scope_segments
 from research.communication_scope import analyze_communication_scope
 
 
@@ -416,7 +417,7 @@ def validate_management_target_coverage(
         scope = target.get("scope")
         require(
             isinstance(scope, dict)
-            and scope.get("type") in {"company", "segment", "custom"},
+            and scope.get("type") in {"company", "segment", "segment_group", "custom"},
             f"invalid management target scope: {target_id}",
         )
         scope_name = scope.get("name")
@@ -429,6 +430,10 @@ def validate_management_target_coverage(
                 scope_name in segment_names,
                 f"unknown management target segment: {target_id}/{scope_name}",
             )
+
+        if scope["type"] == "segment_group":
+            require(is_typed_target(target), "segment_group_requires_typed_comparison")
+            resolve_scope_segments(data, scope)
 
         claim_ids = target.get("claim_ids")
         linked_claims = validate_claim_ids(

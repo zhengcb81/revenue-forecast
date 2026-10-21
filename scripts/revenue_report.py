@@ -1665,6 +1665,8 @@ def render_markdown(result: dict[str, Any]) -> str:
             )
         for target in target_coverage["targets"]:
             if is_typed_target(target):
+                if target["scope"]["type"] == "segment_group":
+                    lines.extend(["", f"- {_escape(target['target_id'])} scope: {_escape(target['scope']['name'])} = {_escape(', '.join(target['scope']['segment_names']))}; base and forecast use the same native members, excluding company adjustments."])
                 dates = ", ".join(f"{sid}:{published}" for sid, published in target.get("source_publication_dates", {}).items())
                 lines.extend(["", f"- {_escape(target['target_id'])} 原文：{_escape(target['statement'])}；来源日期：{_escape(dates)}。",
                               "", "| Scenario | Metric / period | Modeled / unit | Target / range | Base / period | Difference | Status / reason |",
