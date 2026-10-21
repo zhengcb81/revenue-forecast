@@ -20,6 +20,7 @@ LOCAL_SOURCE_CODES = frozenset({
     "local_metadata_changed", "local_metadata_unreadable", "local_metadata_incomplete",
     "local_original_registration_failed", "local_source_changed", "placeholder_not_hydrated",
     "publication_date_unknown",
+    "local_document_kind_unresolved", "local_original_unreadable", "primary_issuer_conflict",
 })
 CODES = LOCAL_SOURCE_CODES | frozenset({
     "catalog_locked", "catalog_busy", "db_timeout", "worker_paused", "legacy_evidence_archived", "fatal",

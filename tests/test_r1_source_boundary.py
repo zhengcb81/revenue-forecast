@@ -454,3 +454,28 @@ def test_undispatched_provider_still_follows_published_ff_token_syntax(provider)
     payload = failed()
     payload["transcript"]["provider"] = provider
     assert "companion_observation" not in failure_observation(payload)
+
+
+def test_local_budget_reason_does_not_remove_provider_budget_receipt_compatibility():
+    from filing_upstream_cause import validated_acquisition_failure
+
+    receipt = {
+        "schema_version": "acquisition-failure/1",
+        "code": "budget_exceeded",
+        "retryable": False,
+        "provider_started": True,
+        "usage_complete": True,
+        "usage_scope": "operation",
+        "acquisition_usage": {
+            "schema_version": "1.0",
+            "response_bytes": 123,
+            "cost_usd": "0",
+        },
+    }
+    assert validated_acquisition_failure(receipt) == receipt
+    payload = failed()
+    payload["filing"]["upstream_cause"]["code"] = "local_document_kind_unresolved"
+    assert (
+        failure_observation(payload)["upstream_cause"]["code"]
+        == "local_document_kind_unresolved"
+    )
