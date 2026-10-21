@@ -396,3 +396,61 @@ def test_companion_preserves_valid_request_budget_without_new_consumer_cap():
         ]
         == 1800
     )
+
+
+def normal_gap():
+    value = failed()
+    value.update(status="gap", calls=3)
+    value["filing"] = {
+        "status": "gap",
+        "reason": "metadata_only_gap_plan",
+        "gap_hash": "e" * 64,
+        "download_events": 0,
+    }
+    value["transcript"] = {
+        "status": "not_applicable",
+        "reason": "filing_not_capture_ready",
+        "retryable": False,
+    }
+    return value
+
+
+def test_normal_gap_complete_result_is_preserved_without_error_retryable():
+    payload = normal_gap()
+    observed = failure_observation(payload)
+    assert observed["filing_fetch_result"] == payload
+    assert observed["companion_observation"] == payload["transcript"]
+
+
+def test_undispatched_provider_is_an_intent_token_not_a_second_capability_list():
+    payload = failed()
+    payload["transcript"]["provider"] = "company_ir"
+    assert (
+        failure_observation(payload)["companion_observation"] == payload["transcript"]
+    )
+    assert failure_observation(payload)["filing_fetch_result"] == payload
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"gap_hash": "bad"},
+        {"download_events": 1},
+        {"download_events": False},
+        {"path": "hidden/source.pdf"},
+        {"unknown": "opaque"},
+    ],
+)
+def test_normal_gap_shape_does_not_admit_invalid_or_physical_fields(change):
+    payload = normal_gap()
+    payload["filing"].update(change)
+    assert "filing_fetch_result" not in failure_observation(payload)
+
+
+@pytest.mark.parametrize(
+    "provider", ["https://private/provider", "FMP", "a", {"name": "fmp"}]
+)
+def test_undispatched_provider_still_follows_published_ff_token_syntax(provider):
+    payload = failed()
+    payload["transcript"]["provider"] = provider
+    assert "companion_observation" not in failure_observation(payload)

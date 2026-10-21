@@ -311,7 +311,9 @@ def validated_companion_observation(value: Any) -> dict[str, Any] | None:
             or not isinstance(value["intent"], str) or value["intent"] not in {"reuse_only", "fetch_if_missing"}
             or type(value["fiscal_year"]) is not int or not 1900 <= value["fiscal_year"] <= 2100
             or type(value["fiscal_quarter"]) is not int or value["fiscal_quarter"] not in {1, 2, 3, 4}
-            or value.get("provider") not in (None, "fmp")):
+            or (value.get("provider") is not None and (
+                not isinstance(value["provider"], str)
+                or re.fullmatch(r"[a-z][a-z0-9_]{1,63}", value["provider"]) is None))):
         return None
     limits = value.get("acquisition_limits")
     if limits is not None:
@@ -340,14 +342,28 @@ def validated_filing_fetch_failure(value: Any) -> dict[str, Any] | None:
             or value["status"] not in FAILURE_STATUSES):
         return None
     filing = value["filing"]
-    allowed = {"status", "reason", "retryable", "upstream_cause", "acquisition_failure",
-               "stage", "attempts", "request_diagnostic", "producer_exit_code"}
-    if (not isinstance(filing, dict) or not {"status", "reason", "retryable"} <= set(filing)
-            or not set(filing) <= allowed or filing["status"] != value["status"]
-            or type(filing["retryable"]) is not bool):
+    if not isinstance(filing, dict) or filing.get("status") != value["status"]:
         return None
+    # The public producer has two failure outcomes: a normal metadata GAP,
+    # and an exception envelope. A normal GAP has a hash/count, not retryable.
+    normal_gap = value["status"] == "gap" and "gap_hash" in filing
+    if normal_gap:
+        required = {"status", "reason", "gap_hash", "download_events"}
+        allowed = required | {"upstream_cause", "acquisition_failure"}
+        if (not required <= set(filing) or not set(filing) <= allowed
+                or not isinstance(filing["gap_hash"], str)
+                or re.fullmatch(r"[0-9a-f]{64}", filing["gap_hash"]) is None
+                or type(filing["download_events"]) is not int or filing["download_events"] != 0):
+            return None
+    else:
+        allowed = {"status", "reason", "retryable", "upstream_cause", "acquisition_failure",
+                   "stage", "attempts", "request_diagnostic", "producer_exit_code"}
+        if (not {"status", "reason", "retryable"} <= set(filing)
+                or not set(filing) <= allowed or type(filing["retryable"]) is not bool):
+            return None
     reason = filing["reason"]
-    if (not isinstance(reason, str) or not 0 < len(reason) <= 512
+    if not (normal_gap and reason is None) and (
+            not isinstance(reason, str) or not 0 < len(reason) <= 512
             or any(ord(c) < 32 for c in reason) or any(c in reason for c in ("/", "\\", "?", "="))):
         return None
     for key, validator in (("upstream_cause", validated_cause), ("acquisition_failure", validated_acquisition_failure),
