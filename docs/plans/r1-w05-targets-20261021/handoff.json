@@ -1,0 +1,259 @@
+{
+  "schema_version": "r1-work-package-handoff/1",
+  "package_id": "W05",
+  "run_id": "r1-20261021-cn-wuxi-apptec",
+  "attempt": "r1-systemic-fix",
+  "status": "ENGINEERING_GREEN_PENDING_ROOT_INDEPENDENT_ACCEPTANCE",
+  "created_at": "2026-10-21T22:39:09.329176+00:00",
+  "source_repo": "revenue-forecast",
+  "worktree": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast-r1-targets",
+  "branch": "codex/r1-targets",
+  "base_head": "9669c4d79cff7bf3e023dbd6cb74c411f4bef7bf",
+  "code_commit": "364330472e2f7ecc263400f8daa0f29ffcfd897f",
+  "changed_files": [
+    {
+      "path": "scripts/research/targets.py",
+      "commit": "364330472e2f7ecc263400f8daa0f29ffcfd897f",
+      "sha256": "b800b6ac1e4e5ff719d8964d68f7e91989eda31d0e54a03f195f3a630a6a1f84",
+      "base_blob_sha256": "c157ad9f2752eb18db28e1c716403ca06faf4edc79476a3299ea133e5f843b87"
+    },
+    {
+      "path": "scripts/research/target_measurement.py",
+      "commit": "364330472e2f7ecc263400f8daa0f29ffcfd897f",
+      "sha256": "9095b09a657901c8dfde6d1776b7783bffe956caef5cbd8e18f7dedf38533424",
+      "base_blob_sha256": "0bd1b697863d89a91a08ffefd8ef4ddbd2913b97c5d2dca9f7888515db8472de"
+    },
+    {
+      "path": "scripts/research/native_dependencies.py",
+      "commit": "364330472e2f7ecc263400f8daa0f29ffcfd897f",
+      "sha256": "0e4c7e60d767ede95b50197f703a9f216b76326227b75dd59eec2c6bf892ed0a",
+      "base_blob_sha256": "7bed36e63dfe61ce96dabbc1a675a5665a2dedea15964fa95aedf816998cfb83"
+    },
+    {
+      "path": "scripts/research/target_scope.py",
+      "commit": "364330472e2f7ecc263400f8daa0f29ffcfd897f",
+      "sha256": "9d75ef70e641e65899b2336bc83492d810bfb01ea5baab3c67323be8ee4a18b5",
+      "base_blob_sha256": null
+    },
+    {
+      "path": "scripts/revenue_report.py",
+      "commit": "364330472e2f7ecc263400f8daa0f29ffcfd897f",
+      "sha256": "b7e9f729b782eac886e21461dd74ec8309693359c499e12be5a0573549cb11dd",
+      "base_blob_sha256": "d3eeecf893fbf5e7c6faa278afe17389bfba5962f35451e36eb7828ed836162b"
+    },
+    {
+      "path": "references/management-targets.md",
+      "commit": "364330472e2f7ecc263400f8daa0f29ffcfd897f",
+      "sha256": "d181b4f935cc7b760b7de6046b5e7c1500003adf633212295745ef5268785387",
+      "base_blob_sha256": "b80cc75a98802efdc831781e8bc5477fb0b0fb7b3320ef405ef3ff9a30534113"
+    },
+    {
+      "path": "tests/test_r1_target_scope.py",
+      "commit": "364330472e2f7ecc263400f8daa0f29ffcfd897f",
+      "sha256": "c07693ad24c00ea968103b956de10c263c4d92aab20f9b9ab2c6d88c9a437697",
+      "base_blob_sha256": null
+    }
+  ],
+  "issues": [
+    "PROCESS-005",
+    "PROCESS-006"
+  ],
+  "root_causes": [
+    "RC-08",
+    "RC-09"
+  ],
+  "public_interfaces": {
+    "scope": {
+      "type": "segment_group",
+      "name": "display only",
+      "segment_names": [
+        "exact native name A",
+        "exact native name B"
+      ]
+    },
+    "resolver": "research.target_scope.resolve_scope_segments(data, scope)",
+    "ratio": "Formal typed year_over_year_growth requires raw_currency=dimensionless; canonical comparison_currency/scale are null; model money benchmark retains actual currency. Input not rewritten.",
+    "membership": "Same native member set for scope validation, actual mapped DAG ancestry and base/effective annual revenue. Flat native external contributions only; no nested group/adjustment guessing.",
+    "compatibility": "Legacy non-typed qualitative and custom semantics unchanged; pure arithmetic partial targets may omit unused metadata, but explicitly wrong currency fails. Existing typed bases percent/fraction/level_multiple preserved; pp change is not YoY level."
+  },
+  "tests": {
+    "command": "python -m pytest tests/test_target_measurement_comparison.py tests/test_du6_target_measurement_boundaries.py tests/test_management_target_semantics.py tests/test_independent_targets.py tests/test_management_targets.py tests/test_du8_target_comparison_owner.py tests/test_du67_typed_builder_composition.py tests/test_architecture_dependency_uses.py tests/test_r1_target_scope.py -q --tb=short --basetemp .planning/r1w05/final2 --junitxml docs/plans/r1-w05-targets-20261021/final2.xml",
+    "exit": 0,
+    "passed": 171,
+    "subtests_passed": 81,
+    "seconds": 8.76,
+    "log": "final2.log",
+    "junit": "final2.xml",
+    "new_cases": 31
+  },
+  "red_tests": {
+    "command": "python -m pytest tests/test_r1_target_scope.py -q --tb=short --basetemp .planning/r1w05/redvalid --junitxml docs/plans/r1-w05-targets-20261021/red-valid.xml",
+    "exit": 1,
+    "result": "19 failed / 1 control passed; scope unsupported and typed currency accepted",
+    "log": "red-valid.log",
+    "junit": "red-valid.xml",
+    "note": "Prior first attempt had missing Unicode basetemp parent; corrected harness location, and a cloned fixture parameter definition conflict was corrected before the valid RED."
+  },
+  "quality_checks": {
+    "ruff": "PASS explicit 6 changed Python files",
+    "public_mypy": "PASS 11 source files",
+    "diff_check": "PASS",
+    "new_cli_e2e": "2 native inputs (annual group and group YoY), each validate->publish+render->snapshot, with real subprocesses"
+  },
+  "actual_live_calls": 0,
+  "provider_post_count": 0,
+  "download_count": 0,
+  "tokens_added": 0,
+  "micro_usd_added": 0,
+  "native_fee_stores_changed": false,
+  "raw_and_config_kept": true,
+  "cleanup_receipt": "cleanup-receipt.json",
+  "independent_review": {
+    "status": "PENDING_ROOT_ASSIGNMENT",
+    "reason": "ROOT owns the major integrated independent review; no claim of self-review substituting for it."
+  },
+  "install_files": [
+    {
+      "path": "scripts/research/targets.py",
+      "new_sha256": "b800b6ac1e4e5ff719d8964d68f7e91989eda31d0e54a03f195f3a630a6a1f84",
+      "installed_copies_observed_read_only": [
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.agents\\skills\\revenue-forecast\\scripts\\research\\targets.py",
+          "exists": true,
+          "observed_old_sha256": "c157ad9f2752eb18db28e1c716403ca06faf4edc79476a3299ea133e5f843b87"
+        },
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.codex\\skills\\revenue-forecast\\scripts\\research\\targets.py",
+          "exists": true,
+          "observed_old_sha256": "c157ad9f2752eb18db28e1c716403ca06faf4edc79476a3299ea133e5f843b87"
+        },
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.claude\\skills\\revenue-forecast\\scripts\\research\\targets.py",
+          "exists": true,
+          "observed_old_sha256": "c157ad9f2752eb18db28e1c716403ca06faf4edc79476a3299ea133e5f843b87"
+        }
+      ]
+    },
+    {
+      "path": "scripts/research/target_measurement.py",
+      "new_sha256": "9095b09a657901c8dfde6d1776b7783bffe956caef5cbd8e18f7dedf38533424",
+      "installed_copies_observed_read_only": [
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.agents\\skills\\revenue-forecast\\scripts\\research\\target_measurement.py",
+          "exists": true,
+          "observed_old_sha256": "0bd1b697863d89a91a08ffefd8ef4ddbd2913b97c5d2dca9f7888515db8472de"
+        },
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.codex\\skills\\revenue-forecast\\scripts\\research\\target_measurement.py",
+          "exists": true,
+          "observed_old_sha256": "0bd1b697863d89a91a08ffefd8ef4ddbd2913b97c5d2dca9f7888515db8472de"
+        },
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.claude\\skills\\revenue-forecast\\scripts\\research\\target_measurement.py",
+          "exists": true,
+          "observed_old_sha256": "0bd1b697863d89a91a08ffefd8ef4ddbd2913b97c5d2dca9f7888515db8472de"
+        }
+      ]
+    },
+    {
+      "path": "scripts/research/native_dependencies.py",
+      "new_sha256": "0e4c7e60d767ede95b50197f703a9f216b76326227b75dd59eec2c6bf892ed0a",
+      "installed_copies_observed_read_only": [
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.agents\\skills\\revenue-forecast\\scripts\\research\\native_dependencies.py",
+          "exists": true,
+          "observed_old_sha256": "7bed36e63dfe61ce96dabbc1a675a5665a2dedea15964fa95aedf816998cfb83"
+        },
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.codex\\skills\\revenue-forecast\\scripts\\research\\native_dependencies.py",
+          "exists": true,
+          "observed_old_sha256": "7bed36e63dfe61ce96dabbc1a675a5665a2dedea15964fa95aedf816998cfb83"
+        },
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.claude\\skills\\revenue-forecast\\scripts\\research\\native_dependencies.py",
+          "exists": true,
+          "observed_old_sha256": "7bed36e63dfe61ce96dabbc1a675a5665a2dedea15964fa95aedf816998cfb83"
+        }
+      ]
+    },
+    {
+      "path": "scripts/research/target_scope.py",
+      "new_sha256": "9d75ef70e641e65899b2336bc83492d810bfb01ea5baab3c67323be8ee4a18b5",
+      "installed_copies_observed_read_only": [
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.agents\\skills\\revenue-forecast\\scripts\\research\\target_scope.py",
+          "exists": false,
+          "observed_old_sha256": null
+        },
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.codex\\skills\\revenue-forecast\\scripts\\research\\target_scope.py",
+          "exists": false,
+          "observed_old_sha256": null
+        },
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.claude\\skills\\revenue-forecast\\scripts\\research\\target_scope.py",
+          "exists": false,
+          "observed_old_sha256": null
+        }
+      ]
+    },
+    {
+      "path": "scripts/revenue_report.py",
+      "new_sha256": "b7e9f729b782eac886e21461dd74ec8309693359c499e12be5a0573549cb11dd",
+      "installed_copies_observed_read_only": [
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.agents\\skills\\revenue-forecast\\scripts\\revenue_report.py",
+          "exists": true,
+          "observed_old_sha256": "d3eeecf893fbf5e7c6faa278afe17389bfba5962f35451e36eb7828ed836162b"
+        },
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.codex\\skills\\revenue-forecast\\scripts\\revenue_report.py",
+          "exists": true,
+          "observed_old_sha256": "d3eeecf893fbf5e7c6faa278afe17389bfba5962f35451e36eb7828ed836162b"
+        },
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.claude\\skills\\revenue-forecast\\scripts\\revenue_report.py",
+          "exists": true,
+          "observed_old_sha256": "d3eeecf893fbf5e7c6faa278afe17389bfba5962f35451e36eb7828ed836162b"
+        }
+      ]
+    },
+    {
+      "path": "references/management-targets.md",
+      "new_sha256": "d181b4f935cc7b760b7de6046b5e7c1500003adf633212295745ef5268785387",
+      "installed_copies_observed_read_only": [
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.agents\\skills\\revenue-forecast\\references\\management-targets.md",
+          "exists": true,
+          "observed_old_sha256": "b80cc75a98802efdc831781e8bc5477fb0b0fb7b3320ef405ef3ff9a30534113"
+        },
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.codex\\skills\\revenue-forecast\\references\\management-targets.md",
+          "exists": true,
+          "observed_old_sha256": "b80cc75a98802efdc831781e8bc5477fb0b0fb7b3320ef405ef3ff9a30534113"
+        },
+        {
+          "destination": "C:\\Users\\\u90d1\u66fe\u6ce2\\.claude\\skills\\revenue-forecast\\references\\management-targets.md",
+          "exists": true,
+          "observed_old_sha256": "b80cc75a98802efdc831781e8bc5477fb0b0fb7b3320ef405ef3ff9a30534113"
+        }
+      ]
+    }
+  ],
+  "install_writes": 0,
+  "remaining_issue_ids": [
+    "PROCESS-005:new actual attempt typed ledger not yet executed",
+    "PROCESS-006:W06 native continuing-business target in actual company forecast not yet executed"
+  ],
+  "remaining_external_limits": [],
+  "root_actions": [
+    "Independently review frozen code commit and run selected counterexamples in a fresh tmp fixture. Repair any findings before integration.",
+    "Combine with W02 via ROOT merge; no file overlap expected.",
+    "ROOT alone add tests/test_r1_target_scope.py to tools/pre_push_gate.py SMOKE_TESTS alongside W02 regressions; do not expand to all historical tests.",
+    "ROOT checks old installed SHA before selective sync of exactly the six runtime/reference files (including new import target_scope.py). Keep config/output untouched.",
+    "ROOT handles consolidated runtime version/compatibility pins and normal mainline push/CI.",
+    "Use new installed native group in W06 genuine forecast and four-role re-review; passing arithmetic is not guidance/economic-quality acceptance."
+  ],
+  "resume_command": "python -m pytest tests/test_r1_target_scope.py tests/test_target_measurement_comparison.py tests/test_du6_target_measurement_boundaries.py tests/test_management_target_semantics.py tests/test_du8_target_comparison_owner.py -q --basetemp <NEW_OWNED_TMP>",
+  "recommended_next_action": "ROOT independent review of 36433047, then integrated installation and W06 genuine same-company new attempt."
+}

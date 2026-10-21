@@ -5,6 +5,7 @@ not revalidate sources, infer business semantics or create another registry.
 """
 from __future__ import annotations
 from typing import Any
+from research.target_scope import resolve_scope_segments
 from forecast.dependencies import effective_segment_dependencies, expand_derived_inputs, segment_parameter_uses, series_parameter_ids
 
 
@@ -49,8 +50,7 @@ def segment_ancestry(data, parameters, segment, scenario, year):
 
 
 def scope_components(data, parameters, scope, scenario, year):
-    segments = [s for s in data.get("segments", [])
-                if scope["type"] == "company" or s["name"] == scope["name"]]
+    segments = resolve_scope_segments(data, scope)
     graph = effective_segment_dependencies(data, scenario)
     components = {s["name"]: ancestry(graph[s["name"]][year].value_parameter_ids, parameters)
                   for s in segments if year in graph[s["name"]]}

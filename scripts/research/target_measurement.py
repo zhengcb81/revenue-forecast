@@ -16,6 +16,7 @@ from contracts.constants import SCENARIOS
 from contracts.evidence import finite_number, require, validate_claim_ids
 from research.input_quantities import money_scale_factor, same_money_currency
 from research.native_dependencies import scope_components
+from research.target_scope import resolve_scope_segments
 
 SCHEMA = "management-target-comparison/1"
 METRICS = {"annual_revenue_level", "quarterly_revenue_level", "year_over_year_growth"}
@@ -35,6 +36,11 @@ def is_typed_target(target: dict) -> bool:
     return isinstance(target.get("comparison_basis"), dict)
 
 
+def _validate_growth_currency(target: dict) -> None:
+    require(target.get("raw_currency") == "dimensionless",
+            "typed_growth_currency_must_be_dimensionless: a growth ratio has no monetary currency")
+
+
 def normalize_target_bounds(target: dict, data: dict) -> tuple[float, float]:
     """Convert stated units only; never synthesize a manager dollar target.
 
@@ -51,6 +57,10 @@ def normalize_target_bounds(target: dict, data: dict) -> tuple[float, float]:
     low = finite_number(low, "target lower bound")
     high = finite_number(high, "target upper bound")
     if spec["metric_kind"] == "year_over_year_growth":
+        # Pure arithmetic callers may supply a partial target without metadata;
+        # formal validation always requires the currency declaration below.
+        if "raw_currency" in target:
+            _validate_growth_currency(target)
         basis = spec.get("raw_ratio_basis")
         require(basis in {"percent", "fraction", "level_multiple"}, "growth target requires explicit raw_ratio_basis")
         if basis == "percent":
@@ -143,6 +153,7 @@ def validate_typed_target(target, data, parameters, claims, sources, used):
         require(target["measurement_periods"] == [period], "typed comparison measurement periods mismatch")
     allowed = {"schema_version", "metric_kind", "period"}
     if metric == "year_over_year_growth":
+        _validate_growth_currency(target)
         allowed |= {"base_period", "raw_ratio_basis"}
         base = spec.get("base_period")
         require(base is None or (isinstance(base, str) and re.fullmatch(r"FY\d{4}", base) is not None), "typed growth base_period is invalid")
@@ -189,8 +200,20 @@ def validate_typed_target(target, data, parameters, claims, sources, used):
         require(not target["mapped_scenarios"], "unmodeled typed target cannot claim mapped scenarios")
     if modeled:
         require(year in data["forecast_years"], "typed benchmark must be inside forecast horizon")
-        require(target["perimeter_status"] in {"matched", "reconciled"} and target["scope"]["type"] in {"company", "segment"}, "typed comparison perimeter remains unresolved")
+        require(target["perimeter_status"] in {"matched", "reconciled"} and target["scope"]["type"] in {"company", "segment", "segment_group"}, "typed comparison perimeter remains unresolved")
         require(bool(target["mapped_parameter_ids"]) and bool(target["mapped_scenarios"]), "typed comparison requires mapped parameters/scenarios")
+        selected = resolve_scope_segments(data, target["scope"])
+        if target["scope"]["type"] == "segment_group" and metric != "quarterly_revenue_level":
+            # The common mapped list may contain paths from different scenarios,
+            # but every selected native member must genuinely contribute to it.
+            by_member = {segment["name"]: set() for segment in selected}
+            for scenario in target["mapped_scenarios"]:
+                for name, refs in scope_components(data, parameters, target["scope"], scenario, year).items():
+                    by_member[name].update(refs)
+            members = set().union(*by_member.values()) if by_member else set()
+            ids = set(target["mapped_parameter_ids"])
+            require(ids <= members and all(ids & refs for refs in by_member.values()),
+                    "segment_group_parameter_ancestry_mismatch")
     source_ids = [claims[cid]["source_id"] for cid in target["claim_ids"]]
     if treatment == "independent_benchmark":
         require(set(target["mapped_scenarios"]) == set(SCENARIOS), "independent comparison requires all scenarios")
@@ -198,6 +221,11 @@ def validate_typed_target(target, data, parameters, claims, sources, used):
         checked = validate_claim_ids(target.get("benchmark_claim_ids"), claims, "management_target", target["target_id"], target["target_id"], "rationale_support")
         source_ids.extend(c["source_id"] for c in checked)
     normalized = deepcopy(target)
+    if metric == "year_over_year_growth":
+        # Preserve raw wording, but do not carry contextual company currency
+        # into the canonical dimensionless comparison quantity.
+        normalized["comparison_currency"] = None
+        normalized["comparison_scale"] = None
     if metric == "year_over_year_growth" and spec.get("base_period") is None:
         normalized["comparison_status"] = "not_comparable"
         normalized["comparison_reason"] = "base_period_unknown"
@@ -217,11 +245,20 @@ def _annual_value(result, target, scenario, period):
         if int(year) == result["base_year"]:
             return result["base_revenue"]
         return result["consolidated_forecast"][scenario]["annual_revenue"].get(year)
-    segment = next(item for item in result["segments"] if item["name"] == target["scope"]["name"])
-    if int(year) == result["base_year"]:
-        return segment["base_revenue"]
-    output = segment["scenarios"][scenario]
-    return output.get("effective_revenue", output["recognized_revenue"]).get(year)
+    values = []
+    for segment in resolve_scope_segments(result, target["scope"]):
+        if int(year) == result["base_year"]:
+            value = segment.get("base_revenue")
+        else:
+            output = segment.get("scenarios", {}).get(scenario, {})
+            path = output.get("effective_revenue", output.get("recognized_revenue", {}))
+            value = path.get(year)
+        if value is None:
+            return None  # An unread member/period never becomes zero revenue.
+        values.append(finite_number(value, "management target scoped revenue"))
+    if not values:
+        return None
+    return math.fsum(values) if target["scope"]["type"] == "segment_group" else values[0]
 
 
 def compare_target_measurement(target: dict, result: dict, parameters: dict | None = None) -> dict:
