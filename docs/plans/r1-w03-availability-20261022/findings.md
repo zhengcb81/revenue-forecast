@@ -1,9 +1,8 @@
-# Findings
+# 当前设计结论
 
-根因位于同一RF wire责任层：raw receipt required-field exact集合拒绝现有来源证明扩展，manifest时间检查只认pub；该单消费者尚未复用已经存在的source-clock。修复应只在receipt资格判断接线，不重hash原文、不建第二proof/身份链。
-
-source-clock已支持 prior_verified_capture、primary_archive、current_verified_open；已知发布日期先判未来，再校验proof；未知日期可用同SHA证明且不能倒填cutoff。当前as_of=None仍允许未知pub，新增proof若提供仍须形状/SHA正确。
-
-CodeGraph对该隔离工区返回not initialized；本线不扩大目录写入创建索引，基于已明确打开的消费者和测试文件工作。初次沙箱git status错误，授权主机读取确认tracked clean，未改Git配置。
-
-ROOT concentrated review at6efbebc3 identified an omitted existing clock edge: qualifier eligibility was discarded and actual read/retrieval events were only typed, so proof later than actual read could qualify a later cutoff. Add 3 contradictory event RED controls plus2 known-publication priority controls, then reuse validate_source_events, not a bespoke comparison. Current unknown/no-proof mode remains accepted; if metadata supplies an actual eligibility, use real read UTC day for current-mode qualification.
+1. 共因是raw narrative receipt exact集合与来源时间规则未接同一owner合同；只新增现有proof的optional receipt字段，不写bundle、generation、缓存身份或第二来源/身份/许可层。
+2. 历史asof必须用common qualify_source_information，known pub未来或invalid优先；未知pub只用同SHA、截止日前的既有owner证明，pub保持null。
+3. Current/asof=None不是historical查询，不将read日伪造成asof。无proof/null保留旧当前元数据读取；有proof复用validate_availability_evidence，再以proof的available_by/basis构造common InformationEligibility(published_date=None)只核actual events。manifest原pub/retrieved均保留；typed pub晚于read或retrieved早于pub不是current新增门禁，read早于proof或retrieved晚于read才是现有actual-event矛盾。
+4. 公共mypy原只检查11模块，未实际检查narrative模块；ROOT在同一check添加第12模块后准确提前拦下9项旧债。四处_require已保障的Match/parent/string以type-only cast显式交给类型系统，拒绝条件与运行语义不改；不撤检查、不加ignore、无需新gate。
+5. 旧26例非作者报告签b76，按新current语义重放仅1个旧after_asof原因码期望过期，原文件/证据保留，不把它伪装成新代码签收；最终非作者补审由ROOT负责。
+6. 工区自身384独审docs与ROOTmain a8工程接线分叉，按ROOT确认正常merge main于本分支9eb，main未被本line改动；最终main可ff本分支。安装目前为ROOT已装b76/0af，原94b旧观察只留历史，下一安装不能拿旧94b作expectedOld。

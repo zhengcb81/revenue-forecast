@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.521" timestamp="2026-10-22T20:05:26.751008+01:00" hostname="DESKTOP-156V213"><testcase classname="tests.test_r1_narrative_availability" name="test_current_optional_proof_does_not_add_publication_cutoffs_to_legacy_metadata[2026-10-21-2026-08-03T00:00:00Z]" time="0.006"><failure message="company_wiki_narrative_contracts.NarrativeTransportError: blocked: source_after_as_of">scripts\company_wiki_narrative_contracts.py:268: in _manifest_information_time
+    eligibility = qualify_source_information(
+scripts\contracts\source_clock.py:102: in qualify_source_information
+    raise SourceClockError("source_publication_after_asof: published_date is outside as_of_date (future information leak)")
+E   contracts.source_clock.SourceClockError: source_publication_after_asof: published_date is outside as_of_date (future information leak)
+
+The above exception was the direct cause of the following exception:
+tests\test_r1_narrative_availability.py:280: in test_current_optional_proof_does_not_add_publication_cutoffs_to_legacy_metadata
+    value = validate_narrative_response(legacy[0], legacy[1], canonical_bytes(receipt) + b"\n").to_dict()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:966: in validate_narrative_response
+    return _validated_response(request, body, receipt_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:950: in _validated_response
+    manifest = _receipt(receipt, request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:310: in _receipt
+    return _manifest(receipt, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:293: in _manifest
+    _manifest_information_time(manifest, receipt, request["as_of_date"])
+scripts\company_wiki_narrative_contracts.py:281: in _manifest_information_time
+    raise NarrativeTransportError("blocked", reason) from exc
+E   company_wiki_narrative_contracts.NarrativeTransportError: blocked: source_after_as_of</failure></testcase><testcase classname="tests.test_r1_narrative_availability" name="test_current_optional_proof_does_not_add_publication_cutoffs_to_legacy_metadata[2026-09-02-2026-10-03T00:00:00Z]" time="0.003"><failure message="company_wiki_narrative_contracts.NarrativeTransportError: blocked: source_clock_conflict">scripts\company_wiki_narrative_contracts.py:272: in _manifest_information_time
+    validate_source_events(
+scripts\contracts\source_clock.py:150: in validate_source_events
+    _conflict("retrieved_at", original_retrieved_at, "published_date", eligibility.published_date.isoformat())
+scripts\contracts\source_clock.py:136: in _conflict
+    raise SourceClockError(f"source_clock_conflict: {first}={first_value!r}, {second}={second_value!r}")
+E   contracts.source_clock.SourceClockError: source_clock_conflict: retrieved_at='2026-08-02T00:00:00Z', published_date='2026-09-02'
+
+The above exception was the direct cause of the following exception:
+tests\test_r1_narrative_availability.py:280: in test_current_optional_proof_does_not_add_publication_cutoffs_to_legacy_metadata
+    value = validate_narrative_response(legacy[0], legacy[1], canonical_bytes(receipt) + b"\n").to_dict()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:966: in validate_narrative_response
+    return _validated_response(request, body, receipt_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:950: in _validated_response
+    manifest = _receipt(receipt, request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:310: in _receipt
+    return _manifest(receipt, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:293: in _manifest
+    _manifest_information_time(manifest, receipt, request["as_of_date"])
+scripts\company_wiki_narrative_contracts.py:281: in _manifest_information_time
+    raise NarrativeTransportError("blocked", reason) from exc
+E   company_wiki_narrative_contracts.NarrativeTransportError: blocked: source_clock_conflict</failure></testcase></testsuite></testsuites>

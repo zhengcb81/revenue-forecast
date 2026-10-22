@@ -13,3 +13,7 @@ ROOT事件反例RED确认3FAIL/2PASS（42未选），0.72s：有截止日或当�
 最终b76产品b76fb96f9b410abceefc6b264120c5101654492b：296PASS/1既有SKIP，47新例全部PASS；全ruff/mypy11和正常hooks通过。旧current兼容失败已按冻结语义修代码，既有测试未改。两轮TEMP累计424文件/20367027B恢复不存在。最终handoff只待ROOT非作者审查和真实producer组合，未推送/安装。
 
 非作者独审封存：26独立例全PASS/0skip/0.47s，绑定b76 runtime SHA不变，无新产品修复；正式report JSON SHA41cb7b2e...68c53。handoff同步为REVIEWED_ENGINEERING_CONSUMER_GREEN_PENDING_ROOT_COMPOSITION，下一步ROOT实际producer组合和顺序发布。
+
+Reopened final freeze for ROOT current-mode clarification + new real public type scope: old b76/26P is historical review only. Next: two current old-metadata compatibility RED cases, actual 12-module mypy9-error RED, common proof-basis events + type-only guarded narrowing, final related controls and independent follow-up. No new permission or gate; CI files only inherited from main, not edited by lane.
+
+最终补正源码2de4b9d3ad3c032c89a1987a3b2141610ac91233：ROOT2个current兼容RED与实际mypy12九债RED均已修。source只改同一contract，4处guard后type-only cast。相关12文件298PASS/1旧POSIX skip，49新例全绿，7.30s；公共mypy12和全ruff/正常hooks绿。旧26独审重放唯一过期current原因码assert保留，不签新代码。已封存当前0af安装expectedOld、冻结fixture不变及TEMP累计632文件/30640307B清理恢复。当前唯一下一步ROOT最终非作者补审/consumer先发布安装，不扩大施工。

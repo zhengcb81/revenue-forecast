@@ -1,31 +1,19 @@
-# W03-A RF narrative 可用时间证据
+# W03-A RF availability：当前唯一实施入口
 
-唯一母接口：CWP `docs/plans/du11-source-closure-2026-10-18/r1-holdout-20261021/W03-current-interface.md`。本线独占 RF `codex/r1-narrative-availability`，基线92b69682。
+状态：**READY_FOR_ROOT_FINAL_TYPED_CURRENT_RECHECK**。最终产品 `2de4b9d3ad3c032c89a1987a3b2141610ac91233`，分支 `codex/r1-narrative-availability`。母接口：CWP `docs/plans/du11-source-closure-2026-10-18/r1-holdout-20261021/W03-current-interface.md`，另含2026-10-22 ROOT对current proof metadata原语义的明确补正；详情在handoff。
 
-## 范围
+## 已完成
 
-仅 `scripts/company_wiki_narrative_contracts.py`、相关新测试与本计划。raw receipt/1 仅加 optional `availability_evidence`，复用 source-clock/1；manifest pub 仍null，旧省略/null兼容，known future/invalid publication优先。projected/3不接single-proof。原immutable bundle、generation、配置、CI/hooks、安装、CWP/FF均不改。
-
-## 大节点
-
-- [x] 读取冻结接口、真实validator和既有golden，确认源码与exclusive工区。
-- [x] A：先固定有效wire及时间/范围负例，保存真实validator RED。
-- [x] B：最小消费者接线，同测试GREEN，相关golden/reader/clock回归及静态检查。
-- [x] C：正常commit、源码/旧安装SHA/清理/未覆盖范围交接ROOT，等待集中非作者独审与真实producer组合。
+- [x] Raw receipt/1单一optional proof接现source-clock；保持pub null、旧shape、projected/3 exact与bundle/generation。首RED22FAIL/20PASS留证。
+- [x] ROOT actual-event缺口3RED，经common事件接线修复；旧current无proof兼容保留。
+- [x] ROOT current语义补正2RED：不以read UTC日制造historical cutoff，current proof只作已校验metadata与actual-event basis，manifest日期不改。
+- [x] ROOT既有公共check含真实12模块；9类型债RED用4处已有guard后type-only cast修复，无新条件/ignore/第二gate。
+- [x] 49新例与相关12文件 **298PASS/1既有POSIX SKIP，7.30s**；公共mypy12/全ruff/正常commit hooks绿，golden不改，测试根恢复不存在。
+- [x] 自有交接、源码SHA/LF、当前安装expectedOld0af及原94b历史、RED/GREEN/清理证据齐备。
+- [ ] ROOT最终非作者typed/current签收及main发布/选择安装（本line不自签）。旧26/b76报告只签旧版本；其重放旧current原因码差异如实保留。
 
 ## Next Step
-C产品已正常commit、清理与机器交接齐备；等待ROOT非作者独审及实际producer组合，不自行合主线/推送/安装。
 
-## 验收界限
+ROOT按2de最终源码补审、必要公开CLI组合后ff主线/正常推送，先consumer兼容发布并按0af旧SHA选择安装，再producer。保留ROOT母仓assurance等其他WIP，不合并清理它们。
 
-本线不调用任何provider/LLM、不下载资料、不替ROOT验收producer。ROOT先consumer后producer顺序发布/安装；W03-B 0.9/v5真实选择/正式摘要/context与W07仍开放。
-
-## ROOT事件补正后的最终冻结
-
-产品 `b76fb96f9b410abceefc6b264120c5101654492b`，实际event反例3RED→47新例全GREEN；最终相关296PASS/1既有SKIP。保留旧asof=None/no-proof兼容，没改旧测试。
-
-**Next Step:** ROOT按最终产品做集中非作者独审与新producer真实组合；仅ROOT负责顺序发布/选择安装。
-
-## 当前唯一下一步
-
-消费者非作者独审26例已通过。**Next Step:** ROOT对新producer进行实际公开CLI→RF组合，随后先consumer后producer发布/安装；本线工程实现与交接完成。
+本线不写CWP/FF/ET、生产配置、CI/hooks、安装或默认，不调用下载/收费API。W03-B/W07仍由总PWF推进。
