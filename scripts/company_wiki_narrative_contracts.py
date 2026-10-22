@@ -13,10 +13,11 @@ import hashlib
 import json
 import re
 from urllib.parse import quote
-from typing import Any
+from typing import Any, cast
 
 from contracts.source_clock import (
-    SourceClockError, qualify_source_information, validate_source_events,
+    InformationEligibility, SourceClockError, iso_date, qualify_source_information,
+    validate_availability_evidence, validate_source_events,
 )
 
 BODY_LIMIT = 1_310_720
@@ -261,14 +262,21 @@ def _manifest_information_time(manifest: dict, receipt: dict, as_of: str | None)
     if published is not None:
         _date(published)  # Empty or malformed publication is not an unknown date.
     proof = receipt.get("availability_evidence")
-    if as_of is None and proof is None:
-        return  # Preserve legacy current-mode metadata without historical proof.
     try:
-        cutoff = _date(as_of) if as_of is not None else _utc(receipt["read_at"]).date()
-        eligibility = qualify_source_information(
-            source_sha256=manifest["content_sha256"], published_date=published,
-            as_of=cutoff, availability_evidence=proof,
-        )
+        if as_of is None:
+            checked = validate_availability_evidence(proof, manifest["content_sha256"])
+            if checked is None:
+                return  # Current metadata reading makes no historical claim.
+            eligibility = InformationEligibility(
+                available_by=iso_date(checked["available_by"], "availability_evidence.available_by"),
+                basis=checked["basis"], source_sha256=manifest["content_sha256"],
+                published_date=None,
+            )
+        else:
+            eligibility = qualify_source_information(
+                source_sha256=manifest["content_sha256"], published_date=published,
+                as_of=_date(as_of), availability_evidence=proof,
+            )
         validate_source_events(
             eligibility=eligibility, current_read_at=receipt["read_at"],
             original_retrieved_at=manifest["retrieved_at"],
@@ -706,6 +714,7 @@ def _declared_language(metadata: dict) -> None:
 def _locale_family(declared: str) -> str:
     match = re.fullmatch(r"(zh|en)(?:-(Hans|Hant|Latn))?(?:-([a-z]{2}|[0-9]{3}))?", declared, re.IGNORECASE)
     _require(match is not None, "invalid_declared_language")
+    match = cast(re.Match[str], match)
     family, script, _region = match.groups()
     family = family.lower()
     scripts = {"hans", "hant"} if family == "zh" else {"latn"}
@@ -814,12 +823,13 @@ def _span_parent(span: dict, binding: dict, subject: dict) -> dict:
                    item["content_sha256"] == binding.get("parent_content_sha256")), None)
     _require(parent is not None, "projection_span_parent_mismatch")
     _require(binding.get("projection_id") == subject["item_key"], "projection_span_parent_mismatch")
-    return parent
+    return cast(dict[str, Any], parent)
 
 
 def _projection_pointer(binding: dict) -> str:
     pointer, record = binding.get("pointer"), binding.get("record_pointer")
     _require(_text(pointer) and _text(record), "invalid_projection_pointer")
+    pointer, record = cast(str, pointer), cast(str, record)
     _require(record.startswith("/") and pointer.startswith(record + "/"), "invalid_projection_pointer")
     suffix = pointer[len(record) + 1:]
     _require(bool(suffix) and "/" not in suffix, "invalid_projection_pointer")
@@ -848,6 +858,7 @@ def _projection_locator(binding: dict, pointer: str, token: list[int]) -> None:
     locator = binding.get("source_locator")
     prefix = "cwp-json-pointer/1|p=" + quote(pointer, safe="") + "|b=" + str(token[0]) + ":" + str(token[1]) + "|d=0:"
     _require(isinstance(locator, str) and locator.startswith(prefix), "projection_pointer_locator_mismatch")
+    locator = cast(str, locator)
     _require(re.fullmatch(r"[0-9]+\|x=json-string-decode/1", locator[len(prefix):]) is not None,
              "projection_pointer_locator_mismatch")
 

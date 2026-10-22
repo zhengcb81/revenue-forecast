@@ -240,7 +240,7 @@ def test_public_preparation_output_retains_proof_only_inside_read_receipt(monkey
 
 
 @pytest.mark.parametrize("as_of,reason", [("2026-10-21", "source_clock_conflict"),
-                                         (None, "source_availability_after_asof")])
+                                         (None, "source_clock_conflict")])
 def test_availability_cannot_postdate_the_actual_read_even_before_research_cutoff(as_of, reason):
     request, body, raw = _wire(proof=_valid_proof(available_by="2026-10-21"), as_of=as_of)
     receipt = json.loads(raw)
@@ -250,14 +250,18 @@ def test_availability_cannot_postdate_the_actual_read_even_before_research_cutof
 
 
 @pytest.mark.parametrize("as_of", ["2026-09-01", None])
-def test_known_publication_keeps_priority_over_later_proof_at_an_earlier_real_read(as_of):
+def test_historical_and_current_reads_use_their_expected_source_clock(as_of):
     request, body, raw = _wire(publication="2026-08-01",
                               proof=_valid_proof(available_by="2026-10-21"), as_of=as_of)
     receipt = json.loads(raw)
     receipt["read_at"] = "2026-08-03T00:00:00Z"
-    value = validate_narrative_response(request, body, canonical_bytes(receipt) + b"\n").to_dict()
-    assert value["manifest"]["published_date"] == "2026-08-01"
-    assert value["read_receipt"]["availability_evidence"]["available_by"] == "2026-10-21"
+    if as_of is None:
+        with pytest.raises(NarrativeTransportError, match="source_clock_conflict"):
+            validate_narrative_response(request, body, canonical_bytes(receipt) + b"\n")
+    else:
+        value = validate_narrative_response(request, body, canonical_bytes(receipt) + b"\n").to_dict()
+        assert value["manifest"]["published_date"] == "2026-08-01"
+        assert value["read_receipt"]["availability_evidence"]["available_by"] == "2026-10-21"
 
 
 def test_actual_original_retrieval_cannot_postdate_the_read_receipt():
@@ -267,3 +271,18 @@ def test_actual_original_retrieval_cannot_postdate_the_read_receipt():
     receipt["read_at"] = "2026-08-03T00:00:00Z"
     with pytest.raises(NarrativeTransportError, match="source_clock_conflict"):
         validate_narrative_response(request, body, canonical_bytes(receipt) + b"\n")
+
+
+@pytest.mark.parametrize("publication,read_at", [("2026-10-21", "2026-08-03T00:00:00Z"),
+                                                ("2026-09-02", "2026-10-03T00:00:00Z")])
+def test_current_optional_proof_does_not_add_publication_cutoffs_to_legacy_metadata(publication, read_at):
+    legacy = _wire(publication=publication, as_of=None)
+    receipt = json.loads(legacy[2])
+    receipt["read_at"] = read_at
+    legacy_value = validate_narrative_response(legacy[0], legacy[1], canonical_bytes(receipt) + b"\n").to_dict()
+    receipt["availability_evidence"] = _valid_proof(available_by="2026-08-01")
+    value = validate_narrative_response(legacy[0], legacy[1], canonical_bytes(receipt) + b"\n").to_dict()
+    assert value["manifest"] == legacy_value["manifest"]
+    assert value["manifest"]["published_date"] == publication
+    assert value["read_receipt"].pop("availability_evidence") == _valid_proof(available_by="2026-08-01")
+    assert canonical_bytes(value) == canonical_bytes(legacy_value)
