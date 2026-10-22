@@ -1,0 +1,54 @@
+FF........................FF............FFFF                             [100%]
+================================== FAILURES ===================================
+_____ test_optional_observation_copied_opaque_without_inventing_usage[0] ______
+tests\test_r1_local_preparation_observation.py:66: in test_optional_observation_copied_opaque_without_inventing_usage
+    assert actual == payload
+E   AssertionError: assert None == {'schema_version': '2.0', 'status': 'upstream_error', 'request_period': {'mode': 'exact', 'fiscal_year': 2026, 'fiscal...eason': 'local source preparation unavailable: budget_exceeded', 'retryable': True, 'producer_exit_code': 0, ...}, ...}
+____ test_optional_observation_copied_opaque_without_inventing_usage[600] _____
+tests\test_r1_local_preparation_observation.py:66: in test_optional_observation_copied_opaque_without_inventing_usage
+    assert actual == payload
+E   AssertionError: assert None == {'schema_version': '2.0', 'status': 'upstream_error', 'request_period': {'mode': 'exact', 'fiscal_year': 2026, 'fiscal...eason': 'local source preparation unavailable: budget_exceeded', 'retryable': True, 'producer_exit_code': 0, ...}, ...}
+________ test_large_versioned_error_decodes_whole_not_truncated[False] ________
+tests\test_r1_local_preparation_observation.py:160: in test_large_versioned_error_decodes_whole_not_truncated
+    assert parse_error_document(raw) == expected
+E   assert None == {'schema_version': '2.0', 'status': 'upstream_error', 'request_period': {'mode': 'exact', 'fiscal_year': 2026, 'fiscal...eason': 'local source preparation unavailable: budget_exceeded', 'retryable': True, 'producer_exit_code': 0, ...}, ...}
+E    +  where None = parse_error_document('{\n  "schema_version": "2.0",\n  "status": "upstream_error",\n  "request_period": {\n    "mode": "exact",\n    "fisca...idates": 64,\n      "max_bytes": 134217728,\n      "timeout_seconds": 18.5\n    },\n    "local_io_usage": null\n  }\n}')
+________ test_large_versioned_error_decodes_whole_not_truncated[True] _________
+tests\test_r1_local_preparation_observation.py:160: in test_large_versioned_error_decodes_whole_not_truncated
+    assert parse_error_document(raw) == expected
+E   assert None == {'error_code': 'upstream_error', 'error': 'filing-fetch failed: status=upstream_error: budget_exceeded', 'retryable': ...iling-upstream-cause/1', 'operation': 'local_prepare', 'code': 'budget_exceeded', 'provider_started': False, ...}, ...}
+E    +  where None = parse_error_document('{\n  "error_code": "upstream_error",\n  "error": "filing-fetch failed: status=upstream_error: budget_exceeded",\n  "r...       "max_bytes": 134217728,\n        "timeout_seconds": 18.5\n      },\n      "local_io_usage": null\n    }\n  }\n}')
+_ test_actual_client_and_source_preparation_cli_preserve_full_wire[filing_fetch_client.py-0-1] _
+tests\test_r1_local_preparation_observation.py:263: in test_actual_client_and_source_preparation_cli_preserve_full_wire
+    assert observed.get("filing_fetch_result") == original
+E   AssertionError: assert None == {'schema_version': '2.0', 'status': 'upstream_error', 'request_period': {'mode': 'exact', 'fiscal_year': 2026, 'fiscal...eason': 'local source preparation unavailable: budget_exceeded', 'retryable': True, 'producer_exit_code': 0, ...}, ...}
+E    +  where None = <built-in method get of dict object at 0x0000014D40267700>('filing_fetch_result')
+E    +    where <built-in method get of dict object at 0x0000014D40267700> = {'error_code': 'upstream_error', 'error': 'filing-fetch exited 1: status=upstream_error: budget_exceeded', 'retryable': True, 'companion_observation': {'status': 'not_requested', 'retryable': False}, ...}.get
+_ test_actual_client_and_source_preparation_cli_preserve_full_wire[filing_fetch_client.py-600-2] _
+tests\test_r1_local_preparation_observation.py:263: in test_actual_client_and_source_preparation_cli_preserve_full_wire
+    assert observed.get("filing_fetch_result") == original
+E   AssertionError: assert None == {'schema_version': '2.0', 'status': 'upstream_error', 'request_period': {'mode': 'exact', 'fiscal_year': 2026, 'fiscal...eason': 'local source preparation unavailable: budget_exceeded', 'retryable': True, 'producer_exit_code': 0, ...}, ...}
+E    +  where None = <built-in method get of dict object at 0x0000014D40253080>('filing_fetch_result')
+E    +    where <built-in method get of dict object at 0x0000014D40253080> = {'error_code': 'upstream_error', 'error': 'filing-fetch exited 2: status=upstream_error: budget_exceeded', 'retryable': True, 'companion_observation': {'status': 'not_requested', 'retryable': False}, ...}.get
+_ test_actual_client_and_source_preparation_cli_preserve_full_wire[source_preparation.py-0-1] _
+tests\test_r1_local_preparation_observation.py:263: in test_actual_client_and_source_preparation_cli_preserve_full_wire
+    assert observed.get("filing_fetch_result") == original
+E   AssertionError: assert None == {'schema_version': '2.0', 'status': 'upstream_error', 'request_period': {'mode': 'exact', 'fiscal_year': 2026, 'fiscal...eason': 'local source preparation unavailable: budget_exceeded', 'retryable': True, 'producer_exit_code': 0, ...}, ...}
+E    +  where None = <built-in method get of dict object at 0x0000014D40230F00>('filing_fetch_result')
+E    +    where <built-in method get of dict object at 0x0000014D40230F00> = {'error_code': 'upstream', 'error': 'filing-fetch client exited 2: status=upstream_error: budget_exceeded', 'companion_observation': {'status': 'not_requested', 'retryable': False}, 'producer_exit_code': 0, ...}.get
+_ test_actual_client_and_source_preparation_cli_preserve_full_wire[source_preparation.py-600-2] _
+tests\test_r1_local_preparation_observation.py:263: in test_actual_client_and_source_preparation_cli_preserve_full_wire
+    assert observed.get("filing_fetch_result") == original
+E   AssertionError: assert None == {'schema_version': '2.0', 'status': 'upstream_error', 'request_period': {'mode': 'exact', 'fiscal_year': 2026, 'fiscal...eason': 'local source preparation unavailable: budget_exceeded', 'retryable': True, 'producer_exit_code': 0, ...}, ...}
+E    +  where None = <built-in method get of dict object at 0x0000014D4024A800>('filing_fetch_result')
+E    +    where <built-in method get of dict object at 0x0000014D4024A800> = {'error_code': 'upstream', 'error': 'filing-fetch client exited 2: status=upstream_error: budget_exceeded', 'companion_observation': {'status': 'not_requested', 'retryable': False}, 'producer_exit_code': 0, ...}.get
+=========================== short test summary info ===========================
+FAILED tests/test_r1_local_preparation_observation.py::test_optional_observation_copied_opaque_without_inventing_usage[0]
+FAILED tests/test_r1_local_preparation_observation.py::test_optional_observation_copied_opaque_without_inventing_usage[600]
+FAILED tests/test_r1_local_preparation_observation.py::test_large_versioned_error_decodes_whole_not_truncated[False]
+FAILED tests/test_r1_local_preparation_observation.py::test_large_versioned_error_decodes_whole_not_truncated[True]
+FAILED tests/test_r1_local_preparation_observation.py::test_actual_client_and_source_preparation_cli_preserve_full_wire[filing_fetch_client.py-0-1]
+FAILED tests/test_r1_local_preparation_observation.py::test_actual_client_and_source_preparation_cli_preserve_full_wire[filing_fetch_client.py-600-2]
+FAILED tests/test_r1_local_preparation_observation.py::test_actual_client_and_source_preparation_cli_preserve_full_wire[source_preparation.py-0-1]
+FAILED tests/test_r1_local_preparation_observation.py::test_actual_client_and_source_preparation_cli_preserve_full_wire[source_preparation.py-600-2]
+8 failed, 36 passed in 3.29s
