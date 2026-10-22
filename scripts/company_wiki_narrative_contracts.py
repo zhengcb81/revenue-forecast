@@ -15,6 +15,10 @@ import re
 from urllib.parse import quote
 from typing import Any
 
+from contracts.source_clock import (
+    SourceClockError, qualify_source_information, validate_availability_evidence,
+)
+
 BODY_LIMIT = 1_310_720
 RECEIPT_LIMIT = 16 * 1024
 REQUEST_LIMIT = 16 * 1024
@@ -251,6 +255,28 @@ def validate_reference_request(value: Any) -> dict:
     return deepcopy(request)
 
 
+def _manifest_information_time(manifest: dict, receipt: dict, as_of: str | None) -> None:
+    """Reuse source-clock qualification after the existing ref/manifest binding."""
+    published = manifest["published_date"]
+    if published is not None:
+        _date(published)  # Empty or malformed publication is not an unknown date.
+    try:
+        if as_of is None:
+            validate_availability_evidence(receipt.get("availability_evidence"),
+                                           manifest["content_sha256"])
+        else:
+            qualify_source_information(
+                source_sha256=manifest["content_sha256"], published_date=published,
+                as_of=_date(as_of), availability_evidence=receipt.get("availability_evidence"),
+            )
+    except SourceClockError as exc:
+        reason = str(exc).partition(":")[0]
+        # Preserve the two existing narrative refusal codes for legacy callers.
+        reason = {"source_publication_after_asof": "source_after_as_of",
+                  "source_availability_unknown": "source_publication_unknown"}.get(reason, reason)
+        raise NarrativeTransportError("blocked", reason) from exc
+
+
 def _manifest(receipt: dict, request: dict) -> dict:
     manifest = _exact(receipt["manifest"], MANIFEST_FIELDS, "invalid_source_manifest")
     source = request["narrative_ref"]["source_ref"]
@@ -260,19 +286,15 @@ def _manifest(receipt: dict, request: dict) -> dict:
     for key, value in request["expected_source"].items():
         if value is not None:
             _require(type(manifest[key]) is type(value) and manifest[key] == value, "manifest_request_mismatch")
-    if request["as_of_date"] is not None:
-        cutoff = _date(request["as_of_date"])
-        _require(manifest["published_date"] is not None, "source_publication_unknown")
-        _require(_date(manifest["published_date"]) <= cutoff, "source_after_as_of")
-    elif manifest["published_date"] is not None:
-        _date(manifest["published_date"])  # Current mode preserves typed metadata.
+    _manifest_information_time(manifest, receipt, request["as_of_date"])
     if manifest["retrieved_at"] is not None:
         _utc(manifest["retrieved_at"])  # Unknown collection time stays unknown.
     return manifest
 
 
 def _receipt(receipt: dict, request: dict) -> dict:
-    _exact(receipt, RECEIPT_FIELDS, "invalid_read_receipt")
+    optional = {"availability_evidence"} if "availability_evidence" in receipt else set()
+    _exact(receipt, RECEIPT_FIELDS | optional, "invalid_read_receipt")
     _require(receipt["schema_version"] == "narrative-read-receipt/1", "unsupported_read_receipt")
     _require(receipt["status"] == "ok" and receipt["replay_status"] == "verified", "unverified_read_receipt")
     validate_narrative_ref(receipt["narrative_ref"])
