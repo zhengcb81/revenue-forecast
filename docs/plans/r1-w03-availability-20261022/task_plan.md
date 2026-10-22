@@ -25,3 +25,7 @@ C产品已正常commit、清理与机器交接齐备；等待ROOT非作者独审
 产品 `b76fb96f9b410abceefc6b264120c5101654492b`，实际event反例3RED→47新例全GREEN；最终相关296PASS/1既有SKIP。保留旧asof=None/no-proof兼容，没改旧测试。
 
 **Next Step:** ROOT按最终产品做集中非作者独审与新producer真实组合；仅ROOT负责顺序发布/选择安装。
+
+## 当前唯一下一步
+
+消费者非作者独审26例已通过。**Next Step:** ROOT对新producer进行实际公开CLI→RF组合，随后先consumer后producer发布/安装；本线工程实现与交接完成。

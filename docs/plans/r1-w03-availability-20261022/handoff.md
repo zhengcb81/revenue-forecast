@@ -1,6 +1,6 @@
 # W03-A RF 可用时间证据交接
 
-状态：**READY_FOR_ROOT_INDEPENDENT_REVIEW**。最终产品 `b76fb96f9b410abceefc6b264120c5101654492b`（含初版6efbebc3），分支 `codex/r1-narrative-availability`，基线 `92b69682`。未合主线、未推送、未安装。此文件和JSON取代初版交接中的产品/测试计数。
+状态：**REVIEWED_ENGINEERING_CONSUMER_GREEN_PENDING_ROOT_COMPOSITION**。最终产品 `b76fb96f9b410abceefc6b264120c5101654492b`（含初版6efbebc3），分支 `codex/r1-narrative-availability`，基线 `92b69682`。未合主线、未推送、未安装。此文件和JSON取代初版交接中的产品/测试计数。
 
 ## 产品与责任边界
 
@@ -31,3 +31,7 @@ ROOT仅定点同步 `scripts/company_wiki_narrative_contracts.py`；source_clock
 ## 下一步与未覆盖
 
 ROOT按最终产品SHA做非作者独审 → 新CWP真实PDF/native JSON公开CLI→FF/RF组合/single-open/scope/golden → consumer优先并线、选择安装与发布。W03-B 0.9/v5实际生产选择/正式summary/context、W07配置内真实摘要/普通paid恢复/cache/四审仍OPEN；本切面不等于共享引擎生产全完成。
+
+## 非作者独审完成
+
+`/root/r1_w04_summary_runtime` 独立26例 **26 PASS /0 FAIL /0 SKIP，0.47s**，绑定最终b76产品真实runtime SHA、前后不变；正式 `r1-w03-rf-independent-20261022.md/json`，状态 `PASS_ENGINEERING_CONSUMER_ONLY`。JSON SHA `41cb7b2e8ac7f4a9d3f26e6f20986aac523928b59382d4956683421f08068c53`。仅消费者工程签收，未替ROOT代签真实producer组合或live。下一步ROOT真实producer→consumer组合和顺序发布/安装。

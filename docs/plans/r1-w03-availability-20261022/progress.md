@@ -11,3 +11,5 @@ ROOT事件反例RED确认3FAIL/2PASS（42未选），0.72s：有截止日或当�
 事件接线首轮相关回归295PASS/1FAIL/1SKIP，失败是旧current-mode/asof=None/no-proof metadata不授历史资格的兼容控制（修改pub时保留更早retrieved）。未改该测试；按冻结asof=None语义保留无proof/null的旧current路径，只在已有asof或实际提供proof时执行common eligibility/events。此失败及修正前日志保留event-current-compat-regression，不冒称最终GREEN。
 
 最终b76产品b76fb96f9b410abceefc6b264120c5101654492b：296PASS/1既有SKIP，47新例全部PASS；全ruff/mypy11和正常hooks通过。旧current兼容失败已按冻结语义修代码，既有测试未改。两轮TEMP累计424文件/20367027B恢复不存在。最终handoff只待ROOT非作者审查和真实producer组合，未推送/安装。
+
+非作者独审封存：26独立例全PASS/0skip/0.47s，绑定b76 runtime SHA不变，无新产品修复；正式report JSON SHA41cb7b2e...68c53。handoff同步为REVIEWED_ENGINEERING_CONSUMER_GREEN_PENDING_ROOT_COMPOSITION，下一步ROOT实际producer组合和顺序发布。
