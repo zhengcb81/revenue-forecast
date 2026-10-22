@@ -237,3 +237,33 @@ def test_public_preparation_output_retains_proof_only_inside_read_receipt(monkey
     assert not errors.getvalue() and value["manifest"]["published_date"] is None
     assert value["read_receipt"]["availability_evidence"] == json.loads(receipt)["availability_evidence"]
     assert "availability_evidence" not in value
+
+
+@pytest.mark.parametrize("as_of,reason", [("2026-10-21", "source_clock_conflict"),
+                                         (None, "source_availability_after_asof")])
+def test_availability_cannot_postdate_the_actual_read_even_before_research_cutoff(as_of, reason):
+    request, body, raw = _wire(proof=_valid_proof(available_by="2026-10-21"), as_of=as_of)
+    receipt = json.loads(raw)
+    receipt["read_at"] = "2026-08-03T00:00:00Z"
+    with pytest.raises(NarrativeTransportError, match=reason):
+        validate_narrative_response(request, body, canonical_bytes(receipt) + b"\n")
+
+
+@pytest.mark.parametrize("as_of", ["2026-09-01", None])
+def test_known_publication_keeps_priority_over_later_proof_at_an_earlier_real_read(as_of):
+    request, body, raw = _wire(publication="2026-08-01",
+                              proof=_valid_proof(available_by="2026-10-21"), as_of=as_of)
+    receipt = json.loads(raw)
+    receipt["read_at"] = "2026-08-03T00:00:00Z"
+    value = validate_narrative_response(request, body, canonical_bytes(receipt) + b"\n").to_dict()
+    assert value["manifest"]["published_date"] == "2026-08-01"
+    assert value["read_receipt"]["availability_evidence"]["available_by"] == "2026-10-21"
+
+
+def test_actual_original_retrieval_cannot_postdate_the_read_receipt():
+    request, body, raw = _wire(publication="2026-08-01", proof=_valid_proof())
+    receipt = json.loads(raw)
+    receipt["manifest"]["retrieved_at"] = "2026-08-04T00:00:00Z"
+    receipt["read_at"] = "2026-08-03T00:00:00Z"
+    with pytest.raises(NarrativeTransportError, match="source_clock_conflict"):
+        validate_narrative_response(request, body, canonical_bytes(receipt) + b"\n")

@@ -16,7 +16,7 @@ from urllib.parse import quote
 from typing import Any
 
 from contracts.source_clock import (
-    SourceClockError, qualify_source_information, validate_availability_evidence,
+    SourceClockError, qualify_source_information, validate_source_events,
 )
 
 BODY_LIMIT = 1_310_720
@@ -260,15 +260,19 @@ def _manifest_information_time(manifest: dict, receipt: dict, as_of: str | None)
     published = manifest["published_date"]
     if published is not None:
         _date(published)  # Empty or malformed publication is not an unknown date.
+    proof = receipt.get("availability_evidence")
+    if as_of is None and proof is None:
+        return  # Preserve legacy current-mode metadata without historical proof.
     try:
-        if as_of is None:
-            validate_availability_evidence(receipt.get("availability_evidence"),
-                                           manifest["content_sha256"])
-        else:
-            qualify_source_information(
-                source_sha256=manifest["content_sha256"], published_date=published,
-                as_of=_date(as_of), availability_evidence=receipt.get("availability_evidence"),
-            )
+        cutoff = _date(as_of) if as_of is not None else _utc(receipt["read_at"]).date()
+        eligibility = qualify_source_information(
+            source_sha256=manifest["content_sha256"], published_date=published,
+            as_of=cutoff, availability_evidence=proof,
+        )
+        validate_source_events(
+            eligibility=eligibility, current_read_at=receipt["read_at"],
+            original_retrieved_at=manifest["retrieved_at"],
+        )
     except SourceClockError as exc:
         reason = str(exc).partition(":")[0]
         # Preserve the two existing narrative refusal codes for legacy callers.
