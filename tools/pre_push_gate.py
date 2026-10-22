@@ -103,6 +103,7 @@ SMOKE_TESTS = (
     "tests/test_scoped_calibration_support.py",
     "tests/test_r1_source_boundary.py",
     "tests/test_r1_target_scope.py",
+    "tests/test_r1_narrative_availability.py",
 )
 
 
@@ -113,7 +114,8 @@ def main(argv: list[str] | None = None) -> int:
     gates = (
         ([sys.executable, "-m", "ruff", "check", "scripts", "tests", "tools", "e2e"], "ruff"),
         ([sys.executable, "-m", "mypy", "scripts/contracts/", "scripts/schema_compatibility.py",
-          "scripts/filing_fetch_client.py", "scripts/trust_anchor.py"], "public contract types"),
+          "scripts/filing_fetch_client.py", "scripts/trust_anchor.py",
+          "scripts/company_wiki_narrative_contracts.py"], "public contract types"),
         ([sys.executable, "-m", "pytest", "-q", "--tb=short", "-p", "no:cacheprovider", *SMOKE_TESTS],
          "current source and forecast behavior"),
     )
