@@ -7,6 +7,8 @@ import re
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
+from company_wiki_narrative_contracts import NarrativeTransportError, canonical_bytes, decode_object
+
 SCHEMA_VERSION = "filing-upstream-cause/1"
 KEYS = frozenset({"schema_version", "operation", "code", "provider_started", "usage_complete", "retry_scope"})
 OPERATIONS = frozenset({"identify", "ensure", "resolve", "close-gap", "query", "local_prepare"})
@@ -330,6 +332,95 @@ def validated_companion_observation(value: Any) -> dict[str, Any] | None:
     return {**value, **({"acquisition_limits": dict(limits)} if limits is not None else {})}
 
 
+# An optional local verification observation is opaque producer-owned evidence.
+# These are JSON wire bounds, never budgets/identity/period eligibility rules.
+LOCAL_PREPARATION_OBSERVATION_SCHEMA = "filing-local-preparation-observation/1"
+LOCAL_PREPARATION_OBSERVATION_LIMIT = 128 * 1024
+_FAILURE_BASE_LIMIT = 16 * 1024
+_LEGACY_ERROR_LIMIT = 64 * 1024
+_EXTENDED_ERROR_LIMIT = 1024 * 1024
+_LOCAL_OBSERVATION_FIELDS = frozenset({
+    "schema_version", "usage_scope", "status", "reason", "blocks_download",
+    "local_read_limits", "operations", "diagnostics", "local_io_usage",
+})
+_MACHINE_KEY = re.compile(r"[A-Za-z][A-Za-z0-9_]{0,63}\Z")
+_MACHINE_TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:+-]{0,255}\Z")
+_SCHEMA_TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:+/-]{0,255}\Z")
+_ADDRESS_PREFIX = re.compile(r"(?:[A-Za-z]:/|[A-Za-z][A-Za-z0-9+.-]*://|file:/)", re.IGNORECASE)
+_MACHINE_FORBIDDEN_FIELDS = frozenset({
+    "path", "root", "object_key", "absolute_path", "local_path", "raw_path",
+    "root_path", "wiki_root", "catalog_path", "physical_path",
+    "paths", "path_ref", "canonical_path", "file_path", "resolved_path",
+    "storage_path", "document_path", "roots", "root_id", "root_kind",
+    "physical_root", "company_wiki_root", "allowed_handle_roots", "location",
+    "locations", "location_id", "canonical_location_id", "selected_location",
+    "bundle", "source_bundle", "bundle_path", "bundle_status",
+    "body", "content", "text", "raw", "stdout", "stderr", "headers",
+    "authorization", "api_key", "secret", "password", "prompt", "message",
+    "description", "detail", "notes",
+})
+
+
+def _bounded_machine_json(value: Any) -> bool:
+    """Bound generic diagnostics without interpreting owner fields or codes."""
+    stack = [(value, 0, "")]
+    nodes = 0
+    while stack:
+        current, depth, key = stack.pop()
+        nodes += 1
+        if depth > 8 or nodes > LOCAL_PREPARATION_OBSERVATION_LIMIT:
+            return False
+        if current is None or type(current) in (bool, int):
+            continue
+        if type(current) is float:
+            if not math.isfinite(current):
+                return False
+        elif isinstance(current, str):
+            if not (_MACHINE_TOKEN.fullmatch(current) or (
+                    key == "schema_version" and _SCHEMA_TOKEN.fullmatch(current)
+                    and not _ADDRESS_PREFIX.match(current))):
+                return False
+        elif isinstance(current, list):
+            if len(current) > 1024:
+                return False
+            stack.extend((child, depth + 1, "") for child in current)
+        elif isinstance(current, dict):
+            if len(current) > 32:
+                return False
+            for child_key, child in current.items():
+                if (not isinstance(child_key, str) or not _MACHINE_KEY.fullmatch(child_key)
+                        or child_key.lower() in _MACHINE_FORBIDDEN_FIELDS):
+                    return False
+                stack.append((child, depth + 1, child_key))
+        else:
+            return False
+    return True
+
+
+def validated_local_preparation_observation(value: Any) -> dict[str, Any] | None:
+    """Copy only the optional versioned, bounded, pathless machine wire."""
+    if not isinstance(value, dict) or set(value) != _LOCAL_OBSERVATION_FIELDS:
+        return None
+    if (value["schema_version"] != LOCAL_PREPARATION_OBSERVATION_SCHEMA
+            or value["usage_scope"] != "local_original_verification"
+            or not isinstance(value["status"], str) or not isinstance(value["reason"], str)
+            or type(value["blocks_download"]) is not bool or value["local_io_usage"] is not None
+            or not isinstance(value["operations"], list) or not isinstance(value["diagnostics"], list)
+            or any(not isinstance(row, dict) for row in value["operations"] + value["diagnostics"])):
+        return None
+    limits = value["local_read_limits"]
+    if (not isinstance(limits, dict)
+            or set(limits) != {"max_candidates", "max_bytes", "timeout_seconds"}
+            or any(type(limits[key]) is not int for key in ("max_candidates", "max_bytes"))
+            or type(limits["timeout_seconds"]) not in (int, float)
+            or not _bounded_machine_json(value)):
+        return None
+    try:
+        return decode_object(canonical_bytes(value), limit=LOCAL_PREPARATION_OBSERVATION_LIMIT)
+    except (NarrativeTransportError, ValueError, TypeError, RecursionError, UnicodeError):
+        return None
+
+
 def validated_filing_fetch_failure(value: Any) -> dict[str, Any] | None:
     """Retain the small pathless public FF failure, not arbitrary stderr.
 
@@ -338,7 +429,7 @@ def validated_filing_fetch_failure(value: Any) -> dict[str, Any] | None:
     """
     fields = {"schema_version", "status", "request_period", "filing", "transcript", "calls", "downloads"}
     if (not isinstance(value, dict) or not fields <= set(value)
-            or not set(value) <= fields | {"acquisition_observation"}
+            or not set(value) <= fields | {"acquisition_observation", "local_preparation_observation"}
             or value["schema_version"] != "2.0" or not isinstance(value["status"], str)
             or value["status"] not in FAILURE_STATUSES):
         return None
@@ -390,13 +481,22 @@ def validated_filing_fetch_failure(value: Any) -> dict[str, Any] | None:
         return None
     if "acquisition_observation" in value and validated_acquisition_observation(value["acquisition_observation"]) is None:
         return None
-    # A bounded JSON copy also rejects non-wire types and cannot share mutable
-    # option/limit dictionaries with a caller's request.
-    try:
-        encoded = json.dumps(value, ensure_ascii=False, allow_nan=False)
-    except (ValueError, TypeError, RecursionError):
+    if ("local_preparation_observation" in value
+            and validated_local_preparation_observation(value["local_preparation_observation"]) is None):
         return None
-    return json.loads(encoded) if len(encoded.encode("utf-8")) <= 16384 else None
+    # The legacy envelope retains its existing size bound. Only the validated
+    # optional observation gets additional space, with no truncation.
+    base = {key: child for key, child in value.items() if key != "local_preparation_observation"}
+    try:
+        encoded_base = json.dumps(base, ensure_ascii=False, allow_nan=False)
+        if len(encoded_base.encode("utf-8")) > _FAILURE_BASE_LIMIT:
+            return None
+        encoded = json.dumps(value, ensure_ascii=False, allow_nan=False)
+        if len(canonical_bytes(value)) > _FAILURE_BASE_LIMIT + LOCAL_PREPARATION_OBSERVATION_LIMIT:
+            return None
+        return json.loads(encoded)
+    except (ValueError, TypeError, RecursionError, UnicodeError):
+        return None
 
 
 def failure_observation(payload: Any) -> dict[str, Any]:
@@ -462,12 +562,50 @@ def extract_cause(payload: Any) -> dict[str, Any] | None:
     return validated_cause(failure_detail(payload).get("upstream_cause"))
 
 
+def _extended_error_document(value: dict[str, Any]) -> bool:
+    """The larger raw window is reserved for a complete versioned observation."""
+    complete = value.get("filing_fetch_result", value)
+    if (not isinstance(complete, dict) or "local_preparation_observation" not in complete
+            or validated_filing_fetch_failure(complete) is None):
+        return False
+    if complete is value:
+        return True
+    # Only RF's existing error wrapper may surround the versioned sidecar.
+    # Its residual size stays at the old complete-error bound; no arbitrary
+    # giant raw error string receives the extension's larger parse allowance.
+    projected = failure_observation(value)
+    wrapper_fields = {"error_code", "error", "retryable", "candidates"}
+    if (not {"error_code", "error", "filing_fetch_result"} <= set(value)
+            or not set(value) <= set(projected) | wrapper_fields
+            or value["error_code"] not in FAILURE_STATUSES | {"upstream"}
+            or not isinstance(value["error"], str) or len(value["error"]) > 512
+            or any(ord(char) < 32 or char in "/\\" for char in value["error"])
+            or ("retryable" in value and type(value["retryable"]) is not bool)
+            or ("candidates" in value and (
+                validated_failure_candidates(value["candidates"]) != value["candidates"]))):
+        return False
+    if any(value[key] != projected[key] for key in set(value) - wrapper_fields):
+        return False
+    rest = {key: child for key, child in value.items() if key != "filing_fetch_result"}
+    return len(canonical_bytes(rest)) <= _FAILURE_BASE_LIMIT
+
+
 def parse_error_document(text: str) -> dict[str, Any] | None:
-    """Decode a small stderr JSON error once; legacy text remains legacy text."""
-    if len(text) > 65536:
+    """Decode legacy small errors or a bounded complete observation extension."""
+    if not isinstance(text, str):
+        return None
+    # Keep legacy decoding behavior for old small errors and bad optional
+    # siblings: downstream safe projections can still retain their real cause.
+    if len(text) <= _LEGACY_ERROR_LIMIT:
+        try:
+            value = json.loads(text)
+        except (TypeError, ValueError, RecursionError):
+            return None
+        return value if isinstance(value, dict) else None
+    if len(text) > _EXTENDED_ERROR_LIMIT:
         return None
     try:
-        value = json.loads(text)
-    except (TypeError, ValueError):
+        value = decode_object(text.encode("utf-8"), limit=_EXTENDED_ERROR_LIMIT)
+        return value if _extended_error_document(value) else None
+    except (NarrativeTransportError, ValueError, TypeError, RecursionError, UnicodeError):
         return None
-    return value if isinstance(value, dict) else None

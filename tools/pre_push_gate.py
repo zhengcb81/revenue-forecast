@@ -104,6 +104,7 @@ SMOKE_TESTS = (
     "tests/test_r1_source_boundary.py",
     "tests/test_r1_target_scope.py",
     "tests/test_r1_narrative_availability.py",
+    "tests/test_r1_local_preparation_observation.py",
 )
 
 

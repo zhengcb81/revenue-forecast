@@ -1,0 +1,11 @@
+# Progress
+
+- Base/worktree isolated at 674d08d9. Mother assurance WIP three byte hashes and output existence frozen; never imported or copied output.
+- RED: original product + fixed tests produced 8 FAIL / 36 PASS (3.29 s), including small and 600-diagnostic actual client and source_preparation subprocesses. Both independent complete-sidecar validation and >64 KiB parsing failed.
+- Implementation: only scripts/filing_upstream_cause.py runtime changed. Added outer nine-key/opaque bounded machine JSON validation; reused RF canonical_bytes/decode_object and pathless guard; transparent deep copy. Legacy base16 KiB/legacy error64 KiB retained; validated optional observation128 KiB, compact total144 KiB, bounded raw extension1 MiB. Above-cap/invalid observations never truncate into a claimed-complete object. Invalid small or FF-client-filtered optional data keeps the safe cause/exit/calls/downloads.
+- FF final helper 136ab5a627083f173c60fc88b7b3f74879a4bf99 uses original bounded schema token plus explicit drive:/, scheme:// or absolute file:/ address rejection. RF is aligned; opaque urn:owner:budget/2 and reason=file:missing retained. No status/business/budget enum or quota value revalidation.
+- Final finite tests: 56 new + related =201 PASS /1 opt-in three-checkout SKIP /0 FAIL. Legacy no-sibling, normal GAP and acquisition accounting covered by affected suites. Actual RF client/preparation retain 108288-byte optional observation; stderr >113 KiB. CWP/FF live combined integration belongs to ROOT, not claimed by this fixture replay.
+- Full existing ruff scripts/tests/tools/e2e PASS; existing12 public mypy plus focused changed helper =13 source files PASS; git diff --check PASS. One new file added to existing smoke list, no new gate.
+- Product normally committed dedebe0b; source bindings/handoff/cleanup sealed. Next: ROOT independent review and consumer-first release. No install/push/merge/download/API/source scan/default switch.
+
+- Normal hook first found two deliberate malicious path test literals. Per ROOT and existing FF practice, kept direct literals and registered exactly two rule/file/value negative cases with per-case rationale in existing host_assumption_baseline.json. No guard implementation change, skip, global baseline refresh or blanket exemption. Temporary JSON relocation was reverted before commit.
