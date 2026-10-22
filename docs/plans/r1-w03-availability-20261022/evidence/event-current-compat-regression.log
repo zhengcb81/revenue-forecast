@@ -1,0 +1,36 @@
+........................................................................ [ 24%]
+............................F......................s.................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+.........                                                                [100%]
+================================== FAILURES ===================================
+_ test_current_material_preserves_publication_without_historical_claim[2026-09-02] _
+scripts\company_wiki_narrative_contracts.py:272: in _manifest_information_time
+    validate_source_events(
+scripts\contracts\source_clock.py:150: in validate_source_events
+    _conflict("retrieved_at", original_retrieved_at, "published_date", eligibility.published_date.isoformat())
+scripts\contracts\source_clock.py:136: in _conflict
+    raise SourceClockError(f"source_clock_conflict: {first}={first_value!r}, {second}={second_value!r}")
+E   contracts.source_clock.SourceClockError: source_clock_conflict: retrieved_at='2026-08-02T00:00:00Z', published_date='2026-09-02'
+
+The above exception was the direct cause of the following exception:
+tests\test_company_wiki_narrative_reader.py:242: in test_current_material_preserves_publication_without_historical_claim
+    dto = validate_narrative_response(request, body, _canonical(receipt) + b"\n").to_dict()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:966: in validate_narrative_response
+    return _validated_response(request, body, receipt_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:950: in _validated_response
+    manifest = _receipt(receipt, request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:310: in _receipt
+    return _manifest(receipt, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_narrative_contracts.py:293: in _manifest
+    _manifest_information_time(manifest, receipt, request["as_of_date"])
+scripts\company_wiki_narrative_contracts.py:281: in _manifest_information_time
+    raise NarrativeTransportError("blocked", reason) from exc
+E   company_wiki_narrative_contracts.NarrativeTransportError: blocked: source_clock_conflict
+=========================== short test summary info ===========================
+SKIPPED [1] tests\test_narrative_source_preparation_transport.py:92: POSIX executable-provider CLI smoke
+1 failed, 295 passed, 1 skipped in 4.82s

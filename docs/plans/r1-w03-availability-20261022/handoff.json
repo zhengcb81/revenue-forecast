@@ -1,0 +1,448 @@
+{
+  "schema_version": "r1-w03-rf-handoff/1",
+  "status": "READY_FOR_ROOT_INDEPENDENT_REVIEW",
+  "lane": "W03-A RF consumer",
+  "branch": "codex/r1-narrative-availability",
+  "worktree": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-boundary",
+  "base_head": "92b6968294988122aad89d963ec330945fc8dc58",
+  "product_commit": "b76fb96f9b410abceefc6b264120c5101654492b",
+  "product_files": [
+    {
+      "relative_path": "scripts/company_wiki_narrative_contracts.py",
+      "sha256": "0af725599bda25c883a040605a20e1bc2d3204de0a032ce1116f8c2b0e248ac6",
+      "normalized_lf_sha256": "0af725599bda25c883a040605a20e1bc2d3204de0a032ce1116f8c2b0e248ac6",
+      "git_blob_sha256": "0af725599bda25c883a040605a20e1bc2d3204de0a032ce1116f8c2b0e248ac6",
+      "bytes": 52641
+    },
+    {
+      "relative_path": "tests/test_r1_narrative_availability.py",
+      "sha256": "08d88e677a3e7a119136e5f179de59213c421705d9c4df12fd87a11727e881be",
+      "normalized_lf_sha256": "ec7bf773fe3bfad281440c4907d8ab0437277f4ce8ecbc8713a309baf45426bf",
+      "git_blob_sha256": "ec7bf773fe3bfad281440c4907d8ab0437277f4ce8ecbc8713a309baf45426bf",
+      "bytes": 13741
+    }
+  ],
+  "interface": {
+    "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\docs\\plans\\du11-source-closure-2026-10-18\\r1-holdout-20261021\\W03-current-interface.md",
+    "sha256": "1eaec6054d4301d05b771a2e27c25bad44a359d72c30fe29ee2344e089ae22c2",
+    "raw_receipt_version": "narrative-read-receipt/1",
+    "new_optional_field": "availability_evidence",
+    "proof_schema": "source-availability-evidence/1",
+    "projected_receipt_3_unchanged": true
+  },
+  "semantics": {
+    "proof_bases": [
+      "prior_verified_capture",
+      "primary_archive",
+      "current_verified_open"
+    ],
+    "publication_unknown_remains_null": true,
+    "omitted_or_null_optional_compatible": true,
+    "known_future_or_invalid_publication_precedes_proof": true,
+    "known_past_publication_not_rejected_by_late_capture": true,
+    "as_of_none": "Preserve legacy current-mode path if proof omitted/null (publication remains typed, no historical claim). With supplied proof, qualify at actual receipt.read_at UTC day and validate actual source events.",
+    "prior_reasons_preserved": [
+      "source_after_as_of",
+      "source_publication_unknown",
+      "invalid_as_of_date"
+    ],
+    "context_shape": "No new revenue-narrative-context key; complete optional proof retained inside read_receipt.",
+    "proof_identity": "Read-time metadata only; bundle/artifact/hash/generation and immutable cache identity unchanged.",
+    "parent_scope": "Single root proof forbidden on projected /3, including null or either parent SHA.",
+    "validation_owner": "Use existing contracts.source_clock; no new resolver/proof store/raw hash or permission chain.",
+    "actual_event_clock": "When historical as_of or nonnull proof gives eligibility, reuse validate_source_events with receipt.read_at and manifest.retrieved_at. No bespoke comparisons."
+  },
+  "tests": {
+    "red": {
+      "passed": 20,
+      "failed": 22,
+      "skipped": 0,
+      "seconds": 1.92,
+      "command_file": "evidence/red-command.json",
+      "reason": "Unmodified real validator rejects optional receipt key before legitimate source-time paths; actual RF child transport included."
+    },
+    "same_tests_green": {
+      "passed": 47,
+      "failed": 0,
+      "skipped": 0,
+      "execution": "Contained in final-regression.xml; no additional standalone run claimed."
+    },
+    "related_regression": {
+      "passed": 296,
+      "failed": 0,
+      "skipped": 1,
+      "seconds": 4.49,
+      "test_files": 12,
+      "skip": "Existing POSIX executable-provider CLI smoke on Windows",
+      "command_file": "evidence/final-regression-command.json"
+    },
+    "ruff_full_scope": "PASS",
+    "public_mypy": "PASS: 11 source files",
+    "host_guard": "PASS: 0 new violations; existing baseline/registered counts unchanged",
+    "normal_commit_hooks": "ruff/mypy/host guard PASS; no skip flags used",
+    "frozen_fixtures_unchanged": true,
+    "wire_fixture_source": "Existing public producer golden, altered in memory only; not a claim of current CWP producer execution.",
+    "real_reader_process": "RF bounded reader child consumes and preserves complete proof in receipt; child is a local controlled wire fixture.",
+    "raw_open_count_rf_consumer": 0,
+    "producer_raw_open_count": "Not measured or signed by RF; CWP lane and ROOT real producer E2E own this check.",
+    "initial_related_regression": {
+      "passed": 291,
+      "failed": 0,
+      "skipped": 1,
+      "seconds": 7.9,
+      "test_files": 12,
+      "skip": "Existing POSIX executable-provider CLI smoke on Windows",
+      "command_file": "evidence/regression-command.json"
+    },
+    "same_tests_green_initial": {
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 1.04,
+      "command_file": "evidence/green-command.json"
+    },
+    "root_event_red": {
+      "failed": 3,
+      "passed": 2,
+      "deselected": 42,
+      "seconds": 0.72,
+      "product_before_fix": "6efbebc34d98bb28a83ebc9cdd5a1479e9e2e8ef",
+      "command_file": "evidence/event-red-command.json"
+    },
+    "event_current_compatibility_failure": {
+      "failed": 1,
+      "passed": 295,
+      "skipped": 1,
+      "seconds": 4.82,
+      "log": "evidence/event-current-compat-regression.log",
+      "resolution": "Existing asof=None/no-proof current-mode semantics preserved; no existing tests or golden changed."
+    },
+    "final_actual_source_event_controls": "Unknown pub with proof later than actual read rejected for explicit as_of and current proof mode; actual retrieval after actual read rejected; known pub retains priority over later proof in both modes."
+  },
+  "selective_install": {
+    "required_runtime_files": [
+      "scripts/company_wiki_narrative_contracts.py"
+    ],
+    "new_runtime_dependency": "None: contracts/source_clock.py already present from W02 and unchanged by W03-A.",
+    "old_installed_files": [
+      {
+        "logical_path": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast\\scripts\\company_wiki_narrative_contracts.py",
+        "physical_path": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast\\scripts\\company_wiki_narrative_contracts.py",
+        "exists": true,
+        "old_sha256": "94b57485a6327259969cc02ef67041a873e88509a5211b38bc652b156d46fc4d",
+        "modified": false,
+        "still_matches_old_sha": true,
+        "normalized_lf_matches_base": true
+      },
+      {
+        "logical_path": "C:\\Users\\郑曾波\\.claude\\skills\\revenue-forecast\\scripts\\company_wiki_narrative_contracts.py",
+        "physical_path": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast\\scripts\\company_wiki_narrative_contracts.py",
+        "exists": true,
+        "old_sha256": "94b57485a6327259969cc02ef67041a873e88509a5211b38bc652b156d46fc4d",
+        "modified": false,
+        "still_matches_old_sha": true,
+        "normalized_lf_matches_base": true
+      },
+      {
+        "logical_path": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast\\scripts\\company_wiki_narrative_contracts.py",
+        "physical_path": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast\\scripts\\company_wiki_narrative_contracts.py",
+        "exists": true,
+        "old_sha256": "94b57485a6327259969cc02ef67041a873e88509a5211b38bc652b156d46fc4d",
+        "modified": false,
+        "still_matches_old_sha": true,
+        "normalized_lf_matches_base": true
+      }
+    ],
+    "performed": false,
+    "order": "ROOT independently review and publish/install consumer first, then CWP producer."
+  },
+  "cleanup": {
+    "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-boundary\\.planning\\w3",
+    "exists_before": false,
+    "exists_after": false,
+    "passes": [
+      {
+        "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-boundary\\.planning\\w3",
+        "exists_before": false,
+        "exists_after": false,
+        "removed_files": 206,
+        "removed_bytes": 10167888,
+        "production_original_changes": 0,
+        "production_config_changes": 0,
+        "peak_scratch_measured": false
+      },
+      {
+        "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-boundary\\.planning\\w3",
+        "exists_before": false,
+        "exists_after": false,
+        "removed_files": 218,
+        "removed_bytes": 10199139,
+        "scope": "Same exact owned TEMP recreated for ROOT event TDD and final node."
+      }
+    ],
+    "removed_files": 424,
+    "removed_bytes": 20367027,
+    "production_original_changes": 0,
+    "production_config_changes": 0,
+    "peak_scratch_measured": false
+  },
+  "scope_protection": {
+    "cwp_ff_et_mother_code_modified": false,
+    "ci_hooks_config_modified": false,
+    "installed_skills_modified": false,
+    "production_original_changes": 0,
+    "paid_calls": 0,
+    "source_downloads": 0,
+    "network_requests": 0,
+    "budget_or_ledger_mutations": 0,
+    "legacy_080_default_modified": false,
+    "research_or_forecast_generation": false
+  },
+  "evidence": [
+    {
+      "path": "evidence\\cleanup-first.json",
+      "bytes": 319,
+      "sha256": "4a569f53e9551b760c755e74d10e4914b443b554df94d0f3242b0c5447b38742"
+    },
+    {
+      "path": "evidence\\cleanup.json",
+      "bytes": 1026,
+      "sha256": "b614b5f46bd1b2e6b4f2a23ebb6c3945ebe1aa16f9c1face3301af5fbef8af37"
+    },
+    {
+      "path": "evidence\\event-current-compat-regression-command.json",
+      "bytes": 1225,
+      "sha256": "466632da857be23f6ffcd3ccb7e0630c85f16e27144c5700126079d434a19f0d"
+    },
+    {
+      "path": "evidence\\event-current-compat-regression.log",
+      "bytes": 2631,
+      "sha256": "437997db39e645c5873d4dc9cded86463ef12b07a3efc54e47270493b7b18961"
+    },
+    {
+      "path": "evidence\\event-current-compat-regression.xml",
+      "bytes": 49105,
+      "sha256": "421c7afe096faab6c509000ccc20001b00f2565995c63a23244143cbc0a601c4"
+    },
+    {
+      "path": "evidence\\event-product-commit-0.log",
+      "bytes": 133,
+      "sha256": "7db86fcfba53d6cdec0e74fb51631dbfff51688bc7aff98d92b050b83f8cae55"
+    },
+    {
+      "path": "evidence\\event-product-commit-1.log",
+      "bytes": 133,
+      "sha256": "7db86fcfba53d6cdec0e74fb51631dbfff51688bc7aff98d92b050b83f8cae55"
+    },
+    {
+      "path": "evidence\\event-product-commit-2.log",
+      "bytes": 435,
+      "sha256": "2c91251ca25f7269b1ced06bbc599dbf1d4145d1bc064faae58fbe0763d32dad"
+    },
+    {
+      "path": "evidence\\event-product-commit-commands.json",
+      "bytes": 535,
+      "sha256": "abdbb0b6d70d94b7bab2e5e7cdad1a6025e99f4aefbfcc6f421811b3c54fc42c"
+    },
+    {
+      "path": "evidence\\event-red-command.json",
+      "bytes": 780,
+      "sha256": "c16d3955d5b643cd21b028d012900d646bf4ca6cf47b252853d997f21247a8ab"
+    },
+    {
+      "path": "evidence\\event-red.log",
+      "bytes": 1978,
+      "sha256": "4490b1d3e949407c0101945bf81c8c032a97c4cac675a296725a9c4beab83a2b"
+    },
+    {
+      "path": "evidence\\event-red.xml",
+      "bytes": 2304,
+      "sha256": "1bde6454b694fb1efa0302b14189c5010fb18b5d91f39d2a8e6e47970fada586"
+    },
+    {
+      "path": "evidence\\final-mypy-command.json",
+      "bytes": 270,
+      "sha256": "9c348dce95b76b089f42eb4222b7c6f3db9c8261c7f7baeb2cd698795e584108"
+    },
+    {
+      "path": "evidence\\final-mypy.log",
+      "bytes": 45,
+      "sha256": "ce32e21ee307d2da61637151f2f239cf8568be270711ff04e8e3025805ab7f57"
+    },
+    {
+      "path": "evidence\\final-regression-command.json",
+      "bytes": 1231,
+      "sha256": "d4553c8717413aac2c31ca0b594a6554a435fdad76049cc7ce0e893b9df652c1"
+    },
+    {
+      "path": "evidence\\final-regression.log",
+      "bytes": 624,
+      "sha256": "8b3e15a5f9b40d92d692091fe80bc87a8d23e08e125193ab8a64479941b0db9b"
+    },
+    {
+      "path": "evidence\\final-regression.xml",
+      "bytes": 47150,
+      "sha256": "3d636c3207172c67911630b44275518c14cd4101088f14bfda1c3de4c95183c2"
+    },
+    {
+      "path": "evidence\\final-ruff-command.json",
+      "bytes": 202,
+      "sha256": "665b77b3edcd90aa84db78f3b4cfa06765eb8f1a29ac3274f6f9d38647f28689"
+    },
+    {
+      "path": "evidence\\final-ruff.log",
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    {
+      "path": "evidence\\frozen-fixtures-after.json",
+      "bytes": 2257,
+      "sha256": "aa3166fef50481736c421547ec2947e2e117dc4cf3d5840338bdaa62e172c40a"
+    },
+    {
+      "path": "evidence\\frozen-fixtures-before.json",
+      "bytes": 2185,
+      "sha256": "886a8a313ead1018dd2e294f9b7cb960f621443110f07bfc817ecdb7168b334f"
+    },
+    {
+      "path": "evidence\\frozen-fixtures-final.json",
+      "bytes": 2257,
+      "sha256": "aa3166fef50481736c421547ec2947e2e117dc4cf3d5840338bdaa62e172c40a"
+    },
+    {
+      "path": "evidence\\full-ruff-command.json",
+      "bytes": 202,
+      "sha256": "9c173ac5056384b02f7f07d409dfd141a48ab3d245785ed0635d950c6267d264"
+    },
+    {
+      "path": "evidence\\full-ruff.log",
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    {
+      "path": "evidence\\green-command.json",
+      "bytes": 624,
+      "sha256": "b20418894788d4589cb30e0d950aea85ff393492eee025fd88f98698120d5258"
+    },
+    {
+      "path": "evidence\\green.log",
+      "bytes": 101,
+      "sha256": "3550e863bdf9b8abdba68de51ba1a9eedb2d61d954218401fcdf304d5d624f59"
+    },
+    {
+      "path": "evidence\\green.xml",
+      "bytes": 6883,
+      "sha256": "a05164030986d69026df0ca3e58f75f6c5a8887461511e13d6bd19932d8f8e73"
+    },
+    {
+      "path": "evidence\\host-guard-command.json",
+      "bytes": 219,
+      "sha256": "24335bcfda18b2a3c3a28c2d5e15a618c4de0202c4210d324c7b30e1061df79a"
+    },
+    {
+      "path": "evidence\\host-guard.log",
+      "bytes": 135,
+      "sha256": "51942410a8ec9e916dfc501eceea1c5065912309ac0676bde4f1eb2d69ba576d"
+    },
+    {
+      "path": "evidence\\mypy-command.json",
+      "bytes": 270,
+      "sha256": "6acaa29129d02fa6e8be423895271c0b31e90fb8f5d72e74d3077ebfdf5f7a8e"
+    },
+    {
+      "path": "evidence\\mypy.log",
+      "bytes": 45,
+      "sha256": "ce32e21ee307d2da61637151f2f239cf8568be270711ff04e8e3025805ab7f57"
+    },
+    {
+      "path": "evidence\\old-install-sha.json",
+      "bytes": 1473,
+      "sha256": "da92b96553c326d8154df59f356b7c36fe8c5b00022f7ea1590d6b302d07c6ac"
+    },
+    {
+      "path": "evidence\\product-commit-0.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "evidence\\product-commit-1.log",
+      "bytes": 132,
+      "sha256": "642b7a2c597bfa512407980bee490069efc3cd705e86c6fdab1bbdee7c9557ba"
+    },
+    {
+      "path": "evidence\\product-commit-2.log",
+      "bytes": 133,
+      "sha256": "7db86fcfba53d6cdec0e74fb51631dbfff51688bc7aff98d92b050b83f8cae55"
+    },
+    {
+      "path": "evidence\\product-commit-3.log",
+      "bytes": 498,
+      "sha256": "9a116ea301afccbfc4dee5f5508db656911d02fd3c27e111aa41beb67d3d6afb"
+    },
+    {
+      "path": "evidence\\product-commit-commands.json",
+      "bytes": 659,
+      "sha256": "35652a9186e507d0f64c7b9ff26b49e5bf0f2d72c5d681a1cd864a163003e7ad"
+    },
+    {
+      "path": "evidence\\red-command.json",
+      "bytes": 697,
+      "sha256": "1dd469fabd9d57833743e2947ace1ce01c1d354d53bfda8244e725bd8d251f06"
+    },
+    {
+      "path": "evidence\\red.log",
+      "bytes": 21530,
+      "sha256": "2ac10b925fbd747858634b3ba6bc1ab56c71d8af30b75ea676c950a2f1d0aa9f"
+    },
+    {
+      "path": "evidence\\red.xml",
+      "bytes": 26733,
+      "sha256": "1f8e43be71539d70192c3e53e2a9e3c2d7a7ac5d0ea2cde6901e97f8156c01fa"
+    },
+    {
+      "path": "evidence\\regression-command.json",
+      "bytes": 1224,
+      "sha256": "34f0ba4af0b4f37f9bc6c6b98dd64d518883eb5f7a3a1179207800cdf471ead2"
+    },
+    {
+      "path": "evidence\\regression.log",
+      "bytes": 624,
+      "sha256": "f2d0d88005f2219b3755b98103c553c0af80197ecf7f01664421e8fe1ad6195a"
+    },
+    {
+      "path": "evidence\\regression.xml",
+      "bytes": 46278,
+      "sha256": "aa1c97974974ea27cab0ca5992240a1da5b8edfe99aea41e04d057662e87ca78"
+    },
+    {
+      "path": "evidence\\ruff-command.json",
+      "bytes": 246,
+      "sha256": "13d5e2cde44e71210da30b38ab4ad5695c644484446513bd887a8cc0a1f38393"
+    },
+    {
+      "path": "evidence\\ruff.log",
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    {
+      "path": "evidence\\temp-before.json",
+      "bytes": 131,
+      "sha256": "8d5cc62243b49b78db42333edff1ec704a55c3a2cee183d7a95c6ac2ba0baeb1"
+    }
+  ],
+  "known_nonblocking_tool_errors": [
+    "CodeGraph absent in isolated worktree; no index initialized outside assigned file scope. Explicit files were already known and opened.",
+    "Sandbox git status initially reported work-tree error; authorized escalated git status confirmed clean baseline without Git config edits.",
+    "One rg literal Windows filename argument contained an unexpanded wildcard; replaced by explicit test paths for actual regression. No product effect."
+  ],
+  "remaining": [
+    "ROOT non-author review must bind final product SHA.",
+    "ROOT actual new CWP producer CLI -> FF/RF composition, PDF/native JSON, single source open, scope/golden controls.",
+    "Consumer-before-producer integration/selective install/publication belongs to ROOT.",
+    "Existing explicit RF CI SMOKE_TESTS should include tests/test_r1_narrative_availability.py under ROOT-owned CI table; lane did not edit CI.",
+    "W03-B native0.9/v5 production semantics/context, W07 configured real summary/paid-cache recovery/four-role research acceptance remain OPEN."
+  ],
+  "next_action": "Hand to ROOT independent review and actual producer integration; no self merge/push/install.",
+  "initial_product_commit": "6efbebc34d98bb28a83ebc9cdd5a1479e9e2e8ef",
+  "observed_at_utc": "2026-10-22T18:45:56.780550+00:00"
+}
