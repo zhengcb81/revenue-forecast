@@ -124,6 +124,71 @@ its 3/6/12 rule and 3.7/3.8 keep rejecting the dated fields:
   through `forecast_adjustments` category `acquisition_contribution`
   (non-negative) or `disposal_contribution` (non-positive).
 
+## Repairing an existing authored input (citation / role / kind)
+
+Copying a sealed input and editing it in place is legitimate, but four things
+must be true before the copy is allowed to stand as a new version.
+
+1. **Never overwrite the sealed record.** New file, new `forecast_version`,
+   and the old file keeps its bytes. Record the old file's SHA-256 and the new
+   file's SHA-256 side by side; a diff that cannot name both is not a diff.
+2. **Re-read every changed excerpt from the page bytes.** Recompute the
+   contiguous offsets and `excerpt_sha256` from the verified page inventory, not
+   from the previous input's excerpt string. A `fix_hashes.py` pass only makes
+   the file self-consistent; it cannot tell you whether the excerpt describes
+   the right business.
+3. **Keep the arithmetic fixed while repairing roles.** If the repair is a
+   citation/role/kind correction, the activity, price, FX and persistence values
+   must stay exactly as they were, and the recomputed scenario totals must be
+   bit-identical to the sealed output. Any numeric movement must then be
+   explained as a separate, deliberate research decision. This is the cheapest
+   available proof that a "repair" did not quietly become a re-forecast.
+4. **Change the parameter kind when the semantics changed, not the number.**
+   `reported_fact` -> `management_guidance` requires at least one source and an
+   exact-value claim (the native contract already enforces this). Record
+   explicitly that the parameter has no revenue-DAG consumer when it has none,
+   so a reader cannot mistake a role correction for a forecast improvement.
+
+Two traps to check explicitly:
+
+- **The excerpt character limit.** Native claims accept 10-500 characters.
+  A contiguous own-business range that exceeds 500 must be split at a paragraph
+  boundary into two source-owned ranges; truncating mid-sentence loses the
+  qualifying clause that made the excerpt usable.
+- **Diagnostic strings in enum fields.** A preparation or review package may
+  invent a value such as `unknown_mechanism_no_role_fix`. It is a diagnostic
+  label, not a member of the native `evidence_role` enum. Never write it into
+  the input; use an existing legal role or omit the role.
+
+### Keep derived explanations coherent before freezing a revised input
+
+When a reviewed role, scope or scenario changes, use the shared authoring projection
+before native validate/compute/snapshot: `python scripts/research_projection.py
+--input <draft.json> --plan <reviewed-explanation-data.json> --output <new-input.json>`.
+The plan contains reviewed context, scope-specific limitations and named scenario
+component baselines; it is data, not another approval or native schema. The helper
+updates explanations together, preserves claims/formulae/amounts, and does not infer
+business truth from company names or keywords. Historical-only driver evidence cannot
+retain a disclosed-ramp thesis; a conditional component requirement names its own
+scenario and comparable baseline. A Base-only example must say Base-only. Native
+validation and numerical output comparison still follow; unchanged confidence scores
+are not proof that numerical values are unchanged.
+
+The bridge names its actual parent parameter and an explicit `basis` in the reviewed
+plan. A precursor operating path must say before a separate timing/recognition overlay
+when applicable. Do not allocate a joint delay to unobserved components merely to
+describe the stressed total; that component allocation remains unknown.
+
+### Minimal repair ledger
+
+For every touched claim, record: old source/locator/role/excerpt hash, new
+source/locator/role/excerpt hash, physical page, contiguous span, target type and
+id, the parameter edits it caused, the rationale, and the remaining limit. For
+every untouched claim in the review set, record that it was verified unchanged
+and why its existing role is correct. The ledger's row count must equal the
+review set's cardinality; a ledger that only lists changes cannot show that
+nothing was dropped.
+
 ## Mechanism evidence roles (schema 3.9 opt-in)
 
 On schema 3.9 the growth-driver triangulation counts only nodes carrying at

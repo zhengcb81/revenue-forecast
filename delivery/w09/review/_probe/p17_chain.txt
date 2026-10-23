@@ -1,0 +1,98 @@
+=== request.json SHAs ===
+  20261023T201233Z-661741f1                                  770cd309353c158827c7b31fc983f4eb47660ff63536de4a440d6d2754bd33c2  561849 bytes
+  20261023T201237Z-c72859f7                                  770cd309353c158827c7b31fc983f4eb47660ff63536de4a440d6d2754bd33c2  561849 bytes
+  20261023T201248Z-344668df                                  770cd309353c158827c7b31fc983f4eb47660ff63536de4a440d6d2754bd33c2  561849 bytes
+  20261023T201256Z-160a2ffd                                  c0c45687f9cf3ba309f9d5e6411c593b5b49b6eb6ecd07ce8fe9db6dbb0d7c19  598096 bytes
+  20261023T201301Z-86391eab                                  c0c45687f9cf3ba309f9d5e6411c593b5b49b6eb6ecd07ce8fe9db6dbb0d7c19  598096 bytes
+  20261023T201313Z-febfbaaa                                  c0c45687f9cf3ba309f9d5e6411c593b5b49b6eb6ecd07ce8fe9db6dbb0d7c19  598096 bytes
+
+=== on-disk input files ===
+  main-input.json   cb155a827f6a241ba5d45cf41b6e8e59eef98aa4b122e955106a51ae9770f022 634766
+  stress-input.json 7f0cf9d92d4ac7aa1a3509ac849aa08631021108212d0b1bee6f69fd02838b12 674672
+
+=== request.json top keys ===
+  ['as_of_date', 'audit_communication_coverage', 'base_adjustment_parameter_ids', 'base_year', 'company_name', 'currency', 'evidence_claims', 'fiscal_year_end', 'forecast_version', 'forecast_years', 'growth_driver_tree', 'historical_revenue', 'management_communication_coverage', 'management_targets', 'operating_research', 'parameters', 'reported_total_revenue_parameter_id', 'research_coverage', 'schema_version', 'segments', 'sensitivity_tests', 'sources', 'unit']
+  as_of_date       '2026-10-21'
+  audit_communication_coverage True
+  base_adjustment_parameter_ids list len=0
+  base_year        2025
+  company_name     '药明康德'
+  currency         'CNY'
+  evidence_claims  list len=178
+  fiscal_year_end  '12-31'
+  forecast_version 'w09-rf-research-20261023-main-v1'
+  forecast_years   list len=3
+  growth_driver_tree dict len=2
+  historical_revenue list len=3
+  management_communication_coverage list len=6
+  management_targets list len=7
+  operating_research dict len=4
+  parameters       list len=228
+  reported_total_revenue_parameter_id 'reported_total_2025'
+  research_coverage list len=9
+  schema_version   '3.10'
+  segments         list len=6
+  sensitivity_tests list len=7
+  sources          list len=11
+  unit             'million'
+
+
+=== capture dirs: frozen input vs request ===
+-- main-validate (634ff7c20cf1466388eeae89f89f6087)
+   files: ['consume-0001-770cd309353c.json', 'input-0001-770cd309353c.json', 'stderr.txt', 'stdout.txt']
+     consume-0001-770cd309353c.json             770cd309353c158827c7b31fc983f4eb47660ff63536de4a440d6d2754bd33c2 561849
+     input-0001-770cd309353c.json               770cd309353c158827c7b31fc983f4eb47660ff63536de4a440d6d2754bd33c2 561849
+     stderr.txt                                 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0
+     stdout.txt                                 5be86f95bd4bb3848e802afa321452f38330ecec2d48f7a1d1cb8de4efbe7295 7
+   input  == request.json ? True
+   consume == request.json ? True
+-- main-compute (1632d88d4c6c4cd7ba56dc3f5ff0dfdf)
+   files: ['consume-0001-770cd309353c.json', 'input-0001-770cd309353c.json', 'stderr.txt', 'stdout.txt']
+     consume-0001-770cd309353c.json             770cd309353c158827c7b31fc983f4eb47660ff63536de4a440d6d2754bd33c2 561849
+     input-0001-770cd309353c.json               770cd309353c158827c7b31fc983f4eb47660ff63536de4a440d6d2754bd33c2 561849
+     stderr.txt                                 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0
+     stdout.txt                                 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0
+   input  == request.json ? True
+   consume == request.json ? True
+-- main-snapshot (0f46caaa29ac48dea54a0650fe3dd494)
+   files: ['consume-0001-770cd309353c.json', 'input-0001-770cd309353c.json', 'stderr.txt', 'stdout.txt']
+     consume-0001-770cd309353c.json             770cd309353c158827c7b31fc983f4eb47660ff63536de4a440d6d2754bd33c2 561849
+     input-0001-770cd309353c.json               770cd309353c158827c7b31fc983f4eb47660ff63536de4a440d6d2754bd33c2 561849
+     stderr.txt                                 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0
+     stdout.txt                                 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0
+   input  == request.json ? True
+   consume == request.json ? True
+-- stress-validate (b8becce6d7ee4697a3647912cef3d393)
+   files: ['consume-0001-c0c45687f9cf.json', 'input-0001-c0c45687f9cf.json', 'stderr.txt', 'stdout.txt']
+     consume-0001-c0c45687f9cf.json             c0c45687f9cf3ba309f9d5e6411c593b5b49b6eb6ecd07ce8fe9db6dbb0d7c19 598096
+     input-0001-c0c45687f9cf.json               c0c45687f9cf3ba309f9d5e6411c593b5b49b6eb6ecd07ce8fe9db6dbb0d7c19 598096
+     stderr.txt                                 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0
+     stdout.txt                                 5be86f95bd4bb3848e802afa321452f38330ecec2d48f7a1d1cb8de4efbe7295 7
+   input  == request.json ? True
+   consume == request.json ? True
+-- stress-compute (37d5b47e753544ca8f342e6b7baec6db)
+   files: ['consume-0001-c0c45687f9cf.json', 'input-0001-c0c45687f9cf.json', 'stderr.txt', 'stdout.txt']
+     consume-0001-c0c45687f9cf.json             c0c45687f9cf3ba309f9d5e6411c593b5b49b6eb6ecd07ce8fe9db6dbb0d7c19 598096
+     input-0001-c0c45687f9cf.json               c0c45687f9cf3ba309f9d5e6411c593b5b49b6eb6ecd07ce8fe9db6dbb0d7c19 598096
+     stderr.txt                                 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0
+     stdout.txt                                 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0
+   input  == request.json ? True
+   consume == request.json ? True
+-- stress-snapshot (663b6d8d13234fbbae4e9523d1c7dec8)
+   files: ['consume-0001-c0c45687f9cf.json', 'input-0001-c0c45687f9cf.json', 'stderr.txt', 'stdout.txt']
+     consume-0001-c0c45687f9cf.json             c0c45687f9cf3ba309f9d5e6411c593b5b49b6eb6ecd07ce8fe9db6dbb0d7c19 598096
+     input-0001-c0c45687f9cf.json               c0c45687f9cf3ba309f9d5e6411c593b5b49b6eb6ecd07ce8fe9db6dbb0d7c19 598096
+     stderr.txt                                 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0
+     stdout.txt                                 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0
+   input  == request.json ? True
+   consume == request.json ? True
+
+=== forecast input_sha256 vs snapshot input_sha256 ===
+  main forecast.input_sha256 = '93ba13a5207a8e141dd96aca1a417ab926a280d20dfcc2866135d8d012d692f5'
+  main snapshot keys         = ['company_name', 'as_of_date', 'forecast_version', 'input_sha256', 'forecast_result_sha256', 'engine_version', 'forecast_schema_version', 'snapshot_schema_version', 'snapshot_id', 'input_document', 'forecast_result']
+  main snapshot.input_sha256 = '93ba13a5207a8e141dd96aca1a417ab926a280d20dfcc2866135d8d012d692f5'
+  main EQUAL = True
+  stress forecast.input_sha256 = '4c82c3c1baf516c1a7155e41a366fb1e3415c3ab7feccdce14549556c5e80bd7'
+  stress snapshot keys         = ['company_name', 'as_of_date', 'forecast_version', 'input_sha256', 'forecast_result_sha256', 'engine_version', 'forecast_schema_version', 'snapshot_schema_version', 'snapshot_id', 'input_document', 'forecast_result']
+  stress snapshot.input_sha256 = '4c82c3c1baf516c1a7155e41a366fb1e3415c3ab7feccdce14549556c5e80bd7'
+  stress EQUAL = True

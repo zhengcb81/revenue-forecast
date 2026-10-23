@@ -1,0 +1,126 @@
+{
+  "schema_version": "w09-acceptance-checkpoints/1",
+  "package_id": "W09-RF-RESEARCH",
+  "created_at": "2026-10-23",
+  "created_before_new_numbers": true,
+  "declared_by": "W09 executor, before authoring forecast/main-input.json",
+  "purpose": "Pre-declared, semantically judged checkpoints. GREEN is a semantic criterion (right scope, right period, right role, honest unknown), never 'new revenue must be higher/lower' and never a self-generated PASS flag.",
+  "grading_rule": "Each checkpoint is graded PASS / FAIL / EXTERNAL_LIMIT with the artefact pointer that proves it. A checkpoint is not PASS because a validator exits 0.",
+  "checkpoints": [
+    {
+      "id": "CP01-claim-coverage",
+      "question": "Does the new input cover exactly the 49 distinct claims of the storage13/process28/analyst28 union, with no silent additions, removals or double counting?",
+      "pass_criteria": [
+        "expected_union_count == 49 and every union claim_id exists exactly once in the new evidence_claims",
+        "any removed claim keeps an old->new mapping row so the count cannot be flattered by deletion",
+        "role counts reconcile: old 31 mechanism_direction + 18 conversion_assumption"
+      ],
+      "anti_criteria": ["dropping an inconvenient claim", "splitting one claim into two to inflate coverage"]
+    },
+    {
+      "id": "CP02-own-scope-citation",
+      "question": "Does every mechanism claim cite its own business's contiguous segment, on the physical page, inside the native 10-500 character limit?",
+      "pass_criteria": [
+        "Biology activity claims use the H1 p12 biology section (own business), not the page-top TIDES/Testing text",
+        "non-TIDES activity claims use the H1 p11 Chemistry operating section that names Chemistry and D&M",
+        "TIDES activity claims use the H1 p12 TIDES D&M client/molecule sentence",
+        "each excerpt is a contiguous span of the verified page text, and the recorded offsets reproduce it byte-for-byte"
+      ],
+      "anti_criteria": ["fixed 650-character page-prefix slices", "a sentence about another segment offered as own-scope support"]
+    },
+    {
+      "id": "CP03-role-semantics",
+      "question": "Is each evidence role the one the excerpt can actually carry?",
+      "pass_criteria": [
+        "a future conditional amount is not labelled reported_fact/actual",
+        "a disclosed mechanism sentence is mechanism_direction; a cross-business or cross-period transfer is conversion_assumption",
+        "the 18 Chemistry/TIDES price claims keep conversion_assumption (negative control: they were already correct)",
+        "no claim asserts a mechanism the excerpt does not contain"
+      ],
+      "anti_criteria": ["relabelling to make a validator pass", "reporting a conditional index as an observed range"]
+    },
+    {
+      "id": "CP04-guidance-vs-actual",
+      "question": "Are historical actual, point-in-time stock and issuer future expectation separated?",
+      "pass_criteria": [
+        "rpo_expected_2026_opening_cohort is management_guidance with an exact-value claim, explicitly an issuer expected point, not a range and not an actual",
+        "FY2025 year-end RPO stock stays a reported point-in-time fact",
+        "the expected amount is not added to H1 actual or to new orders, and is not split across sub-businesses",
+        "the corrected kind changes no revenue number (the parameter has no revenue-DAG consumer)"
+      ],
+      "anti_criteria": ["treating the expected point as a full-year floor", "inventing a realization schedule"]
+    },
+    {
+      "id": "CP05-largest-driver-bridge",
+      "question": "Can the largest increment be explained by an independent component bridge rather than one shared non-TIDES index?",
+      "pass_criteria": [
+        "six mutually exclusive partitions, TIDES counted once inside Chemistry",
+        "non-TIDES decomposed into small-molecule D&M plus a residual that is explicitly not an independent Research-only disclosure",
+        "H1 D&M +72.7% and residual ~+5.6% shown as different rhythms",
+        "implied H2 D&M growth under a stated residual condition, and the FY2028 multiple, are labelled conditions with their falsifiers",
+        "the group net-increment share and the native positive-driver share are reported separately and never mixed"
+      ],
+      "anti_criteria": ["tuning Base until it meets guidance", "turning project/capacity stock into ASP x volume"]
+    },
+    {
+      "id": "CP06-units-and-rounding",
+      "question": "Are CNY 100m -> CNY million conversions, display rounding and conditional stress kept distinct?",
+      "pass_criteria": [
+        "every 亿元/万元 -> CNY million conversion is shown with its arithmetic",
+        "issuer display rounding is disclosed per row instead of being silently removed",
+        "a displayed interval is never called an empirical confidence or prediction interval",
+        "derived amounts inherit and disclose the rounding of their rounded ancestors"
+      ],
+      "anti_criteria": ["back-solving a high-precision historical number from a rounded disclosure"]
+    },
+    {
+      "id": "CP07-future-unknown",
+      "question": "Are genuinely unobservable future quantities kept unknown with their exposure, rather than filled in?",
+      "pass_criteria": [
+        "observed_range stays null where no empirical range exists",
+        "the unknown names which conclusion it limits and the CNY million exposure it affects",
+        "no invented ASP, utilization, qualified deliveries, cancellation split or cohort schedule",
+        "a conditional forecast is allowed to be non-null; null is not manufactured to look cautious"
+      ],
+      "anti_criteria": ["adding a fake calibration to reach referenced_range", "repeated parameter nudging until a reviewer turns green"]
+    },
+    {
+      "id": "CP08-counterevidence-changes-something",
+      "question": "Does each counterexample actually change a condition, a sensitivity or a stated horizon - not just the prose?",
+      "pass_criteria": [
+        "each falsifier names an observable that would change a parameter, a scenario or the justified horizon",
+        "at least one falsifier is wired into the native sensitivity or the declared stress input",
+        "a falsifier that changes nothing is disclosed as not-yet-operational"
+      ],
+      "anti_criteria": ["counterevidence that only decorates the narrative"]
+    },
+    {
+      "id": "CP09-native-chain",
+      "question": "Is the formal main/stress chain executed through the real native CLI with frozen consumed bytes?",
+      "pass_criteria": [
+        "main and stress each run real validate -> compute/render -> snapshot create",
+        "each call is frozen by execution_request build + audit capture, and the consumed input SHA equals the built request SHA",
+        "output/snapshot input_sha256 equals the actually consumed input SHA",
+        "every failed attempt is retained"
+      ],
+      "anti_criteria": ["hand-written 'command executed' lists", "editing hashes after capture"]
+    },
+    {
+      "id": "CP10-generality",
+      "question": "Do the method references generalise beyond this company?",
+      "pass_criteria": [
+        "no company name, segment Chinese label or D&M-specific token becomes a code or method rule",
+        "a different business structure (subscription platform + services) is exercised offline as a positive and a negative example",
+        "no new approval gate, no fourth methodology, no second calculation engine"
+      ],
+      "anti_criteria": ["a company-specific special case in product code", "turning this bridge into a universal template"]
+    }
+  ],
+  "predeclared_expectations_that_must_NOT_be_used_as_green": [
+    "New Base revenue must be higher than the old Base",
+    "New Base must land inside the raised management guidance range",
+    "The validator exit code is 0",
+    "The preparation package's own PASS flags are true",
+    "All claims must end up with a mechanism role"
+  ]
+}

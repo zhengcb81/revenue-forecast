@@ -1,0 +1,429 @@
+{
+ "schema_version": "w09-component-bridge/1",
+ "package_id": "W09-RF-RESEARCH",
+ "created_at": "2026-10-23",
+ "purpose": "Independent recomputation of the non-TIDES = small-molecule D&M + residual bridge, the six-partition reconciliation, the Biology H2 comparable and the RPO split. Research cross-check only: it does not change the native forecast.",
+ "units": {
+  "currency": "CNY",
+  "scale": "million",
+  "ratio": "fraction"
+ },
+ "method": "Every value is recomputed with Decimal from sealed native JSON pointers and verified source-page offsets. No preparation-script PASS flag is reused. Display rounding of issuer disclosures is disclosed per row instead of being silently removed.",
+ "not_a_confidence_interval": true,
+ "sealed_input_sha256": "e54ba7df7a5914772222e88e56661d0822e251e257814b9dc7c976c454660257",
+ "sealed_output_sha256": "41ea79efa319226ac93e65d5210bb304b4d458cfac95ef5998fdf06eaf12279d",
+ "verified_pages_sha256": "66dced5bfbe7c5b6f206e62252a8f9dfca86d03b4e17293cb053b2a076537e7a",
+ "addendum_sha256": "993cc92c0c914430e5f93edfca6b3bbc421624da146490435c4dda3f0e478a98",
+ "addendum_keys": [
+  "model_calls",
+  "network_calls",
+  "protected_after",
+  "protected_before",
+  "raw_files_copied",
+  "schema_version",
+  "scope",
+  "source_count",
+  "sources"
+ ],
+ "rows": [
+  {
+   "metric_id": "non_tides_fy25",
+   "value": "25095.84688297",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "FY2025",
+   "role": "derived",
+   "formula": "chem_total_2025 - tides_base_2025",
+   "native_or_source_pointers": [
+    "/parameters chem_total_2025",
+    "/parameters tides_base_2025",
+    "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2 PDF p183 exact Chemistry 36,465,846,882.97",
+    "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2 PDF p14 TIDES 113.7亿元"
+   ],
+   "rounding_basis": "TIDES carries issuer 0.05亿元 display rounding; the difference inherits it"
+  },
+  {
+   "metric_id": "dm_fy25",
+   "value": "19920",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "FY2025",
+   "role": "reported",
+   "formula": "identity (rounded issuer disclosure 199.2亿元)",
+   "native_or_source_pointers": [
+    "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2 PDF p14 小分子D&M 业务收入199.2 亿元，同比增长11.4%"
+   ],
+   "rounding_basis": "0.1亿元 display rounding; not a high-precision measurement"
+  },
+  {
+   "metric_id": "residual_fy25",
+   "value": "5175.84688297",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "FY2025",
+   "role": "derived",
+   "formula": "non_tides_fy25 - dm_fy25",
+   "native_or_source_pointers": [
+    "derived: non_tides_fy25",
+    "reported: dm_fy25"
+   ],
+   "rounding_basis": "difference of a derived and a rounded reported level"
+  },
+  {
+   "metric_id": "non_tides_h126",
+   "value": "17725.95323039",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "H1 FY2026 (2026-01-01..2026-06-30)",
+   "role": "derived",
+   "formula": "h1_2026_chem - h1_2026_tides",
+   "native_or_source_pointers": [
+    "/parameters h1_2026_chem",
+    "/parameters h1_2026_tides",
+    "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f PDF p138 exact Chemistry 24,985,953,230.39",
+    "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f PDF p11 TIDES 72.6亿元"
+   ],
+   "rounding_basis": "TIDES 0.05亿元 display rounding"
+  },
+  {
+   "metric_id": "dm_h126",
+   "value": "14990",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "H1 FY2026 (2026-01-01..2026-06-30)",
+   "role": "reported",
+   "formula": "identity (rounded issuer disclosure 149.9亿元)",
+   "native_or_source_pointers": [
+    "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f PDF p11 小分子D&M 业务收入人民币149.9亿元，同比增长72.7%"
+   ],
+   "rounding_basis": "0.05亿元 display rounding"
+  },
+  {
+   "metric_id": "residual_h126",
+   "value": "2735.95323039",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "H1 FY2026 (2026-01-01..2026-06-30)",
+   "role": "derived",
+   "formula": "non_tides_h126 - dm_h126",
+   "native_or_source_pointers": [
+    "derived: non_tides_h126",
+    "reported: dm_h126"
+   ],
+   "rounding_basis": "difference of a derived and a rounded reported level"
+  },
+  {
+   "metric_id": "dm_h125",
+   "value": "8679.791546033584250144759698899826288361",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "H1 FY2025 (2025-01-01..2025-06-30)",
+   "role": "derived",
+   "formula": "dm_h126 / (1 + dm_h126_yoy)",
+   "native_or_source_pointers": [
+    "reported: dm_h126",
+    "disclosed growth 0.727 from the same sentence"
+   ],
+   "rounding_basis": "growth is a disclosed one-decimal percentage; the implied base carries both numerator and percentage rounding"
+  },
+  {
+   "metric_id": "residual_h125",
+   "value": "2590.393822781384564824055269915142526609",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "H1 FY2025 (2025-01-01..2025-06-30)",
+   "role": "derived",
+   "formula": "non_tides_h125 - dm_h125",
+   "native_or_source_pointers": [
+    "derived: non_tides_h125 (H1 comparable Chemistry - H1'25 TIDES inferred from the disclosed +44.3%)",
+    "derived: dm_h125"
+   ],
+   "rounding_basis": "both inputs carry disclosed-percentage and display rounding; the residual is small relative to those roundings"
+  },
+  {
+   "metric_id": "residual_h1_yoy",
+   "value": "0.056191999196602420841132582090267546027",
+   "unit": "fraction",
+   "currency": "CNY",
+   "period": "H1 FY2026 vs H1 FY2025",
+   "role": "derived",
+   "formula": "residual_h126 / residual_h125 - 1",
+   "native_or_source_pointers": [
+    "derived: residual_h125",
+    "derived: residual_h126"
+   ],
+   "rounding_basis": "ratio of two small residuals: the disclosed-percentage roundings amplify into several percentage points of uncertainty",
+   "note": "Approximately +5.6% on this decomposition; the sensitivity table shows how the implied number moves with the rounding basis. It is not an independently reported residual growth rate."
+  },
+  {
+   "metric_id": "non_tides_h226",
+   "value": "17793.62636871753",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "H2 FY2026 (2026-07-01..2026-12-31)",
+   "role": "derived",
+   "formula": "non_tides_base_2026 (old Base path) - non_tides_h126",
+   "native_or_source_pointers": [
+    "/consolidated_forecast/base/segment_bridge/非TIDES化学业务/2026 (sealed old output)",
+    "derived: non_tides_h126"
+   ],
+   "rounding_basis": "old Base is a conditional analyst path, not a measurement"
+  },
+  {
+   "metric_id": "residual_h225",
+   "value": "2585.453060188615435175944730084857473391",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "H2 FY2025 (2025-07-01..2025-12-31)",
+   "role": "derived",
+   "formula": "residual_fy25 - residual_h125",
+   "native_or_source_pointers": [
+    "derived: residual_fy25",
+    "derived: residual_h125"
+   ],
+   "rounding_basis": "carries the same conditional split"
+  },
+  {
+   "metric_id": "dm_h225",
+   "value": "11240.20845396641574985524030110017371164",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "H2 FY2025 (2025-07-01..2025-12-31)",
+   "role": "derived",
+   "formula": "dm_fy25 - dm_h125",
+   "native_or_source_pointers": [
+    "reported: dm_fy25",
+    "derived: dm_h125"
+   ],
+   "rounding_basis": "difference of a rounded reported level and a growth-implied base"
+  },
+  {
+   "metric_id": "dm_h226_if_residual_flat",
+   "value": "15208.17330852891456482405526991514252661",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "H2 FY2026 (2026-07-01..2026-12-31)",
+   "role": "condition",
+   "formula": "non_tides_h226 - residual_h225",
+   "native_or_source_pointers": [
+    "derived: non_tides_h226",
+    "derived: residual_h225"
+   ],
+   "rounding_basis": "conditional: H2 FY2026 residual repeats H2 FY2025"
+  },
+  {
+   "metric_id": "dm_h226_yoy_if_residual_flat",
+   "value": "0.353015237289686884574112678197607807578",
+   "unit": "fraction",
+   "currency": "CNY",
+   "period": "H2 FY2026 vs H2 FY2025",
+   "role": "condition",
+   "formula": "dm_h226_if_residual_flat / dm_h225 - 1",
+   "native_or_source_pointers": [
+    "condition: dm_h226_if_residual_flat",
+    "derived: dm_h225"
+   ],
+   "rounding_basis": "conditional inference; about +35%"
+  },
+  {
+   "metric_id": "non_tides_increment_fy28",
+   "value": "20912.67025488671",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "FY2028 vs FY2025",
+   "role": "derived",
+   "formula": "non_tides_base_2028 (old Base) - non_tides_fy25",
+   "native_or_source_pointers": [
+    "/consolidated_forecast/base/segment_bridge/非TIDES化学业务/2028",
+    "derived: non_tides_fy25"
+   ],
+   "rounding_basis": "old Base conditional path"
+  },
+  {
+   "metric_id": "group_net_increment_fy28",
+   "value": "31772.69190550993",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "FY2028 vs FY2025",
+   "role": "derived",
+   "formula": "group segment_subtotal 2028 - reported_total_2025",
+   "native_or_source_pointers": [
+    "/consolidated_forecast/base/segment_subtotal/2028",
+    "/base_revenue"
+   ],
+   "rounding_basis": "group total includes discontinued zero and all six partitions"
+  },
+  {
+   "metric_id": "non_tides_share_of_group_net_increment",
+   "value": "0.6581963629987578771574672276954209409655",
+   "unit": "fraction",
+   "currency": "CNY",
+   "period": "FY2028 vs FY2025",
+   "role": "derived",
+   "formula": "non_tides_increment_fy28 / group_net_increment_fy28",
+   "native_or_source_pointers": [
+    "derived: non_tides_increment_fy28",
+    "derived: group_net_increment_fy28"
+   ],
+   "rounding_basis": "denominator is the group NET increment, not the positive-driver increment denominator used by the native driver attribution"
+  },
+  {
+   "metric_id": "dm_fy28_if_residual_flat",
+   "value": "40832.67025488671",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "FY2028",
+   "role": "condition",
+   "formula": "non_tides_base_2028 - residual_fy25",
+   "native_or_source_pointers": [
+    "/consolidated_forecast/base/segment_bridge/非TIDES化学业务/2028",
+    "derived: residual_fy25"
+   ],
+   "rounding_basis": "conditional: FY2028 residual held at its FY2025 level"
+  },
+  {
+   "metric_id": "dm_fy28_multiple_if_residual_flat",
+   "value": "2.049832844120818775100401606425702811245",
+   "unit": "multiple",
+   "currency": null,
+   "period": "FY2028 vs FY2025",
+   "role": "condition",
+   "formula": "dm_fy28_if_residual_flat / dm_fy25",
+   "native_or_source_pointers": [
+    "condition: dm_fy28_if_residual_flat",
+    "reported: dm_fy25"
+   ],
+   "rounding_basis": "about 2.05x; conditional inference, not an observed multiple"
+  },
+  {
+   "metric_id": "components_reconcile_fy25",
+   "value": "25095.84688297",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "FY2025",
+   "role": "derived",
+   "formula": "dm_fy25 + residual_fy25",
+   "native_or_source_pointers": [
+    "reported: dm_fy25",
+    "derived: residual_fy25"
+   ],
+   "rounding_basis": "identity check against non_tides_fy25"
+  },
+  {
+   "metric_id": "components_reconcile_h126",
+   "value": "17725.95323039",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "H1 FY2026",
+   "role": "derived",
+   "formula": "dm_h126 + residual_h126",
+   "native_or_source_pointers": [
+    "reported: dm_h126",
+    "derived: residual_h126"
+   ],
+   "rounding_basis": "identity check against non_tides_h126"
+  },
+  {
+   "metric_id": "biology_comparable_h225",
+   "value": "1425.57013051",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "H2 FY2025 (2025-07-01..2025-12-31)",
+   "role": "derived",
+   "formula": "biology_base_2025 - h1_2025_biology_rounded",
+   "native_or_source_pointers": [
+    "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2 PDF p183 exact 2,677,175,030.51",
+    "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f PDF p11 comparable 125,160.49万元"
+   ],
+   "rounding_basis": "exact minus a 万元-rounded comparable; result 1425.57013051 CNY million"
+  },
+  {
+   "metric_id": "rpo_stock_fy25_end",
+   "value": "58004.7875",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "2025-12-31 point in time",
+   "role": "reported",
+   "formula": "identity 5,800,478.75万元/100",
+   "native_or_source_pointers": [
+    "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2 PDF p184 5,800,478.75 万元"
+   ],
+   "rounding_basis": "万元 exact to two decimals, then /100"
+  },
+  {
+   "metric_id": "rpo_expected_2026_recognition",
+   "value": "42207.0646",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "FY2026",
+   "role": "condition",
+   "formula": "identity 4,220,706.46万元/100",
+   "native_or_source_pointers": [
+    "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2 PDF p184 预计将于2026年度确认收入"
+   ],
+   "rounding_basis": "issuer expected point for the opening signed-contract cohort; not an empirical range, not a full-year floor, not an actual"
+  },
+  {
+   "metric_id": "rpo_not_yet_expected_within_2026",
+   "value": "15797.7229",
+   "unit": "CNY million",
+   "currency": "CNY",
+   "period": "beyond FY2026 (undated)",
+   "role": "derived",
+   "formula": "rpo_2025_end - rpo_expected_2026_recognition",
+   "native_or_source_pointers": [
+    "reported: rpo_stock_fy25_end",
+    "condition: rpo_expected_2026_recognition"
+   ],
+   "rounding_basis": "the remainder is not dated by the disclosure; no allocation to segments"
+  }
+ ],
+ "reconciliation": {
+  "six_partitions_fy25": {
+   "TIDES": "11370",
+   "non_tides": "25095.84688297",
+   "note": "TIDES is counted once inside Chemistry; non-TIDES is the exact Chemistry residual, not an independent disclosure"
+  },
+  "tides_single_count": "non_tides_fy25 + tides_fy25 == chem_total_2025",
+  "group_fy25_reported_total": "45456.16577418",
+  "group_fy28_base_subtotal": "77228.85767968993"
+ },
+ "falsifiers": [
+  {
+   "id": "heterogeneous_mix",
+   "statement": "H1 D&M +72.7% and a conditional residual ~+5.6% are different rhythms; a single future workload multiplier for all non-TIDES is a condition, not an observation.",
+   "what_would_change_it": "Same-scope subgroup revenue, delivered batches or client budgets contradicting the assumed mix."
+  },
+  {
+   "id": "h2_composition",
+   "statement": "~35.3% implied H2 D&M growth holds only while H2 residual repeats H2 FY2025.",
+   "what_would_change_it": "Actual H2 residual or cohort timing, cancellation or qualification delay."
+  },
+  {
+   "id": "fy28_tail",
+   "statement": "~2.05x FY2025 D&M by FY2028 holds only while FY2028 residual stays at its FY2025 level; the 0.6/0.4 tail split is a condition, not a calibrated persistence.",
+   "what_would_change_it": "Later-stage/commercial realization, qualification, customer budget or price/mix evidence."
+  },
+  {
+   "id": "stock_to_flow",
+   "statement": "Project stages, >4,000kL reactor volume and molecule counts are stocks/activity, not revenue, ASP or throughput.",
+   "what_would_change_it": "No project count x invented ASP; the +699 pipeline additions minus net stock change is not a measured cancellation."
+  },
+  {
+   "id": "recognition_concentration",
+   "statement": "H1 p139 progress/control recognition is mixed across Chemistry; H1 p186 single >10% customer is not allocated to a subgroup here.",
+   "what_would_change_it": "Disclosed subgroup timing, batch schedule or customer concentration."
+  },
+  {
+   "id": "price_scope",
+   "statement": "FY2025 p16 price pressure is disclosed for Testing/Biology margins; a Chemistry net-price index remains an analyst conversion assumption.",
+   "what_would_change_it": "Same-scope Chemistry price/mix disclosure."
+  }
+ ],
+ "remaining_unknowns": [
+  "No disclosed subgroup (D&M vs residual) revenue for H2 or FY2028.",
+  "No realized net price, utilization, qualified deliveries or cancellation decomposition.",
+  "No empirical forecast distribution; observed_range stays null.",
+  "Residual must not be equated with an independently reported Research-only revenue."
+ ]
+}

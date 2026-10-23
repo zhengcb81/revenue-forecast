@@ -1,0 +1,1954 @@
+{
+ "schema_version": "w09-claim-changes/1",
+ "package_id": "W09-RF-RESEARCH",
+ "created_at": "2026-10-23T20:52:35.389628+00:00",
+ "expected_union_count": 49,
+ "actual_union_count": 49,
+ "rows_present": 49,
+ "duplicate_rows": 0,
+ "sealed_input_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\r1-20261021-cn-wuxi-apptec\\execution_replays\\r1-remediation-01\\phase_b\\forecast\\final3-input.json",
+ "sealed_input_sha256": "e54ba7df7a5914772222e88e56661d0822e251e257814b9dc7c976c454660257",
+ "new_input_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\forecast\\main-input.json",
+ "new_input_sha256": "cb155a827f6a241ba5d45cf41b6e8e59eef98aa4b122e955106a51ae9770f022",
+ "old_forecast_version": "r1-remediation-01-conditional-operating-v3-final",
+ "new_forecast_version": "w09-rf-research-20261023-main-v1",
+ "old_role_counts": {
+  "mechanism_direction": 31,
+  "conversion_assumption": 18
+ },
+ "new_role_counts": {
+  "mechanism_direction": 26,
+  "conversion_assumption": 21,
+  "history_base": 2
+ },
+ "role_change_summary": {
+  "mechanism_direction_to_conversion": 3,
+  "mechanism_direction_to_history_base": 2,
+  "price_conversion_preserved": 18,
+  "note": "No formal schema value 'unknown_mechanism_no_role_fix' is used; that string is a preparation diagnostic, not a native enum value."
+ },
+ "price_negative_control": {
+  "expected": 18,
+  "actual_preserved": 18,
+  "claim_ids": [
+   "claim_non_tides_base_2026_price",
+   "claim_non_tides_base_2027_price",
+   "claim_non_tides_base_2028_price",
+   "claim_non_tides_high_2026_price",
+   "claim_non_tides_high_2027_price",
+   "claim_non_tides_high_2028_price",
+   "claim_non_tides_low_2026_price",
+   "claim_non_tides_low_2027_price",
+   "claim_non_tides_low_2028_price",
+   "claim_tides_base_2026_price",
+   "claim_tides_base_2027_price",
+   "claim_tides_base_2028_price",
+   "claim_tides_high_2026_price",
+   "claim_tides_high_2027_price",
+   "claim_tides_high_2028_price",
+   "claim_tides_low_2026_price",
+   "claim_tides_low_2027_price",
+   "claim_tides_low_2028_price"
+  ],
+  "note": "These Chemistry/TIDES price claims were ALREADY conversion_assumption in the sealed input. The repair re-binds them to the disclosed Testing/Biology price paragraph and keeps the role; promoting them to a mechanism role would have been the defect, not the fix."
+ },
+ "biology_rebase_conversion": {
+  "claim_ids": [
+   "claim_biology_base_h2_2026_rebase",
+   "claim_biology_high_h2_2026_rebase",
+   "claim_biology_low_h2_2026_rebase"
+  ],
+  "old_role": "mechanism_direction",
+  "new_role": "conversion_assumption",
+  "basis": "annual p183 exact Biology 2,677,175,030.51 - H1 p11 comparable 125,160.49万元 = 1,425.57013051 CNY million; a cross-period conversion from a disclosed historical base, not a mechanism and not a future actual"
+ },
+ "unknown_mechanism_handling": {
+  "claim_ids": [
+   "claim_driver_discontinued",
+   "claim_driver_other"
+  ],
+  "handling": "Re-bound to their own historical table rows and re-roled to history_base so they carry no forward mechanism. The forward zero/negative contribution and the revenue sum stay unchanged; the native growth-driver report now states that these drivers have no future-mechanism evidence."
+ },
+ "rpo_correction": {
+  "parameter_id": "rpo_expected_2026_opening_cohort",
+  "old_kind": "reported_fact",
+  "new_kind": "management_guidance",
+  "new_evidence_role": "value_range",
+  "support_type": "exact_value",
+  "value_unchanged": true,
+  "revenue_dag_consumers": [],
+  "note": "Issuer expected point for the opening cohort, not an actual, not an empirical range and not a full-year floor. The FY2025 year-end RPO stock stays a reported point-in-time fact."
+ },
+ "parameter_edits": {
+  "biology_base_2026_activity": [
+   {
+    "field": "rationale",
+    "old": "Conditional index of delivered/recognizable workload versus the comparable H2 basket; not disclosed physical units, assumed independent of management guidance. Low tests weak conversion; Base partial persistence of H1 pipeline/ramp; High wider commercial delivery. No empirical distribution or customer-specific schedule is available.",
+    "new": "Conditional index of delivered/recognisable workload versus the comparable H2 Biology basket, anchored on the Biology own-business mechanism (in-vivo/in-vitro linkage, integrated discovery services, >20% new-customer inflow, new-modality share). No Biology unit volume, price or confirmation schedule is disclosed, so the magnitude is an analyst condition."
+   }
+  ],
+  "biology_base_h2_2026_rebase": [
+   {
+    "field": "rationale",
+    "old": "Explicit forecast rebasing assumption: if H2 2026 delivered basket repeated comparable H2 2025 recognized revenue, before activity, price and FX changes. Source-derived comparable is approximate; this forecast amount is not a renamed FY2025 reported flow. TIDES comparable is inferred from rounded72.6亿元/1.443; the same rounded subtraction partitions non-TIDES.",
+    "new": "Conditional rebase of the comparable H2 FY2025 Biology basket: annual p183 exact Biology revenue 2,677,175,030.51 minus H1 p11 comparable 125,160.49万元 = 1,425.57013051 CNY million. Repeating that comparable H2 is an analyst condition, not a future actual, not a mechanism and not a management guidance point."
+   }
+  ],
+  "biology_high_2026_activity": [
+   {
+    "field": "rationale",
+    "old": "Conditional index of delivered/recognizable workload versus the comparable H2 basket; not disclosed physical units, assumed independent of management guidance. Low tests weak conversion; Base partial persistence of H1 pipeline/ramp; High wider commercial delivery. No empirical distribution or customer-specific schedule is available.",
+    "new": "Conditional index of delivered/recognisable workload versus the comparable H2 Biology basket, anchored on the Biology own-business mechanism (in-vivo/in-vitro linkage, integrated discovery services, >20% new-customer inflow, new-modality share). No Biology unit volume, price or confirmation schedule is disclosed, so the magnitude is an analyst condition."
+   }
+  ],
+  "biology_high_h2_2026_rebase": [
+   {
+    "field": "rationale",
+    "old": "Explicit forecast rebasing assumption: if H2 2026 delivered basket repeated comparable H2 2025 recognized revenue, before activity, price and FX changes. Source-derived comparable is approximate; this forecast amount is not a renamed FY2025 reported flow. TIDES comparable is inferred from rounded72.6亿元/1.443; the same rounded subtraction partitions non-TIDES.",
+    "new": "Conditional rebase of the comparable H2 FY2025 Biology basket: annual p183 exact Biology revenue 2,677,175,030.51 minus H1 p11 comparable 125,160.49万元 = 1,425.57013051 CNY million. Repeating that comparable H2 is an analyst condition, not a future actual, not a mechanism and not a management guidance point."
+   }
+  ],
+  "biology_low_2026_activity": [
+   {
+    "field": "rationale",
+    "old": "Conditional index of delivered/recognizable workload versus the comparable H2 basket; not disclosed physical units, assumed independent of management guidance. Low tests weak conversion; Base partial persistence of H1 pipeline/ramp; High wider commercial delivery. No empirical distribution or customer-specific schedule is available.",
+    "new": "Conditional index of delivered/recognisable workload versus the comparable H2 Biology basket, anchored on the Biology own-business mechanism (in-vivo/in-vitro linkage, integrated discovery services, >20% new-customer inflow, new-modality share). No Biology unit volume, price or confirmation schedule is disclosed, so the magnitude is an analyst condition."
+   }
+  ],
+  "biology_low_h2_2026_rebase": [
+   {
+    "field": "rationale",
+    "old": "Explicit forecast rebasing assumption: if H2 2026 delivered basket repeated comparable H2 2025 recognized revenue, before activity, price and FX changes. Source-derived comparable is approximate; this forecast amount is not a renamed FY2025 reported flow. TIDES comparable is inferred from rounded72.6亿元/1.443; the same rounded subtraction partitions non-TIDES.",
+    "new": "Conditional rebase of the comparable H2 FY2025 Biology basket: annual p183 exact Biology revenue 2,677,175,030.51 minus H1 p11 comparable 125,160.49万元 = 1,425.57013051 CNY million. Repeating that comparable H2 is an analyst condition, not a future actual, not a mechanism and not a management guidance point."
+   }
+  ],
+  "non_tides_base_2026_activity": [
+   {
+    "field": "rationale",
+    "old": "Conditional index of delivered/recognizable workload versus the comparable H2 basket; not disclosed physical units, assumed independent of management guidance. Low tests weak conversion; Base partial persistence of H1 pipeline/ramp; High wider commercial delivery. No empirical distribution or customer-specific schedule is available.",
+    "new": "Conditional index of delivered/recognisable workload versus the comparable H2 non-TIDES basket; not disclosed physical units, not derived from management guidance. This single index deliberately blends two disclosed rhythms (H1 FY2026 small-molecule D&M +72.7% and an H1 residual of about +5.6% on the same decomposition). The component split that the index implies is sized in research/component-bridge.json: with H2 residual repeating H2 FY2025, this index requires H2 D&M growth of about +35.3%. Both the blend and the split are conditions; no H2 subgroup revenue, ASP, utilisation or cancellation is disclosed."
+   }
+  ],
+  "non_tides_base_2026_price": [
+   {
+    "field": "rationale",
+    "old": "Chosen net price/mix index, separated from delivered workload and FX. No observed price range; price pressure means activity does not translate one-for-one into revenue. Assumptions remain conditional.",
+    "new": "Chosen net price/mix index for the non-TIDES aggregate, separated from delivered workload and FX. SCOPE LIMIT: the only disclosed price evidence in these originals is margin price pressure for Testing and Biology (annual p16), not a Chemistry net-price index. Using it here is an explicit cross-business, indirect market-risk conversion and an analyst choice; no Chemistry price/mix range is observed and the assumption stays conditional."
+   }
+  ],
+  "non_tides_high_2026_activity": [
+   {
+    "field": "rationale",
+    "old": "Conditional index of delivered/recognizable workload versus the comparable H2 basket; not disclosed physical units, assumed independent of management guidance. Low tests weak conversion; Base partial persistence of H1 pipeline/ramp; High wider commercial delivery. No empirical distribution or customer-specific schedule is available.",
+    "new": "Conditional index of delivered/recognisable workload versus the comparable H2 non-TIDES basket; not disclosed physical units, not derived from management guidance. This single index deliberately blends two disclosed rhythms (H1 FY2026 small-molecule D&M +72.7% and an H1 residual of about +5.6% on the same decomposition). The component split that the index implies is sized in research/component-bridge.json: with H2 residual repeating H2 FY2025, this index requires H2 D&M growth of about +35.3%. Both the blend and the split are conditions; no H2 subgroup revenue, ASP, utilisation or cancellation is disclosed."
+   }
+  ],
+  "non_tides_high_2026_price": [
+   {
+    "field": "rationale",
+    "old": "Chosen net price/mix index, separated from delivered workload and FX. No observed price range; price pressure means activity does not translate one-for-one into revenue. Assumptions remain conditional.",
+    "new": "Chosen net price/mix index for the non-TIDES aggregate, separated from delivered workload and FX. SCOPE LIMIT: the only disclosed price evidence in these originals is margin price pressure for Testing and Biology (annual p16), not a Chemistry net-price index. Using it here is an explicit cross-business, indirect market-risk conversion and an analyst choice; no Chemistry price/mix range is observed and the assumption stays conditional."
+   }
+  ],
+  "non_tides_low_2026_activity": [
+   {
+    "field": "rationale",
+    "old": "Conditional index of delivered/recognizable workload versus the comparable H2 basket; not disclosed physical units, assumed independent of management guidance. Low tests weak conversion; Base partial persistence of H1 pipeline/ramp; High wider commercial delivery. No empirical distribution or customer-specific schedule is available.",
+    "new": "Conditional index of delivered/recognisable workload versus the comparable H2 non-TIDES basket; not disclosed physical units, not derived from management guidance. This single index deliberately blends two disclosed rhythms (H1 FY2026 small-molecule D&M +72.7% and an H1 residual of about +5.6% on the same decomposition). The component split that the index implies is sized in research/component-bridge.json: with H2 residual repeating H2 FY2025, this index requires H2 D&M growth of about +35.3%. Both the blend and the split are conditions; no H2 subgroup revenue, ASP, utilisation or cancellation is disclosed."
+   }
+  ],
+  "non_tides_low_2026_price": [
+   {
+    "field": "rationale",
+    "old": "Chosen net price/mix index, separated from delivered workload and FX. No observed price range; price pressure means activity does not translate one-for-one into revenue. Assumptions remain conditional.",
+    "new": "Chosen net price/mix index for the non-TIDES aggregate, separated from delivered workload and FX. SCOPE LIMIT: the only disclosed price evidence in these originals is margin price pressure for Testing and Biology (annual p16), not a Chemistry net-price index. Using it here is an explicit cross-business, indirect market-risk conversion and an analyst choice; no Chemistry price/mix range is observed and the assumption stays conditional."
+   }
+  ],
+  "rpo_expected_2026_opening_cohort": [
+   {
+    "field": "kind",
+    "old": "reported_fact",
+    "new": "management_guidance"
+   },
+   {
+    "field": "definition",
+    "old": "Prior disclosure expected FY2026 recognition of opening signed-contract subset; not guaranteed total forecast",
+    "new": "Issuer expected FY2026 recognition of the 2025-12-31 signed-contract opening cohort (4,220,706.46 万元 / 100 = 42,207.0646 CNY million); an issuer expectation, not an actual, not a range and not a full-year floor."
+   },
+   {
+    "field": "rationale",
+    "old": null,
+    "new": "Issuer expectation for one cohort. The parameter has no revenue-DAG consumer, so the role correction changes no forecast number. It is not added to H1 actual or to new orders, not split across sub-businesses, and not treated as a probability or an empirical range."
+   }
+  ],
+  "tides_base_2026_price": [
+   {
+    "field": "rationale",
+    "old": "Chosen net price/mix index, separated from delivered workload and FX. No observed price range; price pressure means activity does not translate one-for-one into revenue. Assumptions remain conditional.",
+    "new": "Chosen net price/mix index for TIDES, separated from delivered workload and FX. SCOPE LIMIT: the disclosed price pressure is for Testing and Biology margins (annual p16); TIDES net price is not separately disclosed. The transfer is an explicit cross-business, indirect market-risk conversion, not an observed TIDES net price."
+   }
+  ],
+  "tides_high_2026_price": [
+   {
+    "field": "rationale",
+    "old": "Chosen net price/mix index, separated from delivered workload and FX. No observed price range; price pressure means activity does not translate one-for-one into revenue. Assumptions remain conditional.",
+    "new": "Chosen net price/mix index for TIDES, separated from delivered workload and FX. SCOPE LIMIT: the disclosed price pressure is for Testing and Biology margins (annual p16); TIDES net price is not separately disclosed. The transfer is an explicit cross-business, indirect market-risk conversion, not an observed TIDES net price."
+   }
+  ],
+  "tides_low_2026_price": [
+   {
+    "field": "rationale",
+    "old": "Chosen net price/mix index, separated from delivered workload and FX. No observed price range; price pressure means activity does not translate one-for-one into revenue. Assumptions remain conditional.",
+    "new": "Chosen net price/mix index for TIDES, separated from delivered workload and FX. SCOPE LIMIT: the disclosed price pressure is for Testing and Biology margins (annual p16); TIDES net price is not separately disclosed. The transfer is an explicit cross-business, indirect market-risk conversion, not an observed TIDES net price."
+   }
+  ]
+ },
+ "rows": [
+  {
+   "claim_id": "claim_biology_base_2026_activity",
+   "old_input_pointer": "/evidence_claims/112",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 12",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "biology_base_2026_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "c04222c36853bef4b0e8c19ce7f579337ef20773bbcfc0ac412046517467d601",
+   "new_excerpt_chars": 284,
+   "physical_page": 12,
+   "contiguous_span": [
+    400,
+    685
+   ],
+   "contiguous_range_sha256": "4798444c9ffa70ce968f8f0fbd232264363b771ae6d09a23bcaa9c8076a272f4",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "biology_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Conditional index of delivered/recognizable workload versus the comparable H2 basket; not disclosed physical units, assumed independent of management guidance. Low tests weak conversion; Base partial persistence of H1 pipeline/ramp; High wider commercial delivery. No empirical distribution or customer-specific schedule is available.",
+     "new": "Conditional index of delivered/recognisable workload versus the comparable H2 Biology basket, anchored on the Biology own-business mechanism (in-vivo/in-vitro linkage, integrated discovery services, >20% new-customer inflow, new-modality share). No Biology unit volume, price or confirmation schedule is disclosed, so the magnitude is an analyst condition."
+    }
+   ],
+   "rationale": "Re-bound to the Biology business's own H1 section (p12 lower half). The disclosed mechanism (in-vivo/in-vitro linkage, cross-region collaboration, integrated discovery services, >20% new-customer inflow, new-modality share >35%) is Biology-specific. The sealed excerpt was the page-top TIDES/Testing slice, which cannot support a Biology activity index.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Mechanism direction only: the excerpt gives no future workload, price, utilisation or confirmation schedule, so the magnitude stays a conditional analyst index."
+  },
+  {
+   "claim_id": "claim_biology_base_2027_activity",
+   "old_input_pointer": "/evidence_claims/114",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 12",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "biology_base_2027_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "c04222c36853bef4b0e8c19ce7f579337ef20773bbcfc0ac412046517467d601",
+   "new_excerpt_chars": 284,
+   "physical_page": 12,
+   "contiguous_span": [
+    400,
+    685
+   ],
+   "contiguous_range_sha256": "4798444c9ffa70ce968f8f0fbd232264363b771ae6d09a23bcaa9c8076a272f4",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "biology_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Biology business's own H1 section (p12 lower half). The disclosed mechanism (in-vivo/in-vitro linkage, cross-region collaboration, integrated discovery services, >20% new-customer inflow, new-modality share >35%) is Biology-specific. The sealed excerpt was the page-top TIDES/Testing slice, which cannot support a Biology activity index.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Mechanism direction only: the excerpt gives no future workload, price, utilisation or confirmation schedule, so the magnitude stays a conditional analyst index."
+  },
+  {
+   "claim_id": "claim_biology_base_2028_activity",
+   "old_input_pointer": "/evidence_claims/116",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 12",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "biology_base_2028_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "c04222c36853bef4b0e8c19ce7f579337ef20773bbcfc0ac412046517467d601",
+   "new_excerpt_chars": 284,
+   "physical_page": 12,
+   "contiguous_span": [
+    400,
+    685
+   ],
+   "contiguous_range_sha256": "4798444c9ffa70ce968f8f0fbd232264363b771ae6d09a23bcaa9c8076a272f4",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "biology_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Biology business's own H1 section (p12 lower half). The disclosed mechanism (in-vivo/in-vitro linkage, cross-region collaboration, integrated discovery services, >20% new-customer inflow, new-modality share >35%) is Biology-specific. The sealed excerpt was the page-top TIDES/Testing slice, which cannot support a Biology activity index.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Mechanism direction only: the excerpt gives no future workload, price, utilisation or confirmation schedule, so the magnitude stays a conditional analyst index."
+  },
+  {
+   "claim_id": "claim_biology_base_h2_2026_rebase",
+   "old_input_pointer": "/evidence_claims/111",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 14",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "e17c11792107352dbb417103b8d24947f53e11c91fcb79db60a2d2c9d77dc5c3",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "biology_base_h2_2026_rebase",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 14",
+   "new_excerpt_sha256": "5d9794ca82a20678a964039f4263c9f9a8019311c6c54fc74c2d0d322f6dd168",
+   "new_excerpt_chars": 290,
+   "physical_page": 14,
+   "contiguous_span": [
+    877,
+    1168
+   ],
+   "contiguous_range_sha256": "915d726e448808a37b380c22e4f063faa988835614de16b3702cd95f414e660a",
+   "page_text_sha256": "69df1168e3fea270860ecd8680546fe0ddeae1257e6511b64bf8b8901865a0ce",
+   "excerpt_id": "biology_fy25_own",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Explicit forecast rebasing assumption: if H2 2026 delivered basket repeated comparable H2 2025 recognized revenue, before activity, price and FX changes. Source-derived comparable is approximate; this forecast amount is not a renamed FY2025 reported flow. TIDES comparable is inferred from rounded72.6亿元/1.443; the same rounded subtraction partitions non-TIDES.",
+     "new": "Conditional rebase of the comparable H2 FY2025 Biology basket: annual p183 exact Biology revenue 2,677,175,030.51 minus H1 p11 comparable 125,160.49万元 = 1,425.57013051 CNY million. Repeating that comparable H2 is an analyst condition, not a future actual, not a mechanism and not a management guidance point."
+    }
+   ],
+   "rationale": "Re-bound and re-roled. The parameter is an analyst conditional amount (if H2 FY2026 repeats the comparable H2 FY2025 Biology basket), computed as annual p183 exact 2,677,175,030.51 minus the H1 p11 comparable 125,160.49万元 = 1,425.57013051 CNY million. That is a cross-period conversion from a disclosed historical base, not a reported mechanism and not a future actual; the sealed excerpt cited the annual D&M paragraph, which is unrelated to Biology.",
+   "resolution": "role_corrected_mechanism_to_conversion",
+   "remaining_limit": "The comparable-H2 repeat is a condition; actual H2 delivery, price, FX and cohort timing are unobserved."
+  },
+  {
+   "claim_id": "claim_biology_high_2026_activity",
+   "old_input_pointer": "/evidence_claims/119",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 12",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "biology_high_2026_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "c04222c36853bef4b0e8c19ce7f579337ef20773bbcfc0ac412046517467d601",
+   "new_excerpt_chars": 284,
+   "physical_page": 12,
+   "contiguous_span": [
+    400,
+    685
+   ],
+   "contiguous_range_sha256": "4798444c9ffa70ce968f8f0fbd232264363b771ae6d09a23bcaa9c8076a272f4",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "biology_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Conditional index of delivered/recognizable workload versus the comparable H2 basket; not disclosed physical units, assumed independent of management guidance. Low tests weak conversion; Base partial persistence of H1 pipeline/ramp; High wider commercial delivery. No empirical distribution or customer-specific schedule is available.",
+     "new": "Conditional index of delivered/recognisable workload versus the comparable H2 Biology basket, anchored on the Biology own-business mechanism (in-vivo/in-vitro linkage, integrated discovery services, >20% new-customer inflow, new-modality share). No Biology unit volume, price or confirmation schedule is disclosed, so the magnitude is an analyst condition."
+    }
+   ],
+   "rationale": "Re-bound to the Biology business's own H1 section (p12 lower half). The disclosed mechanism (in-vivo/in-vitro linkage, cross-region collaboration, integrated discovery services, >20% new-customer inflow, new-modality share >35%) is Biology-specific. The sealed excerpt was the page-top TIDES/Testing slice, which cannot support a Biology activity index.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Mechanism direction only: the excerpt gives no future workload, price, utilisation or confirmation schedule, so the magnitude stays a conditional analyst index."
+  },
+  {
+   "claim_id": "claim_biology_high_2027_activity",
+   "old_input_pointer": "/evidence_claims/121",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 12",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "biology_high_2027_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "c04222c36853bef4b0e8c19ce7f579337ef20773bbcfc0ac412046517467d601",
+   "new_excerpt_chars": 284,
+   "physical_page": 12,
+   "contiguous_span": [
+    400,
+    685
+   ],
+   "contiguous_range_sha256": "4798444c9ffa70ce968f8f0fbd232264363b771ae6d09a23bcaa9c8076a272f4",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "biology_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Biology business's own H1 section (p12 lower half). The disclosed mechanism (in-vivo/in-vitro linkage, cross-region collaboration, integrated discovery services, >20% new-customer inflow, new-modality share >35%) is Biology-specific. The sealed excerpt was the page-top TIDES/Testing slice, which cannot support a Biology activity index.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Mechanism direction only: the excerpt gives no future workload, price, utilisation or confirmation schedule, so the magnitude stays a conditional analyst index."
+  },
+  {
+   "claim_id": "claim_biology_high_2028_activity",
+   "old_input_pointer": "/evidence_claims/123",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 12",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "biology_high_2028_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "c04222c36853bef4b0e8c19ce7f579337ef20773bbcfc0ac412046517467d601",
+   "new_excerpt_chars": 284,
+   "physical_page": 12,
+   "contiguous_span": [
+    400,
+    685
+   ],
+   "contiguous_range_sha256": "4798444c9ffa70ce968f8f0fbd232264363b771ae6d09a23bcaa9c8076a272f4",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "biology_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Biology business's own H1 section (p12 lower half). The disclosed mechanism (in-vivo/in-vitro linkage, cross-region collaboration, integrated discovery services, >20% new-customer inflow, new-modality share >35%) is Biology-specific. The sealed excerpt was the page-top TIDES/Testing slice, which cannot support a Biology activity index.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Mechanism direction only: the excerpt gives no future workload, price, utilisation or confirmation schedule, so the magnitude stays a conditional analyst index."
+  },
+  {
+   "claim_id": "claim_biology_high_h2_2026_rebase",
+   "old_input_pointer": "/evidence_claims/118",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 14",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "e17c11792107352dbb417103b8d24947f53e11c91fcb79db60a2d2c9d77dc5c3",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "biology_high_h2_2026_rebase",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 14",
+   "new_excerpt_sha256": "5d9794ca82a20678a964039f4263c9f9a8019311c6c54fc74c2d0d322f6dd168",
+   "new_excerpt_chars": 290,
+   "physical_page": 14,
+   "contiguous_span": [
+    877,
+    1168
+   ],
+   "contiguous_range_sha256": "915d726e448808a37b380c22e4f063faa988835614de16b3702cd95f414e660a",
+   "page_text_sha256": "69df1168e3fea270860ecd8680546fe0ddeae1257e6511b64bf8b8901865a0ce",
+   "excerpt_id": "biology_fy25_own",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Explicit forecast rebasing assumption: if H2 2026 delivered basket repeated comparable H2 2025 recognized revenue, before activity, price and FX changes. Source-derived comparable is approximate; this forecast amount is not a renamed FY2025 reported flow. TIDES comparable is inferred from rounded72.6亿元/1.443; the same rounded subtraction partitions non-TIDES.",
+     "new": "Conditional rebase of the comparable H2 FY2025 Biology basket: annual p183 exact Biology revenue 2,677,175,030.51 minus H1 p11 comparable 125,160.49万元 = 1,425.57013051 CNY million. Repeating that comparable H2 is an analyst condition, not a future actual, not a mechanism and not a management guidance point."
+    }
+   ],
+   "rationale": "Re-bound and re-roled. The parameter is an analyst conditional amount (if H2 FY2026 repeats the comparable H2 FY2025 Biology basket), computed as annual p183 exact 2,677,175,030.51 minus the H1 p11 comparable 125,160.49万元 = 1,425.57013051 CNY million. That is a cross-period conversion from a disclosed historical base, not a reported mechanism and not a future actual; the sealed excerpt cited the annual D&M paragraph, which is unrelated to Biology.",
+   "resolution": "role_corrected_mechanism_to_conversion",
+   "remaining_limit": "The comparable-H2 repeat is a condition; actual H2 delivery, price, FX and cohort timing are unobserved."
+  },
+  {
+   "claim_id": "claim_biology_low_2026_activity",
+   "old_input_pointer": "/evidence_claims/105",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 12",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "biology_low_2026_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "c04222c36853bef4b0e8c19ce7f579337ef20773bbcfc0ac412046517467d601",
+   "new_excerpt_chars": 284,
+   "physical_page": 12,
+   "contiguous_span": [
+    400,
+    685
+   ],
+   "contiguous_range_sha256": "4798444c9ffa70ce968f8f0fbd232264363b771ae6d09a23bcaa9c8076a272f4",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "biology_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Conditional index of delivered/recognizable workload versus the comparable H2 basket; not disclosed physical units, assumed independent of management guidance. Low tests weak conversion; Base partial persistence of H1 pipeline/ramp; High wider commercial delivery. No empirical distribution or customer-specific schedule is available.",
+     "new": "Conditional index of delivered/recognisable workload versus the comparable H2 Biology basket, anchored on the Biology own-business mechanism (in-vivo/in-vitro linkage, integrated discovery services, >20% new-customer inflow, new-modality share). No Biology unit volume, price or confirmation schedule is disclosed, so the magnitude is an analyst condition."
+    }
+   ],
+   "rationale": "Re-bound to the Biology business's own H1 section (p12 lower half). The disclosed mechanism (in-vivo/in-vitro linkage, cross-region collaboration, integrated discovery services, >20% new-customer inflow, new-modality share >35%) is Biology-specific. The sealed excerpt was the page-top TIDES/Testing slice, which cannot support a Biology activity index.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Mechanism direction only: the excerpt gives no future workload, price, utilisation or confirmation schedule, so the magnitude stays a conditional analyst index."
+  },
+  {
+   "claim_id": "claim_biology_low_2027_activity",
+   "old_input_pointer": "/evidence_claims/107",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 12",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "biology_low_2027_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "c04222c36853bef4b0e8c19ce7f579337ef20773bbcfc0ac412046517467d601",
+   "new_excerpt_chars": 284,
+   "physical_page": 12,
+   "contiguous_span": [
+    400,
+    685
+   ],
+   "contiguous_range_sha256": "4798444c9ffa70ce968f8f0fbd232264363b771ae6d09a23bcaa9c8076a272f4",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "biology_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Biology business's own H1 section (p12 lower half). The disclosed mechanism (in-vivo/in-vitro linkage, cross-region collaboration, integrated discovery services, >20% new-customer inflow, new-modality share >35%) is Biology-specific. The sealed excerpt was the page-top TIDES/Testing slice, which cannot support a Biology activity index.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Mechanism direction only: the excerpt gives no future workload, price, utilisation or confirmation schedule, so the magnitude stays a conditional analyst index."
+  },
+  {
+   "claim_id": "claim_biology_low_2028_activity",
+   "old_input_pointer": "/evidence_claims/109",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 12",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "biology_low_2028_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "c04222c36853bef4b0e8c19ce7f579337ef20773bbcfc0ac412046517467d601",
+   "new_excerpt_chars": 284,
+   "physical_page": 12,
+   "contiguous_span": [
+    400,
+    685
+   ],
+   "contiguous_range_sha256": "4798444c9ffa70ce968f8f0fbd232264363b771ae6d09a23bcaa9c8076a272f4",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "biology_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Biology business's own H1 section (p12 lower half). The disclosed mechanism (in-vivo/in-vitro linkage, cross-region collaboration, integrated discovery services, >20% new-customer inflow, new-modality share >35%) is Biology-specific. The sealed excerpt was the page-top TIDES/Testing slice, which cannot support a Biology activity index.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Mechanism direction only: the excerpt gives no future workload, price, utilisation or confirmation schedule, so the magnitude stays a conditional analyst index."
+  },
+  {
+   "claim_id": "claim_biology_low_h2_2026_rebase",
+   "old_input_pointer": "/evidence_claims/104",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 14",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "e17c11792107352dbb417103b8d24947f53e11c91fcb79db60a2d2c9d77dc5c3",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "biology_low_h2_2026_rebase",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 14",
+   "new_excerpt_sha256": "5d9794ca82a20678a964039f4263c9f9a8019311c6c54fc74c2d0d322f6dd168",
+   "new_excerpt_chars": 290,
+   "physical_page": 14,
+   "contiguous_span": [
+    877,
+    1168
+   ],
+   "contiguous_range_sha256": "915d726e448808a37b380c22e4f063faa988835614de16b3702cd95f414e660a",
+   "page_text_sha256": "69df1168e3fea270860ecd8680546fe0ddeae1257e6511b64bf8b8901865a0ce",
+   "excerpt_id": "biology_fy25_own",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Explicit forecast rebasing assumption: if H2 2026 delivered basket repeated comparable H2 2025 recognized revenue, before activity, price and FX changes. Source-derived comparable is approximate; this forecast amount is not a renamed FY2025 reported flow. TIDES comparable is inferred from rounded72.6亿元/1.443; the same rounded subtraction partitions non-TIDES.",
+     "new": "Conditional rebase of the comparable H2 FY2025 Biology basket: annual p183 exact Biology revenue 2,677,175,030.51 minus H1 p11 comparable 125,160.49万元 = 1,425.57013051 CNY million. Repeating that comparable H2 is an analyst condition, not a future actual, not a mechanism and not a management guidance point."
+    }
+   ],
+   "rationale": "Re-bound and re-roled. The parameter is an analyst conditional amount (if H2 FY2026 repeats the comparable H2 FY2025 Biology basket), computed as annual p183 exact 2,677,175,030.51 minus the H1 p11 comparable 125,160.49万元 = 1,425.57013051 CNY million. That is a cross-period conversion from a disclosed historical base, not a reported mechanism and not a future actual; the sealed excerpt cited the annual D&M paragraph, which is unrelated to Biology.",
+   "resolution": "role_corrected_mechanism_to_conversion",
+   "remaining_limit": "The comparable-H2 repeat is a condition; actual H2 delivery, price, FX and cohort timing are unobserved."
+  },
+  {
+   "claim_id": "claim_driver_biology",
+   "old_input_pointer": "/evidence_claims/156",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 12",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+   "old_excerpt_chars": 360,
+   "target_type": "growth_driver",
+   "target_id": "biology_operating_evidence",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "c04222c36853bef4b0e8c19ce7f579337ef20773bbcfc0ac412046517467d601",
+   "new_excerpt_chars": 284,
+   "physical_page": 12,
+   "contiguous_span": [
+    400,
+    685
+   ],
+   "contiguous_range_sha256": "4798444c9ffa70ce968f8f0fbd232264363b771ae6d09a23bcaa9c8076a272f4",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "biology_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Biology own-business section on p12 so the growth-driver evidence node no longer relies on the TIDES/Testing page-top slice.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Driver evidence node: mechanism direction only; magnitude stays conditional."
+  },
+  {
+   "claim_id": "claim_driver_discontinued",
+   "old_input_pointer": "/evidence_claims/160",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "growth_driver",
+   "target_id": "discontinued_operating_evidence",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 11",
+   "new_excerpt_sha256": "878996c756daf673df6927d53117025c9f3e495fc04e358f23c3fade9c1bf194",
+   "new_excerpt_chars": 27,
+   "physical_page": 11,
+   "contiguous_span": [
+    384,
+    412
+   ],
+   "contiguous_range_sha256": "f6b700f6e104bce0fd6517c68402b39961c3c93456e8f7805e3b13b9971ba93c",
+   "page_text_sha256": "fcd6a3986bf564f5aef31f3a60eba3b4633742c434562eb27adfd4b4d791a7d5",
+   "excerpt_id": "discontinued_h1_table",
+   "new_role": "history_base",
+   "parameter_changes": [],
+   "rationale": "The discontinued business reports zero H1 FY2026 revenue (prior-period 127,377.57 万元) under an accounting classification note. That is a perimeter/classification fact, not a growth mechanism; the claim is re-bound to the zero-revenue row and re-roled to history_base. The zero forward path and the -100% FY2026 growth stay as reported arithmetic.",
+   "resolution": "mechanism_honestly_weakened",
+   "remaining_limit": "Mechanism removed: a termination classification cannot support forward growth. The forward zero is an accounting perimeter statement, not evidence about a continuing business."
+  },
+  {
+   "claim_id": "claim_driver_non_tides",
+   "old_input_pointer": "/evidence_claims/152",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "growth_driver",
+   "target_id": "non_tides_operating_evidence",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 11",
+   "new_excerpt_sha256": "866f68f7d37bcdf44042729b09bc2a3fb1fe01eebc25c53a2864b107b83e4f33",
+   "new_excerpt_chars": 329,
+   "physical_page": 11,
+   "contiguous_span": [
+    920,
+    1250
+   ],
+   "contiguous_range_sha256": "d4d7df247a7121e3f6f03bd213a501ed176ec5bb2cdaa6893e1d62f6c7b1ffe9",
+   "page_text_sha256": "fcd6a3986bf564f5aef31f3a60eba3b4633742c434562eb27adfd4b4d791a7d5",
+   "excerpt_id": "chemistry_r_operating",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Chemistry D&M operating paragraph on p11 (pipeline +699 molecules, stage stock, D&M revenue +72.7%). This is own-business mechanism evidence for the non-TIDES aggregate; the sealed excerpt was the segment revenue table header, which supports history only.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Driver evidence node: mechanism direction only; the +72.7% is an H1 actual, not a future rate."
+  },
+  {
+   "claim_id": "claim_driver_other",
+   "old_input_pointer": "/evidence_claims/158",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "growth_driver",
+   "target_id": "other_operating_evidence",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 11",
+   "new_excerpt_sha256": "a4c58674981bc366efa34f96059a7f2c17a589fcae30486d53badc9c233a71b1",
+   "new_excerpt_chars": 38,
+   "physical_page": 11,
+   "contiguous_span": [
+    304,
+    343
+   ],
+   "contiguous_range_sha256": "bf191dd5f4a0df56967dc63cdf5cf5687fd00d2e12c6346c6f79cd3726d6fe9d",
+   "page_text_sha256": "fcd6a3986bf564f5aef31f3a60eba3b4633742c434562eb27adfd4b4d791a7d5",
+   "excerpt_id": "other_h1_table",
+   "new_role": "history_base",
+   "parameter_changes": [],
+   "rationale": "No positive operating mechanism is disclosed for the Other business: the only available row is a historical revenue table line (3,904.68 vs 8,662.95 万元, -54.93%). The claim is re-bound to that historical row and re-roled to history_base, so it can no longer be counted as a future growth mechanism. The residual income and its negative contribution remain in the model through the existing parameter path.",
+   "resolution": "mechanism_honestly_weakened",
+   "remaining_limit": "Mechanism removed: no forward mechanism is disclosed; the disclosed fact is a historical decline. The forward magnitude stays an uncalibrated analyst condition, and the growth driver is reported as having no future-mechanism evidence."
+  },
+  {
+   "claim_id": "claim_non_tides_base_2026_activity",
+   "old_input_pointer": "/evidence_claims/66",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_base_2026_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 11",
+   "new_excerpt_sha256": "abe97a075e738ef721f642caa6f44cd8b5448ded4a9426b4b5d4de378313e18e",
+   "new_excerpt_chars": 262,
+   "physical_page": 11,
+   "contiguous_span": [
+    657,
+    920
+   ],
+   "contiguous_range_sha256": "d26e03ca396c40468c080c8d17f39ddee501b4b3bc6f57016719bad1a526ebd4",
+   "page_text_sha256": "fcd6a3986bf564f5aef31f3a60eba3b4633742c434562eb27adfd4b4d791a7d5",
+   "excerpt_id": "chemistry_dm_operating",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Conditional index of delivered/recognizable workload versus the comparable H2 basket; not disclosed physical units, assumed independent of management guidance. Low tests weak conversion; Base partial persistence of H1 pipeline/ramp; High wider commercial delivery. No empirical distribution or customer-specific schedule is available.",
+     "new": "Conditional index of delivered/recognisable workload versus the comparable H2 non-TIDES basket; not disclosed physical units, not derived from management guidance. This single index deliberately blends two disclosed rhythms (H1 FY2026 small-molecule D&M +72.7% and an H1 residual of about +5.6% on the same decomposition). The component split that the index implies is sized in research/component-bridge.json: with H2 residual repeating H2 FY2025, this index requires H2 D&M growth of about +35.3%. Both the blend and the split are conditions; no H2 subgroup revenue, ASP, utilisation or cancellation is disclosed."
+    }
+   ],
+   "rationale": "Re-bound to the Chemistry operating section (p11) that names the small-molecule D&M mechanism (late-stage pipeline progress, prior-year capacity ramp, R-to-D conversion). Chemistry total includes TIDES, so this is own-business support for the non-TIDES aggregate - not a measured uniform activity basket across D&M and the residual.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "One blended index still covers two disclosed rhythms (H1 D&M +72.7% vs residual ~+5.6%); the component split in research/component-bridge.json sizes what the index implies, and the split itself stays an unverified condition because no H2 subgroup revenue is disclosed."
+  },
+  {
+   "claim_id": "claim_non_tides_base_2026_price",
+   "old_input_pointer": "/evidence_claims/67",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_base_2026_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Chosen net price/mix index, separated from delivered workload and FX. No observed price range; price pressure means activity does not translate one-for-one into revenue. Assumptions remain conditional.",
+     "new": "Chosen net price/mix index for the non-TIDES aggregate, separated from delivered workload and FX. SCOPE LIMIT: the only disclosed price evidence in these originals is margin price pressure for Testing and Biology (annual p16), not a Chemistry net-price index. Using it here is an explicit cross-business, indirect market-risk conversion and an analyst choice; no Chemistry price/mix range is observed and the assumption stays conditional."
+    }
+   ],
+   "rationale": "PRESERVED as conversion_assumption (negative control: it was already correct). The excerpt reports disclosed margin price pressure for Testing and Biology only; using it for a Chemistry/TIDES net-price index is an explicit cross-business, indirect market-risk conversion, not an observed Chemistry net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer: Testing/Biology margin price pressure is indirect evidence for a Chemistry net-price/mix condition. It is not a Chemistry price index and no net-price range is observed."
+  },
+  {
+   "claim_id": "claim_non_tides_base_2027_activity",
+   "old_input_pointer": "/evidence_claims/68",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_base_2027_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 11",
+   "new_excerpt_sha256": "abe97a075e738ef721f642caa6f44cd8b5448ded4a9426b4b5d4de378313e18e",
+   "new_excerpt_chars": 262,
+   "physical_page": 11,
+   "contiguous_span": [
+    657,
+    920
+   ],
+   "contiguous_range_sha256": "d26e03ca396c40468c080c8d17f39ddee501b4b3bc6f57016719bad1a526ebd4",
+   "page_text_sha256": "fcd6a3986bf564f5aef31f3a60eba3b4633742c434562eb27adfd4b4d791a7d5",
+   "excerpt_id": "chemistry_dm_operating",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Chemistry operating section (p11) that names the small-molecule D&M mechanism (late-stage pipeline progress, prior-year capacity ramp, R-to-D conversion). Chemistry total includes TIDES, so this is own-business support for the non-TIDES aggregate - not a measured uniform activity basket across D&M and the residual.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "One blended index still covers two disclosed rhythms (H1 D&M +72.7% vs residual ~+5.6%); the component split in research/component-bridge.json sizes what the index implies, and the split itself stays an unverified condition because no H2 subgroup revenue is disclosed."
+  },
+  {
+   "claim_id": "claim_non_tides_base_2027_price",
+   "old_input_pointer": "/evidence_claims/69",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_base_2027_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [],
+   "rationale": "PRESERVED as conversion_assumption (negative control: it was already correct). The excerpt reports disclosed margin price pressure for Testing and Biology only; using it for a Chemistry/TIDES net-price index is an explicit cross-business, indirect market-risk conversion, not an observed Chemistry net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer: Testing/Biology margin price pressure is indirect evidence for a Chemistry net-price/mix condition. It is not a Chemistry price index and no net-price range is observed."
+  },
+  {
+   "claim_id": "claim_non_tides_base_2028_activity",
+   "old_input_pointer": "/evidence_claims/70",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_base_2028_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 11",
+   "new_excerpt_sha256": "abe97a075e738ef721f642caa6f44cd8b5448ded4a9426b4b5d4de378313e18e",
+   "new_excerpt_chars": 262,
+   "physical_page": 11,
+   "contiguous_span": [
+    657,
+    920
+   ],
+   "contiguous_range_sha256": "d26e03ca396c40468c080c8d17f39ddee501b4b3bc6f57016719bad1a526ebd4",
+   "page_text_sha256": "fcd6a3986bf564f5aef31f3a60eba3b4633742c434562eb27adfd4b4d791a7d5",
+   "excerpt_id": "chemistry_dm_operating",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Chemistry operating section (p11) that names the small-molecule D&M mechanism (late-stage pipeline progress, prior-year capacity ramp, R-to-D conversion). Chemistry total includes TIDES, so this is own-business support for the non-TIDES aggregate - not a measured uniform activity basket across D&M and the residual.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "One blended index still covers two disclosed rhythms (H1 D&M +72.7% vs residual ~+5.6%); the component split in research/component-bridge.json sizes what the index implies, and the split itself stays an unverified condition because no H2 subgroup revenue is disclosed."
+  },
+  {
+   "claim_id": "claim_non_tides_base_2028_price",
+   "old_input_pointer": "/evidence_claims/71",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_base_2028_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [],
+   "rationale": "PRESERVED as conversion_assumption (negative control: it was already correct). The excerpt reports disclosed margin price pressure for Testing and Biology only; using it for a Chemistry/TIDES net-price index is an explicit cross-business, indirect market-risk conversion, not an observed Chemistry net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer: Testing/Biology margin price pressure is indirect evidence for a Chemistry net-price/mix condition. It is not a Chemistry price index and no net-price range is observed."
+  },
+  {
+   "claim_id": "claim_non_tides_high_2026_activity",
+   "old_input_pointer": "/evidence_claims/73",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_high_2026_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 11",
+   "new_excerpt_sha256": "abe97a075e738ef721f642caa6f44cd8b5448ded4a9426b4b5d4de378313e18e",
+   "new_excerpt_chars": 262,
+   "physical_page": 11,
+   "contiguous_span": [
+    657,
+    920
+   ],
+   "contiguous_range_sha256": "d26e03ca396c40468c080c8d17f39ddee501b4b3bc6f57016719bad1a526ebd4",
+   "page_text_sha256": "fcd6a3986bf564f5aef31f3a60eba3b4633742c434562eb27adfd4b4d791a7d5",
+   "excerpt_id": "chemistry_dm_operating",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Conditional index of delivered/recognizable workload versus the comparable H2 basket; not disclosed physical units, assumed independent of management guidance. Low tests weak conversion; Base partial persistence of H1 pipeline/ramp; High wider commercial delivery. No empirical distribution or customer-specific schedule is available.",
+     "new": "Conditional index of delivered/recognisable workload versus the comparable H2 non-TIDES basket; not disclosed physical units, not derived from management guidance. This single index deliberately blends two disclosed rhythms (H1 FY2026 small-molecule D&M +72.7% and an H1 residual of about +5.6% on the same decomposition). The component split that the index implies is sized in research/component-bridge.json: with H2 residual repeating H2 FY2025, this index requires H2 D&M growth of about +35.3%. Both the blend and the split are conditions; no H2 subgroup revenue, ASP, utilisation or cancellation is disclosed."
+    }
+   ],
+   "rationale": "Re-bound to the Chemistry operating section (p11) that names the small-molecule D&M mechanism (late-stage pipeline progress, prior-year capacity ramp, R-to-D conversion). Chemistry total includes TIDES, so this is own-business support for the non-TIDES aggregate - not a measured uniform activity basket across D&M and the residual.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "One blended index still covers two disclosed rhythms (H1 D&M +72.7% vs residual ~+5.6%); the component split in research/component-bridge.json sizes what the index implies, and the split itself stays an unverified condition because no H2 subgroup revenue is disclosed."
+  },
+  {
+   "claim_id": "claim_non_tides_high_2026_price",
+   "old_input_pointer": "/evidence_claims/74",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_high_2026_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Chosen net price/mix index, separated from delivered workload and FX. No observed price range; price pressure means activity does not translate one-for-one into revenue. Assumptions remain conditional.",
+     "new": "Chosen net price/mix index for the non-TIDES aggregate, separated from delivered workload and FX. SCOPE LIMIT: the only disclosed price evidence in these originals is margin price pressure for Testing and Biology (annual p16), not a Chemistry net-price index. Using it here is an explicit cross-business, indirect market-risk conversion and an analyst choice; no Chemistry price/mix range is observed and the assumption stays conditional."
+    }
+   ],
+   "rationale": "PRESERVED as conversion_assumption (negative control: it was already correct). The excerpt reports disclosed margin price pressure for Testing and Biology only; using it for a Chemistry/TIDES net-price index is an explicit cross-business, indirect market-risk conversion, not an observed Chemistry net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer: Testing/Biology margin price pressure is indirect evidence for a Chemistry net-price/mix condition. It is not a Chemistry price index and no net-price range is observed."
+  },
+  {
+   "claim_id": "claim_non_tides_high_2027_activity",
+   "old_input_pointer": "/evidence_claims/75",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_high_2027_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 11",
+   "new_excerpt_sha256": "abe97a075e738ef721f642caa6f44cd8b5448ded4a9426b4b5d4de378313e18e",
+   "new_excerpt_chars": 262,
+   "physical_page": 11,
+   "contiguous_span": [
+    657,
+    920
+   ],
+   "contiguous_range_sha256": "d26e03ca396c40468c080c8d17f39ddee501b4b3bc6f57016719bad1a526ebd4",
+   "page_text_sha256": "fcd6a3986bf564f5aef31f3a60eba3b4633742c434562eb27adfd4b4d791a7d5",
+   "excerpt_id": "chemistry_dm_operating",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Chemistry operating section (p11) that names the small-molecule D&M mechanism (late-stage pipeline progress, prior-year capacity ramp, R-to-D conversion). Chemistry total includes TIDES, so this is own-business support for the non-TIDES aggregate - not a measured uniform activity basket across D&M and the residual.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "One blended index still covers two disclosed rhythms (H1 D&M +72.7% vs residual ~+5.6%); the component split in research/component-bridge.json sizes what the index implies, and the split itself stays an unverified condition because no H2 subgroup revenue is disclosed."
+  },
+  {
+   "claim_id": "claim_non_tides_high_2027_price",
+   "old_input_pointer": "/evidence_claims/76",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_high_2027_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [],
+   "rationale": "PRESERVED as conversion_assumption (negative control: it was already correct). The excerpt reports disclosed margin price pressure for Testing and Biology only; using it for a Chemistry/TIDES net-price index is an explicit cross-business, indirect market-risk conversion, not an observed Chemistry net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer: Testing/Biology margin price pressure is indirect evidence for a Chemistry net-price/mix condition. It is not a Chemistry price index and no net-price range is observed."
+  },
+  {
+   "claim_id": "claim_non_tides_high_2028_activity",
+   "old_input_pointer": "/evidence_claims/77",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_high_2028_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 11",
+   "new_excerpt_sha256": "abe97a075e738ef721f642caa6f44cd8b5448ded4a9426b4b5d4de378313e18e",
+   "new_excerpt_chars": 262,
+   "physical_page": 11,
+   "contiguous_span": [
+    657,
+    920
+   ],
+   "contiguous_range_sha256": "d26e03ca396c40468c080c8d17f39ddee501b4b3bc6f57016719bad1a526ebd4",
+   "page_text_sha256": "fcd6a3986bf564f5aef31f3a60eba3b4633742c434562eb27adfd4b4d791a7d5",
+   "excerpt_id": "chemistry_dm_operating",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Chemistry operating section (p11) that names the small-molecule D&M mechanism (late-stage pipeline progress, prior-year capacity ramp, R-to-D conversion). Chemistry total includes TIDES, so this is own-business support for the non-TIDES aggregate - not a measured uniform activity basket across D&M and the residual.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "One blended index still covers two disclosed rhythms (H1 D&M +72.7% vs residual ~+5.6%); the component split in research/component-bridge.json sizes what the index implies, and the split itself stays an unverified condition because no H2 subgroup revenue is disclosed."
+  },
+  {
+   "claim_id": "claim_non_tides_high_2028_price",
+   "old_input_pointer": "/evidence_claims/78",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_high_2028_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [],
+   "rationale": "PRESERVED as conversion_assumption (negative control: it was already correct). The excerpt reports disclosed margin price pressure for Testing and Biology only; using it for a Chemistry/TIDES net-price index is an explicit cross-business, indirect market-risk conversion, not an observed Chemistry net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer: Testing/Biology margin price pressure is indirect evidence for a Chemistry net-price/mix condition. It is not a Chemistry price index and no net-price range is observed."
+  },
+  {
+   "claim_id": "claim_non_tides_low_2026_activity",
+   "old_input_pointer": "/evidence_claims/59",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_low_2026_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 11",
+   "new_excerpt_sha256": "abe97a075e738ef721f642caa6f44cd8b5448ded4a9426b4b5d4de378313e18e",
+   "new_excerpt_chars": 262,
+   "physical_page": 11,
+   "contiguous_span": [
+    657,
+    920
+   ],
+   "contiguous_range_sha256": "d26e03ca396c40468c080c8d17f39ddee501b4b3bc6f57016719bad1a526ebd4",
+   "page_text_sha256": "fcd6a3986bf564f5aef31f3a60eba3b4633742c434562eb27adfd4b4d791a7d5",
+   "excerpt_id": "chemistry_dm_operating",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Conditional index of delivered/recognizable workload versus the comparable H2 basket; not disclosed physical units, assumed independent of management guidance. Low tests weak conversion; Base partial persistence of H1 pipeline/ramp; High wider commercial delivery. No empirical distribution or customer-specific schedule is available.",
+     "new": "Conditional index of delivered/recognisable workload versus the comparable H2 non-TIDES basket; not disclosed physical units, not derived from management guidance. This single index deliberately blends two disclosed rhythms (H1 FY2026 small-molecule D&M +72.7% and an H1 residual of about +5.6% on the same decomposition). The component split that the index implies is sized in research/component-bridge.json: with H2 residual repeating H2 FY2025, this index requires H2 D&M growth of about +35.3%. Both the blend and the split are conditions; no H2 subgroup revenue, ASP, utilisation or cancellation is disclosed."
+    }
+   ],
+   "rationale": "Re-bound to the Chemistry operating section (p11) that names the small-molecule D&M mechanism (late-stage pipeline progress, prior-year capacity ramp, R-to-D conversion). Chemistry total includes TIDES, so this is own-business support for the non-TIDES aggregate - not a measured uniform activity basket across D&M and the residual.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "One blended index still covers two disclosed rhythms (H1 D&M +72.7% vs residual ~+5.6%); the component split in research/component-bridge.json sizes what the index implies, and the split itself stays an unverified condition because no H2 subgroup revenue is disclosed."
+  },
+  {
+   "claim_id": "claim_non_tides_low_2026_price",
+   "old_input_pointer": "/evidence_claims/60",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_low_2026_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Chosen net price/mix index, separated from delivered workload and FX. No observed price range; price pressure means activity does not translate one-for-one into revenue. Assumptions remain conditional.",
+     "new": "Chosen net price/mix index for the non-TIDES aggregate, separated from delivered workload and FX. SCOPE LIMIT: the only disclosed price evidence in these originals is margin price pressure for Testing and Biology (annual p16), not a Chemistry net-price index. Using it here is an explicit cross-business, indirect market-risk conversion and an analyst choice; no Chemistry price/mix range is observed and the assumption stays conditional."
+    }
+   ],
+   "rationale": "PRESERVED as conversion_assumption (negative control: it was already correct). The excerpt reports disclosed margin price pressure for Testing and Biology only; using it for a Chemistry/TIDES net-price index is an explicit cross-business, indirect market-risk conversion, not an observed Chemistry net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer: Testing/Biology margin price pressure is indirect evidence for a Chemistry net-price/mix condition. It is not a Chemistry price index and no net-price range is observed."
+  },
+  {
+   "claim_id": "claim_non_tides_low_2027_activity",
+   "old_input_pointer": "/evidence_claims/61",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_low_2027_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 11",
+   "new_excerpt_sha256": "abe97a075e738ef721f642caa6f44cd8b5448ded4a9426b4b5d4de378313e18e",
+   "new_excerpt_chars": 262,
+   "physical_page": 11,
+   "contiguous_span": [
+    657,
+    920
+   ],
+   "contiguous_range_sha256": "d26e03ca396c40468c080c8d17f39ddee501b4b3bc6f57016719bad1a526ebd4",
+   "page_text_sha256": "fcd6a3986bf564f5aef31f3a60eba3b4633742c434562eb27adfd4b4d791a7d5",
+   "excerpt_id": "chemistry_dm_operating",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Chemistry operating section (p11) that names the small-molecule D&M mechanism (late-stage pipeline progress, prior-year capacity ramp, R-to-D conversion). Chemistry total includes TIDES, so this is own-business support for the non-TIDES aggregate - not a measured uniform activity basket across D&M and the residual.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "One blended index still covers two disclosed rhythms (H1 D&M +72.7% vs residual ~+5.6%); the component split in research/component-bridge.json sizes what the index implies, and the split itself stays an unverified condition because no H2 subgroup revenue is disclosed."
+  },
+  {
+   "claim_id": "claim_non_tides_low_2027_price",
+   "old_input_pointer": "/evidence_claims/62",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_low_2027_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [],
+   "rationale": "PRESERVED as conversion_assumption (negative control: it was already correct). The excerpt reports disclosed margin price pressure for Testing and Biology only; using it for a Chemistry/TIDES net-price index is an explicit cross-business, indirect market-risk conversion, not an observed Chemistry net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer: Testing/Biology margin price pressure is indirect evidence for a Chemistry net-price/mix condition. It is not a Chemistry price index and no net-price range is observed."
+  },
+  {
+   "claim_id": "claim_non_tides_low_2028_activity",
+   "old_input_pointer": "/evidence_claims/63",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_low_2028_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 11",
+   "new_excerpt_sha256": "abe97a075e738ef721f642caa6f44cd8b5448ded4a9426b4b5d4de378313e18e",
+   "new_excerpt_chars": 262,
+   "physical_page": 11,
+   "contiguous_span": [
+    657,
+    920
+   ],
+   "contiguous_range_sha256": "d26e03ca396c40468c080c8d17f39ddee501b4b3bc6f57016719bad1a526ebd4",
+   "page_text_sha256": "fcd6a3986bf564f5aef31f3a60eba3b4633742c434562eb27adfd4b4d791a7d5",
+   "excerpt_id": "chemistry_dm_operating",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the Chemistry operating section (p11) that names the small-molecule D&M mechanism (late-stage pipeline progress, prior-year capacity ramp, R-to-D conversion). Chemistry total includes TIDES, so this is own-business support for the non-TIDES aggregate - not a measured uniform activity basket across D&M and the residual.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "One blended index still covers two disclosed rhythms (H1 D&M +72.7% vs residual ~+5.6%); the component split in research/component-bridge.json sizes what the index implies, and the split itself stays an unverified condition because no H2 subgroup revenue is disclosed."
+  },
+  {
+   "claim_id": "claim_non_tides_low_2028_price",
+   "old_input_pointer": "/evidence_claims/64",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "non_tides_low_2028_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [],
+   "rationale": "PRESERVED as conversion_assumption (negative control: it was already correct). The excerpt reports disclosed margin price pressure for Testing and Biology only; using it for a Chemistry/TIDES net-price index is an explicit cross-business, indirect market-risk conversion, not an observed Chemistry net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer: Testing/Biology margin price pressure is indirect evidence for a Chemistry net-price/mix condition. It is not a Chemistry price index and no net-price range is observed."
+  },
+  {
+   "claim_id": "claim_tides_base_2026_price",
+   "old_input_pointer": "/evidence_claims/44",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_base_2026_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Chosen net price/mix index, separated from delivered workload and FX. No observed price range; price pressure means activity does not translate one-for-one into revenue. Assumptions remain conditional.",
+     "new": "Chosen net price/mix index for TIDES, separated from delivered workload and FX. SCOPE LIMIT: the disclosed price pressure is for Testing and Biology margins (annual p16); TIDES net price is not separately disclosed. The transfer is an explicit cross-business, indirect market-risk conversion, not an observed TIDES net price."
+    }
+   ],
+   "rationale": "PRESERVED as conversion_assumption (negative control). Testing/Biology disclosed price pressure is indirect market-risk context for the TIDES net-price condition, not an observed TIDES net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer; no TIDES net-price index is disclosed."
+  },
+  {
+   "claim_id": "claim_tides_base_2027_activity",
+   "old_input_pointer": "/evidence_claims/45",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_base_2027_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "263af46721cbd6a7781b923f1274bd8573146edd4403263237acb3ce1c509747",
+   "new_excerpt_chars": 50,
+   "physical_page": 12,
+   "contiguous_span": [
+    37,
+    88
+   ],
+   "contiguous_range_sha256": "ca743a56318e65db44f4e1769fe65c752cf340a403ef1fcc77ae44ac7a40bb7b",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "tides_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the TIDES D&M client/molecule sentence on p12 (own business). Client +39% and molecule +68% are service-activity counts; they do not establish a future revenue or price magnitude.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Client/molecule counts are activity stock/flow indicators, not recognised revenue; project counts never multiply into revenue without a disclosed ASP or throughput."
+  },
+  {
+   "claim_id": "claim_tides_base_2027_price",
+   "old_input_pointer": "/evidence_claims/46",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_base_2027_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [],
+   "rationale": "PRESERVED as conversion_assumption (negative control). Testing/Biology disclosed price pressure is indirect market-risk context for the TIDES net-price condition, not an observed TIDES net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer; no TIDES net-price index is disclosed."
+  },
+  {
+   "claim_id": "claim_tides_base_2028_activity",
+   "old_input_pointer": "/evidence_claims/47",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_base_2028_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "263af46721cbd6a7781b923f1274bd8573146edd4403263237acb3ce1c509747",
+   "new_excerpt_chars": 50,
+   "physical_page": 12,
+   "contiguous_span": [
+    37,
+    88
+   ],
+   "contiguous_range_sha256": "ca743a56318e65db44f4e1769fe65c752cf340a403ef1fcc77ae44ac7a40bb7b",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "tides_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the TIDES D&M client/molecule sentence on p12 (own business). Client +39% and molecule +68% are service-activity counts; they do not establish a future revenue or price magnitude.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Client/molecule counts are activity stock/flow indicators, not recognised revenue; project counts never multiply into revenue without a disclosed ASP or throughput."
+  },
+  {
+   "claim_id": "claim_tides_base_2028_price",
+   "old_input_pointer": "/evidence_claims/48",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_base_2028_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [],
+   "rationale": "PRESERVED as conversion_assumption (negative control). Testing/Biology disclosed price pressure is indirect market-risk context for the TIDES net-price condition, not an observed TIDES net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer; no TIDES net-price index is disclosed."
+  },
+  {
+   "claim_id": "claim_tides_high_2026_price",
+   "old_input_pointer": "/evidence_claims/51",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_high_2026_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Chosen net price/mix index, separated from delivered workload and FX. No observed price range; price pressure means activity does not translate one-for-one into revenue. Assumptions remain conditional.",
+     "new": "Chosen net price/mix index for TIDES, separated from delivered workload and FX. SCOPE LIMIT: the disclosed price pressure is for Testing and Biology margins (annual p16); TIDES net price is not separately disclosed. The transfer is an explicit cross-business, indirect market-risk conversion, not an observed TIDES net price."
+    }
+   ],
+   "rationale": "PRESERVED as conversion_assumption (negative control). Testing/Biology disclosed price pressure is indirect market-risk context for the TIDES net-price condition, not an observed TIDES net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer; no TIDES net-price index is disclosed."
+  },
+  {
+   "claim_id": "claim_tides_high_2027_activity",
+   "old_input_pointer": "/evidence_claims/52",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_high_2027_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "263af46721cbd6a7781b923f1274bd8573146edd4403263237acb3ce1c509747",
+   "new_excerpt_chars": 50,
+   "physical_page": 12,
+   "contiguous_span": [
+    37,
+    88
+   ],
+   "contiguous_range_sha256": "ca743a56318e65db44f4e1769fe65c752cf340a403ef1fcc77ae44ac7a40bb7b",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "tides_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the TIDES D&M client/molecule sentence on p12 (own business). Client +39% and molecule +68% are service-activity counts; they do not establish a future revenue or price magnitude.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Client/molecule counts are activity stock/flow indicators, not recognised revenue; project counts never multiply into revenue without a disclosed ASP or throughput."
+  },
+  {
+   "claim_id": "claim_tides_high_2027_price",
+   "old_input_pointer": "/evidence_claims/53",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_high_2027_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [],
+   "rationale": "PRESERVED as conversion_assumption (negative control). Testing/Biology disclosed price pressure is indirect market-risk context for the TIDES net-price condition, not an observed TIDES net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer; no TIDES net-price index is disclosed."
+  },
+  {
+   "claim_id": "claim_tides_high_2028_activity",
+   "old_input_pointer": "/evidence_claims/54",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_high_2028_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "263af46721cbd6a7781b923f1274bd8573146edd4403263237acb3ce1c509747",
+   "new_excerpt_chars": 50,
+   "physical_page": 12,
+   "contiguous_span": [
+    37,
+    88
+   ],
+   "contiguous_range_sha256": "ca743a56318e65db44f4e1769fe65c752cf340a403ef1fcc77ae44ac7a40bb7b",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "tides_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the TIDES D&M client/molecule sentence on p12 (own business). Client +39% and molecule +68% are service-activity counts; they do not establish a future revenue or price magnitude.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Client/molecule counts are activity stock/flow indicators, not recognised revenue; project counts never multiply into revenue without a disclosed ASP or throughput."
+  },
+  {
+   "claim_id": "claim_tides_high_2028_price",
+   "old_input_pointer": "/evidence_claims/55",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_high_2028_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [],
+   "rationale": "PRESERVED as conversion_assumption (negative control). Testing/Biology disclosed price pressure is indirect market-risk context for the TIDES net-price condition, not an observed TIDES net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer; no TIDES net-price index is disclosed."
+  },
+  {
+   "claim_id": "claim_tides_low_2026_price",
+   "old_input_pointer": "/evidence_claims/37",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_low_2026_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [
+    {
+     "field": "rationale",
+     "old": "Chosen net price/mix index, separated from delivered workload and FX. No observed price range; price pressure means activity does not translate one-for-one into revenue. Assumptions remain conditional.",
+     "new": "Chosen net price/mix index for TIDES, separated from delivered workload and FX. SCOPE LIMIT: the disclosed price pressure is for Testing and Biology margins (annual p16); TIDES net price is not separately disclosed. The transfer is an explicit cross-business, indirect market-risk conversion, not an observed TIDES net price."
+    }
+   ],
+   "rationale": "PRESERVED as conversion_assumption (negative control). Testing/Biology disclosed price pressure is indirect market-risk context for the TIDES net-price condition, not an observed TIDES net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer; no TIDES net-price index is disclosed."
+  },
+  {
+   "claim_id": "claim_tides_low_2027_activity",
+   "old_input_pointer": "/evidence_claims/38",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_low_2027_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "263af46721cbd6a7781b923f1274bd8573146edd4403263237acb3ce1c509747",
+   "new_excerpt_chars": 50,
+   "physical_page": 12,
+   "contiguous_span": [
+    37,
+    88
+   ],
+   "contiguous_range_sha256": "ca743a56318e65db44f4e1769fe65c752cf340a403ef1fcc77ae44ac7a40bb7b",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "tides_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the TIDES D&M client/molecule sentence on p12 (own business). Client +39% and molecule +68% are service-activity counts; they do not establish a future revenue or price magnitude.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Client/molecule counts are activity stock/flow indicators, not recognised revenue; project counts never multiply into revenue without a disclosed ASP or throughput."
+  },
+  {
+   "claim_id": "claim_tides_low_2027_price",
+   "old_input_pointer": "/evidence_claims/39",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_low_2027_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [],
+   "rationale": "PRESERVED as conversion_assumption (negative control). Testing/Biology disclosed price pressure is indirect market-risk context for the TIDES net-price condition, not an observed TIDES net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer; no TIDES net-price index is disclosed."
+  },
+  {
+   "claim_id": "claim_tides_low_2028_activity",
+   "old_input_pointer": "/evidence_claims/40",
+   "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "old_locator": "PDF page 11",
+   "old_role": "mechanism_direction",
+   "old_excerpt_sha256": "bfff5f5b6d023c2bb9a1a60ae9aa3d4dfc7cfbabc0cd6186a8e811e75002cc4a",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_low_2028_activity",
+   "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+   "new_locator": "PDF page 12",
+   "new_excerpt_sha256": "263af46721cbd6a7781b923f1274bd8573146edd4403263237acb3ce1c509747",
+   "new_excerpt_chars": 50,
+   "physical_page": 12,
+   "contiguous_span": [
+    37,
+    88
+   ],
+   "contiguous_range_sha256": "ca743a56318e65db44f4e1769fe65c752cf340a403ef1fcc77ae44ac7a40bb7b",
+   "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+   "excerpt_id": "tides_h1_own",
+   "new_role": "mechanism_direction",
+   "parameter_changes": [],
+   "rationale": "Re-bound to the TIDES D&M client/molecule sentence on p12 (own business). Client +39% and molecule +68% are service-activity counts; they do not establish a future revenue or price magnitude.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Client/molecule counts are activity stock/flow indicators, not recognised revenue; project counts never multiply into revenue without a disclosed ASP or throughput."
+  },
+  {
+   "claim_id": "claim_tides_low_2028_price",
+   "old_input_pointer": "/evidence_claims/41",
+   "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "old_locator": "PDF page 16",
+   "old_role": "conversion_assumption",
+   "old_excerpt_sha256": "5e41e40d9814d349435e6c21721bc691527d0ddb65d3be22a0f6d8507f0a6cdc",
+   "old_excerpt_chars": 360,
+   "target_type": "parameter",
+   "target_id": "tides_low_2028_price",
+   "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+   "new_locator": "PDF page 16",
+   "new_excerpt_sha256": "cc0d329883500c19848a2685fc45ccf4a16a32a17eac9160abb3763f65b5e4b5",
+   "new_excerpt_chars": 171,
+   "physical_page": 16,
+   "contiguous_span": [
+    803,
+    975
+   ],
+   "contiguous_range_sha256": "eb1dffaa635f85e5cfcf7f3d5db84ced240f5e6bb93d4022421646d44186836e",
+   "page_text_sha256": "9ab31497f693a25d9fb57c279a84e9aec31fe7199c0e9fb9a2bbbaecb1ccb9f1",
+   "excerpt_id": "price_other_businesses",
+   "new_role": "conversion_assumption",
+   "parameter_changes": [],
+   "rationale": "PRESERVED as conversion_assumption (negative control). Testing/Biology disclosed price pressure is indirect market-risk context for the TIDES net-price condition, not an observed TIDES net price.",
+   "resolution": "rebound_scope_role_preserved",
+   "remaining_limit": "Cross-business transfer; no TIDES net-price index is disclosed."
+  }
+ ],
+ "out_of_union_repairs": {
+  "count": 9,
+  "reason": "Same wrong-scope defect class as the union claims, found while re-reading the H1 p12 page. They are repaired for internal consistency and reported here; they are NOT part of the 49-claim union and must not be counted toward it.",
+  "rows": [
+   {
+    "claim_id": "claim_testing_base_2026_activity",
+    "in_review_union": false,
+    "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "old_locator": "PDF page 12",
+    "old_role": "mechanism_direction",
+    "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+    "old_excerpt_chars": 360,
+    "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "new_locator": "PDF page 12",
+    "new_excerpt_sha256": "7128fe5a4fdf2f1481ee7b439cf9aeee00c71d9ce6e73714e1220c5b831eb2aa",
+    "new_excerpt_chars": 311,
+    "physical_page": 12,
+    "contiguous_span": [
+     88,
+     400
+    ],
+    "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+    "excerpt_id": "testing_h1_own",
+    "new_role": "mechanism_direction",
+    "target_type": "parameter",
+    "target_id": "testing_base_2026_activity",
+    "rationale": "Same defect class as the 49-claim repair: a page-prefix slice cannot support the segment it merely happens to mention. Repaired for consistency; it does NOT count toward the 49 and changes no number.",
+    "resolution": "out_of_union_same_defect_repaired"
+   },
+   {
+    "claim_id": "claim_testing_base_2027_activity",
+    "in_review_union": false,
+    "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "old_locator": "PDF page 12",
+    "old_role": "mechanism_direction",
+    "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+    "old_excerpt_chars": 360,
+    "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "new_locator": "PDF page 12",
+    "new_excerpt_sha256": "7128fe5a4fdf2f1481ee7b439cf9aeee00c71d9ce6e73714e1220c5b831eb2aa",
+    "new_excerpt_chars": 311,
+    "physical_page": 12,
+    "contiguous_span": [
+     88,
+     400
+    ],
+    "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+    "excerpt_id": "testing_h1_own",
+    "new_role": "mechanism_direction",
+    "target_type": "parameter",
+    "target_id": "testing_base_2027_activity",
+    "rationale": "Same defect class as the 49-claim repair: a page-prefix slice cannot support the segment it merely happens to mention. Repaired for consistency; it does NOT count toward the 49 and changes no number.",
+    "resolution": "out_of_union_same_defect_repaired"
+   },
+   {
+    "claim_id": "claim_testing_base_2028_activity",
+    "in_review_union": false,
+    "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "old_locator": "PDF page 12",
+    "old_role": "mechanism_direction",
+    "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+    "old_excerpt_chars": 360,
+    "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "new_locator": "PDF page 12",
+    "new_excerpt_sha256": "7128fe5a4fdf2f1481ee7b439cf9aeee00c71d9ce6e73714e1220c5b831eb2aa",
+    "new_excerpt_chars": 311,
+    "physical_page": 12,
+    "contiguous_span": [
+     88,
+     400
+    ],
+    "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+    "excerpt_id": "testing_h1_own",
+    "new_role": "mechanism_direction",
+    "target_type": "parameter",
+    "target_id": "testing_base_2028_activity",
+    "rationale": "Same defect class as the 49-claim repair: a page-prefix slice cannot support the segment it merely happens to mention. Repaired for consistency; it does NOT count toward the 49 and changes no number.",
+    "resolution": "out_of_union_same_defect_repaired"
+   },
+   {
+    "claim_id": "claim_testing_high_2026_activity",
+    "in_review_union": false,
+    "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "old_locator": "PDF page 12",
+    "old_role": "mechanism_direction",
+    "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+    "old_excerpt_chars": 360,
+    "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "new_locator": "PDF page 12",
+    "new_excerpt_sha256": "7128fe5a4fdf2f1481ee7b439cf9aeee00c71d9ce6e73714e1220c5b831eb2aa",
+    "new_excerpt_chars": 311,
+    "physical_page": 12,
+    "contiguous_span": [
+     88,
+     400
+    ],
+    "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+    "excerpt_id": "testing_h1_own",
+    "new_role": "mechanism_direction",
+    "target_type": "parameter",
+    "target_id": "testing_high_2026_activity",
+    "rationale": "Same defect class as the 49-claim repair: a page-prefix slice cannot support the segment it merely happens to mention. Repaired for consistency; it does NOT count toward the 49 and changes no number.",
+    "resolution": "out_of_union_same_defect_repaired"
+   },
+   {
+    "claim_id": "claim_testing_high_2027_activity",
+    "in_review_union": false,
+    "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "old_locator": "PDF page 12",
+    "old_role": "mechanism_direction",
+    "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+    "old_excerpt_chars": 360,
+    "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "new_locator": "PDF page 12",
+    "new_excerpt_sha256": "7128fe5a4fdf2f1481ee7b439cf9aeee00c71d9ce6e73714e1220c5b831eb2aa",
+    "new_excerpt_chars": 311,
+    "physical_page": 12,
+    "contiguous_span": [
+     88,
+     400
+    ],
+    "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+    "excerpt_id": "testing_h1_own",
+    "new_role": "mechanism_direction",
+    "target_type": "parameter",
+    "target_id": "testing_high_2027_activity",
+    "rationale": "Same defect class as the 49-claim repair: a page-prefix slice cannot support the segment it merely happens to mention. Repaired for consistency; it does NOT count toward the 49 and changes no number.",
+    "resolution": "out_of_union_same_defect_repaired"
+   },
+   {
+    "claim_id": "claim_testing_high_2028_activity",
+    "in_review_union": false,
+    "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "old_locator": "PDF page 12",
+    "old_role": "mechanism_direction",
+    "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+    "old_excerpt_chars": 360,
+    "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "new_locator": "PDF page 12",
+    "new_excerpt_sha256": "7128fe5a4fdf2f1481ee7b439cf9aeee00c71d9ce6e73714e1220c5b831eb2aa",
+    "new_excerpt_chars": 311,
+    "physical_page": 12,
+    "contiguous_span": [
+     88,
+     400
+    ],
+    "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+    "excerpt_id": "testing_h1_own",
+    "new_role": "mechanism_direction",
+    "target_type": "parameter",
+    "target_id": "testing_high_2028_activity",
+    "rationale": "Same defect class as the 49-claim repair: a page-prefix slice cannot support the segment it merely happens to mention. Repaired for consistency; it does NOT count toward the 49 and changes no number.",
+    "resolution": "out_of_union_same_defect_repaired"
+   },
+   {
+    "claim_id": "claim_testing_low_2026_activity",
+    "in_review_union": false,
+    "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "old_locator": "PDF page 12",
+    "old_role": "mechanism_direction",
+    "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+    "old_excerpt_chars": 360,
+    "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "new_locator": "PDF page 12",
+    "new_excerpt_sha256": "7128fe5a4fdf2f1481ee7b439cf9aeee00c71d9ce6e73714e1220c5b831eb2aa",
+    "new_excerpt_chars": 311,
+    "physical_page": 12,
+    "contiguous_span": [
+     88,
+     400
+    ],
+    "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+    "excerpt_id": "testing_h1_own",
+    "new_role": "mechanism_direction",
+    "target_type": "parameter",
+    "target_id": "testing_low_2026_activity",
+    "rationale": "Same defect class as the 49-claim repair: a page-prefix slice cannot support the segment it merely happens to mention. Repaired for consistency; it does NOT count toward the 49 and changes no number.",
+    "resolution": "out_of_union_same_defect_repaired"
+   },
+   {
+    "claim_id": "claim_testing_low_2027_activity",
+    "in_review_union": false,
+    "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "old_locator": "PDF page 12",
+    "old_role": "mechanism_direction",
+    "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+    "old_excerpt_chars": 360,
+    "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "new_locator": "PDF page 12",
+    "new_excerpt_sha256": "7128fe5a4fdf2f1481ee7b439cf9aeee00c71d9ce6e73714e1220c5b831eb2aa",
+    "new_excerpt_chars": 311,
+    "physical_page": 12,
+    "contiguous_span": [
+     88,
+     400
+    ],
+    "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+    "excerpt_id": "testing_h1_own",
+    "new_role": "mechanism_direction",
+    "target_type": "parameter",
+    "target_id": "testing_low_2027_activity",
+    "rationale": "Same defect class as the 49-claim repair: a page-prefix slice cannot support the segment it merely happens to mention. Repaired for consistency; it does NOT count toward the 49 and changes no number.",
+    "resolution": "out_of_union_same_defect_repaired"
+   },
+   {
+    "claim_id": "claim_testing_low_2028_activity",
+    "in_review_union": false,
+    "old_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "old_locator": "PDF page 12",
+    "old_role": "mechanism_direction",
+    "old_excerpt_sha256": "522ac6558b24a2a0ccd75f20141e51bb7530e231be5436c4ea3c50a4ee7ff38f",
+    "old_excerpt_chars": 360,
+    "new_source_id": "urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f",
+    "new_locator": "PDF page 12",
+    "new_excerpt_sha256": "7128fe5a4fdf2f1481ee7b439cf9aeee00c71d9ce6e73714e1220c5b831eb2aa",
+    "new_excerpt_chars": 311,
+    "physical_page": 12,
+    "contiguous_span": [
+     88,
+     400
+    ],
+    "page_text_sha256": "e80c624d26a6a743822ae32953f828c25809bf8668ec4c6177aef86e6eb21abf",
+    "excerpt_id": "testing_h1_own",
+    "new_role": "mechanism_direction",
+    "target_type": "parameter",
+    "target_id": "testing_low_2028_activity",
+    "rationale": "Same defect class as the 49-claim repair: a page-prefix slice cannot support the segment it merely happens to mention. Repaired for consistency; it does NOT count toward the 49 and changes no number.",
+    "resolution": "out_of_union_same_defect_repaired"
+   }
+  ]
+ },
+ "out_of_union_requirement_repairs": {
+  "count": 1,
+  "requirement": "F3-RC05 / T09-guidance-versus-actual (RPO expectation is not in the 49-claim union)",
+  "rows": [
+   {
+    "claim_id": "claim_rpo_expected_2026_opening_cohort",
+    "in_review_union": false,
+    "requirement": "F3-RC05 / T09-guidance-versus-actual",
+    "old_input_pointer": "/evidence_claims (parameter_id=rpo_expected_2026_opening_cohort)",
+    "old_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+    "old_locator": "PDF page 184",
+    "old_role": "history_base",
+    "old_excerpt_sha256": "64032c52fe85e4ce6c830053f5dda9ebb465a32142be274f2bc8c2a51640bf95",
+    "old_excerpt_chars": 85,
+    "new_source_id": "urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2",
+    "new_locator": "PDF page 184",
+    "new_excerpt_sha256": "4932a08763e15945c34a5be26fb2210cd09fb3f0b0a42465f0724142f268a4aa",
+    "new_excerpt_chars": 126,
+    "physical_page": 184,
+    "contiguous_span": [
+     547,
+     674
+    ],
+    "contiguous_range_sha256": "4a5f337872964f50e200e1f9ce5b19dfca537dfb50ece36ae19c2062a2f3c413",
+    "page_text_sha256": "f254ed3ad4a5f40b4aa0ac1791fa915847463d0b6ad550f1d12a90cf6cd04ebd",
+    "excerpt_id": "rpo_expected",
+    "new_role": "value_range",
+    "target_type": "parameter",
+    "target_id": "rpo_expected_2026_opening_cohort",
+    "parameter_changes": [
+     {
+      "field": "kind",
+      "old": "reported_fact",
+      "new": "management_guidance"
+     },
+     {
+      "field": "definition",
+      "old": "Prior disclosure expected FY2026 recognition of opening signed-contract subset; not guaranteed total forecast",
+      "new": "Issuer expected FY2026 recognition of the 2025-12-31 signed-contract opening cohort (4,220,706.46 万元 / 100 = 42,207.0646 CNY million); an issuer expectation, not an actual, not a range and not a full-year floor."
+     },
+     {
+      "field": "rationale",
+      "old": null,
+      "new": "Issuer expectation for one cohort. The parameter has no revenue-DAG consumer, so the role correction changes no forecast number. It is not added to H1 actual or to new orders, not split across sub-businesses, and not treated as a probability or an empirical range."
+     }
+    ],
+    "rationale": "Same paragraph carries three different things: the FY2025 year-end RPO stock (5,800,478.75 万元, a reported point-in-time fact), the issuer's expected FY2026 recognition of that opening cohort (4,220,706.46 万元, management guidance), and no actual FY2026 realisation at all. The parameter kind changes from reported_fact to management_guidance and the evidence role from history_base to value_range with an exact value; the amount is an issuer expected point, not an empirical range, not a full-year floor and not an actual.",
+    "resolution": "kind_corrected_guidance_vs_actual",
+    "remaining_limit": "No disclosed realisation schedule for the opening cohort; it cannot be added to H1 actual or new orders, nor split across sub-businesses. The parameter has no revenue-DAG consumer, so the correction changes no forecast number."
+   }
+  ]
+ },
+ "unchanged_claim_ids": []
+}

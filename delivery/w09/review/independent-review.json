@@ -1,0 +1,116 @@
+{
+  "schema_version": "w09-independent-review/1",
+  "package_id": "W09-RF-RESEARCH",
+  "reviewer_role": "independent review agent (not an implementer voice; ran its own probe scripts)",
+  "reviewed_at": "2026-10-23T20:00:00Z/2026-10-23T21:20:00Z",
+  "review_round": 1,
+  "reviewed_code_sha256": {
+    "references/buy-side-methodology.md": "69f701fa",
+    "references/evidence-role-calibration.md": "d3e781c7",
+    "references/input-construction.md": "f3cbc905",
+    "delivery/w09/tools/verify_excerpts.py": "as-reviewed-in-worktree",
+    "delivery/w09/tools/author_main_input.py": "as-reviewed-in-worktree"
+  },
+  "reviewed_artifacts": {
+    "delivery/w09/forecast/main-input.json": "cb155a827f6a241ba5d45cf41b6e8e59eef98aa4b122e955106a51ae9770f022",
+    "delivery/w09/forecast/stress-input.json": "7f0cf9d92d4ac7aa1a3509ac849aa08631021108212d0b1bee6f69fd02838b12",
+    "delivery/w09/research/excerpts.json": "sha-recorded-with-defect-see-MAJOR-1",
+    "delivery/w09/research/claim-changes.json": "sha-recorded-with-defect-see-MAJOR-1",
+    "delivery/w09/research/component-bridge.json": "independently-recomputed-all-19-metrics-match",
+    "delivery/w09/research/native-chain.json": "chain-verified-against-capture-dirs",
+    "delivery/w09/research/sensitivity.json": "stress-delta-and-native-sensitivities-verified",
+    "delivery/w09/research/remaining-unknowns.json": "no-fabrication-found-in-scan",
+    "delivery/w09/research/generalization-probe.json": "different-structure-confirmed",
+    "delivery/w09/research/research-memo.md": "stale-sha-found-see-MAJOR-2",
+    "delivery/w09/registry/publications.jsonl": "6-lines-chain-ok",
+    "sealed/e54ba7df7a5914772222e88e56661d0822e251e257814b9dc7c976c454660257": "final3-input.json",
+    "sealed/41ea79efa319226ac93e65d5210bb304b4d458cfac95ef5998fdf06eaf12279d": "final3-forecast.json"
+  },
+  "probes_actually_run": [
+    "p1_struct.py — claim-changes.json structure, row keys",
+    "p2_pages.py — verified-source-pages + addendum SHA/structure",
+    "p3_excerpts.py, p3b_excerpts.py — excerpts.json structure",
+    "p4_reslice.py — re-slice every excerpt from page bytes; raw+strip hash recheck",
+    "p5_split.py — inspect the 657/920/1250 split bytes and hashes",
+    "p6_claims.py — sealed vs new claims: union coverage, dupes, old/new role counts recomputed",
+    "p7_ccblocks.py — price negative control / biology rebase / unknown handling blocks",
+    "p8_diff.py — full claim+parameter diff; undocumented-changed-claims hunt; price negative control; enum-string search",
+    "p9_pagetext.py — dump page text for scope judgement",
+    "p10_raw.py, p10b_raw.py — segment_bridge raw values",
+    "p11_params.py — parameter kinds/values, RPO",
+    "p12_bridge.py — independent Decimal recomputation of all 19 bridge metrics; six partitions; TIDES single count",
+    "p13_drivers.py — native driver analysis; 61.57% share location",
+    "p14_identity.py — leaf diff sealed vs new; limitations delta; three-scenario subtotal equality",
+    "p15_revleaf.py — full leaf dump for diff follow-up",
+    "p16_conf.py — confidence scalar equality; observed_range null counts both sides",
+    "p17_chain.py — capture-dir frozen/consume files vs request.json; forecast vs snapshot input_sha256",
+    "p18_memo.py — grep memo SHAs; stress-shock needles; main-vs-stress parameter diff",
+    "p19_registry.py — registry chain prev_line_sha256; line self-consistency",
+    "p20_sha_hunt.py — canonical-sha candidates; locate 4454ce57/852ba877 as memo-only",
+    "p21_rowspan.py — claim-changes rows vs excerpts.json spans/hashes (found MAJOR-1)",
+    "p22_rpo_split.py — split-point bytes verbatim; RPO DAG-consumer count; RPO stock/claim state",
+    "refs.diff — full diff of the three method references"
+  ],
+  "verified_passing": [
+    "49/49 union coverage, no duplicates, no undocumented changed claims",
+    "old role counts 31+18 and new 26/21/2 independently recomputed",
+    "18 price negative controls preserved as conversion_assumption (problems=[])",
+    "3 biology rebase arithmetic 2677.17503051-1251.6049=1425.57013051 re-verified",
+    "2 unknown-mechanism claims weakened to history_base; 0 enum-string occurrences",
+    "all 19 bridge metrics recompute identically; six partitions reconcile; TIDES counted once",
+    "6 capture dirs: frozen input and consume files byte-equal to request.json",
+    "registry 6-line prev_line chain OK; first line prev empty is a valid genesis",
+    "main/stress forecast input_sha256 equal snapshot input_sha256",
+    "three-scenario segment_subtotal bit-identical to sealed outputs",
+    "confidence score unchanged at 24.01705900038857",
+    "observed_range non-null count = 0 on both sides; 12 calibrations unverified",
+    "RPO: management_guidance / value_range / value unchanged / 0 structural consumers",
+    "method-reference additions generic; generalization probe uses a different structure"
+  ],
+  "issues": [
+    {
+      "id": "MAJOR-1",
+      "severity": "MAJOR",
+      "location": "research/excerpts.json (chemistry_dm_operating, chemistry_r_operating); propagates to 10 rows of research/claim-changes.json (claim_driver_non_tides + 9 non_tides activity rows)",
+      "finding": "The two split spans record the PARENT span's contiguous_range_sha256 (716627fa...) instead of their own raw-slice hashes (dm should be d26e03ca..., r should be d4d7df24...). The excerpt text itself is byte-exact to the slice; only the recorded raw-range hash is wrong, so the ledger is not replayable for those 10 rows.",
+      "root_cause": "verify_excerpts.py split the parent with {**chem.items()} which inherited contiguous_range_sha256; only excerpt_sha256 was recomputed.",
+      "verified_by": "p4_reslice.py + p21_rowspan.py: sha(text[657:920])=d26e03ca... != stored 716627fa...; sha(text[920:1250])=d4d7df24... != stored 716627fa...",
+      "suggested_fix": "Recompute each split span's own raw hash; add a self-check assertion in verify_excerpts.py that every recorded contiguous hash equals the recomputed slice hash; rebuild inputs and all downstream artifacts; rerun the full 6-call chain."
+    },
+    {
+      "id": "MAJOR-2",
+      "severity": "MAJOR",
+      "location": "research/research-memo.md section 3",
+      "finding": "The memo cites frozen request SHAs 4454ce57... (main) and 852ba877... (stress). These SHAs appear nowhere in any capture directory, request.json, native-calls.jsonl or registry; they are leftovers from earlier chain iterations that the author itself superseded. The actual frozen request SHAs are 770cd309... (main) and c0c45687... (stress).",
+      "root_cause": "The memo was written after an early chain run and was not updated when the chain was legitimately re-run (adding observations, fixing the Testing defect, unifying version strings).",
+      "verified_by": "p18_memo.py + p20_sha_hunt.py: directory-wide grep finds 4454ce57/852ba877 only in the memo and probe scripts.",
+      "suggested_fix": "Replace the memo's SHA references with the final SHAs from native-chain.json; memo hashes must be machine-read, never hand-copied."
+    },
+    {
+      "id": "MINOR-1",
+      "severity": "MINOR",
+      "location": "research/research-memo.md sections 3 and 6",
+      "finding": "The phrase 逐位相同 (bit-identical) is true for the three-scenario segment_subtotal but reads as if the entire forecast JSON is byte-identical to the sealed one; the full-file leaf diff shows 735 differing leaves in confidence/research_adequacy, which is the intended effect of the repair.",
+      "root_cause": "Imprecise wording.",
+      "verified_by": "p14_identity.py leaf diff.",
+      "suggested_fix": "Qualify the claim as segment_subtotal-identical and note the other diffs are the intended role/observation repair."
+    },
+    {
+      "id": "MINOR-2",
+      "severity": "MINOR",
+      "location": "research/excerpts.json count_proposals",
+      "finding": "count_proposals=20 counts excerpt TEMPLATE ids, not the 47 claim proposals or 49 claims; the field name invites misreading.",
+      "root_cause": "Field naming.",
+      "verified_by": "p3_excerpts.py.",
+      "suggested_fix": "Rename to count_excerpt_templates or clarify in the purpose string."
+    }
+  ],
+  "preexisting_selffound_issues_rechecked": [
+    "author return-before-observations bug: fix present, 66 observations in final input",
+    "RPO ledger row: present in out_of_union_requirement_repairs",
+    "Testing out-of-union repair: 9 rows present, excluded from the 49",
+    "version-string unification: forecast and snapshot input_sha256 now equal"
+  ],
+  "conclusion": "FAIL",
+  "conclusion_note": "Fail on reproducibility grounds only (MAJOR-1 ledger hashes, MAJOR-2 memo SHAs). The forecast numbers, citation scopes, role semantics, native chain and honesty claims all passed independent verification. Re-run the review after the two MAJOR fixes and full chain rebuild."
+}
