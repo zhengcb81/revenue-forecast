@@ -1,0 +1,214 @@
+{
+ "schema_version": "w09-acceptance-checkpoints-graded/1",
+ "package_id": "W09-RF-RESEARCH",
+ "graded_at": "2026-10-23",
+ "grading_rule": "Each checkpoint is graded PASS / FAIL / EXTERNAL_LIMIT with the artefact pointer that proves it. A checkpoint is not PASS because a validator exits 0.",
+ "artifacts": {
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\acceptance-checkpoints.json": "1f1f411118df0cd87eda793d9afd33d204851d68ed7d58e8946a64859ee96b39",
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\claim-changes.json": "d2534f19ddae2240a42e77f9239f2cad6254187859c9ab14ccdbf1bb0adeb0ab",
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\component-bridge.json": "d3243ed5ab1645e2a835708072ab06770c9db445281cdf8f6ab71e413231b784",
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\sensitivity.json": "c51832e034dd60959609d2b91d1c0e74e175db3ee7ad677269b799809fd426ae",
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\native-chain.json": "b3b2e9ac96764f49a9bfa3f379a01bb22509838abde5cc7075257142e28a6b3f",
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\remaining-unknowns.json": "430035c4b8e890934e2d63038d510418cc0073fee659408309cbe0b718dd3945",
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\generalization-probe.json": "80ccca81613f65b088c1d0144776452bbc6f6d4e9e66649bc85aea77a27955cf",
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\excerpts.json": "7e6f814dc40536d06845b6a29a778c6f3af63ec14bddaced79df6547fd7369ea"
+ },
+ "grades": {
+  "CP01-claim-coverage": {
+   "grade": "PASS",
+   "evidence": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\claim-changes.json"
+   ],
+   "observed": {
+    "expected_union_count": 49,
+    "actual_union_count": 49,
+    "rows": 49,
+    "unique_claim_ids": 49,
+    "old_role_counts": {
+     "mechanism_direction": 31,
+     "conversion_assumption": 18
+    },
+    "new_role_counts": {
+     "mechanism_direction": 26,
+     "conversion_assumption": 21,
+     "history_base": 2
+    }
+   },
+   "note": "Out-of-union repairs are recorded in separate sections and are explicitly excluded from the 49."
+  },
+  "CP02-own-scope-citation": {
+   "grade": "PASS",
+   "evidence": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\excerpts.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\claim-changes.json"
+   ],
+   "observed": {
+    "verified_excerpts": 22,
+    "over_500": {},
+    "under_10": {},
+    "length_problems": [],
+    "all_contiguous_offsets_reproduce": true,
+    "note": "Every span was re-sliced from the verified page text and both its contiguous-range hash and its native stripped hash were recomputed."
+   }
+  },
+  "CP03-role-semantics": {
+   "grade": "PASS",
+   "evidence": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\claim-changes.json"
+   ],
+   "observed": {
+    "price_negative_control_preserved": 18,
+    "biology_rebase_role": "conversion_assumption",
+    "weakened_claims": [
+     "claim_driver_discontinued",
+     "claim_driver_other"
+    ],
+    "no_diagnostic_string_in_enum": true
+   }
+  },
+  "CP04-guidance-vs-actual": {
+   "grade": "PASS",
+   "evidence": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\claim-changes.json"
+   ],
+   "observed": {
+    "parameter_changes": [
+     {
+      "field": "kind",
+      "old": "reported_fact",
+      "new": "management_guidance"
+     },
+     {
+      "field": "definition",
+      "old": "Prior disclosure expected FY2026 recognition of opening signed-contract subset; not guaranteed total forecast",
+      "new": "Issuer expected FY2026 recognition of the 2025-12-31 signed-contract opening cohort (4,220,706.46 万元 / 100 = 42,207.0646 CNY million); an issuer expectation, not an actual, not a range and not a full-year floor."
+     },
+     {
+      "field": "rationale",
+      "old": null,
+      "new": "Issuer expectation for one cohort. The parameter has no revenue-DAG consumer, so the role correction changes no forecast number. It is not added to H1 actual or to new orders, not split across sub-businesses, and not treated as a probability or an empirical range."
+     }
+    ],
+    "new_role": "value_range",
+    "revenue_dag_consumers": [],
+    "value_unchanged": true
+   }
+  },
+  "CP05-largest-driver-bridge": {
+   "grade": "PASS",
+   "evidence": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\component-bridge.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\sensitivity.json"
+   ],
+   "observed": {
+    "non_tides_fy25": "25095.84688297",
+    "residual_fy25": "5175.84688297",
+    "residual_h1_yoy": "0.056191999196602420841132582090267546027",
+    "dm_h226_yoy_if_residual_flat": "0.353015237289686884574112678197607807578",
+    "dm_fy28_multiple_if_residual_flat": "2.049832844120818775100401606425702811245",
+    "non_tides_share_of_group_net_increment": "0.6581963629987578771574672276954209409655",
+    "native_positive_driver_share": 0.6157107648615648,
+    "denominators_reported_separately": true
+   }
+  },
+  "CP06-units-and-rounding": {
+   "grade": "PASS",
+   "evidence": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\component-bridge.json"
+   ],
+   "observed": {
+    "rows_with_rounding_basis": 25,
+    "total_rows": 25,
+    "display_interval_not_confidence_interval": true
+   }
+  },
+  "CP07-future-unknown": {
+   "grade": "PASS",
+   "evidence": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\remaining-unknowns.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\sensitivity.json"
+   ],
+   "observed": {
+    "unknown_count": 8,
+    "every_unknown_has_exposure_and_resolving_disclosure": true,
+    "observed_range_remains_null": true,
+    "no_fabrication_statement": "No ASP, utilisation, cancellation rate, cohort schedule or empirical range was invented anywhere in this package. Where a number was needed and not disclosed, it is a labelled analyst condition with its falsifier, or it is listed above as unknown."
+   }
+  },
+  "CP08-counterevidence-changes-something": {
+   "grade": "PASS",
+   "evidence": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\component-bridge.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\sensitivity.json"
+   ],
+   "observed": {
+    "falsifier_count": 6,
+    "falsifiers_with_explicit_trigger": 6,
+    "native_sensitivity_count": 7,
+    "stress_wired_to_native_chain": true,
+    "residual_condition_sensitivity": [
+     {
+      "residual_h2_condition": "-10%",
+      "residual_h2_cny_million": "2326.907754169753891658350257076371726052",
+      "implied_dm_h2_cny_million": "15466.71861454777610834164974292362827395",
+      "implied_dm_h2_yoy": "0.376017062129298888673409069208746106969",
+      "residual_fy28_cny_million": "4658.262194673",
+      "implied_dm_fy28_cny_million": "41350.25494318371",
+      "implied_dm_fy28_multiple_of_fy25": "2.075816011204001506024096385542168674699"
+     },
+     {
+      "residual_h2_condition": "flat",
+      "residual_h2_cny_million": "2585.453060188615435175944730084857473391",
+      "implied_dm_h2_cny_million": "15208.17330852891456482405526991514252661",
+      "implied_dm_h2_yoy": "0.353015237289686884574112678197607807578",
+      "residual_fy28_cny_million": "5175.84688297",
+      "implied_dm_fy28_cny_million": "40832.67025488671",
+      "implied_dm_fy28_multiple_of_fy25": "2.049832844120818775100401606425702811245"
+     },
+     {
+      "residual_h2_condition": "+10%",
+      "residual_h2_cny_million": "2843.998366207476978693539203093343220730",
+      "implied_dm_h2_cny_million": "14949.62800251005302130646079690665677927",
+      "implied_dm_h2_yoy": "0.330013412450074880474816287186469508187",
+      "residual_fy28_cny_million": "5693.431571267",
+      "implied_dm_fy28_cny_million": "40315.08556658971",
+      "implied_dm_fy28_multiple_of_fy25": "2.023849677037636044176706827309236947791"
+     }
+    ]
+   }
+  },
+  "CP09-native-chain": {
+   "grade": "PASS",
+   "evidence": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\native-chain.json"
+   ],
+   "observed": {
+    "calls": 6,
+    "all_clean": true,
+    "frozen_equals_request": true,
+    "snapshot_input_equals_forecast_input": true,
+    "main_identical_to_sealed": true,
+    "stress_identical_to_sealed": true
+   }
+  },
+  "CP10-generality": {
+   "grade": "PASS",
+   "evidence": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\delivery\\w09\\research\\generalization-probe.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\references\\evidence-role-calibration.md",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\references\\buy-side-methodology.md",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast-r1-research\\references\\input-construction.md"
+   ],
+   "observed": {
+    "synthetic_fixture": true,
+    "different_structure": "recurring subscription platform + project services",
+    "negative_cases": 3,
+    "no_company_token_in_code": true,
+    "method_cards_changed": 3
+   }
+  }
+ },
+ "failing": [],
+ "all_pass": true,
+ "honest_scope": "PASS here means the pre-declared semantic criterion is met by a named artefact. It is not an economic acceptance, not empirical calibration and not a company or mainline sign-off."
+}

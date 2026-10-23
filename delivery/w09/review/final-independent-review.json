@@ -1,0 +1,165 @@
+{
+  "schema_version": "w09-final-independent-review/1",
+  "package_id": "W09-RF-RESEARCH",
+  "reviewer_role": "final independent re-review agent (round 2; not an implementer voice; ran its own probe scripts under review/_probe2/)",
+  "reviewed_at": "2026-10-23T21:55:00Z",
+  "review_round": 2,
+  "previous_round": {
+    "conclusion": "FAIL",
+    "issues": ["MAJOR-1 split-span contiguous hashes", "MAJOR-2 memo stale request SHAs", "MINOR-1 bit-identical wording", "MINOR-2 count_proposals naming"],
+    "report": "delivery/w09/review/independent-review.md"
+  },
+  "reviewed_artifacts": {
+    "delivery/w09/research/excerpts.json": "7e6f814dc40536d06845b6a29a778c6f3af63ec14bddaced79df6547fd7369ea",
+    "delivery/w09/research/claim-changes.json": "d2534f19ddae2240a42e77f9239f2cad6254187859c9ab14ccdbf1bb0adeb0ab",
+    "delivery/w09/research/native-chain.json": "b3b2e9ac96764f49a9bfa3f379a01bb22509838abde5cc7075257142e28a6b3f",
+    "delivery/w09/research/research-memo.md": "read-in-full; stale SHAs absent",
+    "delivery/w09/tools/verify_excerpts.py": "read-in-full; self-check assertion present (lines 136-148)",
+    "delivery/w09/forecast/main-input.json": "cb155a827f6a241ba5d45cf41b6e8e59eef98aa4b122e955106a51ae9770f022",
+    "delivery/w09/forecast/stress-input.json": "7f0cf9d92d4ac7aa1a3509ac849aa08631021108212d0b1bee6f69fd02838b12",
+    "delivery/w09/forecast/main-forecast.json": "f8e0d60e7927ce5bab2c294796b4564768ab82728ba0a967964bf3b82ab5519e",
+    "delivery/w09/forecast/stress-forecast.json": "f493de09927454363568e65edb3048ad613e13260eb754525687c968879f000a",
+    "delivery/w09/snapshots/main-v1.json": "8aed9773cd7a0b45552e5de58d311bd39cbed1072f5561f7235bc63e21c45baa",
+    "delivery/w09/snapshots/stress-v1.json": "3e5bf8e6dddffb70b701fceec2f745aa531b49fdb468764bffac5e0dc4423393",
+    "sealed/final3-forecast.json": "41ea79efa319226ac93e65d5210bb304b4d458cfac95ef5998fdf06eaf12279d (matches card)",
+    "sealed/final3-input.json": "e54ba7df7a5914772222e88e56661d0822e251e257814b9dc7c976c454660257 (matches card)",
+    "verified-source-pages.json": "66dced5bfbe7c5b6... (matches card 66dced5b...)",
+    "source-page-addendum-20261023.json": "993cc92c0c914430... (matches card 993cc92c...)",
+    "claim-scope-bindings.json": "7e7dd04ecf6b9c20... (matches card 7e7dd04e...)"
+  },
+  "fixes_verified": [
+    {
+      "id": "FIX-1",
+      "was": "MAJOR-1",
+      "status": "VERIFIED",
+      "evidence": {
+        "split_span_own_hashes": "chemistry_dm_operating stored contiguous_range_sha256=d26e03ca396c40468c080c8d17f39ddee501b4b3bc6f57016719bad1a526ebd4 equals independently re-sliced sha256(page_text[657:920]) from verified-source-pages.json; chemistry_r_operating stored=d4d7df247a7121e3f6f03bd213a501ed176ec5bb2cdaa6893e1d62f6c7b1ffe9 equals sha256(page_text[920:1250]). Both match the round-1 reviewer's expected values d26e03ca.../d4d7df24... exactly. Excerpt text byte-equals the slice on both.",
+        "parent_record": "chemistry_non_tides_operating keeps hash 716627fa29179e6c... which equals sha256(page_text[657:1250]) - correct for its own (now excerpt-less) span; split_into=[chemistry_dm_operating, chemistry_r_operating].",
+        "full_ledger_replay": "Re-sliced EVERY ledger row that carries contiguous_range_sha256 (49 union rows + 1 RPO row in out_of_union_requirement_repairs.rows; the 9 out_of_union_repairs rows carry span+excerpt text but no contiguous_range_sha256 field) against verified-source-pages.json + source-page-addendum-20261023.json (both file SHAs re-verified against the card): 50/50 hash matches, 0 mismatches, 0 missing pages. RPO row excerpt_id=rpo_expected span=[547,674] hash 4a5f337872964f50... re-slices exactly.",
+        "row_template_cross_check": "All 59 ledger rows (49+9+1) cross-checked against their excerpt_id template in excerpts.json: span text == template excerpt, row hash == template hash, row new_excerpt_sha256 == template excerpt_sha256: 0 inconsistencies.",
+        "major1_affected_rows": "The 10 previously-wrong rows (9 non-TIDES activity rows on chemistry_dm_operating + claim_driver_non_tides on chemistry_r_operating) re-sliced with full 64-char compare: 0 bad.",
+        "self_check_in_tool": "verify_excerpts.py lines 136-148 contain the self-check assertion (raw_sha256(re-slice)==contiguous_range_sha256, re-slice==excerpt, 10<=len<=500) that would raise on the MAJOR-1 defect class.",
+        "reproduction": "Sandboxed rerun of verify_excerpts.py (output redirected to review/_probe2/excerpts_rerun.json) exits 0 and reproduces the on-disk excerpts.json byte-identically (sha 19824ddbfa4d4c20... both sides), proving the on-disk artifact is exactly what the fixed tool emits."
+      }
+    },
+    {
+      "id": "FIX-2",
+      "was": "MAJOR-2",
+      "status": "VERIFIED",
+      "evidence": {
+        "stale_shas_gone": "research-memo.md contains no '4454ce57' and no '852ba877' (programmatic grep). Delivery-wide scan (excluding review/_probe* dirs) finds those strings only in the review documents themselves (independent-review.md/.json, review-fixes.md), where they are quoted as the round-1 finding - appropriate.",
+        "final_shas_present": "Memo §3 references main 770cd309... and stress c0c45687..., plus engine-side canonical input SHAs main 93ba13a5... / stress 4c82c3c1....",
+        "match_native_chain": "native-chain.json calls carry request_sha256 770cd309353c158827c7b31fc983f4eb47660ff63536de4a440d6d2754bd33c2 (all 3 main calls) and c0c45687f9cf3ba309f9d5e6411c593b5b49b6eb6ecd07ce8fe9db6dbb0d7c19 (all 3 stress calls); the memo's prefixes match exactly. 93ba13a5/4c82c3c1 match forecast+snapshot input_sha256 on both sides. No other hex tokens in the memo besides these and version/date strings."
+      }
+    },
+    {
+      "id": "FIX-3",
+      "was": "MINOR-1",
+      "status": "VERIFIED",
+      "evidence": {
+        "qualified_claim": "research-memo.md §3 now has the dedicated paragraph '\"逐位相同\"的确切含义：三情景 segment_subtotal 与封存旧输出逐位相同' and states the remaining forecast-JSON differences (two new no-future-mechanism limitations, research_adequacy 0->66 typed observations, calibration reason changes, ~735 leaves) are the INTENDED effect of the role/observation repair; §3 stress bullet says '与封存旧压力输出的三情景 subtotal 相同'; §6 carries the cross-reference to the same clarification.",
+        "independent_support": "My own leaf-diff recompute confirms the numbers behind the wording: main vs sealed changed leaves = 735 (plus 1125 added / 37 removed from the observation additions), while all 3 scenario segment_subtotal nodes are identical."
+      }
+    },
+    {
+      "id": "FIX-4",
+      "was": "MINOR-2",
+      "status": "VERIFIED",
+      "evidence": {
+        "purpose_text": "excerpts.json purpose explicitly says: 'the count_* fields below count UNIQUE EXCERPT TEMPLATES (contiguous source ranges), NOT claims (49 in the review union) and NOT per-claim excerpt proposals (47 in the preparation package)'.",
+        "count_fields": "count_excerpt_templates_verified=22 and count_excerpt_templates_proposals=20 sit alongside count_claims_in_review_union=49 and count_preparation_excerpt_proposals=47, removing the ambiguity. All 22 templates re-verified from page bytes (contig hash, raw text, stripped excerpt hash): 0 bad."
+      }
+    },
+    {
+      "id": "FIX-5",
+      "status": "VERIFIED",
+      "evidence": {
+        "six_calls": "native-chain.json: 6 calls (main validate/compute/snapshot + stress validate/compute/snapshot), all child_started=true, exit_code=0, input_complete=true, output_complete=true; all_calls_clean=true; all 6 frozen_matches_request=true.",
+        "frozen_bytes_recheck": "Independently re-hashed each request.json and compared bytes: request.json sha == native-chain request_sha256 on all 6; frozen input-0001 bytes == request.json bytes; consumed bytes == frozen bytes. Capture stdout/stderr files present and consistent with recorded sizes.",
+        "identical_old": "native-chain.json sealed_comparison: main low/base/high identical=true and stress low/base/high identical=true (6/6). Re-ran tools/reconcile_chain.py myself: exit 0, stdout all_calls_clean=true, main_identical_old=true, stress_identical_old=true; native-chain.json unchanged after my rerun (sha still b3b2e9ac96764f49..., matches the graded-artifact SHA) - idempotent.",
+        "independent_three_scenario_recompute": "Recomputed from forecast/main-forecast.json + forecast/stress-forecast.json vs sealed final3-forecast.json + final3-shared-stress.json: 3 segment_subtotal nodes per side, all identical at identical paths; e.g. main base 2026=59466.12444323827, 2027=69526.2277014774, 2028=77228.85767968993; stress deltas -4500/+3600/0 confirmed.",
+        "input_sha_equality": "forecast input_sha256 == snapshot input_sha256: main 93ba13a5207a8e141dd96aca1a417ab926a280d20dfcc2866135d8d012d692f5, stress 4c82c3c1baf516c1a7155e41a366fb1e3415c3ab7feccdce14549556c5e80bd7.",
+        "chain_genuinely_rebuilt": "The recorder request dirs and registry timestamps (20261023T205254Z..205347Z, registered 20:53:05..20:54:04) post-date the fixes, i.e. the chain was actually re-run after the repair, not recycled from the pre-fix 20:12* chain the round-1 probes saw.",
+        "registry": "6-line publications.jsonl: prev_line_sha256 chain links OK (first line prev null = valid genesis), each line_sha256 reproducible, snapshot artifact_ids match native-chain (main 4372da1c..., stress 4bf5aed3...)."
+      }
+    },
+    {
+      "id": "FIX-6",
+      "status": "VERIFIED",
+      "evidence": {
+        "coverage": "claim-changes.json: 49 rows, 0 duplicates, 49 unique claim_ids, expected/actual union count 49; old role counts 31 mechanism_direction + 18 conversion_assumption and new 26/21/2 recomputed independently from the rows themselves (not trusted from summary fields).",
+        "input_role_arithmetic": "Whole-input role delta sealed->new main = mechanism_direction -5, conversion_assumption +3, history_base +1, value_range +1 - exactly the documented changes (3 biology rebase -> conversion, 2 unknown -> history_base, RPO -> value_range); no other roles changed.",
+        "price_negative_controls": "All 18 price control claims are conversion_assumption on both sides (ledger old_role/new_role) AND in the actual main and stress input evidence_claims: 0 violations.",
+        "unknown_enum": "'unknown_mechanism_no_role_fix' appears 0 times in main-input.json and stress-input.json.",
+        "rpo": "Parameter rpo_expected_2026_opening_cohort: kind=management_guidance, value=42207.0646; supporting claim role=value_range, support_type=exact_value; 0 revenue-DAG consumers (no parameter references it; absent from segments/growth_driver_tree/sensitivity_tests); same state in stress input.",
+        "graded_checkpoints": "acceptance-checkpoints-graded.json: 10/10 grades PASS; all 8 recorded artifact SHAs match the on-disk files.",
+        "cleanup_receipt": "cleanup/receipt.json restored=true; all 8 protected-artifact SHAs and byte sizes match the on-disk files.",
+        "delivery_size": "delivery/w09 total = 23,916,862 bytes = 22.81 MiB (including both probe dirs review/_probe ~0.5 MiB and my review/_probe2) - under the 32 MiB limit.",
+        "sealed_inputs_untouched": "Sealed run files re-hashed during verification: final3-forecast.json 41ea79efa319226a..., final3-input.json e54ba7df7a591477..., verified-source-pages.json 66dced5b..., addendum 993cc92c... - all unchanged and matching the card."
+      }
+    }
+  ],
+  "regression_checks": [
+    {"check": "49/49 rows present, 0 duplicates", "result": "PASS"},
+    {"check": "old role counts 31 mechanism_direction + 18 conversion_assumption (recomputed from rows and from sealed input)", "result": "PASS"},
+    {"check": "new role counts 26/21/2 (recomputed from rows and from new main input)", "result": "PASS"},
+    {"check": "whole-input role delta consistent with documented changes only", "result": "PASS"},
+    {"check": "18 price negative controls still conversion_assumption in ledger, main input, stress input", "result": "PASS"},
+    {"check": "unknown_mechanism_no_role_fix absent from both inputs", "result": "PASS"},
+    {"check": "RPO management_guidance / value_range / value 42207.0646 unchanged, 0 DAG consumers", "result": "PASS"},
+    {"check": "three-scenario segment_subtotal identical to sealed final3-forecast.json and final3-shared-stress.json (independently recomputed)", "result": "PASS"},
+    {"check": "forecast input_sha256 == snapshot input_sha256 (main + stress)", "result": "PASS"},
+    {"check": "6 native calls exit 0, all_calls_clean=true, frozen_matches_request=true, frozen bytes == request bytes", "result": "PASS"},
+    {"check": "registry 6-line chain links OK with reproducible line hashes and matching snapshot ids", "result": "PASS"},
+    {"check": "graded checkpoints 10/10 PASS with matching artifact SHAs", "result": "PASS"},
+    {"check": "cleanup receipt restored=true with matching protected-artifact SHAs", "result": "PASS"},
+    {"check": "delivery size under 32 MiB", "result": "PASS (22.81 MiB incl. probes)"},
+    {"check": "sealed/readonly inputs unchanged (card-expected SHAs)", "result": "PASS"}
+  ],
+  "probes_actually_run": [
+    "f1a.py - re-slice chemistry_dm_operating [657:920] and chemistry_r_operating [920:1250] from verified page text; compare stored vs recomputed sha256",
+    "f1b.py - re-slice EVERY ledger row with contiguous_range_sha256 (49 union + 1 RPO) against pages+addendum; cross-check all 59 rows vs excerpt templates (text + both hashes)",
+    "f1c.py - dump out_of_union_repairs (9 rows) / out_of_union_requirement_repairs (1 RPO row) structure and summary fields",
+    "f2.py - grep memo for 4454ce57/852ba877/770cd309/c0c45687; delivery-wide stale-SHA scan; list all hex tokens in memo",
+    "f4.py - excerpts.json purpose/count fields; full re-verification of all 22 templates from page bytes (contig hash + text + stripped hash)",
+    "f5ab.py - dump native-chain.json calls, outputs, sealed_comparison, stress_minus_main",
+    "f5c.py - independent three-scenario segment_subtotal comparison (new main/stress vs sealed final3-forecast/final3-shared-stress); leaf-diff counts; forecast vs snapshot input_sha256",
+    "f6a.py - ledger coverage/duplicates/role counts recomputed from rows; 18 price controls in ledger+inputs; unknown enum absence; RPO parameter value",
+    "f6b.py - RPO claim role/support_type in main+stress inputs; RPO DAG-consumer hunt across parameters/segments/growth_driver_tree/sensitivity_tests",
+    "f6c.py - graded checkpoints all-PASS check + artifact SHA match; delivery size; cleanup receipt SHAs; capture frozen/consumed bytes vs request.json; registry chain (first, naive convention)",
+    "f6d.py - registry chain with correct line_sha256 convention; line_sha256 reproducibility; snapshot ids vs native-chain",
+    "f7.py - card-expected SHAs of verified-source-pages/addendum/bindings; parent chemistry_non_tides_operating hash re-check; MAJOR-1 ten rows full-64 re-slice; verify_excerpts.py self-check placement analysis; testing_h1_own independent re-check",
+    "f8.py - prepare sandboxed verify_excerpts rerun; hunt identical_old keys in native-chain.json; 18 price controls in stress input; reconcile_chain.py write-operation audit",
+    "verify_excerpts_rerun.py (sandboxed copy, OUT redirected to _probe2) - exit 0; output byte-identical to on-disk excerpts.json (sha 19824ddb...)",
+    "tools/reconcile_chain.py (actual re-run) - exit 0; stdout {all_calls_clean: true, calls: 6, main_identical_old: true, stress_identical_old: true}; native-chain.json unchanged/idempotent (sha still matches graded artifact)",
+    "f9.py - rerun output vs on-disk excerpts.json byte identity; main/stress identical_old field locations",
+    "f10.py - sealed file SHAs + mtimes; per-directory size breakdown; capture stdout/stderr sizes",
+    "f11.py - full 64-char hashes of the two split templates, parent, RPO row, sample union row",
+    "f12.py - whole-input role-count delta (sealed vs new main); oour row roles; biology rebase and unknown-mechanism row transitions"
+  ],
+  "new_issues_found": [
+    {
+      "id": "R2-MINOR-1",
+      "severity": "MINOR",
+      "location": "delivery/w09/tools/verify_excerpts.py (self-check loop, lines 140-148)",
+      "finding": "The new self-check loop runs at a point where rows contains 21 of the 22 templates; testing_h1_own is appended after the loop and is only length-checked in code. The in-code guard therefore does not cover the 22nd template, although review-fixes.md describes it as covering every excerpt-bearing record. No data defect: testing_h1_own was independently re-verified byte-exact by this review (contig hash and text both match the page slice at [88,400]), and the 9 ledger rows that use it cross-check cleanly.",
+      "suggested_fix": "Move the self-check loop to the end of main() (after testing_h1_own is added) so all 22 records are guarded."
+    },
+    {
+      "id": "R2-MINOR-2",
+      "severity": "MINOR",
+      "location": "delivery/w09/research/research-memo.md §2.1",
+      "finding": "One residual unqualified '重算结果与封存旧输出逐位相同' in §2.1 (the sentence's pointer native-chain.json is segment_subtotal-specific, and §3 now defines the exact meaning, so a full-document reader is not misled, but the phrase standalone is still the imprecision MINOR-1 flagged). The flagged sections §3/§6 are properly qualified.",
+      "suggested_fix": "Optionally qualify the §2.1 instance the same way (三情景 segment_subtotal)."
+    },
+    {
+      "id": "R2-INFO-3",
+      "severity": "INFO",
+      "location": "delivery/w09/review/review-fixes.md (MINOR-2 wording) vs research/excerpts.json",
+      "finding": "review-fixes.md says a 'count_excerpt_templates' field was added next to count_verified; the actual field names are count_excerpt_templates_proposals / count_excerpt_templates_verified. The artifact itself is unambiguous and the fix intent (templates-not-claims disambiguation in purpose + parallel count fields) is fully delivered; only the fix-note's field name is imprecise.",
+      "suggested_fix": "None required for the artifact; correct the field name in review-fixes.md if it is ever revised."
+    }
+  ],
+  "conclusion": "PASS_WITH_MINOR",
+  "conclusion_note": "All 6 verification items pass mechanically, with evidence from independent re-execution rather than the implementer's claims: (1) the two split spans now carry their own re-sliced contiguous hashes d26e03ca.../d4d7df24... matching the round-1 recomputed values, all 50 hash-bearing ledger rows replay byte-exact from the card-SHA-verified page files, the 59-row template cross-check is clean, and a sandboxed rerun reproduces excerpts.json byte-identically; (2) the memo's stale request SHAs are gone and its final SHAs match native-chain.json exactly; (3) the identity claim is now explicitly scoped to three-scenario segment_subtotal with the ~735 leaf differences declared as intended repair effect (confirmed by my own leaf-diff); (4) the excerpts purpose/count fields now state templates-vs-claims explicitly; (5) the rebuilt 6-call chain is clean end-to-end (exit 0, frozen==request, identical_old true on both sides, forecast==snapshot input_sha256, registry chain intact, genuinely re-run post-fix); (6) no regression: 49/49 coverage, 31+18 -> 26/21/2 role counts re-derived, 18 price controls preserved, unknown enum absent, RPO unchanged at 42207.0646 with 0 DAG consumers, 10/10 checkpoints PASS, cleanup restored, size 22.81 MiB < 32 MiB, sealed inputs untouched. Three new observations are MINOR/INFO only (self-check loop placement not yet covering the last template, one residual unqualified 逐位相同 phrase in memo §2.1, and a field-name imprecision in the fix note); none is a data defect, none invalidates a round-1 fix, and none blocks handoff. The round-1 FAIL is resolved."
+}

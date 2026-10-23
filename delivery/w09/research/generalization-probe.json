@@ -1,0 +1,65 @@
+{
+ "schema_version": "w09-generalization-probe/1",
+ "purpose": "Offline synthetic fixture with a different business structure (recurring subscription platform + project services). It tests whether the W09 lessons are generic, and it is never presented as evidence about a real company.",
+ "synthetic": true,
+ "positive_case": {
+  "structure": "parent total = recurring subscription + project services",
+  "fy2025": {
+   "total": "1200.0",
+   "subscription": "780.0",
+   "services": "420.0"
+  },
+  "h1_fy2026": {
+   "total": "700.0",
+   "subscription": "470.0",
+   "services": "230.0"
+  },
+  "derived": {
+   "subscription_h1_25": "361.5384615384615384615384615384615384615",
+   "platform_h1_25": "546.5384615384615384615384615384615384615",
+   "services_h1_yoy": "0.243243243243243243243243243243243243243",
+   "subscription_h1_yoy": "0.30",
+   "conditional_fy2026_total": "1650.0",
+   "implied_subscription_h2_yoy_if_services_flat": "0.708639705882352941176470588235294117647"
+  },
+  "reading": "Two disclosed rhythms differ materially, so one blended 'platform activity' index would hide the largest increment. The implied subscription H2 growth is a decomposition identity under a stated services condition, not a forecast.",
+  "checks": {
+   "six_partitions_mutually_exclusive": true,
+   "big_line_counted_once": true,
+   "residual_not_called_disclosed_line": "an exact arithmetic remainder of parent minus the one disclosed sub-line; it must not be named as an independently disclosed product.",
+   "conditional_requirement_is_not_a_forecast": true,
+   "implied_big_line_h2_growth": "0.708639705882352941176470588235294117647",
+   "two_rhythms_differ": true,
+   "services_h1_yoy": "0.243243243243243243243243243243243243243",
+   "subscription_h1_yoy": "0.30"
+  }
+ },
+ "negative_cases": {
+  "wrong_line_slice": {
+   "slice": "Services: project deliveries grew 4% and",
+   "contains_claimed_subject": false,
+   "verdict": "REJECTED: contiguous bytes from the wrong line; byte validity is not own-scope support."
+  },
+  "expected_as_actual": {
+   "paragraph": {
+    "stock": "900.0",
+    "expected_next_year": "640.0",
+    "actual_this_year": null
+   },
+   "wrong_reading": "reported_fact / actual",
+   "right_reading": "management_guidance / issuer expected point for the opening cohort; the stock stays a reported point-in-time fact; no actual exists.",
+   "verdict": "REJECTED: an expectation is not an actual and is not a full-year floor."
+  },
+  "residual_as_disclosed_line": {
+   "residual": "420.0",
+   "wrong_reading": "a separately reported 'other platform' revenue line",
+   "right_reading": "an exact arithmetic remainder of parent minus the one disclosed sub-line; it must not be named as an independently disclosed product.",
+   "verdict": "REJECTED: a residual inherits parent and sub-line rounding."
+  }
+ },
+ "what_this_does_not_prove": [
+  "Nothing about any real company's subscription or services revenue.",
+  "Nothing about forecast accuracy; the fixture is arithmetic only.",
+  "Nothing about a code path: the lessons are method-level, so the probe is a reasoning fixture, not an engine test."
+ ]
+}

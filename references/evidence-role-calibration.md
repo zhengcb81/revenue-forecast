@@ -22,6 +22,46 @@ Do not turn TTM into a fiscal-year denominator, contract minimum guarantees into
 
 These are explicit researcher classifications after reading the excerpt. Chinese and English fixtures test role propagation without a keyword plausibility classifier. The existing claim contract still validates source/locator/bytes once. Exact numeric historical-revenue or reported-baseline facts may retain `history_base`; this does not permit a future mechanism/value-range claim. Counterevidence remains a related research observation; it is not placed in a parameter's positive `claim_ids`. A source-linked future assumption supported only by historical-base claims is already rejected by the existing contract.
 
+### Where the page slice comes from, and why a page prefix is not own-scope support
+
+A page-prefix slice is a *retrieval* artefact, not an excerpt. When an authoring step cuts a fixed number of characters from the top of a PDF page, the resulting text often belongs to the previous business section, the previous table, or a footnote — while the claim's target parameter belongs to a section further down the same page. Byte/hash validity then proves only that the slice really exists, never that it describes the claimed business.
+
+The repair is structural, not cosmetic: locate the section that *names* the target business, then take a contiguous range inside that section that contains the subject, the period, the mechanism and the nearest qualifying clause. Record the physical page, the character offsets and the page-text hash so the range can be reproduced. If the contiguous range exceeds the claim-excerpt limit, split it at a paragraph boundary into two source-owned ranges — do not truncate mid-sentence and do not fall back to "the whole page".
+
+A second, cheaper mistake rides on the same artefact: because the slice is *about* something, it reads like a mechanism. Two distinct segments can share a page, and the same sentence can sit above or below the boundary of the business it describes. Check the owning section, not the page.
+
+## Expected future recognition is not an actual, and an actual is not a floor
+
+One paragraph frequently carries three different things at once:
+
+- a **stock** at a stated date (for example a remaining-performance-obligation balance) — a reported point-in-time fact;
+- an **issuer expectation** that part of that stock will be recognised in a future period — `management_guidance`, with an exact value if the issuer gave one point;
+- **no actual realisation at all** for the future period.
+
+An issuer's expected recognition amount is a single stated point for a named cohort. It is not an empirical range, not a probability, not a full-year floor and not an actual. It must not be added to the year's reported first-half revenue, and it must not be split across sub-businesses that were never disclosed. Conversely, a real future-dated contract stock, or a genuinely completed window, is not disqualified merely because its date is in the future: reject a claim for its *semantics*, never for a "future year" keyword.
+
+When such a parameter has no revenue-DAG consumer, correcting its kind is still required — the role is wrong even when the arithmetic effect is zero — and the correction must be disclosed as a zero-arithmetic-impact repair rather than sold as a forecast improvement.
+
+## Role changes must survive a negative control
+
+Not every implicated claim is mis-roled. When a review set is built from three collections, some of its members are already correct, and a repair pass that "fixes" them introduces the defect it was meant to remove. Keep an explicit negative control: list the claims whose role must **not** change, state why the existing role is right, and assert the count before and after.
+
+The common case is a cross-scope price observation. Disclosed margin price pressure for segment A is genuine evidence that price pressure exists in the market, and it is legitimately usable as a `conversion_assumption` for segment B — but only if the cross-scope transfer is written down as an analyst choice with its own rationale. Promoting it to `mechanism_direction` for segment B would claim segment B disclosed something it did not. Keeping it as `conversion_assumption` and *documenting the transfer* is the correct repair.
+
+## Honest weakening beats a fabricated mechanism
+
+Some claims cannot be repaired by re-binding: the source genuinely contains no forward operating mechanism. A historical decline row, a termination/classification footnote, or a zero-revenue perimeter statement is context, not a growth mechanism.
+
+The honest dispositions are:
+
+- re-role the claim to `history_base` (or `counterevidence` for a genuinely adverse fact) and re-bind it to the row that actually exists;
+- keep the modelled contribution — including a zero or negative one — in the revenue sum, so the perimeter still reconciles;
+- let the native driver report say that this driver has no future-mechanism evidence, and disclose that limitation;
+- never invent a mechanism to hit a coverage quota, and never write a diagnostic string into a native enum field.
+
+A driver with no mechanism evidence is a finding about the company, not a hole in the input.
+
+
 Positive mechanism observations follow the existing claim target and its native dependency edges. A parameter claim must be in that target parameter's claim_ids; its observation may name the same parameter or an actual downstream derived parameter, including another year with an explicit formula. Growth-driver claims bind through the exact evidence_id and claim_ids of the existing driver evidence node, then that driver's actual parameter ancestry. Merely existing IDs cannot transfer support to an unrelated business or scenario. The observation period must match the named parameter measurement period (or annual period), and its scope must be the company or a segment that actually consumes it. Explicit contradictory relationships are rejected; an unknown product scope or unresolved claim relationship stays unverified and is excluded from supported_parameter_ids. Counterevidence/peer relations and historical context remain related observations without becoming positive support. The projection exposes binding_status; this checks declared structure, not economic truth.
 
 The input generator marks future parameter claims `research_role_status="unclassified"` and assigns no positive mechanism role. Its hashes, excerpts and verification fields remain FIXME placeholders. The generator performs no real read, certifies no fidelity and generates no confidence score.

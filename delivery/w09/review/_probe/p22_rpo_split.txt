@@ -1,0 +1,69 @@
+=== exact bytes around the 657/920/1250 split on H1 p11 ===
+  [650:660] '25.2%。\n（1）'
+  [910:930] '务保持\n强劲增长。\ni.\n小分子CDMO'
+  [1240:1250] '比增长72.7%。\n'
+
+--- chemistry_dm_operating (657..920) verbatim ---
+（1）
+化学业务实现收入人民币249.9 亿元，同比增长53.3%，主要得益于管线分子向后期
+稳步推进，叠加去年新增产能逐季度释放。报告期内：
+-
+加速前瞻性产能布局，提前启动常州新基地建设，以更好满足日益增长的客户需
+求。
+-
+小分子药物发现（“R”，Research）业务持续引流。过去12 个月，公司成功合成
+并交付超过44 万个新化合物。同时，2026 年上半年R 到D 转化分子155 个。
+-
+小分子工艺研发和生产（“D”和“M”，Development and Manufacturing）业务保持
+强劲增长。
+
+
+--- chemistry_r_operating (920..1250) verbatim ---
+i.
+小分子CDMO 管线持续扩张。在“跟随分子”和“赢得分子”的双重驱动
+下，小分子CRDMO 管线实现高效转化，不断引流高质量分子，推动业务
+持续发展。2026 年上半年，小分子D&M 管线累计新增699 个分子。截至
+2026 年6 月末，小分子D&M 管线总数达到3,731 个，包括95 个商业化项
+目, 94 个临床III 期项目，394 个临床II 期项目，3,148 个临床前和临床I 期
+项目。商业化和临床III 期阶段项目2026 年上半年增加15 个。
+ii.
+得益于业务模式不断引流高质量分子，管线向后期稳步推进，匹配前瞻性产
+能布局及团队高效执行，2026 年上半年小分子D&M 业务收入人民币149.9
+亿元，同比增长72.7%。
+
+
+=== is the split at a paragraph boundary? ===
+  char before split = '\n' ; char at split = 'i'
+  context: 'acturing）业务保持\n强劲增长。\ni.\n小分子CDMO 管线持续扩张。在“'
+  contains newline at split? False
+  the word being split: 'ing）业务保持\n强劲增长。\n' | 'i.\n小分子CDMO 管线持续'
+
+=== naming sanity ===
+  chemistry_dm_operating covers offsets 657..920 -> starts '（1）\n化学业务实现收入人民币249.9 亿元'
+  chemistry_r_operating  covers offsets 920..1250 -> starts 'i.\n小分子CDMO 管线持续扩张。在“跟随分子”'
+
+=== RPO parameter: DAG consumers in main-input.json ===
+  occurrences of parameter id as a string: 4
+   /evidence_claims/23/claim_id => 'claim_rpo_expected_2026_opening_cohort'
+   /evidence_claims/23/target_id => 'rpo_expected_2026_opening_cohort'
+   /parameters/22/claim_ids/0 => 'claim_rpo_expected_2026_opening_cohort'
+   /parameters/22/parameter_id => 'rpo_expected_2026_opening_cohort'
+
+=== where is it referenced structurally? ===
+  parameter object: {"claim_ids": ["claim_rpo_expected_2026_opening_cohort"], "currency": "CNY", "definition": "Issuer expected FY2026 recognition of the 2025-12-31 signed-contract opening cohort (4,220,706.46 万元 / 100 = 42,207.0646 CNY million); an issuer expectation, not an actual, not a range and not a full-year floor.", "dimension": "revenue", "kind": "management_guidance", "parameter_id": "rpo_expected_2026_opening_cohort", "period": "FY2026", "scale": "million", "scenario": "all", "source_ids": ["urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2"], "time_basis": "annual", "unit": "CNY million", "value": 42207.0646, "rationale": "Issuer expectation for one cohort. The parameter has no revenue-DAG consumer, so the role correction changes no forecast number. It is not added to H1 actual or to new orders, not split across sub-businesses, and not treated as a probability or an empirical range."}
+  appears in segments? False
+  appears in growth_driver_tree? False
+  appears in sensitivity_tests? False
+
+=== RPO stock parameter ===
+  {"claim_ids": ["claim_rpo_2025_end"], "currency": "CNY", "definition": "rpo_2025_end", "dimension": "backlog", "kind": "reported_fact", "parameter_id": "rpo_2025_end", "period": "FY2025", "scale": "million", "scenario": "all", "source_ids": ["urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2"], "time_basis": "point_in_time", "unit": "CNY million", "value": 58004.7875}
+  {"claim_ids": ["claim_rpo_expected_2026_opening_cohort"], "currency": "CNY", "definition": "Issuer expected FY2026 recognition of the 2025-12-31 signed-contract opening cohort (4,220,706.46 万元 / 100 = 42,207.0646 CNY million); an issuer expectation, not an actual, not a range and not a full-year floor.", "dimension": "revenue", "kind": "management_guidance", "parameter_id": "rpo_expected_2026_opening_cohort", "period": "FY2026", "scale": "million", "scenario": "all", "source_ids": ["urn:company-wiki:source:sha256:7f1431d66eae399d4b35639bb650e23287c7f52dacbb47b4b4a197fb5026d6a2"], "time_basis": "annual", "unit": "CNY million", "value": 42207.0646, "rationale": "Issuer expectation for one cohort. The parameter has no revenue-DAG consumer, so the role correction changes no forecast number. It is not added to H1 actual or to new orders, not split across sub-businesses, and not treated as a p
+  {"claim_ids": ["claim_rpo_2026_h1_end"], "currency": "CNY", "definition": "rpo_2026_h1_end", "dimension": "backlog", "kind": "reported_fact", "parameter_id": "rpo_2026_h1_end", "period": "FY2026", "scale": "million", "scenario": "all", "source_ids": ["urn:company-wiki:source:sha256:d0dba19ede6e35ae3e127a1da91a42f04262e90d14efeb847bdfbff9b6354a5f"], "time_basis": "point_in_time", "unit": "CNY million", "value": 66434.5501}
+
+=== RPO claim in main-input ===
+  claim_rpo_2025_end role='history_base' support='exact_value' target=parameter:rpo_2025_end value=None
+     excerpt='适用□不适用\n本报告期末，持续经营业务中已签订合同、但尚未履行或尚未履行完毕的履约义务所对应的收入金额为人民币5,800,478.75 万元，其中：\n人民币4,220,706.46 万元预计将于2026年度确认收入。'
+  claim_rpo_expected_2026_opening_cohort role='value_range' support='exact_value' target=parameter:rpo_expected_2026_opening_cohort value=None
+     excerpt='(4).分摊至剩余履约义务的说明\n√适用□不适用\n本报告期末，持续经营业务中已签订合同、但尚未履行或尚未履行完毕的履约义务所对应的收入金额为人民币5,800,478.75 万元，其中：\n人民币4,220,706.46 万元预计将于2026年度确认收入。'
+  claim_rpo_2026_h1_end role='history_base' support='exact_value' target=parameter:rpo_2026_h1_end value=None
+     excerpt='适用□不适用\n本报告期末，持续经营业务中已签订合同、但尚未履行或尚未履行完毕的履约义务所对应的收入金额为人民币6,643,455.01万元。\n(5) 重大合同变更或重大交易价格调整\n□适用√不适用\n其他说明：无'
