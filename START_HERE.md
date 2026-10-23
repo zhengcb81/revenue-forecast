@@ -1,3 +1,6 @@
+> W09 作者包已完成并合入主线。当前主线总入口为 [company-wiki CURRENT_STATUS](../company-wiki/docs/plans/du11-source-closure-2026-10-18/CURRENT_STATUS.md)，本仓发布记录为 [W09 ROOT 发布PWF](docs/plans/w09-root-publication-20261024/task_plan.md)。
+> 以下正文完整保留为历史开工说明；其中作者阶段 A/B/C、STOP 等不再代表当前主线待办。
+
 # W09-RF-RESEARCH 启动入口
 
 **施工卡唯一正本：** [W09-RF-RESEARCH](C:/Users/郑曾波/Projects/company-wiki/docs/plans/du11-source-closure-2026-10-18/harness_lanes/20261023/W09-RF-RESEARCH.md)。
