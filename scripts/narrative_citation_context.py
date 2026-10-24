@@ -23,6 +23,7 @@ COVERAGE_NOTE = "diagnostic_only_not_a_permission_gate"
 ATTRIBUTION = {
     "du-production-reading/1": "groups_only",
     "du-production-reading/2": "source_owned_views",
+    "du-production-reading/3": "source_owned_views",
 }
 QUESTION_ROLES = frozenset({"analyst", "investor_question"})
 UNREAD_LISTS = ("opaque_pages", "deferred_pages", "deferred_unit_ids", "unassigned_unit_ids")

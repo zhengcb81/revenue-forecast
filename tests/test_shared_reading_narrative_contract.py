@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from company_wiki_narrative_contracts import (  # noqa: E402
     NarrativeTransportError,
+    _diagnostic_target,
     canonical_bytes,
     validate_narrative_response,
 )
@@ -59,6 +60,148 @@ def test_saved_actual_090_public_bytes_are_consumed_with_full_reading_context():
     assert value["reading_context"]["layout_coverage"]["complete"] is False
     value["reading_context"]["groups"][0]["evidence_ids"].clear()
     assert context.to_dict()["reading_context"] == original["reading_context"]
+
+
+
+def _unit_id(index):
+    return "urn:company-wiki:narrative-unit:sha256:" + hashlib.sha256(
+        f"unit-{index}".encode()
+    ).hexdigest()
+
+
+@pytest.mark.parametrize(("code", "limit", "closure_size"), [
+    ("budget_full", 112, 1),
+    ("character_budget", 105, 1),
+    ("group_exceeds_limit", 112, 113),
+])
+def test_v3_diagnostic_target_rejects_used_above_limit(code, limit, closure_size):
+    target = {
+        "item_id": _unit_id(250), "item_ids": [], "item_count": 1,
+        "item_ids_limited": True, "group_id": None, "locator": "loc:v1/page:1",
+        "used": limit + 1, "requested": 1, "limit": limit,
+        "closure_size": closure_size,
+    }
+    with pytest.raises(NarrativeTransportError, match="invalid_reading_diagnostic_target"):
+        _diagnostic_target(target, code)
+
+
+def _upgrade_to_v3(reading):
+    reading["schema_version"] = "du-production-reading/3"
+    refs = list(dict.fromkeys(span_id for group in reading["groups"] for span_id in group["evidence_ids"]))
+    for group in reading["groups"]:
+        group["citation_views"] = [{
+            "support_evidence_ids": list(group["evidence_ids"]), "context_evidence_ids": [],
+        }]
+    selected = [{"unit_id": _unit_id(index), "span_id": span_id}
+                for index, span_id in enumerate(refs)]
+    reading["selection_trace"] = {
+        "schema_version": "selection-trace/1", "source_unit_count": len(selected),
+        "admission": {"count": 0, "admitted_count": 0, "rejected_count": 0,
+                      "limited": False, "rejection_counts": {}, "samples": []},
+        "eligible_packages": {"count": 0, "limited": False, "samples": []},
+        "withheld": {"count": 0, "limited": False, "samples": []},
+        "selected": {"count": len(selected), "limited": False, "samples": selected},
+    }
+    reading["selection_diagnostics"] = [{
+        "code": "budget_full", "count": 1, "phase": "selection",
+        "external_model_cost": False, "dimension": "selection_spans",
+        "used": 112, "limit": 112, "targets": [], "targets_limited": True,
+    }]
+
+
+def _proof_row(left, right):
+    return {
+        "basis": "observed_adjacent_page_flow", "left": left, "right": right,
+        "left_page": 1, "right_page": 2, "left_ordinal": 0, "right_ordinal": 1,
+        "column": "A", "coordinate_frame": "page", "furniture_unit_ids": [],
+    }
+
+
+def test_du_production_reading_v3_accepts_bounded_trace_diagnostics_and_proofs():
+    def upgrade(reading):
+        _upgrade_to_v3(reading)
+        left, right = _unit_id(100), _unit_id(101)
+        reading["groups"][0].update({
+            "source_proof_unit_ids": [left, right],
+            "source_proof_target_unit_ids": [],
+            "source_proofs": [_proof_row(left, right)],
+        })
+    value = validate_narrative_response(*changed(upgrade)).to_dict()
+    assert value["reading_context"]["schema_version"] == "du-production-reading/3"
+    assert value["reading_context"]["groups"][0]["source_proofs"][0]["basis"] == "observed_adjacent_page_flow"
+    assert value["reading_context"]["selection_trace"]["selected"]["count"] == len(value["evidence_spans"])
+
+    def known_bare_diagnostic(reading):
+        _upgrade_to_v3(reading)
+        reading["selection_diagnostics"] = [{
+            "code": "DECISION_DEPENDENCIES_UNAVAILABLE", "count": 1,
+        }]
+    assert validate_narrative_response(*changed(known_bare_diagnostic)).to_dict()["reading_context"]
+
+
+@pytest.mark.parametrize("mutation", [
+    "missing_trace", "extra_trace", "unbound_span", "trace_path", "unknown_diagnostic",
+    "unknown_bare_diagnostic", "invalid_schema_type",
+    "boolean_count", "bad_proof_page", "unbound_proof", "partial_proof_fields",
+])
+def test_du_production_reading_v3_rejects_bad_trace_diagnostics_and_proofs(mutation):
+    def upgrade(reading):
+        _upgrade_to_v3(reading)
+        left, right = _unit_id(100), _unit_id(101)
+        group = reading["groups"][0]
+        group.update({"source_proof_unit_ids": [left, right],
+                      "source_proof_target_unit_ids": [], "source_proofs": [_proof_row(left, right)]})
+        if mutation == "missing_trace":
+            del reading["selection_trace"]
+        elif mutation == "extra_trace":
+            reading["selection_trace"]["unexpected"] = True
+        elif mutation == "unbound_span":
+            reading["selection_trace"]["selected"]["samples"][0]["span_id"] = "urn:absent"
+        elif mutation == "trace_path":
+            reading["selection_trace"]["withheld"]["samples"] = [{"raw_text": "forbidden"}]
+            reading["selection_trace"]["withheld"].update(count=1, limited=False)
+        elif mutation == "unknown_diagnostic":
+            reading["selection_diagnostics"][0]["code"] = "unknown_code"
+        elif mutation == "unknown_bare_diagnostic":
+            reading["selection_diagnostics"] = [{"code": "unknown_code", "count": 1}]
+        elif mutation == "invalid_schema_type":
+            reading["schema_version"] = []
+        elif mutation == "boolean_count":
+            reading["selection_diagnostics"][0]["count"] = True
+        elif mutation == "bad_proof_page":
+            group["source_proofs"][0]["right_page"] = True
+        elif mutation == "unbound_proof":
+            group["source_proofs"][0]["right"] = _unit_id(102)
+        else:
+            del group["source_proof_target_unit_ids"]
+    with pytest.raises(NarrativeTransportError):
+        validate_narrative_response(*changed(upgrade))
+
+
+def _fit_reading_size(reading, target):
+    reading["layout_coverage"]["padding"] = []
+    for full_count in range(20):
+        padding = ["x" * 16384 for _ in range(full_count)] + [""]
+        reading["layout_coverage"]["padding"] = padding
+        missing = target - len(canonical_bytes(reading))
+        if 0 <= missing <= 16384:
+            padding[-1] = "x" * missing
+            reading["layout_coverage"]["padding"] = padding
+            assert len(canonical_bytes(reading)) == target
+            return
+    raise AssertionError("unable to fit reading context to its wire bound")
+
+
+def test_reading_context_accepts_published_bound_and_refuses_one_byte_over():
+    def exact(reading):
+        _upgrade_to_v3(reading)
+        _fit_reading_size(reading, 192 * 1024)
+    assert validate_narrative_response(*changed(exact)).to_dict()["reading_context"]
+    def over(reading):
+        _upgrade_to_v3(reading)
+        _fit_reading_size(reading, 192 * 1024 + 1)
+    with pytest.raises(NarrativeTransportError, match="reading_bytes_limit"):
+        validate_narrative_response(*changed(over))
 
 
 def test_actual_080_wire_keeps_legacy_context_shape():

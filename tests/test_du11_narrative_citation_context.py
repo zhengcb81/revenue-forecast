@@ -65,6 +65,16 @@ def test_reading_trace_reports_attribution_and_never_claims_completeness():
     assert absent["deferred"] == {"count": None, "listed": None, "limited": None}
 
 
+
+def test_v3_reading_uses_source_owned_citation_views():
+    context = validated("2").to_dict()
+    context["reading_context"]["schema_version"] = "du-production-reading/3"
+    trace = reading_trace(context)
+    assert trace["attribution"] == "source_owned_views"
+    answer = resolve_span(context, span_id=span_id(context, "answer"))
+    assert answer["closure"] == "citation_view"
+
+
 @pytest.mark.parametrize("layout", [{"complete": "partial"}, {"complete": 1},
                                     {"complete": []}, "not-an-object", {"nested": {}}])
 def test_free_form_layout_is_reduced_to_null_never_to_a_refusal(layout):
