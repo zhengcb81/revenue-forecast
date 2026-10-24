@@ -1,0 +1,91 @@
+{
+ "run_id": "20261024-101341Z",
+ "started_at": "2026-10-24T10:13:41.943839+00:00",
+ "runner_source": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-w14-clean-chain\\e2e\\run_cross_repo_chain_e2e.py",
+ "live_gate": "never",
+ "live_notices": [],
+ "scenarios": [
+  {
+   "id": "S2",
+   "status": "fail",
+   "reason": {
+    "code": "lake_build_failed",
+    "detail": "OperationalError: ambiguous column name: document_id\nild_lake\n    evidence = _preset_artifacts_and_receipts(config, cwp_src, docs, manifest)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast-w14-clean-chain\\e2e\\replay_support\\fixtures.py\", line 208, in _preset_artifacts_and_receipts\n    row = con.execute(\n          ~~~~~~~~~~~^\n        \"SELECT document_id, primary_source_id FROM documents d \"\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        (doc.rel_path.split(\"raw/\", 1)[1],),\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ).fetchone()\n    ^\nsqlite3.OperationalError: ambiguous column name: document_id\n"
+   },
+   "checks": {},
+   "failures": [],
+   "processes": [],
+   "elapsed_s": 4.367
+  },
+  {
+   "id": "S3",
+   "status": "fail",
+   "reason": {
+    "code": "lake_state_unavailable",
+    "detail": "OperationalError: ambiguous column name: document_id"
+   },
+   "checks": {},
+   "failures": [],
+   "processes": [],
+   "elapsed_s": 1.9
+  },
+  {
+   "id": "S5",
+   "status": "fail",
+   "reason": {
+    "code": "lake_state_unavailable",
+    "detail": "OperationalError: ambiguous column name: document_id"
+   },
+   "checks": {},
+   "failures": [],
+   "processes": [],
+   "elapsed_s": 1.586
+  },
+  {
+   "id": "S6",
+   "status": "fail",
+   "reason": {
+    "code": "lake_state_unavailable",
+    "detail": "OperationalError: ambiguous column name: document_id"
+   },
+   "checks": {},
+   "failures": [],
+   "processes": [],
+   "elapsed_s": 2.118
+  },
+  {
+   "id": "S4",
+   "status": "fail",
+   "reason": {
+    "code": "check_failed",
+    "detail": "s4.attempt_removed: {'attempt_removed': False, 'attempt_path': 'attempt-20261024-101341Z-7698', 'work_root_remaining': ['attempt-20261024-101245Z-4da0', 'attempt-20261024-101341Z-7698'], 'work_root_restored': False}; s4.work_root_restored: ['attempt-20261024-101245Z-4da0', 'attempt-20261024-101341Z-7698']"
+   },
+   "checks": {
+    "s4.fixtures_unchanged": true,
+    "s4.attempt_removed": false,
+    "s4.work_root_restored": false,
+    "s4.evidence_intact": true,
+    "s4.zero_blocked_net_attempts": true,
+    "s4.no_source_repo_head_advance": true
+   },
+   "failures": [
+    "s4.attempt_removed: {'attempt_removed': False, 'attempt_path': 'attempt-20261024-101341Z-7698', 'work_root_remaining': ['attempt-20261024-101245Z-4da0', 'attempt-20261024-101341Z-7698'], 'work_root_restored': False}",
+    "s4.work_root_restored: ['attempt-20261024-101245Z-4da0', 'attempt-20261024-101341Z-7698']"
+   ],
+   "processes": [],
+   "elapsed_s": 7.026
+  }
+ ],
+ "statuses": {
+  "S2": "fail",
+  "S3": "fail",
+  "S5": "fail",
+  "S6": "fail",
+  "S4": "fail"
+ },
+ "production_writes": 0,
+ "network_scope": "none (offline gate)",
+ "finished_at": "2026-10-24T10:14:12.150828+00:00",
+ "total_elapsed_s": 30.873,
+ "exit_code": 1
+}
