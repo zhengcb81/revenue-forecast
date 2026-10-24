@@ -234,7 +234,14 @@ def _install_net_block() -> bool:
 
     def sendto(self, data, *args, **kwargs):
         try:
-            address = args[0] if args else kwargs.get("address")
+            # sendto(data, address) -> args[0]; sendto(data, flags, address)
+            # -> the address is the LAST positional; kwargs form otherwise
+            if len(args) >= 2:
+                address = args[-1]
+            elif len(args) == 1:
+                address = args[0]
+            else:
+                address = kwargs.get("address")
             host = address[0] if isinstance(address, tuple) else address
         except Exception:
             host = str(address)

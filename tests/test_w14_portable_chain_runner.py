@@ -119,7 +119,11 @@ def test_e01_default_offline_full_suite_executes(tmp_path):
         encoding="utf-8")
     proc, evidence = _run_runner(
         ["--scenarios", OFFLINE], tmp_path,
-        extra_env={**_fake_api_keys(), "PYTHONPATH": str(decoy)})
+        extra_env={**_fake_api_keys(), "PYTHONPATH": str(decoy),
+                   "COMPANY_WIKI_BUDGET_CONFIG":
+                       str(tmp_path / "fake-budget.yaml"),
+                   "REVENUE_PUBLICATION_REGISTRY":
+                       str(tmp_path / "fake-registry")})
     assert proc.returncode == 0, (
         f"runner exit {proc.returncode}\n{proc.stdout[-3000:]}"
         f"\n{proc.stderr[-2000:]}")
@@ -243,6 +247,12 @@ def test_e01_default_offline_full_suite_executes(tmp_path):
         (attempt / "child_env.json").read_text(encoding="utf-8"))
     assert "W14_TEST_API_KEY" in child_env["scrubbed_credential_names"]
     assert "W14_TEST_SECRET" in child_env["scrubbed_credential_names"]
+    # path-redirect vars pointing at personal configs are REMOVED from the
+    # child env (children fall back to the deployed no-secret defaults) —
+    # fail-on-regression for the removal code (re-review F10)
+    removed = child_env["removed_path_redirect_names"]
+    assert "COMPANY_WIKI_BUDGET_CONFIG" in removed, removed
+    assert "REVENUE_PUBLICATION_REGISTRY" in removed, removed
     for evidence_file in attempt.rglob("*"):
         if not evidence_file.is_file() or \
                 evidence_file.suffix not in (".json", ".txt"):
@@ -330,6 +340,14 @@ def test_missing_commit_is_environment_unavailable(tmp_path):
     assert "0" * 40 in summary["environment_unavailable"]
     # no scenario pretended to pass or skip
     assert summary["statuses"] == {}
+    # E06: even this early-failure exit cleaned its own attempt and left a
+    # persisted cleanup receipt (fail-on-regression for _finish cleanup,
+    # re-review F12)
+    assert summary["cleanup"]["when"] == "finish"
+    assert summary["cleanup"]["attempt_removed"] is True
+    assert summary["cleanup"]["work_root_restored"] is True
+    assert (attempt / "early_cleanup.json").is_file()
+    assert not list((tmp_path / "work").glob("attempt-*")),         "attempt residue after environment_unavailable exit"
 
 
 def test_healthy_probe_binds_import_to_frozen_deployment(tmp_path):

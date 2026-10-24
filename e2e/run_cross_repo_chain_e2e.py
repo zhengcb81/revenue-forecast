@@ -878,12 +878,21 @@ def main(argv=None) -> int:
         print(f"[w14] notice: {notice}", flush=True)
 
     # provenance: real import roots + repo heads (E02/E03)
-    probe = subprocess.run(
-        [sys.executable, "-c",
-         "import company_wiki,sys;print(company_wiki.__file__);"
-         "print(sys.version)"],
-        env=env, capture_output=True, text=True, encoding="utf-8",
-        errors="replace", timeout=60, check=False)
+    try:
+        probe = subprocess.run(
+            [sys.executable, "-c",
+             "import company_wiki,sys;print(company_wiki.__file__);"
+             "print(sys.version)"],
+            env=env, capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=60, check=False)
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        # a probe that cannot even start is a named environment gap with
+        # full bookkeeping — never a bare traceback with a stranded attempt
+        detail = (f"import probe failed to execute: "
+                  f"{type(exc).__name__}: {exc}")
+        print(f"E2E-ENV: {detail}", file=sys.stderr)
+        summary["environment_unavailable"] = detail
+        return _finish(EXIT_ENV)
     import_root = (probe.stdout.splitlines() or [""])[0].strip()
     frozen_import_root = str(deployment.cwp_src) in import_root
     repo_heads = {role: repo_head(spec.repo)
