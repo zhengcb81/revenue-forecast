@@ -574,9 +574,24 @@ def s4_restore_invariants(ctx) -> dict:
 
     heads_now = {role: repo_head(spec.repo)
                  for role, spec in ctx["deployment"].specs.items()}
+    # HEAD equality of these LIVE SHARED worktrees is not attributable to
+    # this run: concurrent sessions commit in them mid-window (observed
+    # 2026-10-24).  The attributable no-write guarantee is this process's
+    # own git verb log, asserted here and again from the receipt in tests.
+    write_ops = [op for op in git_operations()
+                 if op["verb"] not in READ_ONLY_GIT_VERBS]
     observe.write_json(ev / "source_repo_heads.json", {
-        "before": ctx["repo_heads"], "after": heads_now})
-    sc.equal("s4.no_source_repo_head_advance", heads_now, ctx["repo_heads"])
+        "before": ctx["repo_heads"], "after": heads_now,
+        "head_advanced_externally": {
+            role: heads_now[role] != ctx["repo_heads"][role]
+            for role in ctx["repo_heads"]},
+        "git_write_ops_by_this_run": write_ops,
+        "note": "shared live worktrees: HEAD moves during the window are "
+                "external-session activity; this run issues only read-only "
+                "git verbs (asserted)"})
+    sc.equal("s4.no_write_git_verbs_by_this_run", write_ops, [])
+    sc.check("s4.source_repo_heads_recorded",
+             set(heads_now) == {"rf", "cwp", "ff"}, str(heads_now))
     return sc.finish()
 
 
