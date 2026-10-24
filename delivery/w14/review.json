@@ -1,0 +1,105 @@
+{
+ "schema_version": "w14-review/1",
+ "package_id": "W14-RF-CLEAN-CHAIN",
+ "reviewed_code_commit": "3bc0508e2a1ae97df2d0d67458fe288f677030a5",
+ "reviewer_agent_role": "independent adversarial reviewers (3 parallel static/runtime/adversarial passes + 1 delta re-reviewer; none participated in implementation; implementation author self-review prohibited by card)",
+ "rounds": [
+  {
+   "round": 1,
+   "reviewers": [
+    {
+     "role": "static code reviewer",
+     "scope": "E01-E08 mapping, forbidden special-casing grep, CLI compat, module quality, receipt byte checks",
+     "verdict": "REQUEST_CHANGES",
+     "findings": "F1-F18 (MAJOR: F1 receipt SHA typo, F2 hardcoded production_writes, F3 cleanup hashes not persisted, F4 missing fixed handoff files)"
+    },
+    {
+     "role": "runtime replay verifier",
+     "scope": "fresh-scratch independent replay + evidence field-by-field verification + on-disk cleanup check + S1-only run",
+     "verdict": "APPROVE",
+     "key_evidence": "replay exit 0; 45 children all under frozen deployment; fixture SHAs match; semantic projection byte-equal to delivery receipt (sha256 f49abac6...); 10 real key values scanned over 60 evidence files = 0 hits"
+    },
+    {
+     "role": "adversarial test-masking reviewer",
+     "scope": "real call-chain tracing (no mocks), vacuous-assertion hunt, exit-code mapping, cleanup safety, EOL handling",
+     "verdict": "REQUEST_CHANGES",
+     "findings": "A1 provider spy had no positive control (docstring claimed nonexistent read counters); A2 work/evidence overlap could delete receipts; 4 minor/nit"
+    }
+   ],
+   "fixes": {
+    "commits": [
+     "62b62fa9",
+     "83926eca",
+     "ea76a058"
+    ],
+    "mapping": "delivery/w14/../findings.md 'C节点独立审查发现与修复' + docs/plans/w14-rf-clean-chain-2026-10-24/findings.md"
+   }
+  },
+  {
+   "round": 2,
+   "reviewer": "delta re-reviewer b522c68d..ea76a058",
+   "scope": "per-finding closure verification + new-defect hunt + independent fresh replay (exit 0, 208s) + 11 fast tests + ruff + receipt reconciliation",
+   "verdict": "APPROVE_WITH_MINOR",
+   "obligations": [
+    "F12 fail-on-regression test",
+    "F10 fail-on-regression test",
+    "handoff docs + disclose probe/sendto/gethostbyname items"
+   ],
+   "re_attributions_judged_legitimate": [
+    "S4 HEAD equality replaced by git-verb-log assertion + observation receipts (shared live worktrees edited by concurrent sessions)"
+   ]
+  },
+  {
+   "round": 3,
+   "reviewer": "delta re-reviewer, commit 3bc0508e",
+   "scope": "focused check of probe wrap, sendto parsing, F12/F10 test additions",
+   "verdict": "APPROVE",
+   "independent_verification": "ruff clean; 6 focused fast tests 4.43s passed; test_e01 heavy 53.99s passed (reviewer-run, not author data)",
+   "notes": [
+    "receipts runner_code_sha binds producing code (83926eca); 3bc0508e touches only failure paths/guard edge/tests - disclosed",
+    "sendto(flags,address) fix has no positive unit test (NIT)"
+   ]
+  }
+ ],
+ "final_verdict": "APPROVE",
+ "final_validation": {
+  "pytest_three_files": {
+   "command": "python -m pytest -q --tb=short -p no:cacheprovider tests/test_cross_repo_chain_e2e.py tests/test_w14_portable_chain_runner.py tests/test_w14_portable_chain_cleanup.py",
+   "exit_code": 0,
+   "result": "22 passed",
+   "duration_s": 1381.0
+  },
+  "ruff": {
+   "exit_code": 0,
+   "result": "All checks passed"
+  },
+  "pre_push_gate": {
+   "command": "python tools/pre_push_gate.py",
+   "exit_code": 0,
+   "result": "595 passed, 1 skipped, 36 subtests, GREEN",
+   "duration_s": 98.04,
+   "note": "an earlier chained run hit the gate's internal 300s pytest timeout under machine contention; standalone rerun GREEN (environment issue disclosed)"
+  },
+  "dual_replays": {
+   "replay_first": "attempt-20261024-160349Z-204c-001 exit 0",
+   "replay_second": "attempt-20261024-161640Z-416c-001 exit 0",
+   "semantic_equal": true
+  }
+ },
+ "reviewed_sha256": {
+  "e2e/run_cross_repo_chain_e2e.py": "6ed3fb5056df160d625403ef9fb5567b66f80c447eabf8c890518b27709f10c4",
+  "e2e/replay_support/__init__.py": "970073f488c40d695bc6a28266482a39e501b1ada50964747206df593810f45c",
+  "e2e/replay_support/deploy.py": "af8678c028130eaea24f21a9a89baeefc3d09f0966dc9a87d18363bebab313e1",
+  "e2e/replay_support/netguard.py": "7f44446b4f179ff4b8ee4852df53b204219592f4bcf24ad975bea52e8f9da656",
+  "e2e/replay_support/fixtures.py": "0e846d7b9ffe78b9561396d1dd84adc0bd836c2bf7b355b3f0556c987c431537",
+  "e2e/replay_support/observe.py": "e7c533579f981f8b6ffd5924fe95740c47dc5b9e1c5499f1d21dab9f091e848c",
+  "e2e/replay_support/cleanup.py": "2903646f132d6030ec2ccba9a368c2e09c9271aaab71120bad639b435afa0f18",
+  "tests/test_cross_repo_chain_e2e.py": "0a6e6ee1949e497fed4560290d021d3acb63768d6e8499fac61bb67cbf97d68e",
+  "tests/test_w14_portable_chain_runner.py": "166a81d16bd26299cf45712ce1cf89523bac191b2880268d25079655a6584be2",
+  "tests/test_w14_portable_chain_cleanup.py": "06b89d18a8e1ba6b688db067f021b5f91d6ccaaff45901085182090e52aaafd7",
+  "tests/fixtures/w14_chain/fixture_fy2024_annual.pdf": "242e8e70a94e1264fd5248534693cbcdeea761faac6899424322557daabb3ad1",
+  "tests/fixtures/w14_chain/fixture_fy2024q3_quarterly.txt": "5169754dcba078997aeb3df9e75902d3b9fe41f995d58cc3ba01bdc22c528240",
+  "tests/fixtures/w14_chain/w14_fixture_manifest.json": "0532bf64361f624f203d76951ac12b0cf61da6d2025c2b9b3c093651b89b9a90"
+ },
+ "review_report_md_sha256": "54c21d11dad6c4abb452d6cc7a6909fb40e8687a2ff1a2b62a55de6a5f4f5546"
+}
