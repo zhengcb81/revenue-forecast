@@ -11,3 +11,12 @@ PLAN_ID=w14-rf-clean-chain-2026-10-24; PWF_PLAN_ROOT=docs/plans。
 ## Next Step
 
 收齐静态审查+反掩盖审查报告 → 汇总 delivery/w14/review.md/json → 修复全部内部发现并复审最终代码 → 补全 handoff.json（review 节/逐需求证据/测试记录）→ 推 codex 分支完成交接。
+
+
+## 2026-10-24 ROOT验收与并线
+
+- 作者包在`aa19b653da18566e582e802269f5908471c456db`完成；独立最终审查（静态、运行、反掩盖及delta/义务复核）均APPROVE。
+- ROOT已将该HEAD快进到revenue-forecast `main`并推送，main与origin/main一致。最终W14相关测试22项通过；RF完整pre-push门禁595 passed、1 skipped、36 subtests passed，Ruff通过。
+- 工程范围为合成夹具和真实代码的离线跨仓E2E；不含S1真实下载/真实公司分析。耗时较长的W14 E2E不为收据重复运行。
+- 三份既有`assurance/runs/*`修改和untracked `output/`属于RF主工作树既有状态，均未纳入本次提交或清理。
+- 下一步由CWP ROOT计划负责：真实已有文档的正式摘要/cache命中与中断恢复、RF消费及内容审查；以父计划为准。
