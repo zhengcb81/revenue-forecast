@@ -40,12 +40,44 @@ class RepoSpec:
             raise DeployError(f"{self.role}: commit must be non-empty text")
 
 
+def _sanitized_git_env() -> dict:
+    return {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+
+
+# Every git verb this module issues is recorded here: the production-write
+# figure of the receipt is DERIVED from this log (a write verb would be a
+# real finding), while before/after worktree snapshots remain observations
+# of shared live worktrees that other sessions edit concurrently.
+_GIT_OPERATIONS: list[dict] = []
+READ_ONLY_GIT_VERBS = frozenset({"rev-parse", "status", "archive", "cat-file"})
+
+
+def git_operations() -> list[dict]:
+    return [dict(op) for op in _GIT_OPERATIONS]
+
+
+def _record_git_op(repo: Path, verb: str) -> None:
+    _GIT_OPERATIONS.append({"repo": str(repo), "verb": str(verb)})
+
+
 def _git(repo: Path, *args: str, timeout: float = 120.0) -> subprocess.CompletedProcess:
-    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
-    return subprocess.run(
-        ["git", "-C", str(repo), *args], capture_output=True, text=True,
-        encoding="utf-8", errors="replace", timeout=timeout, check=False, env=env,
-    )
+    env = _sanitized_git_env()
+    _record_git_op(repo, args[0] if args else "")
+    try:
+        return subprocess.run(
+            ["git", "-C", str(repo), *args], capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=timeout,
+            check=False, env=env,
+        )
+    except FileNotFoundError as exc:
+        raise DeployError(f"git runtime unavailable: {exc}") from exc
+    except subprocess.TimeoutExpired as exc:
+        raise DeployError(
+            f"git {args[0] if args else ''} timed out after {timeout}s in {repo}"
+        ) from exc
+    except OSError as exc:
+        raise DeployError(f"git invocation failed: {type(exc).__name__}: {exc}"
+                          ) from exc
 
 
 def resolve_commit(repo: Path, commit: str) -> str:
@@ -65,21 +97,54 @@ def repo_head(repo: Path) -> str:
     return proc.stdout.strip() if proc.returncode == 0 else "unknown"
 
 
+def repo_activity(repo: Path) -> dict:
+    """Read-only worktree activity snapshot: HEAD + `git status --porcelain`.
+
+    Compared before/after the run this measures source-repo writes far more
+    strongly than HEAD equality alone (W14 finding F2/F8).  Porcelain entries
+    are split: `tracked_changes` (modified/staged tracked files — the signal
+    asserted zero for a read-only run) vs `untracked_added` (recorded for
+    audit but not asserted: the three source worktrees are shared with other
+    live sessions, whose transient temp directories are external activity,
+    not writes by this E2E)."""
+    head = repo_head(repo)
+    proc = _git(repo, "status", "--porcelain")
+    lines = [ln for ln in (proc.stdout or "").splitlines() if ln.strip()]
+    return {"head": head,
+            "tracked_changes": [ln for ln in lines if not ln.startswith("??")],
+            "untracked_added": [ln for ln in lines if ln.startswith("??")]}
+
+
 def export_tree(
     repo: Path, commit: str, paths: tuple[str, ...], dest: Path,
 ) -> dict:
     """``git archive`` the named tracked paths at ``commit`` into ``dest``.
 
     Returns {files, bytes, sha256_by_relpath} for the deployed tree.  Only
-    Git objects are read; the repo workspace is never touched.
+    Git objects are read; the repo workspace is never touched.  The same
+    GIT_*-sanitized environment as every other git call is used so an
+    inherited GIT_DIR/GIT_WORK_TREE cannot retarget the export.
     """
     dest.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(suffix=".tar", delete=False) as tmp:
         tar_path = Path(tmp.name)
     try:
-        proc = subprocess.run(
-            ["git", "-C", str(repo), "archive", "--format=tar", commit, "--", *paths],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300, check=False)
+        _record_git_op(repo, "archive")
+        try:
+            proc = subprocess.run(
+                ["git", "-C", str(repo), "archive", "--format=tar", commit,
+                 "--", *paths],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300,
+                check=False, env=_sanitized_git_env())
+        except FileNotFoundError as exc:
+            raise DeployError(f"git runtime unavailable: {exc}") from exc
+        except subprocess.TimeoutExpired as exc:
+            raise DeployError(
+                f"git archive timed out after 300s in {repo}") from exc
+        except OSError as exc:
+            raise DeployError(
+                f"git archive invocation failed: {type(exc).__name__}: {exc}"
+            ) from exc
         if proc.returncode != 0 or not proc.stdout:
             raise DeployError(
                 f"git archive failed for {commit} paths {list(paths)} in {repo}: "
@@ -155,10 +220,6 @@ class FrozenDeployment:
     @property
     def cwp_src(self) -> Path:
         return self.roots["cwp"] / "src"
-
-    @property
-    def cwp_config(self) -> Path:
-        return self.roots["cwp"] / "config"
 
     @property
     def ff_scripts(self) -> Path:

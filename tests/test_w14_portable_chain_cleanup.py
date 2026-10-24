@@ -72,24 +72,39 @@ def test_evidence_attempts_never_touch_prior_receipts(tmp_path):
         encoding="utf-8")) == {"history": True}
 
 
-def test_restore_report_detects_added_removed_changed(tmp_path):
-    target = tmp_path / "watched"
-    target.mkdir()
-    (target / "a.txt").write_text("a", encoding="utf-8")
-    (target / "c.txt").write_text("c", encoding="utf-8")
-    from replay_support import observe
-    before = observe.tree_snapshot(target)
-    (target / "a.txt").write_text("changed", encoding="utf-8")
-    (target / "b.txt").write_text("b", encoding="utf-8")
-    (target / "c.txt").unlink()
-    # a file created AND deleted after the snapshot leaves no residue and is
-    # invisible to the diff — that is exactly the no-residue guarantee
-    gone = target / "transient.txt"
-    gone.write_text("t", encoding="utf-8")
-    gone.unlink()
-    report = cleanup_mod.restore_report(target, before)
-    assert report["checked"] is True
-    assert report["unchanged"] is False
-    assert report["added"] == ["b.txt"]
-    assert report["removed"] == ["c.txt"]
-    assert report["changed"] == ["a.txt"]
+def test_cleanup_report_carries_before_after_hash_inventory(tmp_path):
+    """W14 F3: the cleanup receipt must persist the full before/after hash
+    inventories and the diff fields, not just a self-reported boolean."""
+    root = tmp_path / "work"
+    root.mkdir()
+    sentinel = root / "sentinel.txt"
+    sentinel.write_text("owner data", encoding="utf-8")
+    space = cleanup_mod.AttemptSpace(root, tmp_path / "ev").allocate()
+    (space.path / "scratch.bin").write_bytes(b"scratch")
+    report = space.cleanup()
+    before = report["initial_inventory"]
+    after = report["remaining_inventory"]
+    assert report["attempt_removed"] is True
+    assert report["work_root_restored"] is True
+    assert set(before) == {"sentinel.txt"}  # attempt dir excluded from snapshot
+    assert set(after) == {"sentinel.txt"}
+    assert len(before["sentinel.txt"]["sha256"]) == 64
+    assert before["sentinel.txt"]["sha256"] == after["sentinel.txt"]["sha256"]
+    assert report["added"] == [] and report["removed"] == []
+    assert report["changed"] == []
+
+
+def test_cleanup_report_detects_external_modification(tmp_path):
+    """An external change to a pre-existing file during the run is visible
+    in the persisted diff fields (so a stale restore claim is detectable)."""
+    root = tmp_path / "work"
+    root.mkdir()
+    sentinel = root / "sentinel.txt"
+    sentinel.write_text("owner data", encoding="utf-8")
+    space = cleanup_mod.AttemptSpace(root, tmp_path / "ev").allocate()
+    sentinel.write_text("modified during run", encoding="utf-8")
+    report = space.cleanup()
+    assert report["work_root_restored"] is False
+    assert report["changed"] == ["sentinel.txt"]
+    assert report["initial_inventory"]["sentinel.txt"]["sha256"] != \
+        report["remaining_inventory"]["sentinel.txt"]["sha256"]

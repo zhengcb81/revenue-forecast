@@ -107,7 +107,11 @@ def test_offline_chain_scenarios(tmp_path):
             f"{json.dumps(by[sid], ensure_ascii=False)}")
     assert summary["live_gate"] == "never"
     assert summary["network_scope"].startswith("none")
-    assert summary["production_writes"] == 0
+    # production writes are MEASURED from this process's git verb log (all
+    # verbs must be read-only), not a hardcoded constant (W14 F2/F8)
+    pw = summary["production_writes"]
+    assert pw["measured"] is True and pw["count"] == 0, pw
+    assert set(pw["git_verbs_used"]) <= {"rev-parse", "status", "archive"}, pw
     assert not list(evidence.rglob("net_attempts.json"))
     assert proc.returncode == 0, (
         f"runner exit {proc.returncode}\n{proc.stdout[-3000:]}")
@@ -161,3 +165,41 @@ def test_offline_failure_is_never_hidden_as_skip(tmp_path):
                          .read_text(encoding="utf-8"))
     assert "fixture_failure" in summary
     assert summary["statuses"] == {}
+
+
+def test_overlapping_work_and_evidence_dirs_are_usage_error(tmp_path):
+    """E06: --work-root inside/equals --evidence-dir could delete receipts
+    during scratch cleanup — refused as a usage error before any directory
+    is created (W14 A-finding 2 / static F11)."""
+    shared = tmp_path / "shared"
+    env = dict(os.environ)
+    env.pop("RF_E2E_LIVE_DOWNLOAD", None)
+    proc = subprocess.run(
+        [sys.executable, "-B", str(RUNNER), "--scenarios", "S4",
+         "--rf-repo", str(REPO), "--rf-commit", RF_COMMIT,
+         "--cwp-repo", str(CWP_REPO), "--cwp-commit", CWP_COMMIT,
+         "--ff-repo", str(FF_REPO), "--ff-commit", FF_COMMIT,
+         "--work-root", str(shared), "--evidence-dir",
+         str(shared / "inside")],
+        cwd=str(tmp_path), env=env, capture_output=True, text=True,
+        encoding="utf-8", errors="replace", timeout=60, check=False)
+    assert proc.returncode == 2, proc.stdout[-1000:] + proc.stderr[-1000:]
+    assert "disjoint" in proc.stderr
+    assert not shared.exists(), "usage error must not allocate anything"
+
+
+def test_delivery_receipt_fixture_shas_match_manifest():
+    """Static integrity of the handoff receipt (W14 F1): the fixture SHAs
+    recorded in delivery/w14/replay-receipts.json must equal the fixture
+    manifest bytes — a mistyped SHA can never pass again."""
+    receipts = REPO / "delivery" / "w14" / "replay-receipts.json"
+    if not receipts.is_file():
+        pytest.skip("delivery receipt not present (pre-handoff state)")
+    data = json.loads(receipts.read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (REPO / "tests" / "fixtures" / "w14_chain" /
+         "w14_fixture_manifest.json").read_text(encoding="utf-8"))
+    assert data["fixture_shas"]["pdf"] == \
+        manifest["documents"]["annual_pdf"]["sha256"], data["fixture_shas"]
+    assert data["fixture_shas"]["txt"] == \
+        manifest["documents"]["quarterly_txt"]["sha256"], data["fixture_shas"]

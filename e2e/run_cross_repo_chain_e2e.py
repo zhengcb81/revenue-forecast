@@ -61,7 +61,8 @@ from replay_support import cleanup as cleanup_mod          # noqa: E402
 from replay_support import fixtures as fixtures_mod        # noqa: E402
 from replay_support import netguard, observe               # noqa: E402
 from replay_support.deploy import (                        # noqa: E402
-    DeployError, FrozenDeployment, RepoSpec, repo_head,
+    READ_ONLY_GIT_VERBS, DeployError, FrozenDeployment, RepoSpec,
+    git_operations, repo_activity, repo_head,
 )
 
 RUN_STAMP = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%SZ")
@@ -166,6 +167,7 @@ def _lake_state(ctx) -> dict:
         "catalog_counts": observe.catalog_counts(build.catalog_path),
         "docs": {k: d.__dict__ for k, d in build.docs.items()},
         "scan_returncode": build.scan_returncode,
+        "scan_pid": build.scan_pid,
     })
     ctx["lake"] = {"build": build, "ff_config": ff_config,
                    "wiki_root": wiki_root, "identity": identity,
@@ -380,6 +382,7 @@ def s3_second_run(ctx) -> dict:
     build = lake["build"]
     baseline_counters = netguard.counter_totals(ctx["guard_dir"])
     pre_counts = observe.catalog_counts(build.catalog_path)
+    content_pre = observe.catalog_content_sha(build.catalog_path)
     tree_pre = observe.tree_snapshot(lake["wiki_root"])
 
     for key, request_name in (("annual_pdf", "s2_request_pdf.json"),
@@ -414,6 +417,7 @@ def s3_second_run(ctx) -> dict:
     deltas = {k: post_counters.get(k, 0) - baseline_counters.get(k, 0)
               for k in sorted(set(baseline_counters) | set(post_counters))}
     post_counts = observe.catalog_counts(build.catalog_path)
+    content_post = observe.catalog_content_sha(build.catalog_path)
     tree_post = observe.tree_snapshot(lake["wiki_root"])
     observe.write_json(ev / "counters.json", {
         "baseline_after_s2": baseline_counters,
@@ -421,6 +425,7 @@ def s3_second_run(ctx) -> dict:
     sc.equal("s3.zero_provider_calls", deltas.get("provider", 0), 0)
     sc.equal("s3.zero_catalog_row_delta",
              observe.catalog_delta(pre_counts, post_counts), {})
+    sc.equal("s3.catalog_content_unchanged", content_post, content_pre)
     sc.equal("s3.lake_tree_unchanged", tree_post, tree_pre)
     attempts = netguard.net_attempts(ctx["guard_dir"])
     if attempts:
@@ -520,16 +525,23 @@ def s4_restore_invariants(ctx) -> dict:
         p.name: observe.sha256_file(p)
         for p in sorted(ctx["fixture_root"].glob("*")) if p.is_file()}
     sc.equal("s4.fixtures_unchanged", fixture_after, ctx["fixture_hashes"])
+    # persist the actual before/after hash maps, not just the boolean (F3)
+    observe.write_json(ev / "restore.json", {
+        "fixture_before": ctx["fixture_hashes"],
+        "fixture_after": fixture_after,
+        "fixtures_unchanged": fixture_after == ctx["fixture_hashes"]})
 
     # freeze process/network evidence BEFORE the owned scratch (which holds
     # the guard directory) is removed — evidence must outlive the cleanup
     ctx["final_child_processes"] = netguard.child_provenance(ctx["guard_dir"])
     ctx["final_counter_totals"] = netguard.counter_totals(ctx["guard_dir"])
     ctx["final_net_attempts"] = netguard.net_attempts(ctx["guard_dir"])
+    ctx["final_install_records"] = netguard.install_records(ctx["guard_dir"])
     observe.write_json(ctx["evidence"] / "processes.json", {
         "child_processes": ctx["final_child_processes"],
         "counter_totals": ctx["final_counter_totals"],
-        "net_attempts": ctx["final_net_attempts"]})
+        "net_attempts": ctx["final_net_attempts"],
+        "guard_installs": ctx["final_install_records"]})
 
     evidence_files_before = {
         p.relative_to(ctx["evidence"]).as_posix()
@@ -539,6 +551,13 @@ def s4_restore_invariants(ctx) -> dict:
         p.relative_to(ctx["evidence"]).as_posix()
         for p in ctx["evidence"].rglob("*") if p.is_file()}
     observe.write_json(ev / "cleanup.json", report)
+    ctx["s4_ran"] = True
+    ctx["cleanup_compact"] = {
+        "when": "s4",
+        "attempt_removed": report["attempt_removed"],
+        "work_root_restored": report["work_root_restored"],
+        "attempt_path": report["attempt_path"],
+    }
     sc.check("s4.attempt_removed", report["attempt_removed"], str(report))
     sc.check("s4.work_root_restored", report["work_root_restored"],
              str(report["work_root_remaining"]))
@@ -620,6 +639,40 @@ def _live_gate(cli_choice: str) -> tuple[str, list[str]]:
     return cli_choice, notices
 
 
+def compute_exit_code(statuses: dict) -> int:
+    """Map scenario statuses to the documented exit contract (E01/F16).
+
+    - any environment_unavailable -> 3;
+    - any offline scenario (everything except S1) that is not PASS —
+      including skip/not_executed — is incomplete -> 1 (S1 may honestly
+      skip when --live force was not requested);
+    - any fail -> 1; otherwise 0.
+    """
+    if "environment_unavailable" in statuses.values():
+        return EXIT_ENV
+    if any(status != "pass"
+           for sid, status in statuses.items() if sid != "S1"):
+        return EXIT_FAIL
+    if "fail" in statuses.values():
+        return EXIT_FAIL
+    return EXIT_PASS
+
+
+def _roots_overlap(a: Path, b: Path) -> bool:
+    return a == b or a in b.parents or b in a.parents
+
+
+def runner_code_sha() -> dict:
+    """sha256 of the runner + every support module (receipt self-binding,
+    W14 F17): evidence ties back to the exact reviewed code."""
+    out: dict[str, str] = {}
+    me = Path(__file__).resolve()
+    out[me.relative_to(REPO).as_posix()] = observe.sha256_file(me)
+    for path in sorted((HERE / "replay_support").glob("*.py")):
+        out[path.relative_to(REPO).as_posix()] = observe.sha256_file(path)
+    return out
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -663,16 +716,28 @@ def main(argv=None) -> int:
     evidence_root = (args.evidence_dir or
                      HERE / ".runs" / "w14_chain" / RUN_STAMP).resolve()
     fixture_root = args.fixture_root.resolve()
+    if _roots_overlap(work_root, evidence_root):
+        print("ERROR: --work-root and --evidence-dir must be disjoint "
+              "directories (E06: evidence must survive scratch cleanup); "
+              f"got {work_root} and {evidence_root}", file=sys.stderr)
+        return EXIT_USAGE
 
     started = time.monotonic()
     attempt = cleanup_mod.AttemptSpace(work_root, evidence_root)
-    attempt.allocate()
+    try:
+        attempt.allocate()
+    except cleanup_mod.CleanupViolation as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return EXIT_USAGE
     evidence = attempt.evidence_dir()
 
     summary: dict = {
         "run_id": RUN_STAMP,
         "started_at": datetime.now(timezone.utc).isoformat(),
         "runner_source": str(Path(__file__).resolve()),
+        "runner_code_sha256": runner_code_sha(),
+        "runner_cwd": str(Path.cwd()),
+        "fixture_root": str(fixture_root),
         "live_gate": gate,
         "live_notices": notices,
         "scenarios": [],
@@ -681,6 +746,9 @@ def main(argv=None) -> int:
     # shared scenario context; S4 freezes final process evidence here before
     # the owned scratch (which holds the guard directory) is removed
     ctx: dict = {}
+    specs = {"rf": RepoSpec("rf", args.rf_repo.resolve(), args.rf_commit),
+             "cwp": RepoSpec("cwp", args.cwp_repo.resolve(), args.cwp_commit),
+             "ff": RepoSpec("ff", args.ff_repo.resolve(), args.ff_commit)}
 
     def _finish(exit_code: int) -> int:
         summary["finished_at"] = datetime.now(timezone.utc).isoformat()
@@ -690,6 +758,69 @@ def main(argv=None) -> int:
             summary["child_processes"] = ctx["final_child_processes"]
         else:
             summary["child_processes"] = netguard.child_provenance(guard_dir)
+        if "final_install_records" in ctx:
+            summary["guard_install_records"] = ctx["final_install_records"]
+        elif guard_dir.is_dir():
+            summary["guard_install_records"] = netguard.install_records(
+                guard_dir)
+        else:
+            summary["guard_install_records"] = []
+        # E06: every terminal path cleans only its own attempt — when S4 did
+        # not run (early failure or selection without S4) clean here, before
+        # reading anything else from the scratch
+        if ctx.get("s4_ran"):
+            summary["cleanup"] = ctx.get("cleanup_compact", {})
+        else:
+            report = attempt.cleanup()
+            observe.write_json(evidence / "early_cleanup.json", report)
+            summary["cleanup"] = {
+                "when": "finish",
+                "attempt_removed": report["attempt_removed"],
+                "work_root_restored": report["work_root_restored"],
+                "attempt_path": report["attempt_path"],
+            }
+        # measured source-repo activity (F2/F8): HEAD + porcelain compared
+        # across the whole run — not a hardcoded constant
+        try:
+            activity_after = {role: repo_activity(spec.repo)
+                              for role, spec in specs.items()}
+        except DeployError as exc:  # git vanished mid-run: report, don't hide
+            activity_after = {"error": str(exc)}
+        before = ctx.get("activity_before") or {}
+        observed = {}
+        for role, snap in before.items():
+            after_role = activity_after.get(role) or {}
+            delta = {}
+            for key in ("tracked_changes", "untracked_added"):
+                added = sorted(set(after_role.get(key) or [])
+                               - set(snap.get(key) or []))
+                gone = sorted(set(snap.get(key) or [])
+                              - set(after_role.get(key) or []))
+                if added or gone:
+                    delta[key] = {"added": added, "removed": gone}
+            observed[role] = {
+                "head_before": snap.get("head"),
+                "head_after": after_role.get("head"),
+                "head_stable": after_role.get("head") == snap.get("head"),
+                "worktree_diff_observed": delta,
+            }
+        # OBSERVATION (receipt, not pass/fail): these live worktrees are
+        # shared with other running sessions, whose edits appear here and
+        # cannot be attributed to this run — disclosed in the handoff.
+        summary["source_repos_observed"] = observed
+        # MEASURED, attributable production-write figure: every git verb
+        # this process issued (all must be read-only); a write verb here is
+        # a real finding the tests assert against (W14 F2/F8).
+        ops = git_operations()
+        write_ops = [op for op in ops
+                     if op["verb"] not in READ_ONLY_GIT_VERBS]
+        summary["production_writes"] = {
+            "measured": True,
+            "basis": "git verb log of this runner process",
+            "git_verbs_used": sorted({op["verb"] for op in ops}),
+            "write_git_ops": write_ops,
+            "count": len(write_ops),
+        }
         observe.write_json(evidence / "summary.json", summary)
         if "final_net_attempts" in ctx:
             attempts = ctx["final_net_attempts"]
@@ -715,18 +846,14 @@ def main(argv=None) -> int:
     netguard.materialize_guard(guard_dir)
     scratch = attempt.path / "deploy"
     try:
+        # read-only pre-run snapshot of the three source worktrees (F8)
+        ctx["activity_before"] = {role: repo_activity(spec.repo)
+                                  for role, spec in specs.items()}
         deployment = FrozenDeployment(
-            scratch,
-            RepoSpec("rf", args.rf_repo.resolve(), args.rf_commit),
-            RepoSpec("cwp", args.cwp_repo.resolve(), args.cwp_commit),
-            RepoSpec("ff", args.ff_repo.resolve(), args.ff_commit),
-        ).build()
+            scratch, specs["rf"], specs["cwp"], specs["ff"]).build()
     except DeployError as exc:
         print(f"E2E-ENV: {exc}", file=sys.stderr)
         summary["environment_unavailable"] = str(exc)
-        if "S4" in ordered:
-            observe.write_json(evidence / "s4" / "cleanup.json",
-                               attempt.cleanup())
         return _finish(EXIT_ENV)
 
     env, env_evidence = netguard.chain_env(
@@ -762,9 +889,6 @@ def main(argv=None) -> int:
         summary["environment_unavailable"] = (
             f"import probe resolved company_wiki outside the frozen "
             f"deployment: {import_root}")
-        if "S4" in ordered:
-            observe.write_json(evidence / "s4" / "cleanup.json",
-                               attempt.cleanup())
         return _finish(EXIT_ENV)
 
     # fixtures (E04): manifest-bound; divergence is a fixture failure
@@ -773,9 +897,6 @@ def main(argv=None) -> int:
     except fixtures_mod.FixtureError as exc:
         print(f"E2E-FIXTURE: {exc}", file=sys.stderr)
         summary["fixture_failure"] = str(exc)
-        if "S4" in ordered:
-            observe.write_json(evidence / "s4" / "cleanup.json",
-                               attempt.cleanup())
         return _finish(EXIT_FAIL)
     fixture_hashes = {p.name: observe.sha256_file(p)
                       for p in sorted(fixture_root.glob("*")) if p.is_file()}
@@ -804,14 +925,7 @@ def main(argv=None) -> int:
         print(f"[w14] {sid}: {result['status'].upper()} "
               f"[{result['elapsed_s']}s]", flush=True)
 
-    statuses = summary["statuses"]
-    if "environment_unavailable" in statuses.values():
-        exit_code = EXIT_ENV
-    elif "fail" in statuses.values():
-        exit_code = EXIT_FAIL
-    else:
-        exit_code = EXIT_PASS
-    summary["production_writes"] = 0
+    exit_code = compute_exit_code(summary["statuses"])
     summary["network_scope"] = ("none (offline gate)" if gate != "force"
                                 else "S1 explicit live download only")
     return _finish(exit_code)

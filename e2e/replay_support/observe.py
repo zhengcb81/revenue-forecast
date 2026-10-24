@@ -24,10 +24,6 @@ def write_json(path: Path, payload) -> None:
                                default=str), encoding="utf-8")
 
 
-def read_json(path: Path):
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
 def write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text or "", encoding="utf-8")
@@ -107,6 +103,31 @@ def catalog_counts(catalog: Path) -> dict:
     return counts
 
 
+def catalog_content_sha(catalog: Path,
+                        tables=("documents", "sources", "locations",
+                                "artifacts", "producer_events")) -> dict:
+    """sha256 over ALL rows of the named tables (content-level, not just
+    row counts) so an in-place UPDATE with unchanged counts cannot slip past
+    the S3 no-mutation check (W14 finding).  Read-only connection."""
+    import sqlite3
+    con = sqlite3.connect(f"file:{catalog}?mode=ro", uri=True)
+    con.execute("PRAGMA query_only=ON")
+    out: dict = {}
+    for table in tables:
+        exists = con.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+            (table,)).fetchone()
+        if not exists:
+            out[table] = None
+            continue
+        rows = con.execute(f'SELECT * FROM "{table}" ORDER BY 1').fetchall()
+        payload = json.dumps(rows, ensure_ascii=False, default=str,
+                             sort_keys=True)
+        out[table] = hashlib.sha256(payload.encode()).hexdigest()
+    con.close()
+    return out
+
+
 def catalog_delta(before: dict, after: dict) -> dict:
     return {k: after.get(k, 0) - before.get(k, 0)
             for k in sorted(set(before) | set(after))
@@ -148,11 +169,11 @@ def _file_record(p: Path, hash_files: bool) -> dict:
     return rec
 
 
-# Fields that legitimately differ between two runs of the same scenario:
-# PIDs, absolute temp paths, wall-clock times and stamps.  Everything else a
-# cross-directory comparison sees must be semantically identical (E07).
-VOLATILE_SEMANTIC_KEYS = ("run_id", "started_at", "finished_at",
-                          "total_elapsed_s", "elapsed_s", "pid", "interpreter")
+# Scenario CHECK names that carry run-local values and are excluded from the
+# cross-run comparison.  Checks store booleans today (see Scenario.check), so
+# the projection is effectively exit/status/reason/check-pattern equality;
+# keep this list tight in case value checks are added later.
+VOLATILE_SEMANTIC_KEYS = ("pid", "elapsed_s")
 _VOLATILE_PATH_HINTS = ("scratch", "attempt", "temp", "work", "evidence")
 
 

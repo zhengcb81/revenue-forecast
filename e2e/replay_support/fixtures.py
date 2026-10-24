@@ -77,6 +77,7 @@ class LakeBuild:
     scan_returncode: int
     scan_stdout_tail: str
     scan_stderr_tail: str
+    scan_pid: int | None = None
 
 
 def _sidecar_for(document: dict, identity: dict) -> dict:
@@ -321,13 +322,22 @@ def build_lake(
     scan_argv = [sys.executable, "-X", "utf8", "-B",
                  "-m", "company_wiki.source_catalog.cli",
                  "--config", str(config), "scan"]
-    proc = subprocess.run(
-        scan_argv, cwd=str(wiki_root), env=env, capture_output=True, text=True,
-        encoding="utf-8", errors="replace", timeout=300, check=False)
+    proc = subprocess.Popen(
+        scan_argv, cwd=str(wiki_root), env=env, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, text=True, encoding="utf-8",
+        errors="replace")
+    scan_pid = proc.pid
+    try:
+        out, err = proc.communicate(timeout=300)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        out, err = proc.communicate() or ("", "")
+        raise FixtureError(
+            f"public scan timed out after 300s pid={scan_pid}")
     if proc.returncode != 0:
         raise FixtureError(
-            f"public scan failed rc={proc.returncode}: "
-            f"{(proc.stderr or proc.stdout)[-800:]}")
+            f"public scan failed rc={proc.returncode} pid={scan_pid}: "
+            f"{(err or out)[-800:]}")
     _write_runtime_policy(config, cwp_src)
 
     evidence = _preset_artifacts_and_receipts(config, cwp_src, docs, manifest)
@@ -337,5 +347,5 @@ def build_lake(
     return LakeBuild(
         wiki_root=wiki_root, catalog_path=catalog_path, config_path=config,
         docs=docs, scan_returncode=proc.returncode,
-        scan_stdout_tail=(proc.stdout or "")[-400:],
-        scan_stderr_tail=(proc.stderr or "")[-400:])
+        scan_stdout_tail=(out or "")[-400:],
+        scan_stderr_tail=(err or "")[-400:], scan_pid=scan_pid)

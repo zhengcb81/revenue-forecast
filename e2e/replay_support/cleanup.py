@@ -21,7 +21,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .observe import sha256_file, tree_snapshot
+from .observe import tree_snapshot
 
 
 def _stamp() -> str:
@@ -94,36 +94,28 @@ class AttemptSpace:
 
     def cleanup(self) -> dict:
         """Remove ONLY this attempt's scratch; keep evidence and everything
-        that pre-existed under work_root."""
+        that pre-existed under work_root.
+
+        The full before/after inventories (relpath -> size/mtime/sha256) are
+        part of the report so reviewers can re-verify the restore claim from
+        the persisted receipt instead of trusting a bare boolean (W14 F3).
+        """
         gone = self.rmtree_owned(self.path)
-        remaining = None
+        initial = dict(self.initial_work_inventory or {})
         if self.work_root.exists():
-            remaining = sorted(
-                p.name for p in self.work_root.iterdir())
-        restored = True
-        if self.initial_work_inventory is not None and self.work_root.exists():
             after = tree_snapshot(self.work_root)
-            restored = after == self.initial_work_inventory
-        return {"attempt_removed": gone, "attempt_path": self.name,
-                "work_root_remaining": remaining, "work_root_restored": restored}
-
-
-def restore_report(root: Path, before: dict | None) -> dict:
-    """Compare a directory against its recorded inventory."""
-    if before is None:
-        return {"root": str(root), "checked": False}
-    after = tree_snapshot(root)
-    return {
-        "root": str(root),
-        "checked": True,
-        "unchanged": after == before,
-        "added": sorted(set(after) - set(before)),
-        "removed": sorted(set(before) - set(after)),
-        "changed": sorted(k for k in set(before) & set(after)
-                          if before[k] != after[k]),
-    }
-
-
-def file_hash_evidence(path: Path) -> dict:
-    return {"path": str(path), "sha256": sha256_file(path),
-            "bytes": path.stat().st_size}
+            remaining = sorted(p.name for p in self.work_root.iterdir())
+        else:
+            after, remaining = {}, []
+        return {
+            "attempt_removed": gone,
+            "attempt_path": self.name,
+            "work_root_remaining": remaining,
+            "work_root_restored": after == initial,
+            "initial_inventory": initial,
+            "remaining_inventory": after,
+            "added": sorted(set(after) - set(initial)),
+            "removed": sorted(set(initial) - set(after)),
+            "changed": sorted(k for k in set(initial) & set(after)
+                              if initial[k] != after[k]),
+        }

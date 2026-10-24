@@ -152,6 +152,48 @@ def test_e01_default_offline_full_suite_executes(tmp_path):
                for c in children), [
         c.get("company_wiki_file") for c in children[:5]]
 
+    # the guard actually EXECUTED in every child with usable wiring — a
+    # silent load failure cannot masquerade as "zero events" (A-finding 1)
+    installs = summary["guard_install_records"]
+    assert installs and len(installs) >= len(children), len(installs)
+    assert all(rec.get("wired", {}).get("urlopen") is True
+               for rec in installs), installs[:3]
+    assert all(rec.get("wired", {}).get("net_block") is True
+               for rec in installs), installs[:3]
+
+    # grandchildren of the real chain really ran, all from the frozen
+    # deployment (E02/E03; static F7 + adversarial F3)
+    joined = [" ".join(c.get("argv", [])) for c in children]
+    for needle in ("source_preparation.py", "fetch_filing.py",
+                   "source_reader_cli", "source_catalog"):
+        assert any(needle in j for j in joined), needle
+    rf_root = deployed["rf"]["deployed_root"]
+    ff_root = deployed["ff"]["deployed_root"]
+    script_argv0 = [str(c["argv"][0]) for c in children
+                    if c.get("argv") and str(c["argv"][0]).endswith(".py")]
+    assert script_argv0, "no python-script child recorded"
+    off_deploy = [a for a in script_argv0
+                  if not a.startswith((rf_root, ff_root, cwp_root))]
+    assert not off_deploy, off_deploy
+
+    # receipts self-bind to this exact runner/support code (F17) and the
+    # production-write figure is MEASURED from this process's git verb log —
+    # every verb must be read-only; a write verb would fail here (F2/F8)
+    assert summary["runner_code_sha256"][
+        "e2e/run_cross_repo_chain_e2e.py"]
+    assert len(summary["runner_code_sha256"]) >= 6
+    pw = summary["production_writes"]
+    assert pw["measured"] is True and pw["count"] == 0, pw
+    assert set(pw["git_verbs_used"]) <= {"rev-parse", "status", "archive"}, pw
+    assert "archive" in pw["git_verbs_used"], pw
+    # worktree snapshots of the shared live source repos are recorded as
+    # observation receipts (external concurrent edits disclosed, not
+    # attributed to this run)
+    observed = summary["source_repos_observed"]
+    assert set(observed) == {"rf", "cwp", "ff"}
+    for role, rec in observed.items():
+        assert rec["head_before"] and rec["head_after"], role
+
     # ---- E03: real processes with PIDs and pathless SourceRefs -----------
     pids = [p["pid"] for s in summary["scenarios"]
             for p in s.get("processes", []) if p.get("pid")]
@@ -201,7 +243,10 @@ def test_e01_default_offline_full_suite_executes(tmp_path):
         (attempt / "child_env.json").read_text(encoding="utf-8"))
     assert "W14_TEST_API_KEY" in child_env["scrubbed_credential_names"]
     assert "W14_TEST_SECRET" in child_env["scrubbed_credential_names"]
-    for evidence_file in attempt.rglob("*.json"):
+    for evidence_file in attempt.rglob("*"):
+        if not evidence_file.is_file() or \
+                evidence_file.suffix not in (".json", ".txt"):
+            continue
         text = evidence_file.read_text(encoding="utf-8", errors="replace")
         assert "w14-secret-value-never-in-evidence" not in text, evidence_file
         assert "another-secret" not in text, evidence_file
@@ -287,20 +332,20 @@ def test_missing_commit_is_environment_unavailable(tmp_path):
     assert summary["statuses"] == {}
 
 
-def test_import_probe_failure_is_environment_unavailable(tmp_path):
-    """A decoy company_wiki shadowing the frozen deployment is refused —
-    but PYTHONPATH-controlled deployment normally wins, so this checks the
-    failure branch is named and nonzero (defense in depth for E02)."""
-    proc, evidence = _run_runner(
-        ["--scenarios", "S4"], tmp_path, timeout=200)
-    # S4 alone deploys + probes; healthy path exit 0 here is fine — the
-    # named-failure branch is covered by the missing-commit test above.
-    assert proc.returncode in (0, 3)
+def test_healthy_probe_binds_import_to_frozen_deployment(tmp_path):
+    """The probe FAILURE branch (named environment_unavailable, exit 3) is
+    covered by test_missing_commit_is_environment_unavailable; this test
+    pins the healthy path it claims: probe rc==0 with company_wiki bound to
+    the frozen deployment (W14 F13 — no rc-in-(0,3) vacuous acceptance)."""
+    proc, evidence = _run_runner(["--scenarios", "S4"], tmp_path, timeout=300)
+    assert proc.returncode == 0, proc.stdout[-2000:] + proc.stderr[-1000:]
     attempt = _latest_attempt(evidence)
+    provenance = json.loads(
+        (attempt / "provenance.json").read_text(encoding="utf-8"))
+    assert provenance["import_probe"]["rc"] == 0
+    assert provenance["import_probe"]["under_frozen_deployment"] is True
     summary = _summary(attempt)
-    if proc.returncode == 3:
-        assert summary["environment_unavailable"].startswith(
-            "environment_unavailable")
+    assert summary["statuses"] == {"S4": "pass"}, summary["statuses"]
 
 
 # --------------------------------------------------------------------------
@@ -462,5 +507,100 @@ def test_real_product_failure_makes_suite_nonzero(tmp_path):
     summary = _summary(attempt)
     by = _by_id(summary)
     assert by["S2"]["status"] == "fail"
-    assert by["S2"]["failures"], by["S2"]
+    # the failure must be the record-contract checks this test exists for —
+    # not an unrelated earlier breakage drifting under the same banner
+    expected = ("s2.pdf_record_sha", "s2.pdf_capture_sha",
+                "s2.pdf_read_receipt_document", "s2.txt_consumed_sha",
+                "s2.txt_consumed_period", "s2.txt_consumed_year")
+    failed_names = [f.split(":", 1)[0] for f in by["S2"]["failures"]]
+    assert any(name in expected for name in failed_names),         by["S2"]["failures"]
     assert by["S4"]["status"] == "pass"  # cleanup still honored on failure
+
+
+# --------------------------------------------------------------------------
+# positive controls: the offline spy and the exit contract are not vacuous
+# --------------------------------------------------------------------------
+
+def test_provider_counter_spy_fires_on_real_loopback_request(tmp_path):
+    """W14 A-finding 1: prove the provider counter spy is alive.  A child
+    under the guard makes ONE real loopback HTTP request (explicitly allowed
+    local use) and the event must be recorded before delegation; non-loopback
+    stays blocked (covered by test_netguard_blocks_and_records...)."""
+    import http.server
+    import threading
+
+    sys.path.insert(0, str(REPO / "e2e"))
+    from replay_support import netguard
+    guard = tmp_path / "guard"
+    netguard.materialize_guard(guard)
+
+    class _Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            body = b"ok"
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *args):  # noqa: ARG002  keep test output quiet
+            pass
+
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    port = server.server_address[1]
+    try:
+        env = dict(os.environ)
+        env["PYTHONPATH"] = str(guard)
+        env["PYTHONDONTWRITEBYTECODE"] = "1"
+        env["RF_E2E_SPY_DIR"] = str(guard)
+        env["RF_E2E_NET_BLOCK"] = "1"
+        env["RF_E2E_NETLOG"] = str(guard / "net_attempts.jsonl")
+        child = (
+            "import urllib.request\n"
+            f"with urllib.request.urlopen('http://127.0.0.1:{port}/', "
+            "timeout=10) as r:\n"
+            "    r.read(16)\n"
+            "print('LOOPBACK_OK')\n"
+        )
+        proc = subprocess.run([sys.executable, "-c", child], env=env,
+                              capture_output=True, text=True, encoding="utf-8",
+                              errors="replace", timeout=60, check=False)
+        assert proc.returncode == 0, proc.stdout + proc.stderr
+        assert "LOOPBACK_OK" in proc.stdout
+        events = [json.loads(ln) for ln in
+                  (guard / "events.jsonl").read_text(encoding="utf-8")
+                  .splitlines() if ln.strip()]
+        provider = [e for e in events if e.get("counter") == "provider"]
+        assert provider, "provider spy did not fire on a real urlopen"
+        assert any("urlopen" in str(e.get("qualname")) for e in provider)
+        installs = [json.loads(ln) for ln in
+                    (guard / "install.jsonl").read_text(encoding="utf-8")
+                    .splitlines() if ln.strip()]
+        assert installs and installs[-1]["wired"]["urlopen"] is True
+        # loopback is explicitly allowed: no net attempt recorded
+        assert not (guard / "net_attempts.jsonl").exists()
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+def test_exit_code_mapping_offline_skip_is_incomplete():
+    """E01/F16: a skip on ANY offline scenario makes the whole run non-zero;
+    only S1 may honestly skip without --live force."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "w14_runner_under_test", RUNNER)
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+    assert runner.compute_exit_code({"S2": "pass", "S3": "pass",
+                                     "S5": "pass", "S6": "pass",
+                                     "S4": "pass"}) == 0
+    assert runner.compute_exit_code({"S1": "skip", "S4": "pass"}) == 0
+    # offline skip = incomplete, never a hidden pass
+    assert runner.compute_exit_code({"S2": "skip"}) == 1
+    assert runner.compute_exit_code({"S2": "fail", "S4": "pass"}) == 1
+    assert runner.compute_exit_code(
+        {"S1": "environment_unavailable"}) == 3
+    assert runner.compute_exit_code({}) == 0

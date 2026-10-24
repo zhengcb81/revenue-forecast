@@ -3,15 +3,25 @@
 ``chain_env`` builds the subprocess environment every judged child runs with:
 an explicit PYTHONPATH over the frozen deployment (which also outranks any
 editable install of company-wiki), scrubbed credential variables (names are
-recorded, values never leave the process), and the guard hooks below.
+recorded, values never leave the process), path-redirect variables removed so
+children fall back to the deployed no-secret defaults, and the guard hooks
+below.
 
 ``SITECUSTOMIZE_SOURCE`` is materialized into the guard directory and loaded
 by every child interpreter through PYTHONPATH.  It installs:
 
-- the counter spy (provider/read events with the child PID and the actually
-  imported ``company_wiki`` root — provenance evidence), and
-- the outbound-network block: with ``RF_E2E_NET_BLOCK=1`` any socket connect
-  to a non-loopback address raises and the attempt is appended to the netlog.
+- an install marker (``install.jsonl``): proves the guard actually loaded in
+  this child and records which wrappers wired;
+- the provider counter spy: fires ``{"counter": "provider"}`` at real
+  ``requests``/``http.client``/``urllib`` call sites BEFORE delegation —
+  positive-control tested, never fabricated;
+- the outbound-network block: with ``RF_E2E_NET_BLOCK=1`` non-loopback
+  ``connect``/``connect_ex``/``getaddrinfo``/``sendto`` raise and each
+  attempt is appended to the netlog (connect-level guard; a child that
+  shells out to an external binary bypasses this — see handoff limits).
+
+Provenance evidence: every child writes its PID and the actually imported
+``company_wiki`` root to ``children.jsonl``.
 """
 
 from __future__ import annotations
@@ -27,16 +37,17 @@ _CREDENTIAL_PATTERN = re.compile(
     r"(API_KEY|TOKEN|SECRET|PASSWORD|PASSPHRASE|CREDENTIAL|PRIVATE_KEY)$",
     re.IGNORECASE,
 )
+# Path-redirect variables that could point a child at a personal production
+# configuration instead of the deployed no-secret defaults.  Removed (not
+# merely masked) so the deployment default wins; names are recorded.
+_PATH_REDIRECT_VARS = (
+    "COMPANY_WIKI_BUDGET_CONFIG",
+    "REVENUE_PUBLICATION_REGISTRY",
+)
 _CONTROLLED_KEYS = (
     "PYTHONPATH", "PYTHONDONTWRITEBYTECODE", "PYTHONUTF8", "PYTHONNOUSERSITE",
     "RF_E2E_SPY_DIR", "RF_E2E_NET_BLOCK", "RF_E2E_NETLOG",
 )
-
-
-def scrub_credentials(env: dict) -> dict:
-    """Return {name: "<scrubbed>"} for keys removed by chain_env."""
-    return {name: "<scrubbed>" for name in sorted(env)
-            if _CREDENTIAL_PATTERN.search(name)}
 
 
 def chain_env(
@@ -56,6 +67,11 @@ def chain_env(
             scrubbed[name] = "<scrubbed>"
             env.pop(name)
     env.pop("PYTHONSTARTUP", None)
+    redirected = []
+    for name in _PATH_REDIRECT_VARS:
+        if name in env:
+            env.pop(name)
+            redirected.append(name)
     env["PYTHONPATH"] = os.pathsep.join([
         str(guard_dir),
         str(deployment.rf_scripts),
@@ -75,6 +91,7 @@ def chain_env(
         "pythonpath_entries": env["PYTHONPATH"].split(os.pathsep),
         "net_block": bool(net_block),
         "scrubbed_credential_names": sorted(scrubbed),
+        "removed_path_redirect_names": sorted(redirected),
         "controlled_values": {k: env.get(k) for k in _CONTROLLED_KEYS
                               if k in env},
     }
@@ -82,11 +99,14 @@ def chain_env(
 
 
 SITECUSTOMIZE_SOURCE = '''\
-"""W14 guard: counter spy + offline network block, one file per child.
+"""W14 guard: install marker + provider spy + offline network block.
 
 Loaded via PYTHONPATH by the replay harness only.  It never fakes provider
 behavior: counters fire at real calls before delegation, and the network hook
-only REFUSES non-loopback connects while recording the attempt.
+only REFUSES non-loopback operations while recording the attempt.  The install
+marker (install.jsonl) proves this file actually executed in this child and
+records which wrappers wired, so a silent load failure cannot masquerade as
+"zero events".
 """
 from __future__ import annotations
 
@@ -118,7 +138,7 @@ def _counter_event(counter: str, qualname: str, detail: dict) -> None:
         "t": round(time.time(), 3), **detail})
 
 
-def _wrap_provider_request() -> None:
+def _wrap_provider_request() -> bool:
     try:
         import requests.sessions
         original = requests.sessions.Session.request
@@ -129,11 +149,12 @@ def _wrap_provider_request() -> None:
             return original(self, method, url, *args, **kwargs)
 
         requests.sessions.Session.request = request
+        return True
     except Exception:
-        pass
+        return False
 
 
-def _wrap_http_client() -> None:
+def _wrap_http_client() -> bool:
     try:
         import http.client
         original = http.client.HTTPConnection.connect
@@ -145,11 +166,12 @@ def _wrap_http_client() -> None:
             return original(self)
 
         http.client.HTTPConnection.connect = connect
+        return True
     except Exception:
-        pass
+        return False
 
 
-def _wrap_urlopen() -> None:
+def _wrap_urlopen() -> bool:
     try:
         import urllib.request
         original = urllib.request.urlopen
@@ -160,14 +182,15 @@ def _wrap_urlopen() -> None:
             return original(url, *args, **kwargs)
 
         urllib.request.urlopen = urlopen
+        return True
     except Exception:
-        pass
+        return False
 
 
-def _install_net_block() -> None:
+def _install_net_block() -> bool:
     if not _NET_BLOCK:
-        return
-    loopback_hosts = {"127.0.0.1", "::1", "localhost", ""}
+        return False
+    loopback_hosts = {"127.0.0.1", "::1", "localhost", "", None}
 
     def blocked_connect(original):
         def connect(self, address, *args, **kwargs):
@@ -191,6 +214,45 @@ def _install_net_block() -> None:
     socket.socket.connect = blocked_connect(socket.socket.connect)
     socket.socket.connect_ex = blocked_connect(socket.socket.connect_ex)
 
+    # DNS resolution to a non-loopback name would leak a packet before any
+    # connect fires (getaddrinfo resolves natively) — block and record it.
+    original_getaddrinfo = socket.getaddrinfo
+
+    def getaddrinfo(host, port, *args, **kwargs):
+        if host is not None and str(host) not in loopback_hosts:
+            rec = {"pid": os.getpid(), "op": "getaddrinfo",
+                   "host": str(host)[:200], "port": port,
+                   "t": round(time.time(), 3)}
+            _record("net_attempts.jsonl", rec)
+            raise OSError(
+                "rf-e2e net block: non-loopback DNS refused: " + str(host))
+        return original_getaddrinfo(host, port, *args, **kwargs)
+
+    socket.getaddrinfo = getaddrinfo
+
+    original_sendto = socket.socket.sendto
+
+    def sendto(self, data, *args, **kwargs):
+        try:
+            address = args[0] if args else kwargs.get("address")
+            host = address[0] if isinstance(address, tuple) else address
+        except Exception:
+            host = str(address)
+        if host is not None and str(host) not in loopback_hosts:
+            rec = {"pid": os.getpid(), "op": "sendto",
+                   "host": str(host)[:200], "t": round(time.time(), 3)}
+            _record("net_attempts.jsonl", rec)
+            raise OSError(
+                "rf-e2e net block: non-loopback send refused: " + str(host))
+        return original_sendto(self, data, *args, **kwargs)
+
+    socket.socket.sendto = sendto
+    return True
+
+
+_WIRING = {"urlopen": False, "http_client": False, "requests": False,
+           "net_block": False}
+
 
 def _provenance() -> None:
     record = {"pid": os.getpid(),
@@ -199,7 +261,14 @@ def _provenance() -> None:
     try:
         import sys
         record["executable"] = sys.executable
+        # recorded at interpreter EXIT (atexit): for `python -m` children
+        # sys.argv[0] is still "-m" during site customization and only later
+        # replaced by the module file path by runpy — exit-time capture is
+        # the only point where argv identifies the executed module
         record["argv"] = [str(a)[:200] for a in sys.argv[:6]]
+        main_module = sys.modules.get("__main__")
+        record["main_module_file"] = str(
+            getattr(main_module, "__file__", "") or "")[:300] or None
     except Exception:
         pass
     try:
@@ -211,11 +280,20 @@ def _provenance() -> None:
 
 
 def _install() -> None:
-    _provenance()
-    _wrap_provider_request()
-    _wrap_http_client()
-    _wrap_urlopen()
-    _install_net_block()
+    # provenance is captured at EXIT so -m children record their real module
+    # path; killed children (timeout) simply have no exit record — their PIDs
+    # are still evidence via the runner's per-process argv files
+    import atexit
+    atexit.register(_provenance)
+    _WIRING["urlopen"] = bool(_wrap_urlopen())
+    _WIRING["http_client"] = bool(_wrap_http_client())
+    _WIRING["requests"] = bool(_wrap_provider_request())
+    _WIRING["net_block"] = bool(_install_net_block())
+    # install marker: proof this file executed AND which wrappers wired —
+    # a silent load failure cannot masquerade as "zero events"
+    _record("install.jsonl", {"pid": os.getpid(), "wired": dict(_WIRING),
+                              "net_block": _NET_BLOCK,
+                              "t": round(time.time(), 3)})
 
 
 try:
@@ -264,6 +342,22 @@ def counter_totals(guard_dir: Path) -> dict:
 
 def child_provenance(guard_dir: Path) -> list[dict]:
     path = guard_dir / "children.jsonl"
+    if not path.is_file():
+        return []
+    out = []
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if line.strip():
+            try:
+                out.append(json.loads(line))
+            except ValueError:
+                out.append({"unparseable": line[:200]})
+    return out
+
+
+def install_records(guard_dir: Path) -> list[dict]:
+    """Guard install markers: one per child that actually executed the
+    sitecustomize, with its wiring status (positive control for the spy)."""
+    path = guard_dir / "install.jsonl"
     if not path.is_file():
         return []
     out = []
