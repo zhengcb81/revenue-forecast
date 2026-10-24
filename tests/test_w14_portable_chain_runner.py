@@ -437,6 +437,10 @@ def test_real_product_failure_makes_suite_nonzero(tmp_path):
     """Frozen-commit provenance, not fixed-hash permission: running the SAME
     scenario set against a historical RF product whose record contract
     differs makes S2 genuinely fail and the whole run exit 1."""
+    if not _commit_present(REPO, HISTORICAL_RF_COMMIT):
+        pytest.skip(
+            f"historical product commit absent (shallow clone?): "
+            f"{HISTORICAL_RF_COMMIT}")
     work = tmp_path / "work"
     evidence = tmp_path / "evidence"
     env = dict(os.environ)
