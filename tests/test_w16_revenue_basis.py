@@ -23,6 +23,7 @@ from revenue_core import (  # noqa: E402
     validate_document,
 )
 from revenue_report import render_markdown  # noqa: E402
+from research.input_quantities import convert_input_quantity  # noqa: E402
 from research.revenue_basis import (  # noqa: E402
     ANNUAL_PERIOD_KIND,
     REVENUE_BASIS_SCHEMA_VERSION,
@@ -308,6 +309,55 @@ class ContractTests(unittest.TestCase):
             operations="continuing", components=parts
         )
         with self.assertRaisesRegex(ForecastInputError, "total"):
+            validate_document(data)
+
+    def test_negative_component_value_is_rejected(self) -> None:
+        data = forecast_document()
+        parts = [
+            {"operations": "continuing", "value": 160.0, "source_ids": ["filing"]},
+            {"operations": "discontinued", "value": -10.0, "source_ids": ["filing"]},
+        ]
+        _add_component_claims(data, 2025, parts)
+        _record_for_year(data, 2025)["revenue_basis"] = _basis(components=parts)
+        with self.assertRaisesRegex(ForecastInputError, "cannot be negative"):
+            validate_document(data)
+
+    def test_input_quantity_accepts_du5_alias_engine_unit(self) -> None:
+        # S5 review: a DU5 alias spelling (usd_百万, not the canonical
+        # usd_million) must resolve through the shared registry, not be
+        # misrejected as "not a money unit". Same scale as the document unit.
+        record = convert_input_quantity(
+            150.0, input_unit="USD 百万", engine_unit="usd_百万"
+        )
+        data = forecast_document()
+        _record_for_year(data, 2025)["revenue_basis"] = _basis(
+            input_quantity=record
+        )
+        validate_document(data)
+
+    def test_input_quantity_scale_mismatch_is_rejected(self) -> None:
+        # engine_value must be in the document unit; a different-scale
+        # engine_unit whose value coincidentally equals the record value is
+        # not a conversion into the document unit.
+        quantity = convert_input_quantity(
+            150.0, input_unit="usd_yi", engine_unit="usd_yi"
+        )
+        data = forecast_document()
+        _record_for_year(data, 2025)["revenue_basis"] = _basis(
+            input_quantity=quantity
+        )
+        with self.assertRaisesRegex(ForecastInputError, "scale"):
+            validate_document(data)
+
+    def test_non_numeric_extracted_value_does_not_crash(self) -> None:
+        data = forecast_document()
+        claim = next(
+            claim
+            for claim in data["evidence_claims"]
+            if claim["claim_id"] == "claim_history_2025"
+        )
+        claim["extracted_value"] = "not-a-number"
+        with self.assertRaisesRegex(ForecastInputError, "claim value mismatch"):
             validate_document(data)
 
     def test_basis_source_ids_must_be_known(self) -> None:

@@ -25,7 +25,6 @@ missing declaration is reported as ``not_declared`` and never as
 from __future__ import annotations
 
 import math
-import re
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
@@ -35,8 +34,10 @@ from contracts.evidence import (
     validate_claim_ids,
 )
 from research.input_quantities import (
-    _UNIT_DESCRIPTIONS,
     money_currency,
+    money_scale_factor,
+    money_unit_currency,
+    money_unit_scale_factor,
     validate_input_quantity_record,
 )
 
@@ -159,7 +160,14 @@ def _parse_components(components: Any, field: str) -> None:
             f"{field}.components declares {operations} twice",
         )
         seen.add(operations)
-        finite_number(component.get("value"), f"{component_field}.value")
+        component_value = finite_number(
+            component.get("value"), f"{component_field}.value"
+        )
+        require(
+            component_value >= 0,
+            f"{component_field}.value cannot be negative: revenue components "
+            "are disclosed revenue amounts",
+        )
         require(
             isinstance(component.get("source_ids"), list) and component["source_ids"],
             f"{component_field}.source_ids is required",
@@ -284,6 +292,21 @@ def require_total_operations_for_base(
     )
 
 
+def _extract_matches(claim: dict[str, Any], value: float) -> bool:
+    """True when the claim's extracted_value numerically equals the record.
+
+    A non-numeric extracted_value (or a numeric string) never crashes the
+    comparison; it simply does not support the value.
+    """
+    extracted = claim.get("extracted_value")
+    if not isinstance(extracted, (int, float, str)):
+        return False
+    try:
+        return math.isclose(float(extracted), value, rel_tol=0, abs_tol=1e-9)
+    except (TypeError, ValueError):
+        return False
+
+
 def validate_historical_claim_alignment(
     claims: list[dict[str, Any]],
     *,
@@ -300,11 +323,7 @@ def validate_historical_claim_alignment(
     """
     require(
         any(
-            math.isclose(float(extracted), value, rel_tol=0, abs_tol=1e-9)
-            for claim in claims
-            if isinstance(
-                (extracted := claim.get("extracted_value")), (int, float, str)
-            )
+            _extract_matches(claim, value) for claim in claims
         ),
         f"{label}claim value mismatch: {year}",
     )
@@ -327,7 +346,7 @@ def _validate_history_input_quantity(
     quantity_field = f"{field}.input_quantity"
     expected = validate_input_quantity_record(quantity, field=quantity_field)
     engine_unit = quantity["engine_unit"]
-    resolved_currency = _engine_unit_currency(engine_unit)
+    resolved_currency = money_unit_currency(engine_unit)
     require(
         resolved_currency is not None,
         f"{quantity_field}.engine_unit {engine_unit} is not a money unit; "
@@ -340,6 +359,15 @@ def _validate_history_input_quantity(
         f"currency is {data['currency']}; cross-currency amounts never mix "
         "without an FX basis",
     )
+    engine_scale = money_unit_scale_factor(engine_unit)
+    document_scale = money_scale_factor(data["unit"])
+    require(
+        engine_scale is not None and document_scale is not None
+        and math.isclose(engine_scale, document_scale, rel_tol=0, abs_tol=0),
+        f"{quantity_field}.engine_unit {engine_unit} scale does not match the "
+        f"document unit {data['unit']}; engine_value must be expressed in the "
+        "document unit, so convert the scale at construction",
+    )
     require(
         math.isclose(
             expected["engine_value"], value, rel_tol=1e-9, abs_tol=1e-9
@@ -348,15 +376,6 @@ def _validate_history_input_quantity(
         f"match historical_revenue[{year}].value {value}; convert to the "
         "document unit at construction",
     )
-
-
-def _engine_unit_currency(engine_unit: str) -> str | None:
-    """Resolve a spelled engine unit to its DU5 money currency, if any."""
-    normalized = re.sub(r"[-\s]+", "_", engine_unit.strip().lower())
-    description = _UNIT_DESCRIPTIONS.get(normalized)
-    if description is None or description.get("family") != "money":
-        return None
-    return description["currency"]
 
 
 def basis_comparable(

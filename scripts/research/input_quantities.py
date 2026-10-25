@@ -224,6 +224,40 @@ def same_money_currency(left: Any, right: Any) -> bool:
     return resolved_left is not None and resolved_left == resolved_right
 
 
+def money_unit_currency(unit: Any) -> str | None:
+    """Canonical money currency of a full unit spelling, or None.
+
+    Resolves a compound money unit (``usd_billion``, ``rmb_亿``, any alias the
+    registry accepts) through the one alias table instead of callers keeping a
+    parallel normalizer; non-money and unknown spellings stay unknown.
+    """
+    description = _money_unit_description(unit)
+    if description is None:
+        return None
+    return description["currency"]
+
+
+def money_unit_scale_factor(unit: Any) -> float | None:
+    """Base-unit scale factor of a full money unit spelling, or None."""
+    description = _money_unit_description(unit)
+    if description is None:
+        return None
+    return description["factor"]
+
+
+def _money_unit_description(unit: Any) -> dict[str, Any] | None:
+    if not isinstance(unit, str) or not unit.strip():
+        return None
+    try:
+        canonical = _normalize_unit(unit, "unit")
+    except ForecastInputError:
+        return None
+    description = _UNIT_DESCRIPTIONS[canonical]
+    if description["family"] != "money":
+        return None
+    return description
+
+
 def convert_input_quantity(
     value: Any, *, input_unit: str, engine_unit: str
 ) -> dict[str, Any]:

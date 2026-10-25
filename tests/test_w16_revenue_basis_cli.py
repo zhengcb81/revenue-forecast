@@ -68,6 +68,10 @@ class CliCaseRunner(unittest.TestCase):
         environment = dict(os.environ)
         environment["REVENUE_PUBLICATION_REGISTRY"] = str(directory / "registry")
         environment["PYTHONDONTWRITEBYTECODE"] = "1"
+        # Windows child processes default to a GBK pipe; pin UTF-8 so a
+        # Chinese diagnostic in stderr survives the round-trip.
+        environment["PYTHONIOENCODING"] = "utf-8"
+        environment["PYTHONUTF8"] = "1"
         input_path = directory / "input.json"
         output_path = directory / "forecast.json"
         markdown_path = directory / "forecast.md"
@@ -180,6 +184,20 @@ class ErrorSuite(CliCaseRunner):
         )
         self.assertIn("quarter", completed.stderr)
         self.assertIn("fiscal", completed.stderr)
+
+    def test_ytd_period_kind_is_rejected(self) -> None:
+        # S4 review: the ytd (year-to-date vs fiscal-year) confusion must be
+        # covered at the CLI level too, not only in unit tests; this error
+        # case also runs in a Chinese/space directory.
+        data = forecast_document()
+        _record_for_year(data, 2025)["revenue_basis"] = _basis(
+            period_kind="ytd"
+        )
+        completed = self._run(
+            data, case_dir="错 年累计 ytd", expect_success=False
+        )
+        self.assertIn("ytd", completed.stderr)
+        self.assertIn("年累计", completed.stderr)
 
     def test_conversion_mismatch_is_rejected(self) -> None:
         data = forecast_document()
