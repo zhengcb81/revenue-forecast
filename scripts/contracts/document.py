@@ -60,6 +60,12 @@ from forecast.calc import (
 from contracts.source_clock import SourceClockError, source_information_eligibility, validate_source_events
 from research.coverage import validate_research_coverage
 from research.drivers import validate_growth_driver_tree
+from research.revenue_basis import (
+    parse_revenue_basis,
+    require_total_operations_for_base,
+    validate_basis_against_document,
+    validate_historical_claim_alignment,
+)
 from research.targets import validate_management_target_coverage
 from revenue_constraints import RevenueConstraintError, validate_revenue_constraints
 
@@ -205,27 +211,23 @@ def validate_historical_revenue(
             f"historical_revenue[{position}]",
             "exact_value",
         )
-        require(
-            any(
-                math.isclose(float(extracted), value, rel_tol=0, abs_tol=1e-9)
-                for claim in claims
-                if isinstance(
-                    (extracted := claim.get("extracted_value")), (int, float, str)
-                )
-            ),
-            f"historical revenue claim value mismatch: {year}",
+        validate_historical_claim_alignment(
+            claims,
+            value=value,
+            year=year,
+            currency_unit=f"{data['currency']} {data['unit']}",
         )
-        require(
-            all(claim.get("period") == f"FY{year}" for claim in claims),
-            f"historical revenue claim period mismatch: {year}",
-        )
-        require(
-            all(
-                claim.get("unit") == f"{data['currency']} {data['unit']}"
-                for claim in claims
-            ),
-            f"historical revenue claim unit mismatch: {year}",
-        )
+        basis = parse_revenue_basis(record)
+        if basis is not None:
+            validate_basis_against_document(
+                basis,
+                record=record,
+                data=data,
+                source_index=source_index,
+                claim_index=claim_index,
+            )
+            if year == data["base_year"]:
+                require_total_operations_for_base(basis, year=year)
         normalized.append((year, value))
     require(
         normalized == sorted(normalized), "historical_revenue must be ordered by year"

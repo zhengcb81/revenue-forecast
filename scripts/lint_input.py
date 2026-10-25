@@ -30,6 +30,8 @@ from schema_fields import (  # ZR-702: single source of truth (REV-01/03)
     PARAMETER_REQUIRED,
     TOP_LEVEL_REQUIRED,
 )
+from contracts.evidence import ForecastInputError
+from research.revenue_basis import parse_revenue_basis
 
 
 def _finding(category: str, path: str, message: str) -> dict[str, str]:
@@ -170,6 +172,20 @@ def _check_references(
                         "reference",
                         f"historical_revenue.{year}.claim_ids",
                         f"claim {cid} does not support historical_revenue:{year}",
+                    )
+                )
+        # W16: the optional revenue_basis is validated by the shared owner so
+        # the linter and the engine report the same rule; undeclared (legacy)
+        # records produce no finding.
+        if "revenue_basis" in record:
+            try:
+                parse_revenue_basis(record)
+            except ForecastInputError as exc:
+                findings.append(
+                    _finding(
+                        "revenue_basis",
+                        f"historical_revenue.{year}.revenue_basis",
+                        str(exc),
                     )
                 )
     for pid in data.get("base_adjustment_parameter_ids", []):

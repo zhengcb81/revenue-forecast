@@ -312,6 +312,18 @@ def build_template(
                 if schema_version == "3.10"
                 else ""
             )
+            + (
+                "  Optional revenue_basis note: each historical_revenue record "
+                "may carry revenue_basis (rf-revenue-basis/1) with operations "
+                "(total|continuing|discontinued), statement_status "
+                "(as_reported|restated), optional period_kind (fiscal_year only "
+                "on the annual history), optional input_quantity (DU5 conversion "
+                "of the raw disclosed value/unit to the document unit) and "
+                "optional components (continuing+discontinued exact-value claims "
+                "that must Decimal-reconcile to the total). Undeclared records "
+                "keep the legacy behavior; the base-year observation must "
+                "declare operations=total."
+            )
         ),
         "schema_version": schema_version,
         "company_name": name,

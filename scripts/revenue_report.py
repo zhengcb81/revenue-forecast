@@ -34,6 +34,11 @@ from contracts.evidence import scenario_ordered
 from analysis.confidence import validate_confidence_recomputation
 from contracts.annual_consumption import validate_annual_consumption
 from forecast.calc import opening_base_bridge, scenario_forecast_parameter_ids
+from research.revenue_basis import (
+    OPERATIONS_LABELS,
+    STATEMENT_LABELS,
+    historical_basis_view,
+)
 from research.target_comparison import (
     LEGACY_COMPARISON_ROW_KEYS,
     LEGACY_COMPARISON_ROW_KEYS_31,
@@ -521,6 +526,16 @@ def _validate_forecast_output(
                 result.get(_field) == data.get(_field),
                 f"forecast output {_field} does not match the bound input",
             )
+        # W16 (mutation patrol): the historical observations — including any
+        # declared revenue_basis metadata — are part of the bound input; a
+        # rehashed output with a rewritten basis (operations, statement
+        # status, components, conversion) must fail instead of silently
+        # re-anchoring the forecast on a different measurement basis.
+        require(
+            result.get("historical_revenue") == data.get("historical_revenue"),
+            "forecast output historical_revenue does not match the bound "
+            "input (year, value, sources, claims or revenue_basis drifted)",
+        )
     if requires_bound_input_schema(result["schema_version"]):
         require(
             "management_target_coverage" in result,
@@ -1503,6 +1518,94 @@ def _escape(value: Any) -> str:
     return str(value).replace("|", "\\|").replace("\n", " ")
 
 
+def _historical_basis_view_for_result(result: dict[str, Any]) -> dict[str, Any]:
+    """W16: additive basis diagnostics computed by the shared owner.
+
+    Reads only fields the engine already published (the verbatim historical
+    records and the embedded input document); it adds no new result key and
+    never promotes an undeclared basis to verified.
+    """
+    document = result.get("input_document") or {}
+    return historical_basis_view(
+        result.get("historical_revenue", []),
+        base_year=result["base_year"],
+        reported_total_revenue_parameter_id=document.get(
+            "reported_total_revenue_parameter_id", "—"
+        ),
+        reported_total_value=result["base_revenue"],
+        reconciliation_tolerance=document.get("reconciliation_tolerance", 1e-6),
+    )
+
+
+def _basis_comparability_lines(view: dict[str, Any]) -> list[str]:
+    lines = ["", "### 口径可比性", ""]
+    if not view["comparability"]:
+        lines.append("- 仅一条历史观测，不存在跨年比较。")
+        return lines
+    for pair in view["comparability"]:
+        growth = pair["year_over_year_growth"]
+        growth_cell = "同比未定义" if growth is None else f"同比 {_pct(growth)}"
+        if pair["year_over_year_reason"]:
+            growth_cell = f"{growth_cell}（{pair['year_over_year_reason']}）"
+        if pair["status"] == "comparable":
+            lines.append(
+                f"- FY{pair['left_year']}→FY{pair['right_year']}：同口径可比；{growth_cell}。"
+            )
+        elif pair["status"] == "not_comparable":
+            lines.append(
+                f"- FY{pair['left_year']}→FY{pair['right_year']}：不可比"
+                f"（{_escape(pair['reason'])}）；观测值保留，不得当作可比增长；"
+                f"{growth_cell}仅按数值列示。"
+            )
+        else:
+            lines.append(
+                f"- FY{pair['left_year']}→FY{pair['right_year']}：口径未声明"
+                f"（{_escape(pair['reason'])}）；沿用既有数值比较，不视为已核实口径；"
+                f"{growth_cell}。"
+            )
+    return lines
+
+
+def _base_adoption_lines(
+    view: dict[str, Any], result: dict[str, Any]
+) -> list[str]:
+    adoption = view["base_adoption"]
+    lines = ["", "### 基数采用", ""]
+    if not adoption.get("adopted"):
+        lines.append(f"- 基期年 {adoption['year']} 无采用观测：{adoption['reason']}。")
+        return lines
+    if adoption["basis_declared"]:
+        basis_cell = (
+            f"{OPERATIONS_LABELS.get(adoption['operations'], adoption['operations'])}"
+            f"/"
+            f"{STATEMENT_LABELS.get(adoption['statement_status'], adoption['statement_status'])}"
+        )
+    else:
+        basis_cell = "未声明"
+    conversion_cell = (
+        "附DU5换算记录（见上表换算列）"
+        if adoption["conversion_applied"]
+        else "未附原始值换算记录"
+    )
+    match_cell = (
+        "与报告总额参数一致"
+        if adoption["matches_reported_total"]
+        else "与报告总额参数不一致（超出容差）"
+    )
+    sources = ", ".join(adoption.get("source_ids", [])) or "—"
+    lines.append(
+        f"- 实际采用 FY{adoption['year']} 历史观测"
+        f"（{_num(adoption['value'])} {_escape(result['currency'])} "
+        f"{_escape(result['unit'])}，口径 {basis_cell}，来源 {_escape(sources)}）"
+        f"作为预测基数锚点；{match_cell}"
+        f"（参数 {_escape(adoption['reported_total_revenue_parameter_id'])} = "
+        f"{_num(adoption['reported_total_value'])}，容差 "
+        f"{adoption['reconciliation_tolerance']:g}，差值 {_num(adoption['difference'])}）；"
+        f"{conversion_cell}。"
+    )
+    return lines
+
+
 def render_markdown(result: dict[str, Any]) -> str:
     # REV-06 (ZR-705): a draft result may be rendered without publishing.
     # Draft receipts skip the formal-only strong validation (which requires
@@ -1568,11 +1671,32 @@ def render_markdown(result: dict[str, Any]) -> str:
                     f"（Base终年影响 {_num(driver['estimated_base_terminal_increment'])}）"
                 )
 
-    lines.extend(["", "## 历史营收", "", "| 年度 | 营收 | 来源ID |", "|---:|---:|---|"])
-    for record in result["historical_revenue"]:
+    lines.extend(
+        [
+            "",
+            "## 历史营收",
+            "",
+            "| 年度 | 营收 | 口径 | 换算 | 来源ID |",
+            "|---:|---:|---|---|---|",
+        ]
+    )
+    basis_view = _historical_basis_view_for_result(result)
+    for record, row in zip(result["historical_revenue"], basis_view["records"]):
+        basis_cell = "未声明"
+        if row["declared"]:
+            basis_cell = (
+                f"{OPERATIONS_LABELS[row['operations']]}"
+                f"/{STATEMENT_LABELS[row['statement_status']]}"
+            )
+        conversion_cell = "—"
+        if row["conversion"] is not None:
+            conversion_cell = _escape(row["conversion"]["conversion"])
         lines.append(
-            f"| {record['year']} | {_num(record['value'])} | {_escape(', '.join(record['source_ids']))} |"
+            f"| {record['year']} | {_num(record['value'])} | {basis_cell} | "
+            f"{conversion_cell} | {_escape(', '.join(record['source_ids']))} |"
         )
+    lines.extend(_basis_comparability_lines(basis_view))
+    lines.extend(_base_adoption_lines(basis_view, result))
 
     coverage = result["research_coverage"]
     counts = coverage["counts"]

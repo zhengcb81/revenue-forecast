@@ -2,7 +2,7 @@
 
 ## Next Step
 
-A：核对冻结版本和写范围，读取construction_card.md全部需求，复用既有owner与测试，冻结实际缺口、输入与正反例。随后直接进入B/C；不等ROOT额外签收。
+B：按冻结设计先写 RED 测试（tests/test_w16_revenue_basis.py 单元 + tests/test_w16_revenue_basis_cli.py CLI E2E 矩阵），实现 `scripts/research/revenue_basis.py` 单一 owner，接线 contracts/document.py、revenue_report.py、lint_input.py、generate_input_template.py；legacy 与 golden 行为保持。
 
 ## 目标
 
@@ -10,7 +10,7 @@ A：核对冻结版本和写范围，读取construction_card.md全部需求，�
 
 ## 大节点
 
-- [ ] A 真实边界/既有PWF与代码调查；先冻结独立预期和接口。
+- [x] A 真实边界/既有PWF与代码调查；先冻结独立预期和接口。（2026-10-25：缺口/设计/E2E矩阵/B07来源已冻结入 findings.md）
 - [ ] B 根因TDD、共享owner实现或薄编排；兼容与实际入口接线。
 - [ ] C 集中相关单元/集成/CLI端到端，独立agent完整审查，全部修复/复测/复审。
 - [ ] 提交代码与独立审查证据，handoff.md/json、恢复/空间收据齐全。
