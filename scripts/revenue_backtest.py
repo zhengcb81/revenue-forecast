@@ -515,14 +515,18 @@ def _accuracy_record(evaluation: dict[str, Any]) -> dict[str, Any]:
 
 def _benchmark_diagnostics(forecast: dict[str, Any], records: dict[str, Any]) -> dict[str, Any]:
     """Use only frozen training history; scenario bounds are not quantiles."""
+    from research.revenue_basis import history_basis_status
+
     history = forecast["historical_revenue"]
+    basis_status, basis_reasons = history_basis_status(history)
+    usable_history = basis_status in ("comparable", "legacy_numeric_only")
     values = [float(row["value"]) for row in history]
-    differences = [right - left for left, right in zip(values, values[1:])]
+    differences = [right - left for left, right in zip(values, values[1:])] if usable_history else []
     absolute_scale = None if not differences else sum(map(abs, differences)) / len(differences)
     square_scale = None if not differences else sum(d * d for d in differences) / len(differences)
     base = float(forecast["base_revenue"])
     growth = None
-    if len(history) >= 2 and values[0] > 0:
+    if usable_history and len(history) >= 2 and values[0] > 0:
         growth = calculate_cagr(values[0], values[-1], history[-1]["year"] - history[0]["year"])
     flat_errors = []
     growth_errors = []
@@ -540,6 +544,8 @@ def _benchmark_diagnostics(forecast: dict[str, Any], records: dict[str, Any]) ->
     model_error = sum(row["absolute_error"] for row in records.values())
     count = len(records)
     return {
+        "historical_basis_status": basis_status,
+        "historical_basis_reasons": basis_reasons,
         "training_observations": len(history),
         "naive_training_mae": absolute_scale,
         "naive_training_mse": square_scale,

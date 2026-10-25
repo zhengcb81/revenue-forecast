@@ -1559,7 +1559,7 @@ def _basis_comparability_lines(view: dict[str, Any]) -> list[str]:
             )
         else:
             lines.append(
-                f"- FY{pair['left_year']}→FY{pair['right_year']}：口径未声明"
+                f"- FY{pair['left_year']}→FY{pair['right_year']}：口径未声明或可比依据不足"
                 f"（{_escape(pair['reason'])}）；沿用既有数值比较，不视为已核实口径；"
                 f"{growth_cell}。"
             )

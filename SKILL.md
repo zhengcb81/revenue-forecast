@@ -28,6 +28,10 @@ default; `--apply` updates only the files the package owns and preserves
 unknown files, user configuration and `output`) is a repository tool for the
 same reason.
 
+## Historical revenue basis
+
+When history is restated, operations change or the adopted base differs from the consolidated total, read [revenue basis](references/revenue-basis.md). Use the shared owner and actual source-linked comparison schedule; equal labels do not establish comparability.
+
 ## Versioning
 
 `SKILL_VERSION` in `scripts/revenue_core.py` is the runtime source of truth;

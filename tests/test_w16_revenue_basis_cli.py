@@ -27,6 +27,7 @@ from test_w16_revenue_basis import (  # noqa: E402
     _add_component_claims,
     _basis,
     _record_for_year,
+    supported_basis,
 )
 
 
@@ -138,6 +139,8 @@ class SameBasisSuite(CliCaseRunner):
             },
             components=parts,
         )
+        for row in data["historical_revenue"]:
+            supported_basis(data, row, status="as_reported")
         completed = self._run(
             data, case_dir="基期 口格 same basis", expect_success=True
         )
@@ -242,7 +245,7 @@ class DiagnosticsSuite(CliCaseRunner):
     def test_matching_restatements_are_comparable(self) -> None:
         data = forecast_document()
         for record in data["historical_revenue"]:
-            record["revenue_basis"] = _basis(statement_status="restated")
+            supported_basis(data, record)
         self._run(data, case_dir="diag_bridged", expect_success=True)
         markdown = self._markdown("diag_bridged")
         self.assertIn("同口径可比", markdown)

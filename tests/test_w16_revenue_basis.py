@@ -88,6 +88,20 @@ def _basis(
     return basis
 
 
+def supported_basis(data, record, *, operations="total", status="restated", boundary="group-A", group="restatement-2025"):
+    year = record["year"]
+    basis = record.get("revenue_basis", _basis())
+    basis.update(operations=operations, statement_status=status)
+    claim_id = f"basis_policy_{year}_{operations}"
+    source = data["sources"][0]
+    claim = _claim(claim_id, source["source_id"], "historical_revenue", f"historical_revenue:{year}",
+                   "policy_support", "Both comparative years reflect the same disclosed group perimeter and restatement schedule.", data["as_of_date"])
+    claim["capture_receipt_sha256"] = source["capture"]["receipt_sha256"]
+    data["evidence_claims"].append(claim)
+    basis.update(business_boundary_id=boundary, comparison_group_id=group, basis_claim_ids=[claim_id])
+    record["revenue_basis"] = basis
+    return basis
+
 class OwnerTests(unittest.TestCase):
     def test_schema_version_is_explicit(self) -> None:
         self.assertEqual(REVENUE_BASIS_SCHEMA_VERSION, "rf-revenue-basis/1")
@@ -119,7 +133,7 @@ class OwnerTests(unittest.TestCase):
         restated = _basis(statement_status="restated")
 
         status, _ = basis_comparable(total, same)
-        self.assertEqual(status, "comparable")
+        self.assertEqual(status, "not_declared")
 
         status, reason = basis_comparable(total, continuing)
         self.assertEqual(status, "not_comparable")
@@ -458,7 +472,7 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(adoption["operations"], "total")
         self.assertEqual(adoption["statement_status"], "as_reported")
         self.assertTrue(adoption["matches_reported_total"])
-        self.assertEqual(view["comparability"][0]["status"], "comparable")
+        self.assertEqual(view["comparability"][0]["status"], "not_declared")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,11 @@
+# Historical revenue basis
+
+`research/revenue_basis.py` owns declarations, claim linkage, component consistency, comparison and base adoption. Contracts, reports and backtests use it. Optional `revenue_basis` (`rf-revenue-basis/1`) describes `operations` (`total`, `continuing`, `discontinued`), `statement_status` (`as_reported`, `restated`), fiscal-year `period_kind`, DU5 `input_quantity` and optional total components.
+
+Equal labels or currencies alone never prove comparability. Comparable declarations require matching `business_boundary_id` and `comparison_group_id`, plus `basis_claim_ids` referencing existing `policy_support` claims targeted to each historical observation and its sources. Group IDs name an actual source-disclosed restatement/comparison schedule; never invent a group to force comparability. The claim excerpt must support that boundary and comparative treatment. Structural linkage does not independently verify excerpt meaning; the company audit must read it. Different operations, status or explicit boundary/group are incomparable; missing support stays undeclared. Preserve values and disclose numeric-only comparisons.
+
+Components must include both continuing and discontinued operations, exact-value claims tied to their own sources/year/unit, and Decimal reconciliation. Any explicit statement status, boundary, comparison group or period must agree with the total. Missing component fields inherit the total declaration; do not claim a relation unsupported by the excerpts.
+
+The existing reported revenue parameter may itself declare `revenue_basis`, with its policy claims targeted to the parameter. The adopted base observation must match this declared basis, including continuing operations where that is the actually reported anchor; numeric equality alone cannot substitute a continuing figure for a consolidated total. Without a parameter declaration the existing total anchor applies.
+
+History-dependent CAGR/MASE/RMSSE benchmarks use the same comparison owner. Explicit incompatible or insufficient declarations leave these metrics unavailable with a reason; flat-base and ordinary forecast error remain available. Inputs with no basis declarations preserve legacy numeric benchmarking, labelled `legacy_numeric_only`, not verified comparability. No new signing, permission, manual receipt or database is introduced.

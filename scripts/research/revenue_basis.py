@@ -62,6 +62,9 @@ _BASIS_KEYS = {
     "input_quantity",
     "components",
     "source_ids",
+    "business_boundary_id",
+    "comparison_group_id",
+    "basis_claim_ids",
 }
 _COMPONENT_OPERATIONS = ("continuing", "discontinued")
 
@@ -113,8 +116,7 @@ def parse_revenue_basis(record: Any) -> dict[str, Any] | None:
     )
     require(
         basis.get("statement_status") in STATEMENT_STATUSES,
-        f"{field}.statement_status must be one of "
-        f"{', '.join(STATEMENT_STATUSES)}",
+        f"{field}.statement_status must be one of {', '.join(STATEMENT_STATUSES)}",
     )
     if "period_kind" in basis:
         require(
@@ -124,13 +126,28 @@ def parse_revenue_basis(record: Any) -> dict[str, Any] | None:
     if "source_ids" in basis:
         source_ids = basis["source_ids"]
         require(
-            isinstance(source_ids, list) and source_ids
+            isinstance(source_ids, list)
+            and source_ids
             and all(isinstance(item, str) and item.strip() for item in source_ids),
             f"{field}.source_ids must be a non-empty list of source ids",
         )
         require(
             len(source_ids) == len(set(source_ids)),
             f"{field}.source_ids must not contain duplicates",
+        )
+    for key in ("business_boundary_id", "comparison_group_id"):
+        if key in basis:
+            require(
+                isinstance(basis[key], str) and basis[key].strip(),
+                f"{field}.{key} must be nonempty text",
+            )
+    if "basis_claim_ids" in basis:
+        ids = basis["basis_claim_ids"]
+        require(
+            isinstance(ids, list)
+            and ids
+            and all(isinstance(i, str) and i.strip() for i in ids),
+            f"{field}.basis_claim_ids must be nonempty claim ids",
         )
     if "components" in basis:
         _parse_components(basis["components"], field)
@@ -185,6 +202,8 @@ def validate_basis_against_document(
     data: dict[str, Any],
     source_index: dict[str, dict[str, Any]],
     claim_index: dict[str, dict[str, Any]],
+    target_type: str = "historical_revenue",
+    target_id: str | None = None,
 ) -> None:
     """Enforce every rule that needs the surrounding document.
 
@@ -216,6 +235,35 @@ def validate_basis_against_document(
             basis["input_quantity"], record=record, data=data, field=field
         )
 
+    if any(
+        key in basis
+        for key in ("business_boundary_id", "comparison_group_id", "basis_claim_ids")
+    ):
+        require(
+            all(
+                basis.get(key)
+                for key in (
+                    "business_boundary_id",
+                    "comparison_group_id",
+                    "basis_claim_ids",
+                )
+            ),
+            f"{field} comparison declaration requires business_boundary_id, comparison_group_id and basis_claim_ids",
+        )
+        policy_claims = validate_claim_ids(
+            basis.get("basis_claim_ids"),
+            claim_index,
+            target_type,
+            target_id or f"historical_revenue:{year}",
+            field,
+            "policy_support",
+        )
+        allowed_sources = set(basis.get("source_ids") or record.get("source_ids", []))
+        require(
+            all(claim["source_id"] in allowed_sources for claim in policy_claims),
+            f"{field}.basis_claim_ids source must belong to the observation",
+        )
+
     components = basis.get("components")
     if components is not None:
         require(
@@ -231,6 +279,31 @@ def validate_basis_against_document(
         )
         for position, component in enumerate(components):
             component_field = f"{field}.components[{position}]"
+            allowed_keys = {
+                "operations",
+                "value",
+                "source_ids",
+                "claim_ids",
+                "statement_status",
+                "business_boundary_id",
+                "comparison_group_id",
+                "period_kind",
+            }
+            require(
+                not (set(component) - allowed_keys),
+                f"{component_field} has unsupported keys",
+            )
+            for key in (
+                "statement_status",
+                "business_boundary_id",
+                "comparison_group_id",
+                "period_kind",
+            ):
+                if key in component:
+                    require(
+                        component[key] == basis.get(key),
+                        f"{component_field}.{key} conflicts with total basis",
+                    )
             for source_id in component["source_ids"]:
                 require(
                     source_id in source_index,
@@ -243,6 +316,10 @@ def validate_basis_against_document(
                 f"historical_revenue:{year}",
                 component_field,
                 "exact_value",
+            )
+            require(
+                all(claim["source_id"] in component["source_ids"] for claim in claims),
+                f"{component_field}.claim_ids source must belong to the component",
             )
             component_value = finite_number(
                 component["value"], f"{component_field}.value"
@@ -271,25 +348,39 @@ def validate_basis_against_document(
 
 
 def require_total_operations_for_base(
-    basis: dict[str, Any] | None, *, year: int
+    basis: dict[str, Any] | None,
+    *,
+    year: int,
+    reported_basis: dict[str, Any] | None = None,
 ) -> None:
-    """The opening bridge depends on the consolidated total (B03/B06).
+    """Align the adopted observation with the actual reported parameter.
 
-    A base-year observation declared as continuing or discontinued
-    operations is an invalid comparison the model actually depends on —
-    segments and adjustments reconcile to the reported total, so mixing a
-    partial-operations figure into that anchor would restate the base. An
-    undeclared (legacy) record keeps the numeric-only pre-W16 check.
+    A legacy parameter means consolidated total. An explicitly continuing
+    reported parameter can anchor continuing revenue; no numeric equality
+    silently changes its business or statement basis.
     """
-    if basis is None:
+    if basis is None and reported_basis is None:
+        return
+    if reported_basis is None:
+        require(
+            basis is not None and basis["operations"] == "total",
+            f"historical revenue base-year FY{year} operations={basis.get('operations') if basis else None}; undeclared reported parameter requires operations=total",
+        )
         return
     require(
-        basis["operations"] == "total",
-        f"historical revenue base-year observation FY{year} declares "
-        f"operations={basis['operations']}; the reported base the forecast "
-        "anchors on must be the consolidated total (declare operations=total "
-        "or move the partial-operations figure to its own observation series)",
+        basis is not None,
+        f"historical revenue base-year FY{year} must declare the reported parameter basis",
     )
+    for key in (
+        "operations",
+        "statement_status",
+        "business_boundary_id",
+        "comparison_group_id",
+    ):
+        require(
+            basis.get(key) == reported_basis.get(key),
+            f"historical revenue base-year FY{year} {key} differs from reported parameter basis",
+        )
 
 
 def _extract_matches(claim: dict[str, Any], value: float) -> bool:
@@ -322,9 +413,7 @@ def validate_historical_claim_alignment(
     keeps the historical record messages byte-compatible).
     """
     require(
-        any(
-            _extract_matches(claim, value) for claim in claims
-        ),
+        any(_extract_matches(claim, value) for claim in claims),
         f"{label}claim value mismatch: {year}",
     )
     require(
@@ -362,16 +451,15 @@ def _validate_history_input_quantity(
     engine_scale = money_unit_scale_factor(engine_unit)
     document_scale = money_scale_factor(data["unit"])
     require(
-        engine_scale is not None and document_scale is not None
+        engine_scale is not None
+        and document_scale is not None
         and math.isclose(engine_scale, document_scale, rel_tol=0, abs_tol=0),
         f"{quantity_field}.engine_unit {engine_unit} scale does not match the "
         f"document unit {data['unit']}; engine_value must be expressed in the "
         "document unit, so convert the scale at construction",
     )
     require(
-        math.isclose(
-            expected["engine_value"], value, rel_tol=1e-9, abs_tol=1e-9
-        ),
+        math.isclose(expected["engine_value"], value, rel_tol=1e-9, abs_tol=1e-9),
         f"{quantity_field}.engine_value {expected['engine_value']} does not "
         f"match historical_revenue[{year}].value {value}; convert to the "
         "document unit at construction",
@@ -384,7 +472,7 @@ def basis_comparable(
     """Same unit is not the same basis (B03).
 
     Returns ``(status, reason)`` with status ``comparable`` (both declared,
-    same operations and statement status), ``not_comparable`` (both
+    same operations, statement status, source-linked comparison group and business boundary), ``not_comparable`` (both
     declared, different basis — the reason names the differing field) or
     ``not_declared`` (at least one side carries no declaration; the numeric
     legacy comparison stays available but is never reported as verified).
@@ -408,7 +496,43 @@ def basis_comparable(
             "without an explicit restatement bridge the figures are not "
             "silently comparable",
         )
-    return ("comparable", "")
+    for key in ("business_boundary_id", "comparison_group_id"):
+        if left.get(key) and right.get(key) and left[key] != right[key]:
+            return ("not_comparable", f"{key} differs ({left[key]} vs {right[key]})")
+    if not all(
+        item.get(key)
+        for item in (left, right)
+        for key in ("business_boundary_id", "comparison_group_id", "basis_claim_ids")
+    ):
+        return (
+            "not_declared",
+            "shared business boundary/comparison group with source-linked policy claims not declared",
+        )
+    return (
+        "comparable",
+        "source-linked comparison declaration; not an independent semantic approval",
+    )
+
+
+def history_basis_status(history: list[dict[str, Any]]) -> tuple[str, list[str]]:
+    """Legacy numerics remain available; explicit uncertain bases never seed benchmarks."""
+    if not any("revenue_basis" in row for row in history):
+        return "legacy_numeric_only", [
+            "basis not declared; legacy numeric benchmark, not verified comparable"
+        ]
+    pairs = [
+        basis_comparable(a.get("revenue_basis"), b.get("revenue_basis"))
+        for a, b in zip(history, history[1:])
+    ]
+    if any(status == "not_comparable" for status, _ in pairs):
+        return "not_comparable", [
+            reason for status, reason in pairs if status != "comparable"
+        ]
+    if not pairs or any(status != "comparable" for status, _ in pairs):
+        return "not_declared", [
+            reason for status, reason in pairs if status != "comparable"
+        ]
+    return "comparable", []
 
 
 def year_over_year(left_value: float, right_value: float) -> tuple[float | None, str]:
@@ -476,7 +600,9 @@ def historical_basis_view(
                 "operations": basis["operations"],
                 "statement_status": basis["statement_status"],
                 "period_kind": basis.get("period_kind"),
-                "conversion": None if quantity is None else {
+                "conversion": None
+                if quantity is None
+                else {
                     "value": quantity.get("value"),
                     "input_unit": quantity.get("input_unit"),
                     "engine_unit": quantity.get("engine_unit"),
@@ -531,9 +657,7 @@ def historical_basis_view(
             "value": value,
             "source_ids": list(base_record.get("source_ids", [])),
             "operations": None if basis is None else basis["operations"],
-            "statement_status": (
-                None if basis is None else basis["statement_status"]
-            ),
+            "statement_status": (None if basis is None else basis["statement_status"]),
             "period_kind": basis.get("period_kind") if basis else None,
             "conversion_applied": "input_quantity" in (basis or {}),
             "reported_total_revenue_parameter_id": (

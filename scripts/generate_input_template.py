@@ -321,8 +321,11 @@ def build_template(
                 "of the raw disclosed value/unit to the document unit) and "
                 "optional components (continuing+discontinued exact-value claims "
                 "that must Decimal-reconcile to the total). Undeclared records "
-                "keep the legacy behavior; the base-year observation must "
-                "declare operations=total."
+                "keep legacy numeric behavior. Verified comparability needs a shared "
+                "business_boundary_id/comparison_group_id and basis_claim_ids "
+                "targeting existing policy_support claims for each observation. "
+                "The base must match the reported parameter revenue_basis; "
+                "an undeclared reported parameter means operations=total."
             )
         ),
         "schema_version": schema_version,

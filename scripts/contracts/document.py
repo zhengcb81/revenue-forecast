@@ -173,6 +173,15 @@ def validate_historical_revenue(
     )
     years: set[int] = set()
     normalized: list[tuple[int, float]] = []
+    reported_parameter = parameter_index[data["reported_total_revenue_parameter_id"]]
+    reported_basis = parse_revenue_basis(reported_parameter)
+    if reported_basis is not None:
+        require("components" not in reported_basis, "reported parameter revenue_basis cannot carry historical components")
+        validate_basis_against_document(reported_basis,
+            record={"year": data["base_year"], "value": reported_parameter["value"],
+                    "source_ids": reported_parameter.get("source_ids", [])},
+            data=data, source_index=source_index, claim_index=claim_index,
+            target_type="parameter", target_id=reported_parameter["parameter_id"])
     for position, record in enumerate(history):
         require(
             isinstance(record, dict),
@@ -227,7 +236,9 @@ def validate_historical_revenue(
                 claim_index=claim_index,
             )
             if year == data["base_year"]:
-                require_total_operations_for_base(basis, year=year)
+                require_total_operations_for_base(basis, year=year, reported_basis=reported_basis)
+        elif year == data["base_year"] and reported_basis is not None:
+            require_total_operations_for_base(None, year=year, reported_basis=reported_basis)
         normalized.append((year, value))
     require(
         normalized == sorted(normalized), "historical_revenue must be ordered by year"
