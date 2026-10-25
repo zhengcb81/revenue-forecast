@@ -174,9 +174,11 @@ def _check_references(
                         f"claim {cid} does not support historical_revenue:{year}",
                     )
                 )
-        # W16: the optional revenue_basis is validated by the shared owner so
-        # the linter and the engine report the same rule; undeclared (legacy)
-        # records produce no finding.
+        # W16: the optional revenue_basis is structurally validated by the
+        # shared owner (same parse rule as the engine's fail-fast path);
+        # document-level checks (component bridge, claim alignment, base-year
+        # basis) remain engine-owned. Undeclared (legacy) records produce no
+        # finding.
         if "revenue_basis" in record:
             try:
                 parse_revenue_basis(record)
