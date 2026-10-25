@@ -1,0 +1,133 @@
+{
+  "schema_version": "r1-harness-handoff/1",
+  "package_id": "W16-RF-BASIS",
+  "status": "COMPLETE",
+  "repo": "C:/Users/郑曾波/Projects/revenue-forecast",
+  "workdir": "C:/Users/郑曾波/Projects/revenue-forecast-w16-basis",
+  "branch": "codex/w16-rf-basis-20261025",
+  "base_code_commit": "094d55ad884e4a886b1537c0e76f3a0bede16ca2",
+  "start_head": "97e7e149",
+  "final_code_commit": "95c25c4b",
+  "final_head": "95c25c4b",
+  "changed_paths": [
+    "scripts/research/revenue_basis.py",
+    "scripts/research/input_quantities.py",
+    "scripts/contracts/document.py",
+    "scripts/revenue_report.py",
+    "scripts/lint_input.py",
+    "scripts/generate_input_template.py",
+    "tests/test_w16_revenue_basis.py",
+    "tests/test_w16_revenue_basis_cli.py",
+    "docs/plans/w16-rf-basis-2026-10-25/findings.md",
+    "docs/plans/w16-rf-basis-2026-10-25/progress.md",
+    "docs/plans/w16-rf-basis-2026-10-25/task_plan.md",
+    "delivery/w16/handoff.md",
+    "delivery/w16/handoff.json",
+    "delivery/w16/review.md",
+    "delivery/w16/review.json",
+    "delivery/w16/independent_review.md",
+    "delivery/w16/review_s1.md",
+    "delivery/w16/review_s2.md",
+    "delivery/w16/review_s3.md",
+    "delivery/w16/review_s4.md",
+    "delivery/w16/review_s5.md",
+    "delivery/w16/review_s6_exec.md"
+  ],
+  "requirements": [
+    {"id": "B01", "status": "PASS", "evidence": "findings.md A节：全仓grep无continuing/discontinued/restated；validate_historical_revenue口径盲；历史无DU5换算路径；backtest盲算CAGR记interface_request"},
+    {"id": "B02", "status": "PASS", "evidence": "可选revenue_basis(rf-revenue-basis/1)复用DU5/claim层；缺元数据旧行为（test_legacy_history_is_unchanged）；not_declared不说成已核实（S2审查PASS）"},
+    {"id": "B03", "status": "PASS", "evidence": "basis_comparable三态+保留观测+理由；base-year operations!=total清晰错误仅声明时；混合statement成功+不可比诊断（CLI diag_no_bridge）；无人工审查门"},
+    {"id": "B04", "status": "PASS", "evidence": "components双侧+claims exact_value对齐+FY{year}钉死+Decimal+文档容差（S3五项PASS）；无重述自动转换；无桥不自造调整；非基年同样生效"},
+    {"id": "B05", "status": "PASS", "evidence": "validate_document→run_forecast→CLI→render_markdown全链；结果historical_revenue钉死=绑定输入（S6四篡改变体全拦截）；报告基数采用段说明实际观测/容差/换算（S4 PASS）"},
+    {"id": "B06", "status": "PASS", "evidence": "CLI 9案例矩阵（含ytd）断言stderr消息或输出JSON/Markdown内容；中文/空格目录成功+错误两用；S6独立复跑端到端"},
+    {"id": "B07", "status": "PASS", "evidence": "三源只读校对：药明康德p7/p235本地PDF直核（SHA 7f1431d6…不变）、安踏p.188 HK/IFRS18、中芯国际p.209/131-132/189；精确locator/单位/期间；0下载0模型"},
+    {"id": "B08", "status": "PASS", "evidence": "单一owner research/revenue_basis.py；S1确认无公司名/页码/特判数值；未新增旧输入阻断；claim对齐消息字节兼容（S5逐字符比对+实测）"}
+  ],
+  "tests": [
+    {"command": "python -m pytest -q tests/test_w16_revenue_basis.py tests/test_w16_revenue_basis_cli.py", "exit": 0, "count": "41 passed", "time_s": 27.7},
+    {"command": "python -m pytest -q tests/test_w16_revenue_basis.py tests/test_w16_revenue_basis_cli.py tests/test_input_quantity_conversion.py tests/test_du5_root_unit_boundaries.py", "exit": 0, "count": "85 passed", "time_s": 24.8},
+    {"command": "python -m pytest -q tests/test_data_contract.py tests/test_recognition_bridge.py tests/test_publication_pipeline.py tests/test_golden_behavior_lock.py tests/test_management_targets.py tests/test_du8_target_report_roundtrip.py", "exit": 0, "count": "131 passed, 7 skipped", "time_s": 14.9},
+    {"command": "python -m pytest -q tests/test_backtest.py tests/test_buy_side_accuracy.py tests/test_evidence_input_lineage.py tests/test_input_semantics_e2e.py", "exit": 0, "count": "71 passed", "time_s": 20.5},
+    {"command": "python -m pytest -q tests/test_lint_input.py tests/test_generate_input_template.py", "exit": 0, "count": "23+39 passed", "time_s": 8.6},
+    {"command": "python -m pytest -q tests/test_data_contract.py tests/test_recognition_bridge.py tests/test_publication_pipeline.py tests/test_golden_behavior_lock.py tests/test_du5_money_unit_registry.py tests/test_input_quantity_conversion.py tests/test_du5_root_unit_boundaries.py tests/test_lint_input.py", "exit": 0, "count": "172 passed, 1 skipped, 59 subtests", "time_s": 4.1},
+    {"command": "python tools/pre_push_gate.py", "exit": 0, "count": "595 passed, 1 skipped, 36 subtests (plus ruff/mypy clean)", "time_s": 91.0}
+  ],
+  "independent_review": {
+    "reviewer_independent_of_implementation": true,
+    "reviewed_code_commit": "cb60bd21（S6执行型）；95c25c4b仅lint注释措辞（S3-1处置），其后再无代码变更",
+    "reviewed_file_sha256": {
+      "scripts/research/revenue_basis.py": "9c4d0f3d7ed9da924fc9d4a92b5ca0c3c3eaaba58cf2ebe33127d8b111f92bd0",
+      "scripts/research/input_quantities.py": "b4160bbd73d539b79f5edf00bedef6f1a3bd9071a3475bef06ee6342bb9406c1",
+      "scripts/contracts/document.py": "5264ca96c3b435f2b7c6c5aea2d1a55ec4b967b7259c7f90ab5a1f141974d1f3",
+      "scripts/revenue_report.py": "56f59db1decc0f1e30059abbc5d3e1b731039f377fc1d0f0ea9e3f8810c5e95c",
+      "scripts/lint_input.py": "2814b157faad471dda24e363f03da38c84933f651f7c3f72b82206829e4f25f1",
+      "scripts/generate_input_template.py": "e8070d73b192da242ca155d2a326d49c92c5914dcb41868f2d15110542720270",
+      "tests/test_w16_revenue_basis.py": "9e257d2cb83b28888eaf0c1594b7c8bd0d15dba4820998c8a953699a75365904",
+      "tests/test_w16_revenue_basis_cli.py": "733763ff3631ce15a0ee891341514ecd75949f839c199cd57d1fa7a58854b6c2",
+      "delivery/w16/review_s1.md": "8d8aea8350192222ff22b5484003a16470380fde0eb3b71090417e3ae3fedb56",
+      "delivery/w16/review_s2.md": "486765f9567f772cfd2242f2c21348ce830e4b6da31ceac94d8f34d7cb0a46e6",
+      "delivery/w16/review_s3.md": "685b3fd8fc0240cbe3b5ce58194958304503a9b473f922fa5f64c3362f3f44a7",
+      "delivery/w16/review_s4.md": "a3c2446b0f6c3dd6fce63fa1db25a79910f988530674b3c8f133a48cbc9e1fa1",
+      "delivery/w16/review_s5.md": "92c5d01283551c2f28c6c02ed0e13a3bc2c0f445bceea63d07e8ffaf6b924e6e",
+      "delivery/w16/review_s6_exec.md": "1611657a755ef4afee7b1f823bd81a779a05b8bec3ed1a33581a95963237631a",
+      "delivery/w16/independent_review.md": "见最终提交版本",
+      "delivery/w16/review.md": "见最终提交版本"
+    },
+    "report_md": "delivery/w16/independent_review.md（汇总入口）+ review_s1…review_s6_exec.md（分片原始报告）",
+    "report_json": "delivery/w16/review.json",
+    "independently_executed_key_chain": "S6独立运行：W16 41测试PASS；回归41 PASS；真实CLI端到端（中文+空格目录，REVENUE_PUBLICATION_REGISTRY隔离）exit 0，out.json保留basis/input_quantity/components、out.md口径可比性/基数采用内容断言通过",
+    "new_counterexample": "S6自建7反例：反向restated/as_reported混合（正确放行+标不可比）；非基年components（正确放行）；篡改簇4变体——改组件值/改engine_value/删input_document/自洽伪造（均重算result_sha256，全部正确拒绝）；USD billions复数拼写（正确拒绝unknown unit）；claim期间FY2024挂2025（正确拒绝claim period mismatch）",
+    "findings": [
+      {"id": "S5-1", "severity": "Medium", "resolution": "fixed: DU5公共money_unit_currency/money_unit_scale_factor+尺度一致性校验（cb60bd21）"},
+      {"id": "S2-1", "severity": "Low", "resolution": "fixed: 同S5-1根因，删除复制的归一化正则（cb60bd21）"},
+      {"id": "S3-2", "severity": "Low", "resolution": "fixed: component非负require（cb60bd21）"},
+      {"id": "S5-2", "severity": "Low", "resolution": "fixed: _extract_matches安全比较（cb60bd21）"},
+      {"id": "S4-1", "severity": "Low", "resolution": "fixed: ytd CLI案例（cb60bd21）"},
+      {"id": "S4-2", "severity": "Info", "resolution": "fixed incidentally: 中文目录错误案例+UTF-8子进程管道（cb60bd21）"},
+      {"id": "S3-1", "severity": "Low", "resolution": "fixed: lint注释如实声明范围（95c25c4b）"},
+      {"id": "S2-2", "severity": "Info", "resolution": "recorded-not-fixed: 加法诊断为允许输出，渲染措辞符合B02"},
+      {"id": "S5-3", "severity": "Info", "resolution": "recorded-not-fixed: 观感问题不影响机读"}
+    ],
+    "unresolved_in_scope_count": 0,
+    "final_verdict": "PASS"
+  },
+  "cleanup": {
+    "owned_roots": ["系统temp下 w16_cli_*（CLI测试，tearDown核验后rmtree）", "S6审查者自建temp目录（核验后删除）"],
+    "before_inventory": "git status: 干净（seed 97e7e149）",
+    "after_inventory": "git status: 仅本卡delivery/PWF/交付文件已提交；工作树干净",
+    "original_sha_unchanged": true,
+    "production_writes": false,
+    "unrelated_wip_preserved": true
+  },
+  "usage": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "downloads": 0,
+    "external_network_calls": 0,
+    "persistent_added_bytes": "约1600行文本（代码+测试+交付文档），无二进制",
+    "fixture_bytes": 0
+  },
+  "compatibility": [
+    "无revenue_basis的历史记录：校验路径与错误消息字节级不变（S5逐字符比对+既有回归锁定）",
+    "结果schema根键集合未变；诊断经报告层与记录内字段承载，无生产wire schema升级",
+    "Markdown历史营收表加列+两个加法小节；既有章节标题不变（S2-2记录）",
+    "DU5注册表未重做，仅新增两个公共只读lookup（money_unit_currency/money_unit_scale_factor）"
+  ],
+  "interface_requests": [
+    "scripts/revenue_backtest.py::_benchmark_diagnostics 从history盲算CAGR（不可写层）：建议接revenue_basis在口径不可比时禁用/标注该基准",
+    "结果JSON根级诊断键（如historical_basis）需动revenue_core/segments（不可写层）：当前以报告层+记录内字段承载，ROOT可薄加一行调用owner视图"
+  ],
+  "root_acceptance_steps": [
+    "1. 审delivery/w16全部交接文件与 094d55ad..95c25c4b 完整diff",
+    "2. 用真实ST-A02结构化值（药明康德p235终止经营表）构造带revenue_basis的真实输入走CLI，验收语义采用",
+    "3. 决定两个interface_requests排期；主线并入/定点安装由ROOT执行"
+  ],
+  "remote": null,
+  "pushed_branch": null,
+  "ci": null,
+  "known_limits": [
+    "本卡是工程组件+合成输入+B07只读校对；真实公司RF全流程与ST-A02内容验收仍归ROOT，不因本卡通过自动关闭",
+    "统一大审查agent三次因模型后端繁忙中断，最终按用户指示拆为S1-S6六小片完成，等效覆盖原审查清单（需求完整度/真实调用/兼容/硬编码/冗余/测试独立/边界/语义绿/空间清理）",
+    "pre_revenue=true且空history输入无basis路径（无记录可声明），未单独测试但代码路径与legacy相同"
+  ]
+}

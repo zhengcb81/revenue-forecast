@@ -1,0 +1,29 @@
+{
+  "schema_version": "w16-review/1",
+  "package_id": "W16-RF-BASIS",
+  "review_model": "split: S1-S5 static (concurrent) + S6 executable; all reviewers independent of implementation",
+  "reviewed_code_commit": "cb60bd21 (S6 executable review target); 95c25c4b comment-only follow-up (S3-1)",
+  "base_commit": "094d55ad884e4a886b1537c0e76f3a0bede16ca2",
+  "sections": [
+    {"id": "S1", "scope": "write-scope + hardcoding", "report": "review_s1.md", "findings": 0, "verdict": "PASS"},
+    {"id": "S2", "scope": "B02/B03 semantics", "report": "review_s2.md", "findings": ["S2-1 Low", "S2-2 Info"], "verdict": "PASS"},
+    {"id": "S3", "scope": "B04 component bridge", "report": "review_s3.md", "findings": ["S3-1 Low", "S3-2 Low"], "verdict": "PASS"},
+    {"id": "S4", "scope": "B05/B06 wiring and CLI assertions", "report": "review_s4.md", "findings": ["S4-1 Low", "S4-2 Info"], "verdict": "PASS"},
+    {"id": "S5", "scope": "compatibility + code quality", "report": "review_s5.md", "findings": ["S5-1 Medium", "S5-2 Low", "S5-3 Info"], "verdict": "PASS_WITH_CONDITIONS"},
+    {"id": "S6", "scope": "executable: independent key-chain runs + novel counterexamples", "report": "review_s6_exec.md", "findings": 0, "verdict": "PASS", "counterexamples": 7, "counterexample_outcomes": "reverse restated mix=pass+not_comparable; non-base components=pass; 4 tamper mutations incl. self-consistent forgery=all rejected; plural unit spelling=rejected; claim-period mismatch=rejected"}
+  ],
+  "totals": {"blocker": 0, "major": 0, "medium": 1, "low": 6, "info": 3},
+  "resolution": {
+    "fixed_in_code": ["S5-1", "S2-1", "S3-2", "S5-2", "S4-1", "S4-2", "S3-1"],
+    "fixed_commit": "cb60bd21 (+95c25c4b comment)",
+    "recorded_not_fixed": ["S2-2 (additive diagnostics allowed)", "S5-3 (cosmetic)"]
+  },
+  "post_fix_verification": {
+    "w16_suites": "41 passed",
+    "affected_regressions": "172 passed, 1 skipped, 59 subtests",
+    "pre_push_gate": "GREEN (595 passed, 1 skipped)",
+    "s6_independent_rerun": "all green on cb60bd21"
+  },
+  "unresolved_in_scope_count": 0,
+  "final_verdict": "PASS"
+}

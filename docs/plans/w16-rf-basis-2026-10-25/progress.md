@@ -24,4 +24,15 @@
 - 受影响回归：data_contract/recognition_bridge/publication_pipeline/golden_behavior_lock/management_targets/du8_target_report_roundtrip=131 PASS；backtest/buy_side_accuracy/evidence_input_lineage/input_semantics_e2e=71 PASS；lint_input/generate_input_template=62 PASS。
 - tools/pre_push_gate.py GREEN（ruff+mypy 12文件无问题；595 PASS 1 skip 152.94s）。
 - B07三源只读校对完成（findings.md实测证据节）：药明康德p7/p235（数值级，本地PDF直核+ROOT收据）、安踏p.188（HK/IFRS18分类）、中芯国际p.209/131-132/189（零值终止经营行/差错更正）。0下载0模型。
-- 待办：commit代码→独立agent完整审查（含自建反例）→修复/复测/复审→delivery交接。
+## 2026-10-25 C 独立审查与交接（最终）
+
+- 统一大审查agent三次因模型后端繁忙中断；按用户指示拆为S1–S6六个独立小片：S1–S5静态并发（各写review_s*.md）、S6执行型（审修复后代码）。
+- findings：Medium1（engine_unit别名误拒+尺度盲，S5-1）+Low6+Info3；修复commit cb60bd21（DU5公共money_unit_currency/money_unit_scale_factor+尺度校验、component非负、claim安全比较、ytd CLI中文目录）+95c25c4b（lint注释S3-1）；S2-2/S5-3记录不改。
+- S6执行型0缺陷：独立运行W16 41测试/回归41/真实CLI（中文+空格目录）全绿；7自建反例全判定正确（4篡改变体均被输出绑定拦截）。
+- 修复后复测：W16 41 PASS；受影响回归172 PASS；pre_push_gate GREEN（595 PASS）。
+- 交付：delivery/w16/{handoff.md,handoff.json,review.md,review.json,independent_review.md,review_s1..s5.md,review_s6_exec.md}；状态COMPLETE。
+- 全程0下载/0模型/0外网；测试根（系统temp w16_cli_*与S6自建目录）核验后清理；原件SHA不变。
+
+## Next Step
+
+无（本卡作者侧闭环完成；主线并入/定点安装/真实ST-A02内容验收归ROOT）。
