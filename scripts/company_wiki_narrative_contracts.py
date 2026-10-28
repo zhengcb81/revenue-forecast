@@ -714,7 +714,7 @@ def _selection_trace(value: Any, spans: dict[str, dict]) -> None:
 def _reading_proofs(group: dict, schema: str) -> set[str]:
     fields = {"source_proof_unit_ids", "source_proof_target_unit_ids", "source_proofs"}
     present = fields & group.keys()
-    _require(not present or (schema in {"du-production-reading/2", "du-production-reading/3"}
+    _require(not present or (schema in {"du-production-reading/2", "du-production-reading/3", "du-production-reading/4"}
                              and present == fields), "invalid_reading_group_proof_fields")
     if not present:
         return set()
@@ -855,13 +855,13 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
     _require(len(canonical_bytes(value)) <= READING_CONTEXT_LIMIT, "reading_bytes_limit")
     schema_value = value.get("schema_version") if isinstance(value, dict) else None
     _require(isinstance(schema_value, str) and schema_value in {
-        "du-production-reading/1", "du-production-reading/2", "du-production-reading/3",
+        "du-production-reading/1", "du-production-reading/2", "du-production-reading/3", "du-production-reading/4",
     }, "unsupported_reading_context")
     schema = cast(str, schema_value)
     present_sampling = _READING_SAMPLING_FIELDS & value.keys()
     if present_sampling:
         _require(present_sampling == _READING_SAMPLING_FIELDS, "invalid_reading_context")
-    if schema == "du-production-reading/3":
+    if schema in {"du-production-reading/3", "du-production-reading/4"}:
         _require(present_sampling == _READING_SAMPLING_FIELDS and "selection_trace" in value,
                  "invalid_reading_context")
         extra = _READING_SAMPLING_FIELDS | {"selection_trace"}
@@ -869,7 +869,7 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
         _require("selection_trace" not in value, "invalid_reading_context")
         extra = _READING_SAMPLING_FIELDS if present_sampling else set()
     context = _exact(value, _READING_FIELDS | extra, "invalid_reading_context")
-    attributed = schema in {"du-production-reading/2", "du-production-reading/3"}
+    attributed = schema in {"du-production-reading/2", "du-production-reading/3", "du-production-reading/4"}
     version = context["reading_policy_version"]
     prefix = "du-sent-policy/1+"
     _require(isinstance(version, str) and version.startswith(prefix)
@@ -908,8 +908,15 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
             _require(bool(views), "missing_reading_citation_view")
             seen_support: set[frozenset[str]] = set()
             for raw_view in views:
-                view = _exact(raw_view, {"support_evidence_ids", "context_evidence_ids"},
+                use_fields = {"reading_support_use", "reading_support_reason"} if schema == "du-production-reading/4" else set()
+                view = _exact(raw_view, {"support_evidence_ids", "context_evidence_ids"} | use_fields,
                               "invalid_reading_citation_view")
+                if use_fields:
+                    _require(isinstance(view["reading_support_use"], str)
+                             and view["reading_support_use"] in {"support", "context_only", "unresolved"}
+                             and isinstance(view["reading_support_reason"], str)
+                             and re.fullmatch(r"[a-z][a-z0-9_]{0,79}", view["reading_support_reason"]) is not None,
+                             "invalid_reading_support_use")
                 support = _reading_texts(view["support_evidence_ids"])
                 context_refs = _reading_texts(view["context_evidence_ids"])
                 _require(bool(support) and len(support) == len(set(support))
@@ -949,7 +956,7 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
             _selection_diagnostic(row, legacy_aggregate=schema in {
                 "du-production-reading/1", "du-production-reading/2",
             })
-    if schema == "du-production-reading/3":
+    if schema in {"du-production-reading/3", "du-production-reading/4"}:
         _selection_trace(context["selection_trace"], spans)
 
 

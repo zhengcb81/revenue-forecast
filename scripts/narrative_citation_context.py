@@ -15,7 +15,7 @@ never block a consumption on their own.
 from __future__ import annotations
 
 import re
-from typing import Any
+from typing import Any, NoReturn, TypeGuard
 
 TRACE_SCHEMA = "revenue-narrative-citation-trace/1"
 CONTEXT_EVIDENCE_LIMIT = 32
@@ -24,6 +24,7 @@ ATTRIBUTION = {
     "du-production-reading/1": "groups_only",
     "du-production-reading/2": "source_owned_views",
     "du-production-reading/3": "source_owned_views",
+    "du-production-reading/4": "source_owned_views",
 }
 QUESTION_ROLES = frozenset({"analyst", "investor_question"})
 UNREAD_LISTS = ("opaque_pages", "deferred_pages", "deferred_unit_ids", "unassigned_unit_ids")
@@ -38,11 +39,11 @@ class NarrativeCitationError(ValueError):
         super().__init__(f"{code}: {detail}" if detail else code)
 
 
-def _fail(code: str, detail: str = "") -> None:
+def _fail(code: str, detail: str = "") -> NoReturn:
     raise NarrativeCitationError(code, detail)
 
 
-def _object(value: Any) -> bool:
+def _object(value: Any) -> TypeGuard[dict[str, Any]]:
     return isinstance(value, dict)
 
 
@@ -86,7 +87,7 @@ def _source_role(span: dict) -> str | None:
     return role if _nonempty_text(role) else None
 
 
-def _group(group: Any, spans: dict[str, dict], attributed: bool) -> dict:
+def _group(group: Any, spans: dict[str, dict], attributed: bool, *, support_use: bool = False) -> dict:
     if not _object(group):
         _fail("narrative_citation_reading_invalid", "a reading group is not an object")
     group_id = group.get("group_id")
@@ -121,7 +122,14 @@ def _group(group: Any, spans: dict[str, dict], attributed: bool) -> dict:
             if identity in seen_support:
                 _fail("narrative_citation_reading_invalid", "a support set is published twice")
             seen_support.add(identity)
-            views.append({"support": support, "context": context})
+            capability = {}
+            if support_use:
+                use, reason = raw.get("reading_support_use"), raw.get("reading_support_reason")
+                if (not isinstance(use, str) or use not in {"support", "context_only", "unresolved"}
+                        or not isinstance(reason, str) or re.fullmatch(r"[a-z][a-z0-9_]{0,79}", reason) is None):
+                    _fail("narrative_citation_reading_invalid", "a source view has no valid support capability")
+                capability = {"reading_support_use": use, "reading_support_reason": reason}
+            views.append({"support": support, "context": context, **capability})
     return {
         "group_id": group_id,
         "kind": group.get("kind") if _nonempty_text(group.get("kind")) else None,
@@ -157,7 +165,8 @@ def _groups(value: dict | None) -> tuple[dict | None, list[dict], str]:
     if not isinstance(raw_groups, list):
         _fail("narrative_citation_reading_invalid", "reading groups are not a list")
     attributed = ATTRIBUTION[reading["schema_version"]] == "source_owned_views"
-    groups = [_group(group, spans, attributed) for group in raw_groups]
+    groups = [_group(group, spans, attributed,
+                     support_use=reading["schema_version"] == "du-production-reading/4") for group in raw_groups]
     seen: set[str] = set()
     for group in groups:
         if group["group_id"] in seen:
@@ -202,7 +211,7 @@ def _unread_trace(reading: dict | None) -> dict:
         available = {"opaque_pages": pages["opaque_pages"], "deferred_pages": pages["deferred_pages"],
                      "deferred_unit_ids": units["deferred_unit_ids"],
                      "unassigned_unit_ids": units["unassigned_unit_ids"]}
-        if all(value is not None and available[name] is not None and value >= available[name]
+        if all(value is not None and (observed := available[name]) is not None and value >= observed
                for name, value in candidate.items()):
             resolved = candidate
     native_scan = unread.get("native_scan")
@@ -255,7 +264,7 @@ def _layout_complete(reading: dict | None) -> bool | None:
 def reading_trace(value: dict | None) -> dict:
     """Bounded reading-attribution and coverage diagnostics; never a judgement."""
     reading, groups, attribution = _groups(value)
-    return {
+    result = {
         "present": reading is not None,
         "schema_version": reading["schema_version"] if reading is not None else None,
         "attribution": attribution,
@@ -267,6 +276,12 @@ def reading_trace(value: dict | None) -> dict:
         "layout_complete": _layout_complete(reading),
         "coverage_note": COVERAGE_NOTE,
     }
+    if reading is not None and reading["schema_version"] == "du-production-reading/4":
+        result["support_use_counts"] = {
+            use: sum(view["reading_support_use"] == use for group in groups for view in group["views"])
+            for use in ("support", "context_only", "unresolved")
+        }
+    return result
 
 
 def selection(binding: dict) -> tuple[str | None, int | None]:
@@ -312,7 +327,7 @@ def _resolution(span: dict, *, closure: str, projected: bool, group: dict | None
         support_ids = list(views["support"])
         context_ids = list(views["context"])
         evidence = []
-    return {
+    result = {
         "span_id": span.get("span_id"),
         "closure": closure,
         "group_id": group["group_id"] if group else None,
@@ -327,6 +342,10 @@ def _resolution(span: dict, *, closure: str, projected: bool, group: dict | None
         "context_evidence_limited": None if context_ids is None else False,
         "projected": _projected(span, projected),
     }
+    if views is not None and "reading_support_use" in views:
+        result.update(reading_support_use=views["reading_support_use"],
+                      reading_support_reason=views["reading_support_reason"])
+    return result
 
 
 def _context_evidence(resolution: dict, spans: dict[str, dict]) -> None:
@@ -366,6 +385,7 @@ def resolve_span(value: dict, *, span_id: str, group_id: str | None = None,
         if not candidates:
             _fail("narrative_citation_group_unknown", f"{group_id} does not contain the span")
     if attribution == "source_owned_views":
+        capability_owned = reading is not None and reading["schema_version"] == "du-production-reading/4"
         slots = [
             (group, index)
             for group in candidates
@@ -383,13 +403,25 @@ def resolve_span(value: dict, *, span_id: str, group_id: str | None = None,
             if span_id not in group["views"][view]["support"]:
                 _fail("narrative_citation_view_not_support",
                       f"span is not support in citation view {view}")
-            resolution = _resolution(span, closure="citation_view", projected=projected,
-                                     group=group, view_index=view, views=group["views"][view])
-        elif len(slots) == 1:
+            if capability_owned and group["views"][view]["reading_support_use"] != "support":
+                _fail("narrative_citation_" + group["views"][view]["reading_support_use"],
+                      "the selected source view does not grant independent factual support")
+            slots = [(group, view)]
+        else:
+            available = [(group, index) for group, index in slots
+                         if not capability_owned or group["views"][index]["reading_support_use"] == "support"]
+            if capability_owned and slots and not available:
+                use = "unresolved" if any(group["views"][index]["reading_support_use"] == "unresolved"
+                                          for group, index in slots) else "context_only"
+                _fail("narrative_citation_"+use, "the source views do not grant independent factual support")
+            slots = available
+        if len(slots) == 1:
             group, index = slots[0]
             resolution = _resolution(span, closure="citation_view", projected=projected,
                                      group=group, view_index=index, views=group["views"][index])
         elif not candidates:
+            if capability_owned:
+                _fail("narrative_citation_unresolved", "the source published no support view for this span")
             resolution = _resolution(span, closure="ungrouped", projected=projected)
         elif not slots:
             _fail("narrative_citation_context_only",
@@ -420,7 +452,7 @@ def resolve_span(value: dict, *, span_id: str, group_id: str | None = None,
 
 def citation_dependency(*, resolution: dict, claim_id: str, parameter_id: str) -> dict:
     """One claim/parameter closure entry; the existing dependencies stay untouched."""
-    return {
+    result = {
         "claim_id": claim_id,
         "parameter_id": parameter_id,
         "span_id": resolution["span_id"],
@@ -437,6 +469,10 @@ def citation_dependency(*, resolution: dict, claim_id: str, parameter_id: str) -
         "context_evidence_limited": resolution["context_evidence_limited"],
         "projected": resolution["projected"],
     }
+    if "reading_support_use" in resolution:
+        result.update(reading_support_use=resolution["reading_support_use"],
+                      reading_support_reason=resolution["reading_support_reason"])
+    return result
 
 
 def trace_status(dependencies: list[dict]) -> str:
