@@ -1,0 +1,83 @@
+{
+  "card_id": "W20-RF-ADOPTION",
+  "status": "READY_FOR_ROOT_REVIEW",
+  "workdir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-w20-adoption",
+  "branch": "codex/w20-rf-adoption-20261028",
+  "base_commit": "0991e25d5dca667a3fdafb7bc5ebf0e546a2272b",
+  "implementation_commits": [
+    "c71b79e2",
+    "65af44b9",
+    "5f88ac3f",
+    "8b221153"
+  ],
+  "tested_code_commit": "8b221153",
+  "reviewed_code_commit": "8b221153",
+  "tested_reviewed_note": "tested_code_commit 与 reviewed_code_commit 为同一最终实现 commit；其后仅 handoff/文档 commit 允许不同，源码无变化。",
+  "files": [
+    {"path": "tools/narrative_adoption_audit/__init__.py", "sha256": "1ff2cbed856cac6c465ac454003e9a1f63333d2f7e50239c88fddb483d745d1f"},
+    {"path": "tools/narrative_adoption_audit/audit.py", "sha256": "d9c2060bb2f22021835458bcb8a2b6957bbd110b7805d0dd914f40e36244861b"},
+    {"path": "tools/narrative_adoption_audit/cli.py", "sha256": "5efc37db0b61ad4695bcfffffa54352c44250db9ef646bc0c3b9ed74ef3a60f6"},
+    {"path": "tools/narrative_adoption_audit/README.md", "sha256": "d632b26d1210f552fd5355342ddedb364e128e21ef49a2401288a9833a8e3cce"},
+    {"path": "tests/test_w20_narrative_adoption_audit.py", "sha256": "f9440b1bb96356bca33641caa672f6d0ed4263dadd90ed79dc4e008284de74e6"},
+    {"path": "tests/test_w20_narrative_adoption_e2e.py", "sha256": "aca860921a393734b67adf319aae27433748cedca170b5fb78990d5eff681b08"},
+    {"path": "docs/plans/w20-rf-adoption-2026-10-28/construction_card.md", "sha256": "135ef4a401440cbc722be8449c618c7656070ef980775ce16cf0e9e1c66214c5"},
+    {"path": "docs/plans/w20-rf-adoption-2026-10-28/findings.md", "sha256": "bf5107653a4f84a0934197d766ec23a51783087fe9f75bca4d60addd32673bb3"},
+    {"path": "docs/plans/w20-rf-adoption-2026-10-28/task_plan.md", "sha256": "17ff3c688a9f30133c1d0c4a31dd9f86a164f69df7863894f8036948f9333c13"},
+    {"path": "docs/plans/w20-rf-adoption-2026-10-28/progress.md", "sha256": "9342099b6c3f3182fd8156fa9b73c8aae9f0ec856cb049be50327ec4b9bfcc90"},
+    {"path": "delivery/w20-rf-adoption/review/initial.md", "sha256": "7af1e444b8b4dd2612ece8a64c0298e51f47f25d64847dad36583c584f419bc4"},
+    {"path": "delivery/w20-rf-adoption/review/initial.json", "sha256": "ade843e8bce4f33777fdba2f7d572e4d6d89af4cf2a5a322912ac373d7583d8b"}
+  ],
+  "files_note": "以上 SHA 为 commit 8b221153 时点实测字节 SHA（handoff.md/final.* 自身及后续 progress 更新不入表，避免自指）。",
+  "requirements": [
+    {"id": "R1 显式输入/只写显式输出/拒绝覆盖/无扫描联网DB模型", "evidence": "cli.py 全部路径显式；--output open(x|xb) 独占创建+resolve 比对拒绝等于输入；复审 F 核销表 R1 满足", "status": "PASS"},
+    {"id": "R2 canonical ID/display key 隔离/support区分/hash政策", "evidence": "span urn/sha 连接；display_key_collision_not_joined；/4 reading_support_use 唯一授权（F1 修复）；hash 必验+hash_missing_unknown 宽松；单测2/8/16", "status": "PASS"},
+    {"id": "R3 逐项引用映射+四状态+actual IDs+定位+named reason", "evidence": "items[].{status,cited_by[{node_type,location,ids}],reasons}；input echo 不作采用证据；单测1/4/5/17", "status": "PASS"},
+    {"id": "R4 引用链判直接支撑/仅context/多节点复用/未进图；不猜用不测心", "evidence": "resolve 语义复用既有 reader 契约；not_observed 不断言没用；准备失败(unverifiable)与缺观察(not_observed)分列；单测3/4/18", "status": "PASS"},
+    {"id": "R5 只核已有绑定口径/不另算收入/不LLM/不rating", "evidence": "period_mismatch_at_node/unknown_segment_attribution/target_currency_mismatch/duplicate_capture_sha 纯观察；diagnostic_only_not_a_permission_gate=true；单测5", "status": "PASS"},
+    {"id": "R6 无新DB调度权限/版本化report/资源界/线性", "evidence": "rf-narrative-adoption-report/1；--max-items/--max-input-bytes 超界命名 exit2；一次索引+O(1)查；n/2n 实测计数精确翻倍 ratio2.49；单测10/19", "status": "PASS"},
+    {"id": "测试包11项全覆盖", "evidence": "S2 核对表 11/11 存在且断言实质有效（第10项经 S2-1 修复后比例断言真实执行）", "status": "PASS"},
+    {"id": "真实CLI端到端两类驱动模型", "evidence": "e2e: direct_revenue 真子进程全链（consume工具+forecast×2+backtest create+audit CLI×5）+ direct_growth biren；数值不变性+字节稳定+snapshot 交叉", "status": "PASS"},
+    {"id": "旧格式兼容", "evidence": "reading/1 无视图→info 诊断；minimal forecast→node_family_missing；无 citation_trace 回执依赖保留；单测7", "status": "PASS"},
+    {"id": "输入与既有输出不被覆盖", "evidence": "覆盖拒绝 exit2 + sentinel/基线逐项断言；fixture 字节级前后对比；单测11/13 + e2e", "status": "PASS"},
+    {"id": "独立审查：初审→修复→复审，OPEN清空", "evidence": "review/initial.{md,json} 14项OPEN全修复；review/final.{md,json} 全新独立复审 verdict PASS、OPEN_findings=[]", "status": "PASS"},
+    {"id": "A调查：已有覆盖/缺陷/可观察性逐项判定", "evidence": "findings.md A1 表；仓内无既有采用观察工具→新建单一owner", "status": "PASS"},
+    {"id": "只读回放一份已有脱敏真实RF版本逐node人工核查", "evidence": "以已入库真实 e2e/fixtures/biren_input.json（脱敏合成标记）跑正式产物观察代替；未发现可回放的其他脱敏真实版本材料；如实记 PARTIAL", "status": "PARTIAL"}
+  ],
+  "tests": [
+    {"command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_w20_narrative_adoption_audit.py --basetemp <owned>", "exit_code": 0, "passed": 24, "failed": 0, "seconds": 1.8, "scope": "W20单元：11项卡内必测+/4能力位/约束差分/formula_refs/CLI失败分支/wire拒绝"},
+    {"command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_w20_narrative_adoption_e2e.py --basetemp <owned>", "exit_code": 0, "passed": 2, "failed": 0, "seconds": 6.0, "scope": "真实子进程e2e：direct_revenue全链+direct_growth(biren)"},
+    {"command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_recognition_bridge.py tests/test_du11_narrative_citation_context.py tests/test_du11_narrative_citation_consumption.py tests/test_du11_narrative_citation_wire.py tests/test_research_support_diagnostics.py tests/test_reading_support_use.py --basetemp <owned>", "exit_code": 0, "passed": 106, "failed": 0, "seconds": 6.25, "scope": "相邻回归（基线相关子集）"},
+    {"command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_w20_narrative_adoption_audit.py tests/test_w20_narrative_adoption_e2e.py（初审agent与复审agent各自实测）", "exit_code": 0, "passed": 26, "failed": 0, "seconds": 17.6, "scope": "W20全量（独立审查者执行）"},
+    {"command": "ruff check --no-cache tools/narrative_adoption_audit tests/test_w20_narrative_adoption_audit.py tests/test_w20_narrative_adoption_e2e.py", "exit_code": 0, "passed": null, "failed": null, "seconds": 1, "scope": "lint clean"}
+  ],
+  "review": {
+    "agent_id": "fresh independent general-purpose agent 2026-10-28（初审另为 S1/S2 两个互不相干 agent）",
+    "report": "delivery/w20-rf-adoption/review/final.md",
+    "open_findings": []
+  },
+  "cleanup": {
+    "before": "初态：分支 codex/w20-rf-adoption-20261028 @ 基线 0991e25d，除ROOT预置plan目录4文件外干净；fixtures/主仓/其他工区零改动",
+    "after": "三次全套运行后 git status --porcelain 均空（仅本卡allowlist文件入commit）；pytest owned树 teardown 逐项断言恢复+sentinel 保持；registry 只读文件 chmod 后删除；最终 basetemp 已删；复审探针仓库外自清",
+    "restored": true,
+    "bytes_added": null
+  },
+  "bytes_added_note": "bytes_added 不编造具体数字：交付为12个allowlist源文件+handoff/review文档（git diff --stat 0991e25d..8b221153 可复核），临时产物字节全部在owned临时树已恢复，未持久增长。",
+  "compatibility": [
+    "不改任何既有文件语义；全部为新增文件",
+    "报告 schema 独立版本化 rf-narrative-adoption-report/1，明确 diagnostic_not_a_permission_gate",
+    "复用既有纯接口（validate_narrative_response/parameter_formula_refs/canonical_sha256），无字段路径分支副本",
+    "CLI 为独立入口，ROOT 薄接线可选、非侵入"
+  ],
+  "limitations": [
+    "无执行追踪：观察最终产物声明的引用接线，非模型内心；引用缺失不证明作者推理未用该材料",
+    "wired 闭包在非合同畸形形状上比引擎略宽（保守方向；真实形状与引擎 parameter_uses 探针一致）",
+    "--pretty 分支无直接单测（open(x) 独占保证，复审探针验证）",
+    "未运行真实收费预测/真实材料回放（卡限定离线合成）；ROOT 用真实材料关闭 actual RF adoption 仍待 ROOT"
+  ],
+  "root_followups": [
+    "用真实脱敏 RF 产物+真实 consumption 回执跑一遍 tools/narrative_adoption_audit/cli.py 做真实材料观察",
+    "决定主线是否薄接线（报告管道/审计面板挂 adoption 段）",
+    "可选：为 forecast.dependencies 提供批量 upstream 闭包公开接口供外部观察工具复用"
+  ],
+  "remote_status": "已配置远端 origin (https://github.com/zhengcb81/revenue-forecast.git)；分支 codex/w20-rf-adoption-20261028 已推送"
+}

@@ -17,3 +17,12 @@
 - 转绿过程中修正的真实问题：`parameter_formula_refs`需dict参；快照身份哈希含完整存储结果→绑定经`snapshot.forecast_result.result_sha256`；publication registry追加后置只读→清理需先chmod；narrative多视图support需显式`citation_view`消歧（既有契约行为）。
 - 验证：W20两文件**17 passed**；回归（recognition_bridge+DU11 wire/context/consumption+support_diagnostics+W20）**98 passed in 18.15s**；ruff clean。
 - 提交：A=`c71b79e2`，B=`65af44b9`。暂不推远端（工区无remote配置，交接时核实记录）。
+
+## 2026-10-28 作者C节完成（交接）
+
+- 独立初审：S1（需求符合度/架构/边界语义）报2项P0（F1 /4能力位误聚合可被判used、F2 elimination约束漏出wired闭包）+F3/F4及P3备注；S2（测试真实性/错误路径/清理）无P0、5项P1（断言弱/错误路径未测）。初审原文落盘`delivery/w20-rf-adoption/review/initial.{md,json}`。
+- 修复（8b221153）：`_span_support_use`按reader契约重写（仅support授予支撑、context/unresolved绑定被标记不服从、/4未分组=unresolved）；约束索引与引擎`_constraint_uses`逐类型同构（elimination/sum_cap/linked_ratio）；`receipt_formula_refs_missing`宽松记录；KNOWN_CONSUMPTION_FIELDS对齐/3；/3回退parent_source_refs；删除items_capped；--pretty独占创建；新增/4三态、约束三形状、formula_refs缺/错、CLI失败分支、wire拒绝链路、n/2n强化（t1>0.02下限）、BIREN字节级对比、offline_guard文档声明。
+- 独立复审：全新agent逐条核销14项全FIXED+独立探针（含引擎`parameter_uses`交叉验证），新发现仅4项P3备注，**OPEN_findings=[]，verdict PASS**。落盘`delivery/w20-rf-adoption/review/final.{md,json}`。
+- 最终实测：单元24 passed（1.80s）、e2e 2 passed（5.98s）、回归106 passed（6.25s）、ruff clean；e2e背靠背重跑无残留。
+- 交付：`delivery/w20-rf-adoption/handoff.{md,json}`（tested_code_commit=reviewed_code_commit=8b221153）。
+- 推送：分支`codex/w20-rf-adoption-20261028`推至origin。

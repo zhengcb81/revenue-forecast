@@ -1,0 +1,27 @@
+{
+  "schema_version": "w20-final-review/1",
+  "reviewed_code_commit": "8b221153",
+  "reviewer": "independent general-purpose agent (fresh, not author, not initial reviewers)",
+  "method": "per-finding code verification + independent python probes (real DU11 wire, real consume adapter, real run_forecast, formal-shape constraint documents, engine parameter_uses cross-check)",
+  "findings_closed": {
+    "F1": "FIXED", "F2": "FIXED", "F3": "FIXED", "F4": "FIXED",
+    "F5": "FIXED", "F6": "FIXED", "F7": "FIXED",
+    "S2-1": "FIXED", "S2-2": "FIXED", "S2-3": "FIXED", "S2-4": "FIXED",
+    "S2-5": "FIXED", "S2-6": "FIXED", "S2-7": "FIXED"
+  },
+  "new_findings_non_open": [
+    "P3 wired closure slightly wider than engine on malformed shapes (conservative direction; equal on real shapes)",
+    "P3 sum_cap test fixture uses a shape real artifacts cannot have (test still valid)",
+    "P3 --pretty branch has no direct unit test (stdlib open(x) guarantee, probe-verified)",
+    "P3 diagnostic name context_span_bound_as_support reused for unresolved case (detail carries actual marking)"
+  ],
+  "tests_executed": [
+    {"command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_w20_narrative_adoption_audit.py tests/test_w20_narrative_adoption_e2e.py", "passed": 26, "failed": 0},
+    {"command": "e2e file back-to-back runs", "passed": 2, "failed": 0},
+    {"command": "e2e file back-to-back runs (second)", "passed": 2, "failed": 0}
+  ],
+  "allowlist_check": "git diff --stat 0991e25d..8b221153 = 12 files, all inside allowlist",
+  "regression_check": "no regression on /2 partitions, /1 bundles, display-key joining, hash leniency/mismatch, determinism, resource bounds, CLI refusal paths",
+  "open_findings": [],
+  "verdict": "PASS"
+}
