@@ -1,0 +1,33 @@
+{
+  "schema_version": "w20-initial-review/1",
+  "reviewed_diff": "0991e25d..5f88ac3f",
+  "reviewers": [
+    {"agent_id": "S1-general-purpose-20261028", "scope": "requirements R1-R6, architecture, boundary semantics"},
+    {"agent_id": "S2-general-purpose-20261028", "scope": "test authenticity, error paths, cleanup, assertion strength"}
+  ],
+  "tests_executed": [
+    {"command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_w20_narrative_adoption_audit.py tests/test_w20_narrative_adoption_e2e.py", "passed": 17, "failed": 0},
+    {"command": "e2e file run twice back-to-back", "passed": 2, "failed": 0},
+    {"command": "e2e file run twice back-to-back (second)", "passed": 2, "failed": 0}
+  ],
+  "findings": [
+    {"id": "F1", "severity": "P0", "title": "/4 reading_support_use mis-aggregated; forged receipt can mark context_only span used; context_span_bound_as_support never emitted", "location": "tools/narrative_adoption_audit/audit.py:_span_support_use", "open": true},
+    {"id": "F2", "severity": "P0", "title": "elimination constraint segment_adjustment_parameter_ids missing from wired closure; false not_used_when_provable", "location": "tools/narrative_adoption_audit/audit.py:_build_node_index", "open": true},
+    {"id": "F3", "severity": "P2", "title": "missing formula_refs silently skips run comparison", "location": "tools/narrative_adoption_audit/audit.py", "open": true},
+    {"id": "F4", "severity": "P2", "title": "required test package lacks /4 capability coverage", "location": "tests/test_w20_narrative_adoption_audit.py", "open": true},
+    {"id": "F5", "severity": "P3", "title": "KNOWN_CONSUMPTION_FIELDS mismatch with real /3 receipts", "open": true},
+    {"id": "F6", "severity": "P3", "title": "/3 projected contexts lose source_sha256 on span items", "open": true},
+    {"id": "F7", "severity": "P3", "title": "resource.items_capped dead field", "open": true},
+    {"id": "F8", "severity": "P3", "title": "degree-bounded member scans (acceptable, note)", "open": false},
+    {"id": "F9", "severity": "P3", "title": "used node families slightly wider than A2 list (allowed, disclosed)", "open": false},
+    {"id": "S2-1", "severity": "P1", "title": "n/2n timing ratio assertion never executes on this machine", "open": true},
+    {"id": "S2-2", "severity": "P1", "title": "BIREN_INPUT untouched assertion is vacuous", "open": true},
+    {"id": "S2-3", "severity": "P1", "title": "CLI failure branches untested (missing file, bad JSON, non-object JSON, max-input-bytes)", "open": true},
+    {"id": "S2-4", "severity": "P1", "title": "narrative_wire_refused CLI chain untested", "open": true},
+    {"id": "S2-5", "severity": "P1", "title": "receipt_run_mismatch untested", "open": true},
+    {"id": "S2-6", "severity": "P2", "title": "offline_guard does not cover subprocesses (document)", "open": true},
+    {"id": "S2-7", "severity": "P2", "title": "--pretty write path not exclusive-create; untested", "open": true}
+  ],
+  "open_findings": ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "S2-1", "S2-2", "S2-3", "S2-4", "S2-5", "S2-6", "S2-7"],
+  "verdict": "OPEN findings must be fixed and re-reviewed before handoff"
+}

@@ -28,6 +28,7 @@ from company_wiki_narrative_contracts import (  # noqa: E402
 )
 from contracts.evidence import text_sha256  # noqa: E402
 from forecast.dependencies import parameter_formula_refs  # noqa: E402
+from narrative_citation_context import NarrativeCitationError  # noqa: E402
 from revenue_core import run_forecast  # noqa: E402
 from source_narrative_context import consume_narrative_input  # noqa: E402
 from test_du11_narrative_citation_consumption import (  # noqa: E402
@@ -36,6 +37,7 @@ from test_du11_narrative_citation_consumption import (  # noqa: E402
 from test_du11_narrative_citation_wire import (  # noqa: E402
     descriptor, draft, resign, span_id, validated, wire,
 )
+from test_reading_support_use import public_context  # noqa: E402
 
 from tools.narrative_adoption_audit import audit, cli  # noqa: E402
 
@@ -158,6 +160,8 @@ def test_context_partition_span_is_never_numeric_support():
     forged["dependencies"][0]["span_id"] = span_id(value, "table_header")
     flagged = build(forecast, receipts=[forged], contexts=[value])
     assert "context_span_bound_as_support" in codes(flagged)
+    assert find(flagged, "span", span_id(value, "table_header"))["status"] == \
+        "not_used_when_provable"
 
 
 # ---------------------------------------------------------------------------
@@ -384,7 +388,7 @@ def scaled_forecast(n):
 
 
 def test_scaling_is_linear_and_resource_bound_enforced():
-    small, large = scaled_forecast(1200), scaled_forecast(2400)
+    small, large = scaled_forecast(2400), scaled_forecast(4800)
     start = time.perf_counter()
     first = build(small)
     t1 = time.perf_counter() - start
@@ -392,12 +396,13 @@ def test_scaling_is_linear_and_resource_bound_enforced():
     second = build(large)
     t2 = time.perf_counter() - start
     assert second["counts"]["items"] == 2 * first["counts"]["items"]
-    if t1 > 0.05:
-        assert t2 < max(4.0 * t1, t1 + 1.0), (t1, t2)
+    assert t1 > 0.02, f"workload too small to observe scaling: {t1}"
+    assert t2 < max(4.0 * t1, t1 + 1.0), (t1, t2)
     with pytest.raises(audit.AdoptionAuditError) as caught:
         build(small, max_items=10)
     assert caught.value.code == "resource_limit"
-    assert build(small, max_items=5000)["resource"]["items_capped"] is False
+    report = build(small, max_items=5000)
+    assert report["resource"] == {"max_items": 5000, "items": report["counts"]["items"]}
 
 
 # ---------------------------------------------------------------------------
@@ -517,3 +522,195 @@ def test_broken_consumption_material_is_diagnosed():
     assert "receipt_parameter_not_in_input" in found
     broken = find(report, "span", "urn:x")
     assert broken["status"] == "unverifiable"
+
+
+# ---------------------------------------------------------------------------
+# 16 the /4 capability bit is the sole support authority (initial-review F1/F4)
+# ---------------------------------------------------------------------------
+
+def chained_v4(use):
+    """A real /4 wire through consume, with every view marked `use`.
+
+    The real adapter refuses to bind non-support views, so `receipt` stays
+    None for context_only/unresolved: the audit must judge those spans from
+    the source marking alone (and from forged material in later tests).
+    """
+    context = public_context(use)
+    value = context.to_dict()
+    data = document(context)
+    entry = binding(value, "answer", claim_id="w20_v4", parameter_id=PARAMETER)
+    receipt = None
+    linked = data
+    try:
+        with patch("source_narrative_context.read_narrative_context", return_value=context):
+            linked, receipt = consume_narrative_input(
+                data, request={"as_of_date": value["as_of_date"]}, bindings=[entry],
+                source_id="filing", catalog_config=Path("isolated-not-opened.json"),
+            )
+    except NarrativeCitationError:
+        pass
+    return value, linked, receipt, run_forecast(linked, mode="draft")
+
+
+def test_v4_context_only_views_cannot_become_support_even_when_bound():
+    v4 = public_context("context_only").to_dict()
+    # The wire builder is deterministic, so a real /2-chain receipt carries
+    # the same span urns; it plays the role of broken/cross-run material.
+    _, _, receipt, forecast = real_chain(claim_id="w20_v4")
+    flagged = build(forecast, receipts=[receipt], contexts=[v4])
+    answer = find(flagged, "span", span_id(v4, "answer"))
+    assert answer["support_use"] == "context_only"
+    assert answer["status"] == "not_used_when_provable"
+    assert "context_partition_cannot_support" in reasons(answer)
+    assert "context_span_bound_as_support" in codes(flagged)
+    assert not answer["cited_by"]
+    # Even a forged cross-run receipt cannot lift the source's own marking.
+    forged = json.loads(json.dumps(receipt))
+    forged["dependencies"][0]["span_id"] = span_id(v4, "question")
+    assert find(build(forecast, receipts=[forged], contexts=[v4]),
+                "span", span_id(v4, "question"))["status"] == \
+        "not_used_when_provable"
+    # The real adapter refuses the binding outright.
+    _, _, refused, _ = chained_v4("context_only")
+    assert refused is None
+
+
+def test_v4_unresolved_views_and_ungrouped_spans_stay_unsupported():
+    v4u = public_context("unresolved").to_dict()
+    _, _, _, forecast = real_chain()
+    report = build(forecast, contexts=[v4u])
+    answer = find(report, "span", span_id(v4u, "answer"))
+    assert answer["support_use"] == "unresolved"
+    assert answer["status"] == "not_used_when_provable"
+    assert "unresolved_support_cannot_support" in reasons(answer)
+    ungrouped = json.loads(json.dumps(v4u))
+    ungrouped["reading_context"]["groups"] = []
+    report = build(forecast, contexts=[ungrouped])
+    answer = find(report, "span", span_id(ungrouped, "answer"))
+    assert answer["status"] == "not_used_when_provable"
+    assert answer["support_use"] == "unresolved"
+
+
+def test_v4_support_still_flows_through_the_real_chain():
+    value, linked, receipt, forecast = chained_v4("support")
+    report = build(forecast, receipts=[receipt], contexts=[value])
+    answer = find(report, "span", span_id(value, "answer"))
+    assert answer["status"] == "used"
+    assert answer["support_use"] == "support"
+
+
+# ---------------------------------------------------------------------------
+# 17 elimination constraint parameters are computation-wired (F2)
+# ---------------------------------------------------------------------------
+
+def elimination_forecast():
+    forecast = minimal_forecast()
+    forecast["revenue_constraints"] = [{
+        "constraint_id": "elim_interco", "type": "elimination",
+        "rationale": "r",
+        "segment_adjustment_parameter_ids": {
+            "Alpha": {"base": ["p_growth_2027"]}},
+    }]
+    return forecast
+
+
+def test_elimination_constraint_parameter_counts_as_wired():
+    doc = elimination_forecast()
+    report = build(doc)
+    assert "p_growth_2027" in report["node_index"]["wired_parameter_ids"]
+    table = {p["parameter_id"]: p for p in doc["parameter_trace"]}
+    assert parameter_formula_refs(doc, "p_growth_2027", table), \
+        "the engine must reach this parameter for the differential to bite"
+    claim = find(report, "claim", "c1")
+    assert claim["status"] == "used"
+    assert "used_via_revenue_constraint" in reasons(claim)
+
+
+def test_sum_cap_linked_ratio_shapes_are_wired_like_the_engine():
+    forecast = minimal_forecast()
+    forecast["revenue_constraints"] = [
+        {"constraint_id": "cap", "type": "sum_cap", "segments": ["Alpha"],
+         "allocation": "fixed_weights", "rationale": "r",
+         "scenario_parameter_ids": {"Alpha": {"base": ["p_growth_2027"]}},
+         "weight_parameter_ids": {"Alpha": {"base": ["p_growth_2027"]}}},
+        {"constraint_id": "ratio", "type": "linked_ratio",
+         "target_segment": "Alpha", "rationale": "r",
+         "scenario_parameter_ids": {"base": ["p_growth_2027"]}},
+    ]
+    report = build(forecast)
+    assert "p_growth_2027" in report["node_index"]["wired_parameter_ids"]
+    assert find(report, "claim", "c1")["status"] == "used"
+
+
+# ---------------------------------------------------------------------------
+# 18 lenient-but-recorded run binding (F3, S2-5)
+# ---------------------------------------------------------------------------
+
+def test_missing_formula_refs_is_recorded_not_silent():
+    value, linked, receipt, forecast = real_chain()
+    stripped = json.loads(json.dumps(receipt))
+    del stripped["dependencies"][0]["formula_refs"]
+    report = build(forecast, receipts=[stripped], contexts=[value])
+    assert "receipt_formula_refs_missing" in codes(report)
+    assert find(report, "span", span_id(value, "answer"))["status"] == "used"
+
+
+def test_wrong_formula_refs_flags_cross_run_binding():
+    value, linked, receipt, forecast = real_chain()
+    foreign = json.loads(json.dumps(receipt))
+    foreign["dependencies"][0]["formula_refs"] = [
+        {"segment": "Elsewhere", "scenario": "base", "model": "direct_revenue",
+         "driver": "revenue", "output": "recognized_revenue"}]
+    report = build(forecast, receipts=[foreign], contexts=[value])
+    span_item = find(report, "span", span_id(value, "answer"))
+    assert span_item["status"] == "unverifiable"
+    assert "receipt_run_mismatch" in reasons(span_item)
+
+
+# ---------------------------------------------------------------------------
+# 19 CLI failure branches exit 2 with named messages (S2-3)
+# ---------------------------------------------------------------------------
+
+def test_cli_failure_branches_exit_two(tmp_path, capsys, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    capsys.readouterr()
+    assert cli.main(["--forecast", str(tmp_path / "missing.json")]) == 2
+    assert "cannot read inputs" in capsys.readouterr().err
+    bad = tmp_path / "bad.json"
+    bad.write_text("{not json", encoding="utf-8")
+    assert cli.main(["--forecast", str(bad)]) == 2
+    assert "cannot read inputs" in capsys.readouterr().err
+    scalar = tmp_path / "scalar.json"
+    scalar.write_text("[1, 2]", encoding="utf-8")
+    assert cli.main(["--forecast", str(scalar)]) == 2
+    big = tmp_path / "big.json"
+    big.write_text(json.dumps(minimal_forecast()), encoding="utf-8")
+    assert cli.main(["--forecast", str(big), "--max-input-bytes", "10"]) == 2
+    assert "resource_limit" in capsys.readouterr().err
+
+
+# ---------------------------------------------------------------------------
+# 20 a refused narrative wire degrades to a named diagnostic (S2-4)
+# ---------------------------------------------------------------------------
+
+def test_cli_narrative_wire_refusal_continues_with_diagnostic(tmp_path, capsys, monkeypatch):
+    value, linked, receipt, forecast = real_chain()
+    monkeypatch.chdir(tmp_path)
+    request, body, receipt_bytes = wire("2")
+    request_path = tmp_path / "request.json"
+    bundle_path = tmp_path / "bundle.json"
+    receipt_path = tmp_path / "receipt.jsonl"
+    request_path.write_text(json.dumps(request, ensure_ascii=False), encoding="utf-8")
+    bundle_path.write_bytes(body[:-1] + b"X")  # tampered transport bytes
+    receipt_path.write_bytes(receipt_bytes)
+    forecast_path = tmp_path / "forecast.json"
+    forecast_path.write_text(json.dumps(forecast, ensure_ascii=False), encoding="utf-8")
+    capsys.readouterr()
+    assert cli.main([
+        "--forecast", str(forecast_path), "--narrative",
+        str(request_path), str(bundle_path), str(receipt_path),
+    ]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert "narrative_wire_refused" in codes(report)
+    refused_span = span_id(value, "answer")
+    assert not any(item["id"] == refused_span for item in report["items"])

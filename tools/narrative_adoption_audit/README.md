@@ -29,9 +29,9 @@ python tools/narrative_adoption_audit/cli.py --forecast forecast.json \
 状态机：
 
 - `used` — 引用链在 ≥1 个投影节点可观察（`cited_by` 带定位与 actual IDs）。
-- `not_used_when_provable` — 结构性可证不进图：claim 只挂在不进任何公式闭包的参数（`parameter_not_wired_to_any_node`）；span 被来源分区为 `context_only`/`unresolved`（按契约永不能作数字支撑）。
+- `not_used_when_provable` — 结构性可证不进图：claim 只挂在不进任何公式闭包的参数（`parameter_not_wired_to_any_node`）；span 被来源分区/能力位判为 `context_only`/`unresolved`（/4 视图级 `reading_support_use` 只有 `support` 授予支撑能力，未分组 span 亦不隐含能力）——即使有回执绑定也标记 `context_span_bound_as_support` 而不服从。
 - `not_observed` — 材料在（span 运输了/summary 可读/源登记了）但无绑定或无投影引用。**不**断言模型没用。
-- `unverifiable` — 绑定材料缺/错：claim/param 不在本输入、source_sha256 错配、receipt 公式引用与本输入依赖图不符（跨 run 拼接）、narrative wire 被契约拒绝、span 材料未提供。
+- `unverifiable` — 绑定材料缺/错：claim/param 不在本输入、source_sha256 错配、receipt 公式引用与本输入依赖图不符（跨 run 拼接，`receipt_run_mismatch`）、narrative wire 被契约拒绝、span 材料未提供。缺 `formula_refs` 记 `receipt_formula_refs_missing`（info）宽松继续。
 
 口径观察（只核已有绑定，不另算收入）：`period_mismatch_at_node`、`unknown_segment_attribution`、`duplicate_capture_sha`、`target_currency_mismatch`。缺 hash 沿宽松政策记 `hash_missing_unknown`（info），不加新门禁；hash 提供则必验。
 

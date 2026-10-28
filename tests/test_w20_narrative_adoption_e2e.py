@@ -11,6 +11,9 @@ a narrative chain) and direct_growth (the biren e2e fixture).
 Faked layer only: the CWP reader transport stub replays one synthetic public
 wire (the DU11 pattern); every fixture source is explicitly synthetic and no
 LLM, download, provider or ledger outside the owned temporary registry runs.
+The in-process offline guard cannot reach subprocesses; every spawned entry
+(consume tool, forecast/backtest CLIs, this CLI) is network-free by source
+inspection, and the registry is pinned into the owned temporary tree.
 """
 from __future__ import annotations
 
@@ -405,6 +408,7 @@ def unwired_variant(root: Path) -> Path:
 def test_direct_growth_native_observation(owned):
     registry = owned / "registry"
     registry.mkdir()
+    fixture_bytes = BIREN_INPUT.read_bytes()
     forecast = run_forecast(BIREN_INPUT, owned / "out/biren.json", registry)
     years = {str(year) for year in forecast["forecast_years"]}
     result = run_audit([
@@ -435,4 +439,4 @@ def test_direct_growth_native_observation(owned):
     unused = find_item(variant_report, "claim", "w20_unused_claim")
     assert unused["status"] == "not_used_when_provable"
     assert "parameter_not_wired_to_any_node" in unused["reasons"]
-    assert BIREN_INPUT.read_bytes()  # fixture untouched
+    assert BIREN_INPUT.read_bytes() == fixture_bytes  # fixture untouched

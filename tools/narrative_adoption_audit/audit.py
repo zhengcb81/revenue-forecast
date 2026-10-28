@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import sys
-from typing import Any, Iterable, Sequence
+from typing import Any, Sequence
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "scripts") not in sys.path:
@@ -45,6 +45,7 @@ CONSUMPTION_SCHEMAS = {
 KNOWN_CONSUMPTION_FIELDS = {
     "schema_version", "status", "narrative_ref", "read_at", "observed_at",
     "quality_status", "selection", "dependencies", "citation_trace",
+    "subject_ref", "parent_count", "lineage_sha256",
 }
 KNOWN_DEPENDENCY_FIELDS = {
     "span_id", "locator", "parser_name", "parser_version", "source_id",
@@ -387,19 +388,35 @@ def _build_node_index(forecast: dict, doc: dict,
                         parameter_id, wired=True)
     for position, constraint in enumerate(doc.get("revenue_constraints") or []):
         constraint_id = constraint.get("constraint_id")
-        for key in ("scenario_parameter_ids", "weight_parameter_ids"):
-            values: Iterable[str] = []
-            raw = constraint.get(key) or []
-            if isinstance(raw, dict):
-                values = [item for entry in raw.values() for item in entry]
-            else:
-                values = raw
-            for slot, parameter_id in enumerate(values):
-                index.parameter("revenue_constraint_parameter",
-                                f"input_document.revenue_constraints[{position}]"
-                                f".{key}[{slot}]",
-                                parameter_id, {"constraint_id": constraint_id},
-                                wired=True)
+        kind = constraint.get("type")
+        # Mirror the engine's _constraint_uses shape per constraint type: the
+        # same key carries different nestings across types, so flatten only
+        # what that type actually means.
+        mappings: list[Any] = []
+        if kind == "sum_cap":
+            for segment in constraint.get("segments") or []:
+                mappings.append(constraint.get("scenario_parameter_ids") or {})
+                if constraint.get("allocation") == "fixed_weights":
+                    mappings.append(
+                        (constraint.get("weight_parameter_ids") or {}).get(segment)
+                        or {})
+        elif kind == "linked_ratio":
+            mappings.append(constraint.get("scenario_parameter_ids") or {})
+        elif kind == "elimination":
+            mappings.extend(
+                (constraint.get("segment_adjustment_parameter_ids") or {}).values())
+        for mapping in mappings:
+            if not isinstance(mapping, dict):
+                continue
+            for scenario, ids in mapping.items():
+                for slot, parameter_id in enumerate(ids or []):
+                    index.parameter("revenue_constraint_parameter",
+                                    f"input_document.revenue_constraints[{position}]",
+                                    parameter_id,
+                                    {"constraint_id": constraint_id,
+                                     "constraint_type": kind,
+                                     "scenario": scenario},
+                                    wired=True)
     return index, period_checks
 
 
@@ -493,14 +510,20 @@ def _evaluate_dependency(receipt_index: int, dep: dict, doc: dict,
                   f"receipt[{receipt_index}] source_sha256 matches several "
                   f"sources {matches}", item_id=span_id)
             reasons.append("consumption_source_ambiguous")
-    if parameter_id in parameters and dep.get("formula_refs") is not None:
-        expected = parameter_formula_refs(doc, parameter_id, parameters)
-        if _normalise_refs(dep.get("formula_refs")) != _normalise_refs(expected):
-            _diag(diagnostics, "receipt_run_mismatch",
-                  f"receipt[{receipt_index}] formula_refs for {parameter_id} "
-                  "disagree with this input's dependency graph "
-                  "(different run?)", item_id=span_id)
-            reasons.append("receipt_run_mismatch")
+    if parameter_id in parameters:
+        if dep.get("formula_refs") is None:
+            _diag(diagnostics, "receipt_formula_refs_missing",
+                  f"receipt[{receipt_index}] dependency carries no "
+                  "formula_refs; run binding is judged without it",
+                  severity="info", item_id=span_id)
+        else:
+            expected = parameter_formula_refs(doc, parameter_id, parameters)
+            if _normalise_refs(dep.get("formula_refs")) != _normalise_refs(expected):
+                _diag(diagnostics, "receipt_run_mismatch",
+                      f"receipt[{receipt_index}] formula_refs for {parameter_id} "
+                      "disagree with this input's dependency graph "
+                      "(different run?)", item_id=span_id)
+                reasons.append("receipt_run_mismatch")
     intact = not reasons
     return _DependencyState(intact, reasons or ["dependency_intact"],
                             parameter_id, claim_id)
@@ -544,14 +567,20 @@ def _iter_dependencies(receipt: dict, receipt_index: int,
 # ---------------------------------------------------------------------------
 
 def _span_support_use(reading: dict, span_id: str) -> str | None:
-    """Aggregate the source-owned partition across every published view.
+    """Aggregate the source-owned support capability across published views.
 
-    A span that some view supports aggregates to support; a grouped span that
-    no view ever supports is context_only; an unresolved support slot stays
-    unresolved; /1 bundles without citation views return None (unknown).
+    The reader's contract: only a view the source marks ``support`` (or a
+    pre-/4 structural support partition) grants fact-support capability;
+    views marked ``context_only`` / ``unresolved`` are refused for support
+    and a /4 span outside every group has no implicit capability. A span
+    supported by any capable view aggregates to support; otherwise an
+    explicit context_only / unresolved marking wins; /1 bundles without
+    citation views return None (unknown partition).
     """
     saw_support = False
-    saw_unresolved_slot = False
+    saw_unresolved = False
+    saw_context_marked = False
+    saw_structural_context = False
     grouped = False
     for group in (reading or {}).get("groups") or []:
         if span_id not in (group.get("evidence_ids") or []):
@@ -560,22 +589,32 @@ def _span_support_use(reading: dict, span_id: str) -> str | None:
         views = group.get("citation_views") or []
         if not views:
             return None
+        in_context_partition = False
         for view in views:
             support = view.get("support_evidence_ids") or []
-            if span_id not in support:
-                continue
             use = view.get("reading_support_use")
-            if use == "unresolved":
-                saw_unresolved_slot = True
-            else:
-                saw_support = True
+            if span_id in support:
+                if use == "support" or use is None:
+                    saw_support = True
+                elif use == "unresolved":
+                    saw_unresolved = True
+                else:
+                    saw_context_marked = True
+            if span_id in (view.get("context_evidence_ids") or []):
+                in_context_partition = True
+        if in_context_partition and not saw_support:
+            saw_structural_context = True
     if not grouped:
+        if (reading or {}).get("schema_version") == "du-production-reading/4":
+            return "unresolved"
         return None
     if saw_support:
         return "support"
-    if saw_unresolved_slot:
+    if saw_unresolved:
         return "unresolved"
-    return "context_only"
+    if saw_context_marked or saw_structural_context:
+        return "context_only"
+    return None
 
 
 def _has_any_views(reading: dict) -> bool:
@@ -764,16 +803,23 @@ def build_adoption_report(
                 continue
             support_use = _span_support_use(reading, span_id)
             states = dep_states.get(span_id, [])
-            if not states:
-                if support_use == "context_only":
-                    status, extra = "not_used_when_provable", [
-                        "context_partition_cannot_support"]
-                elif support_use == "unresolved":
-                    status, extra = "not_used_when_provable", [
-                        "unresolved_support_cannot_support"]
-                else:
-                    status, extra = "not_observed", ["span_not_bound_in_consumption"]
+            if support_use in ("context_only", "unresolved"):
+                # The source partition bars this span from support regardless
+                # of any receipt: the binding is flagged, never obeyed.
+                if states:
+                    _diag(diagnostics, "context_span_bound_as_support",
+                          f"a receipt binds span {span_id} the source marks "
+                          f"{support_use}; the binding is flagged, not obeyed",
+                          item_id=span_id)
+                status = "not_used_when_provable"
+                extra = (["context_partition_cannot_support"]
+                         if support_use == "context_only"
+                         else ["unresolved_support_cannot_support"])
                 cited: list[dict] = []
+                reasons = list(extra)
+            elif not states:
+                status, extra = "not_observed", ["span_not_bound_in_consumption"]
+                cited = []
                 reasons = list(extra)
             else:
                 if len(states) > 1:
@@ -782,11 +828,6 @@ def build_adoption_report(
                           "first intact chain is observed", severity="info",
                           item_id=span_id)
                 state = next((entry for entry in states if entry.intact), states[0])
-                if support_use == "context_only":
-                    _diag(diagnostics, "context_span_bound_as_support",
-                          "a receipt binds a span the source partitions as "
-                          "context_only; the binding is flagged, not obeyed",
-                          item_id=span_id)
                 if not state.intact:
                     status, cited = "unverifiable", []
                     reasons = list(state.reasons)
@@ -820,7 +861,11 @@ def build_adoption_report(
             span_status[span_id] = items.add(
                 "span", span_id,
                 id_scope="canonical",
-                source_sha256=(context.get("source_ref") or {}).get("content_sha256"),
+                source_sha256=(
+                    (context.get("source_ref") or {}).get("content_sha256")
+                    or ((context.get("parent_source_refs") or [{}])[0].get(
+                        "content_sha256"))
+                ),
                 status=status,
                 support_use=support_use,
                 cited_by=cited,
@@ -975,6 +1020,5 @@ def build_adoption_report(
                    "by_status": by_status, "by_kind": by_kind},
         "diagnostics": diagnostics,
         "limitations": list(LIMITATIONS),
-        "resource": {"max_items": max_items, "items": len(items.entries),
-                     "items_capped": False},
+        "resource": {"max_items": max_items, "items": len(items.entries)},
     }

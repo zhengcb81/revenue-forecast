@@ -142,9 +142,9 @@ def main(argv=None) -> int:
         return _fail(f"cannot read inputs: {error}")
     if args.output is not None:
         if args.pretty:
-            text = json.dumps(report, ensure_ascii=False, indent=2,
-                              sort_keys=True) + "\n"
-            args.output.write_text(text, encoding="utf-8", newline="\n")
+            with args.output.open("x", encoding="utf-8", newline="\n") as stream:
+                stream.write(json.dumps(report, ensure_ascii=False, indent=2,
+                                        sort_keys=True) + "\n")
         else:
             with args.output.open("xb") as stream:
                 stream.write(audit.canonical_report_bytes(report))
