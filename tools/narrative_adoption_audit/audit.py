@@ -869,12 +869,19 @@ def build_adoption_report(
     # -- consumption receipts ----------------------------------------------
     span_material: dict[str, tuple[dict, str | None]] = {}
     for context in narrative_contexts:
-        parent_sha = ((context.get("source_ref") or {}).get("content_sha256")
-                      or ((context.get("parent_source_refs") or [{}])[0].get(
-                          "content_sha256")))
+        parents = list(context.get("parent_source_refs") or [])
+        primary = context.get("source_ref")
+        if primary:
+            parents.insert(0, primary)
         for span in context.get("evidence_spans") or []:
-            if isinstance(span, dict) and span.get("span_id"):
-                span_material[span["span_id"]] = (span, parent_sha)
+            if not (isinstance(span, dict) and span.get("span_id")):
+                continue
+            parent_sha = next(
+                (ref.get("content_sha256") for ref in parents
+                 if ref.get("source_id") == span.get("source_id")
+                 and ref.get("content_sha256")),
+                None)
+            span_material[span["span_id"]] = (span, parent_sha)
     dep_states: dict[str, list[_DependencyState]] = {}
     for receipt_index, receipt in enumerate(consumption_receipts):
         if not isinstance(receipt, dict):
@@ -973,11 +980,7 @@ def build_adoption_report(
             span_status[span_id] = items.add(
                 "span", span_id,
                 id_scope="canonical",
-                source_sha256=(
-                    (context.get("source_ref") or {}).get("content_sha256")
-                    or ((context.get("parent_source_refs") or [{}])[0].get(
-                        "content_sha256"))
-                ),
+                source_sha256=span_material.get(span_id, ({}, None))[1],
                 status=status,
                 support_use=support_use,
                 cited_by=cited,

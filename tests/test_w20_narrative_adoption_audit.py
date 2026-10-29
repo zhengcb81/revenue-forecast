@@ -27,6 +27,7 @@ from company_wiki_narrative_contracts import (  # noqa: E402
     NarrativeTransportError, validate_narrative_response,
 )
 from contracts.evidence import text_sha256  # noqa: E402
+from fix_hashes import apply_hash_fixes  # noqa: E402
 from forecast.dependencies import parameter_formula_refs  # noqa: E402
 from narrative_citation_context import NarrativeCitationError  # noqa: E402
 from revenue_core import run_forecast  # noqa: E402
@@ -34,6 +35,7 @@ from source_narrative_context import consume_narrative_input  # noqa: E402
 from test_du11_narrative_citation_consumption import (  # noqa: E402
     PARAMETER, binding, document,
 )
+from test_recognition_bridge import forecast_document  # noqa: E402
 from test_du11_narrative_citation_wire import (  # noqa: E402
     descriptor, draft, resign, span_id, validated, wire,
 )
@@ -900,3 +902,37 @@ def test_legal_gzip_within_limit_and_output_untouched_on_failure(tmp_path, capsy
                      str(limit)]) == 2
     assert "input_decompress_failed" in capsys.readouterr().err
     assert not fresh.exists()  # no half output on failure
+
+
+# ---------------------------------------------------------------------------
+# 24 R1 rework follow-up: /3 multi-parent projections resolve the actual parent
+# ---------------------------------------------------------------------------
+
+def test_projected_multi_parent_context_resolves_actual_span_parent():
+    from test_shared_reading_narrative_contract import projected_context
+    request, body, receipt_bytes = projected_context()
+    context = validate_narrative_response(request, body, receipt_bytes)
+    value = context.to_dict()
+    span = value["evidence_spans"][0]
+    actual_parent = next(ref for ref in value["parent_source_refs"]
+                         if ref["source_id"] == span["source_id"])
+    assert value["parent_source_refs"].index(actual_parent) > 0  # not refs[0]
+    data = forecast_document()
+    data["as_of_date"] = value["as_of_date"]
+    data["sources"][0]["capture"]["snapshot_sha256"] = actual_parent["content_sha256"]
+    apply_hash_fixes(data)
+    entry = {"span_id": span["span_id"], "claim_id": "w20_p3",
+             "parameter_id": PARAMETER, "support_type": "rationale_support"}
+    with patch("source_narrative_context.read_narrative_context", return_value=context):
+        linked, receipt = consume_narrative_input(
+            data, request={"as_of_date": value["as_of_date"]}, bindings=[entry],
+            source_id="filing", catalog_config=Path("isolated-not-opened.json"),
+        )
+    forecast = run_forecast(linked, mode="draft")
+    report = build(forecast, receipts=[receipt], contexts=[value])
+    span_item = find(report, "span", span["span_id"])
+    assert span_item["status"] == "used"
+    assert "receipt_span_hash_mismatch" not in codes(report)
+    assert "consumption_source_hash_mismatch" not in codes(report)
+    assert "receipt_claim_material_mismatch" not in codes(report)
+    assert "receipt_claim_source_mismatch" not in codes(report)
