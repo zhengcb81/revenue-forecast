@@ -476,7 +476,7 @@ class _DependencyState:
 
 
 def _evaluate_dependency(receipt_index: int, dep: dict, span: dict | None,
-                         parent_sha: str | None, doc: dict,
+                         parent_sha: str | None, projected: bool, doc: dict,
                          claims: dict[str, dict],
                          parameters: dict[str, dict],
                          sources_by_sha: dict[str, list[str]],
@@ -593,7 +593,6 @@ def _evaluate_dependency(receipt_index: int, dep: dict, span: dict | None,
             # sibling run that selected different material of the same
             # capture) are named; missing optional fields stay unknown.
             structured = span.get("structured_value") or {}
-            projected = "source_locator" in structured
             expected_locator = (
                 structured.get("source_locator") if projected
                 else span.get("locator"))
@@ -909,8 +908,11 @@ def build_adoption_report(
         )
 
     # -- consumption receipts ----------------------------------------------
-    span_material: dict[str, tuple[dict, str | None]] = {}
+    # Projectedness follows the context schema (the adapter's own rule),
+    # not the presence of a structured_value key.
+    span_material: dict[str, tuple[dict, str | None, bool]] = {}
     for context in narrative_contexts:
+        projected = context.get("schema_version") == "revenue-narrative-context/3"
         parents = list(context.get("parent_source_refs") or [])
         primary = context.get("source_ref")
         if primary:
@@ -923,7 +925,7 @@ def build_adoption_report(
                  if ref.get("source_id") == span.get("source_id")
                  and ref.get("content_sha256")),
                 None)
-            span_material[span["span_id"]] = (span, parent_sha)
+            span_material[span["span_id"]] = (span, parent_sha, projected)
     dep_states: dict[str, list[_DependencyState]] = {}
     for receipt_index, receipt in enumerate(consumption_receipts):
         if not isinstance(receipt, dict):
@@ -933,10 +935,11 @@ def build_adoption_report(
         for dep in _iter_dependencies(receipt, receipt_index, diagnostics):
             if not isinstance(dep, dict) or not dep.get("span_id"):
                 continue
-            span, parent_sha = span_material.get(dep["span_id"], (None, None))
+            span, parent_sha, projected = span_material.get(
+                dep["span_id"], (None, None, False))
             state = _evaluate_dependency(
-                receipt_index, dep, span, parent_sha, doc, claims, parameters,
-                sources_by_sha, diagnostics)
+                receipt_index, dep, span, parent_sha, projected, doc, claims,
+                parameters, sources_by_sha, diagnostics)
             dep_states.setdefault(dep["span_id"], []).append(state)
 
     # -- span items ----------------------------------------------------------

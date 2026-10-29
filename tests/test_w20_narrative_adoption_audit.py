@@ -1098,3 +1098,17 @@ def test_corrupt_deflate_gzip_is_normalized_to_named_failure(tmp_path, capsys, m
     # covered by test 23 — here only the legal boundary re-check.
     assert cli.main(["--forecast", str(good), "--max-input-bytes",
                      str(limit), "--output", str(tmp_path / "ok.json")]) == 0
+
+
+def test_legacy_span_with_stray_source_locator_key_stays_legacy():
+    """A /1 span whose structured_value carries a stray source_locator key is
+    still a legacy span: the expected claim locator is span.locator (the
+    projected rule follows the context schema, not a key's presence)."""
+    value, linked, receipt, forecast = real_chain()
+    stray = json.loads(json.dumps(value))
+    for span in stray["evidence_spans"]:
+        span["structured_value"]["source_locator"] = "cwp-json-pointer/1|p=%2Fstray"
+    report = build(forecast, receipts=[receipt], contexts=[stray])
+    answer = find(report, "span", span_id(value, "answer"))
+    assert answer["status"] == "used"
+    assert "receipt_claim_material_mismatch" not in codes(report)
