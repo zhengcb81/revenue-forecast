@@ -26,3 +26,11 @@
 - 最终实测：单元24 passed（1.80s）、e2e 2 passed（5.98s）、回归106 passed（6.25s）、ruff clean；e2e背靠背重跑无残留。
 - 交付：`delivery/w20-rf-adoption/handoff.{md,json}`（tested_code_commit=reviewed_code_commit=8b221153）。
 - 推送：分支`codex/w20-rf-adoption-20261028`推至origin。
+
+## 2026-10-29 R1返工（ROOT验收CHANGES_REQUESTED → 修复）
+
+- ROOT返工单三项：RF-R1/P1 receipt仅查键存在未验整链；RF-R2/P2 同span多路径只留首条；RF-R3/P2 gzip绕过字节上限。ROOT证据：rf-review.{md,json}+rf-evidence/probe.py（本机重放确认）。
+- RED：10个新测试失败记录（链5例/聚合3例/gzip2例，含截断gzip未捕获EOFError崩溃）。
+- 修复：(1) `_evaluate_dependency`重写为共享receipt-resolution：span材料→canonical parent经capture映射到RF本地source→提供source_id/locator/parser与运输span逐边核对→claim归属/材料/target边→param存在→run公式边；缺hash仍宽松unknown（链走span自身parent哈希）；新增命名码receipt_source_mismatch/receipt_span_hash_mismatch/receipt_locator_mismatch/receipt_parser_mismatch/receipt_claim_source_mismatch/receipt_claim_material_mismatch/receipt_claim_target_mismatch/span_material_not_provided。(2) span按canonical聚合全部intact路径cited_by并集+内容排序去重，invalid路径保留各自诊断（span_dependencies_aggregated info替换误导性的"several receipts"）；顺序/拆分回执不变性测试。(3) `_gunzip_bounded`流式解压最多limit+1即命名resource_limit，截断/损坏→input_decompress_failed，失败不留半输出。
+- ROOT探针重放：foreign_span→unverifiable+receipt_span_hash_mismatch；wrong_explicit_source_id→unverifiable+receipt_source_mismatch；two_valid_bindings→used+slot_years[2026,2027]；gzip_bound→rejected resource_limit。
+- 实测：单元34+e2e 2=36 passed（7.14s）；回归106 passed；ruff clean。

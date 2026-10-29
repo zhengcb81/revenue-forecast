@@ -43,8 +43,41 @@ def _read_bytes(path: Path, limit: int) -> bytes:
             f"{path} is {size} bytes; exceeds --max-input-bytes {limit}")
     data = path.read_bytes()
     if path.suffix == ".gz":
-        data = gzip.decompress(data)
+        data = _gunzip_bounded(data, limit, path)
     return data
+
+
+def _gunzip_bounded(data: bytes, limit: int, path: Path) -> bytes:
+    """Stream-decompress at most ``limit + 1`` bytes before accepting input.
+
+    The bound applies to the EXPANDED payload: a small archive that expands
+    past the configured ceiling fails as a named resource error instead of
+    allocating the whole expansion, and truncated or corrupt streams fail
+    named instead of crashing.
+    """
+    import io
+
+    reader = gzip.GzipFile(fileobj=io.BytesIO(data))
+    out = io.BytesIO()
+    remaining = limit + 1
+    try:
+        while remaining > 0:
+            chunk = reader.read(min(65536, remaining))
+            if not chunk:
+                break
+            out.write(chunk)
+            remaining -= len(chunk)
+    except (EOFError, gzip.BadGzipFile, OSError) as error:
+        raise audit.AdoptionAuditError(
+            "input_decompress_failed",
+            f"{path} is not readable gzip: {error}") from error
+    finally:
+        reader.close()
+    if remaining <= 0:
+        raise audit.AdoptionAuditError(
+            "resource_limit",
+            f"{path} decompresses beyond --max-input-bytes {limit}")
+    return out.getvalue()
 
 
 def _read_json(path: Path, limit: int) -> dict:

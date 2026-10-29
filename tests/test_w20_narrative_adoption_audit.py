@@ -305,8 +305,9 @@ def test_hash_mismatch_flagged_and_missing_hash_lenient():
     wrong = json.loads(json.dumps(receipt))
     wrong["dependencies"][0]["source_sha256"] = "0" * 64
     report = build(forecast, receipts=[wrong], contexts=[value])
-    assert find(report, "span", span_id(value, "answer"))["status"] == "unverifiable"
-    assert "consumption_source_hash_mismatch" in codes(report)
+    span_item = find(report, "span", span_id(value, "answer"))
+    assert span_item["status"] == "unverifiable"
+    assert "receipt_span_hash_mismatch" in reasons(span_item)
     missing = json.loads(json.dumps(receipt))
     del missing["dependencies"][0]["source_sha256"]
     lenient = build(forecast, receipts=[missing], contexts=[value])
@@ -714,3 +715,188 @@ def test_cli_narrative_wire_refusal_continues_with_diagnostic(tmp_path, capsys, 
     assert "narrative_wire_refused" in codes(report)
     refused_span = span_id(value, "answer")
     assert not any(item["id"] == refused_span for item in report["items"])
+
+
+# ---------------------------------------------------------------------------
+# 21 R1 rework: the receipt resolves one whole source>span>claim>param chain
+# ---------------------------------------------------------------------------
+
+def test_foreign_span_cannot_borrow_another_sources_chain():
+    other, other_desc = _second_source_context("other-summary")
+    foreign_sid = span_id(other, "answer", other_desc)
+    _, _, receipt, forecast = real_chain(claim_id="w20_cl")
+    forged = json.loads(json.dumps(receipt))
+    forged["dependencies"][0]["span_id"] = foreign_sid  # B span, A hash/claim/param
+    report = build(forecast, receipts=[forged], contexts=[other])
+    foreign = find(report, "span", foreign_sid)
+    assert foreign["status"] == "unverifiable"
+    assert "receipt_span_hash_mismatch" in reasons(foreign)
+    assert "consumption_source_hash_mismatch" in codes(report)
+    assert foreign["cited_by"] == []
+
+
+def test_wrong_explicit_source_id_is_a_named_broken_edge():
+    value, linked, receipt, forecast = real_chain()
+    forged = json.loads(json.dumps(receipt))
+    forged["dependencies"][0]["source_id"] = "urn:fake:source"
+    report = build(forecast, receipts=[forged], contexts=[value])
+    span_item = find(report, "span", span_id(value, "answer"))
+    assert span_item["status"] == "unverifiable"
+    assert "receipt_source_mismatch" in reasons(span_item)
+
+
+def test_wrong_claim_parameter_pairing_is_a_named_broken_edge():
+    value, linked, receipt, forecast = real_chain()
+    forged = json.loads(json.dumps(receipt))
+    forged["dependencies"][0]["parameter_id"] = "0_low_2026"  # claim targets 0_base_2026
+    report = build(forecast, receipts=[forged], contexts=[value])
+    span_item = find(report, "span", span_id(value, "answer"))
+    assert span_item["status"] == "unverifiable"
+    assert "receipt_claim_target_mismatch" in reasons(span_item)
+
+
+def test_wrong_locator_and_parser_are_named_broken_edges():
+    value, linked, receipt, forecast = real_chain()
+    moved = json.loads(json.dumps(receipt))
+    moved["dependencies"][0]["locator"] = "loc:v1/paragraph:99/chars:0-1"
+    report = build(forecast, receipts=[moved], contexts=[value])
+    span_item = find(report, "span", span_id(value, "answer"))
+    assert span_item["status"] == "unverifiable"
+    assert "receipt_locator_mismatch" in reasons(span_item)
+    reparsed = json.loads(json.dumps(receipt))
+    reparsed["dependencies"][0]["parser_name"] = "someone-else"
+    report = build(forecast, receipts=[reparsed], contexts=[value])
+    span_item = find(report, "span", span_id(value, "answer"))
+    assert span_item["status"] == "unverifiable"
+    assert "receipt_parser_mismatch" in reasons(span_item)
+
+
+def test_hash_provided_but_wrong_flags_span_parent_edge():
+    value, linked, receipt, forecast = real_chain()
+    wrong = json.loads(json.dumps(receipt))
+    wrong["dependencies"][0]["source_sha256"] = "0" * 64
+    report = build(forecast, receipts=[wrong], contexts=[value])
+    span_item = find(report, "span", span_id(value, "answer"))
+    assert span_item["status"] == "unverifiable"
+    assert "receipt_span_hash_mismatch" in reasons(span_item)
+
+
+# ---------------------------------------------------------------------------
+# 22 R2 rework: every legitimate path of one canonical span is aggregated
+# ---------------------------------------------------------------------------
+
+def two_binding_chain(bindings_order=("first", "second"), split_receipts=False):
+    context = validated("2")
+    value = context.to_dict()
+    data = document(context)
+    claim_by_name = {"first": "0_base_2026", "second": "0_base_2027"}
+    entries = [binding(value, "answer", claim_id=name, parameter_id=claim_by_name[name])
+               for name in bindings_order]
+    with patch("source_narrative_context.read_narrative_context", return_value=context):
+        linked, receipt = consume_narrative_input(
+            data, request={"as_of_date": value["as_of_date"]}, bindings=entries,
+            source_id="filing", catalog_config=Path("isolated-not-opened.json"),
+        )
+    forecast = run_forecast(linked, mode="draft")
+    receipts = [receipt]
+    if split_receipts:
+        half = len(receipt["dependencies"]) // 2 or 1
+        left = json.loads(json.dumps(receipt))
+        right = json.loads(json.dumps(receipt))
+        left["dependencies"] = receipt["dependencies"][:half]
+        right["dependencies"] = receipt["dependencies"][half:]
+        receipts = [left, right]
+    return value, receipts, forecast
+
+
+def test_same_span_two_years_aggregates_every_path():
+    value, receipts, forecast = two_binding_chain()
+    report = build(forecast, receipts=receipts, contexts=[value])
+    span_item = find(report, "span", span_id(value, "answer"))
+    assert span_item["status"] == "used"
+    slot_years = {c["ids"].get("year") for c in span_item["cited_by"]
+                  if c["node_type"] == "segment_scenario_driver"}
+    assert slot_years == {"2026", "2027"}
+    params = {c["ids"].get("parameter_id") for c in span_item["cited_by"]}
+    assert {"0_base_2026", "0_base_2027"} <= params
+    for claim_id in ("first", "second"):
+        assert find(report, "claim", claim_id)["status"] == "used"
+    answer_id = span_id(value, "answer")
+    assert sum(1 for i in report["items"]
+               if i["kind"] == "span" and i["id"] == answer_id) == 1
+    # one receipt with two dependencies is one receipt, not "several receipts"
+    assert not any("several receipts" in d["detail"] for d in report["diagnostics"])
+
+
+def test_aggregation_is_order_and_receipt_split_invariant():
+    forward = two_binding_chain(("first", "second"))
+    reverse = two_binding_chain(("second", "first"))
+    split = two_binding_chain(("first", "second"), split_receipts=True)
+    def span_citations(chain):
+        chain_value, chain_receipts, chain_forecast = chain
+        report = build(chain_forecast, receipts=chain_receipts, contexts=[chain_value])
+        item = find(report, "span", span_id(chain_value, "answer"))
+        return item["status"], json.dumps(item["cited_by"], sort_keys=True)
+    assert span_citations(forward) == span_citations(reverse)
+    assert span_citations(forward) == span_citations(split)
+
+
+def test_invalid_path_does_not_swallow_valid_paths():
+    value, receipts, forecast = two_binding_chain()
+    poisoned = json.loads(json.dumps(receipts[0]))
+    poisoned["dependencies"].append({
+        "span_id": span_id(value, "answer"), "claim_id": "ghost",
+        "parameter_id": "0_high_2026", "support_type": "rationale_support",
+        "formula_refs": []})
+    report = build(forecast, receipts=[poisoned], contexts=[value])
+    span_item = find(report, "span", span_id(value, "answer"))
+    assert span_item["status"] == "used"  # valid paths survive
+    assert "receipt_claim_not_in_input" in codes(report)  # invalid path diagnosed
+    slot_years = {c["ids"].get("year") for c in span_item["cited_by"]
+                  if c["node_type"] == "segment_scenario_driver"}
+    assert slot_years == {"2026", "2027"}
+
+
+# ---------------------------------------------------------------------------
+# 23 R3 rework: decompression is bounded, corruption fails named
+# ---------------------------------------------------------------------------
+
+def test_gzip_bomb_is_bounded_at_decompression(tmp_path, capsys, monkeypatch):
+    import gzip as gzip_mod
+    monkeypatch.chdir(tmp_path)
+    capsys.readouterr()
+    bomb = tmp_path / "bomb.json.gz"
+    bomb.write_bytes(gzip_mod.compress(b" " * 100000))
+    assert bomb.stat().st_size < 1024
+    assert cli.main(["--forecast", str(bomb), "--max-input-bytes", "1024"]) == 2
+    assert "resource_limit" in capsys.readouterr().err
+    with pytest.raises(audit.AdoptionAuditError) as caught:
+        cli._read_bytes(bomb, 1024)
+    assert caught.value.code == "resource_limit"
+
+
+def test_legal_gzip_within_limit_and_output_untouched_on_failure(tmp_path, capsys, monkeypatch):
+    import gzip as gzip_mod
+    monkeypatch.chdir(tmp_path)
+    capsys.readouterr()
+    value, linked, receipt, forecast = real_chain()
+    small = tmp_path / "small.json.gz"
+    small.write_bytes(gzip_mod.compress(
+        json.dumps(forecast, ensure_ascii=False).encode("utf-8")))
+    decompressed = len(json.dumps(forecast, ensure_ascii=False).encode("utf-8"))
+    limit = decompressed + 1024
+    assert cli.main(["--forecast", str(small), "--max-input-bytes", str(limit),
+                     "--output", str(tmp_path / "ok.json")]) == 0
+    fresh = tmp_path / "fresh.json"
+    truncated = tmp_path / "truncated.json.gz"
+    raw = small.read_bytes()
+    truncated.write_bytes(raw[:len(raw) // 2])
+    assert cli.main(["--forecast", str(truncated), "--max-input-bytes",
+                     str(limit), "--output", str(fresh)]) == 2
+    assert "input_decompress_failed" in capsys.readouterr().err
+    corrupt = tmp_path / "corrupt.json.gz"
+    corrupt.write_bytes(b"\x1f\x8bnot-really-gzip" + raw[10:60])
+    assert cli.main(["--forecast", str(corrupt), "--max-input-bytes",
+                     str(limit)]) == 2
+    assert "input_decompress_failed" in capsys.readouterr().err
+    assert not fresh.exists()  # no half output on failure

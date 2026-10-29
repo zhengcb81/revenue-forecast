@@ -24,6 +24,7 @@ Pure core: no IO, no clock, no network, no model. The CLI owns all IO.
 """
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import sys
 from typing import Any, Sequence
@@ -129,11 +130,16 @@ def _diag(diagnostics: list[dict], code: str, detail: str,
 
 def canonical_report_bytes(report: dict) -> bytes:
     """Byte-stable serialisation used for stdout, --output and comparisons."""
-    import json
-
     text = json.dumps(report, sort_keys=True, ensure_ascii=False,
                       separators=(",", ":"))
     return (text + "\n").encode("utf-8")
+
+
+def _citation_order(citation: dict) -> tuple:
+    """Content-determined order: citation unions must not depend on the
+    order dependencies arrived in."""
+    return (citation.get("node_type", ""), citation.get("location", ""),
+            json.dumps(citation.get("ids", {}), sort_keys=True))
 
 
 def validate_narrative_wire(request: dict, body: bytes, receipt: bytes) -> dict:
@@ -456,21 +462,33 @@ def _normalise_refs(refs: Any) -> list[tuple]:
 
 
 class _DependencyState:
-    __slots__ = ("intact", "reasons", "parameter_id", "claim_id")
+    __slots__ = ("intact", "reasons", "parameter_id", "claim_id", "receipt_index")
 
     def __init__(self, intact: bool, reasons: list[str],
-                 parameter_id: str | None, claim_id: str | None) -> None:
+                 parameter_id: str | None, claim_id: str | None,
+                 receipt_index: int = -1) -> None:
         self.intact = intact
         self.reasons = reasons
         self.parameter_id = parameter_id
         self.claim_id = claim_id
+        self.receipt_index = receipt_index
 
 
-def _evaluate_dependency(receipt_index: int, dep: dict, doc: dict,
+def _evaluate_dependency(receipt_index: int, dep: dict, span: dict | None,
+                         parent_sha: str | None, doc: dict,
                          claims: dict[str, dict],
                          parameters: dict[str, dict],
                          sources_by_sha: dict[str, list[str]],
                          diagnostics: list[dict]) -> _DependencyState:
+    """Resolve one dependency as ONE chain: canonical parent capture ->
+    RF local source -> transported span -> claim -> parameter -> run graph.
+
+    Every edge that carries provided material is checked against the actual
+    known counterpart (span, capture mapping, claim target); broken edges are
+    named and make the dependency unverifiable. A missing hash stays a
+    lenient unknown: the chain then rides on the transported span's own
+    canonical parent hash, never on the unverified claim.
+    """
     span_id = dep.get("span_id") or "<missing>"
     for field in ("span_id", "claim_id", "parameter_id"):
         if not dep.get(field):
@@ -478,38 +496,98 @@ def _evaluate_dependency(receipt_index: int, dep: dict, doc: dict,
                   f"receipt[{receipt_index}] dependency lacks {field}",
                   item_id=span_id)
             return _DependencyState(False, ["consumption_material_missing"],
-                                    None, None)
+                                    None, None, receipt_index)
     claim_id = dep.get("claim_id")
     parameter_id = dep.get("parameter_id")
     reasons: list[str] = []
-    if claim_id not in claims:
+
+    # -- transported material + canonical parent -----------------------------
+    if span is None:
+        _diag(diagnostics, "span_material_not_provided",
+              f"span {span_id} is bound by receipt[{receipt_index}] but no "
+              "narrative context transports it", severity="info",
+              item_id=span_id)
+        reasons.append("span_material_not_provided")
+    else:
+        if dep.get("source_id") and dep["source_id"] != span.get("source_id"):
+            _diag(diagnostics, "receipt_source_mismatch",
+                  f"receipt[{receipt_index}] names source "
+                  f"{dep['source_id']!r} but the transported span belongs to "
+                  f"{span.get('source_id')!r}", item_id=span_id)
+            reasons.append("receipt_source_mismatch")
+        if dep.get("locator") and dep["locator"] != span.get("locator"):
+            _diag(diagnostics, "receipt_locator_mismatch",
+                  f"receipt[{receipt_index}] locator disagrees with the "
+                  "transported span", item_id=span_id)
+            reasons.append("receipt_locator_mismatch")
+        for field in ("parser_name", "parser_version"):
+            if dep.get(field) and dep[field] != span.get(field):
+                _diag(diagnostics, "receipt_parser_mismatch",
+                      f"receipt[{receipt_index}] {field} disagrees with the "
+                      "transported span", item_id=span_id)
+                reasons.append("receipt_parser_mismatch")
+    local_source = None
+    if parent_sha is not None:
+        matches = sources_by_sha.get(parent_sha, [])
+        if not matches:
+            _diag(diagnostics, "consumption_source_hash_mismatch",
+                  f"span {span_id}'s canonical parent {parent_sha[:16]}… is "
+                  "captured by no source of this input", item_id=span_id)
+            reasons.append("consumption_source_hash_mismatch")
+        elif len(matches) > 1:
+            _diag(diagnostics, "consumption_source_ambiguous",
+                  f"span {span_id}'s canonical parent matches several "
+                  f"sources {sorted(matches)}", item_id=span_id)
+            reasons.append("consumption_source_ambiguous")
+        else:
+            local_source = matches[0]
+    provided_sha = dep.get("source_sha256")
+    if provided_sha is None:
+        _diag(diagnostics, "hash_missing_unknown",
+              f"receipt[{receipt_index}] dependency carries no source hash; "
+              "lenient policy: recorded unknown, chain judged from the "
+              "transported span's canonical parent", severity="info",
+              item_id=span_id)
+    elif parent_sha is not None and provided_sha != parent_sha:
+        _diag(diagnostics, "receipt_span_hash_mismatch",
+              f"receipt[{receipt_index}] source_sha256 {provided_sha[:16]}… "
+              "is not the transported span's canonical parent hash",
+              item_id=span_id)
+        reasons.append("receipt_span_hash_mismatch")
+
+    # -- claim edges ----------------------------------------------------------
+    claim = claims.get(claim_id)
+    if claim is None:
         _diag(diagnostics, "receipt_claim_not_in_input",
               f"receipt[{receipt_index}] cites claim {claim_id} absent from "
               "this input (display keys never join across runs)", item_id=span_id)
         reasons.append("receipt_claim_not_in_input")
+    else:
+        if local_source is not None and claim.get("source_id") != local_source:
+            _diag(diagnostics, "receipt_claim_source_mismatch",
+                  f"receipt[{receipt_index}] claim {claim_id} belongs to "
+                  f"{claim.get('source_id')!r}, not the span's captured "
+                  f"source {local_source!r}", item_id=span_id)
+            reasons.append("receipt_claim_source_mismatch")
+        if (claim.get("content_sha256") and parent_sha is not None
+                and claim["content_sha256"] != parent_sha):
+            _diag(diagnostics, "receipt_claim_material_mismatch",
+                  f"receipt[{receipt_index}] claim {claim_id} carries "
+                  "material from another capture than the span's parent",
+                  item_id=span_id)
+            reasons.append("receipt_claim_material_mismatch")
+        if (claim.get("target_type") == "parameter"
+                and claim.get("target_id") != parameter_id):
+            _diag(diagnostics, "receipt_claim_target_mismatch",
+                  f"receipt[{receipt_index}] claim {claim_id} targets "
+                  f"{claim.get('target_id')!r}, not the bound parameter "
+                  f"{parameter_id!r}", item_id=span_id)
+            reasons.append("receipt_claim_target_mismatch")
     if parameter_id not in parameters:
         _diag(diagnostics, "receipt_parameter_not_in_input",
               f"receipt[{receipt_index}] cites parameter {parameter_id} "
               "absent from this input", item_id=span_id)
         reasons.append("receipt_parameter_not_in_input")
-    source_sha = dep.get("source_sha256")
-    if source_sha is None:
-        _diag(diagnostics, "hash_missing_unknown",
-              f"receipt[{receipt_index}] dependency carries no source hash; "
-              "lenient policy: recorded unknown, chain judged without it",
-              severity="info", item_id=span_id)
-    else:
-        matches = sources_by_sha.get(source_sha, [])
-        if not matches:
-            _diag(diagnostics, "consumption_source_hash_mismatch",
-                  f"receipt[{receipt_index}] source_sha256 {source_sha[:16]}… "
-                  "matches no captured source of this input", item_id=span_id)
-            reasons.append("consumption_source_hash_mismatch")
-        elif len(matches) > 1:
-            _diag(diagnostics, "consumption_source_ambiguous",
-                  f"receipt[{receipt_index}] source_sha256 matches several "
-                  f"sources {matches}", item_id=span_id)
-            reasons.append("consumption_source_ambiguous")
     if parameter_id in parameters:
         if dep.get("formula_refs") is None:
             _diag(diagnostics, "receipt_formula_refs_missing",
@@ -526,7 +604,7 @@ def _evaluate_dependency(receipt_index: int, dep: dict, doc: dict,
                 reasons.append("receipt_run_mismatch")
     intact = not reasons
     return _DependencyState(intact, reasons or ["dependency_intact"],
-                            parameter_id, claim_id)
+                            parameter_id, claim_id, receipt_index)
 
 
 def _iter_dependencies(receipt: dict, receipt_index: int,
@@ -635,6 +713,28 @@ def _citations_with_reasons(citations: list[dict]) -> tuple[list[dict], list[str
             seen.add(reason)
             reasons.append(reason)
     return citations, reasons
+
+
+def _bound_citations(state: "_DependencyState",
+                     claim_status: dict[str, dict], index: "_NodeIndex",
+                     wired: set[str], direct: set[str]) -> list[dict]:
+    """Citation chain of one intact binding: its claim's nodes plus the
+    bound parameter's own nodes (and the derived-input hop)."""
+    cited: list[dict] = []
+    if state.claim_id and state.claim_id in claim_status:
+        for citation in claim_status[state.claim_id].get("cited_by", []):
+            if citation not in cited:
+                cited.append(citation)
+    if state.parameter_id:
+        for citation in index.by_parameter.get(state.parameter_id, []):
+            if citation not in cited:
+                cited.append(citation)
+        if state.parameter_id in wired and state.parameter_id not in direct:
+            cited.append(_cite(
+                "derived_parameter_input",
+                f"input_document.parameters[{state.parameter_id}]",
+                {"parameter_id": state.parameter_id}))
+    return cited
 
 
 class _Items:
@@ -767,6 +867,14 @@ def build_adoption_report(
         )
 
     # -- consumption receipts ----------------------------------------------
+    span_material: dict[str, tuple[dict, str | None]] = {}
+    for context in narrative_contexts:
+        parent_sha = ((context.get("source_ref") or {}).get("content_sha256")
+                      or ((context.get("parent_source_refs") or [{}])[0].get(
+                          "content_sha256")))
+        for span in context.get("evidence_spans") or []:
+            if isinstance(span, dict) and span.get("span_id"):
+                span_material[span["span_id"]] = (span, parent_sha)
     dep_states: dict[str, list[_DependencyState]] = {}
     for receipt_index, receipt in enumerate(consumption_receipts):
         if not isinstance(receipt, dict):
@@ -776,9 +884,10 @@ def build_adoption_report(
         for dep in _iter_dependencies(receipt, receipt_index, diagnostics):
             if not isinstance(dep, dict) or not dep.get("span_id"):
                 continue
+            span, parent_sha = span_material.get(dep["span_id"], (None, None))
             state = _evaluate_dependency(
-                receipt_index, dep, doc, claims, parameters, sources_by_sha,
-                diagnostics)
+                receipt_index, dep, span, parent_sha, doc, claims, parameters,
+                sources_by_sha, diagnostics)
             dep_states.setdefault(dep["span_id"], []).append(state)
 
     # -- span items ----------------------------------------------------------
@@ -822,42 +931,45 @@ def build_adoption_report(
                 cited = []
                 reasons = list(extra)
             else:
-                if len(states) > 1:
-                    _diag(diagnostics, "span_bound_multiple_receipts",
-                          f"span {span_id} appears in several receipts; the "
-                          "first intact chain is observed", severity="info",
-                          item_id=span_id)
-                state = next((entry for entry in states if entry.intact), states[0])
-                if not state.intact:
-                    status, cited = "unverifiable", []
-                    reasons = list(state.reasons)
+                # Aggregate every dependency path of this canonical span:
+                # valid paths union their citations, invalid paths keep their
+                # own named diagnostics without hiding valid uses.
+                intact_states = [entry for entry in states if entry.intact]
+                invalid_states = [entry for entry in states if not entry.intact]
+                receipt_count = len({entry.receipt_index for entry in states})
+                _diag(diagnostics, "span_dependencies_aggregated",
+                      f"span {span_id} aggregates {len(states)} dependency "
+                      f"path(s) across {receipt_count} receipt(s): "
+                      f"{len(intact_states)} intact, "
+                      f"{len(invalid_states)} invalid", severity="info",
+                      item_id=span_id)
+                cited = []
+                for state in intact_states:
+                    for citation in _bound_citations(
+                            state, claim_status, index, wired,
+                            index.direct_parameter_ids):
+                        if citation not in cited:
+                            cited.append(citation)
+                cited.sort(key=_citation_order)
+                cited, node_reasons = _citations_with_reasons(cited)
+                if cited:
+                    status = "used"
+                    reasons = ["used_via_bound_claim"] + node_reasons
+                elif intact_states and all(
+                        state.parameter_id
+                        and state.parameter_id not in wired
+                        and state.parameter_id not in index.direct_parameter_ids
+                        for state in intact_states):
+                    status = "not_used_when_provable"
+                    reasons = ["parameter_not_wired_to_any_node"]
+                elif intact_states:
+                    status = "not_observed"
+                    reasons = ["bound_but_not_cited_at_any_node"]
                 else:
-                    cited = []
-                    if state.claim_id:
-                        cited = list(claim_status.get(state.claim_id, {}).get(
-                            "cited_by", []))
-                    if not cited and state.parameter_id:
-                        for citation in index.by_parameter.get(state.parameter_id, []):
-                            if citation not in cited:
-                                cited.append(citation)
-                        if (state.parameter_id in wired
-                                and state.parameter_id not in index.direct_parameter_ids):
-                            cited.append(_cite(
-                                "derived_parameter_input",
-                                f"input_document.parameters[{state.parameter_id}]",
-                                {"parameter_id": state.parameter_id}))
-                    cited, node_reasons = _citations_with_reasons(cited)
-                    if cited:
-                        status = "used"
-                        reasons = ["used_via_bound_claim"] + node_reasons
-                    elif (state.parameter_id
-                          and state.parameter_id not in wired
-                          and state.parameter_id not in index.direct_parameter_ids):
-                        status = "not_used_when_provable"
-                        reasons = ["parameter_not_wired_to_any_node"]
-                    else:
-                        status = "not_observed"
-                        reasons = ["bound_but_not_cited_at_any_node"]
+                    status = "unverifiable"
+                    reasons = sorted({reason for state in invalid_states
+                                      for reason in state.reasons
+                                      if reason != "dependency_intact"})
             span_status[span_id] = items.add(
                 "span", span_id,
                 id_scope="canonical",
@@ -884,8 +996,8 @@ def build_adoption_report(
             if "used" in statuses:
                 status = "used"
                 extra = ["used_via_bound_span"]
-            elif "unverifiable" in statuses or any(
-                    not state.intact for state in states):
+            elif "unverifiable" in statuses or (
+                    states and not any(state.intact for state in states)):
                 status = "unverifiable"
                 extra = ["binding_material_invalid"]
             elif statuses and all(
@@ -909,14 +1021,10 @@ def build_adoption_report(
         if span_id in span_status:
             continue
         states = dep_states[span_id]
-        state = next((entry for entry in states if entry.intact), states[0])
-        if state.intact:
-            status, reasons = "unverifiable", ["span_material_not_provided"]
-            _diag(diagnostics, "span_material_not_provided",
-                  f"span {span_id} is bound by a receipt but no narrative "
-                  "context transports it", severity="info", item_id=span_id)
-        else:
-            status, reasons = "unverifiable", list(state.reasons)
+        status = "unverifiable"
+        reasons = sorted({reason for state in states
+                          for reason in state.reasons
+                          if reason != "dependency_intact"})
         span_status[span_id] = items.add(
             "span", span_id,
             id_scope="canonical",
