@@ -37,6 +37,7 @@ from company_wiki_narrative_contracts import (  # noqa: E402
     validate_narrative_response,
 )
 from contracts.evidence import canonical_sha256  # noqa: E402
+from contracts.evidence import text_sha256  # noqa: E402
 from forecast.dependencies import parameter_formula_refs  # noqa: E402
 
 REPORT_SCHEMA = "rf-narrative-adoption-report/1"
@@ -583,6 +584,47 @@ def _evaluate_dependency(receipt_index: int, dep: dict, span: dict | None,
                   f"{claim.get('target_id')!r}, not the bound parameter "
                   f"{parameter_id!r}", item_id=span_id)
             reasons.append("receipt_claim_target_mismatch")
+        if span is not None:
+            # The consumption adapter creates exactly one new claim per
+            # binding with excerpt = the bound span's raw_text and locator =
+            # its locator (the projected source_locator for /3 spans), so a
+            # receipt-cited claim's own material identity must be this
+            # span's material. Contradictions (e.g. a receipt from a
+            # sibling run that selected different material of the same
+            # capture) are named; missing optional fields stay unknown.
+            structured = span.get("structured_value") or {}
+            projected = "source_locator" in structured
+            expected_locator = (
+                structured.get("source_locator") if projected
+                else span.get("locator"))
+            span_text = span.get("raw_text")
+            material_fields_missing = False
+            claim_locator = claim.get("locator")
+            if claim_locator is not None and expected_locator is not None:
+                if claim_locator != expected_locator:
+                    _diag(diagnostics, "receipt_claim_material_mismatch",
+                          f"receipt[{receipt_index}] claim {claim_id} locator "
+                          "points at other material than the transported "
+                          "span", item_id=span_id)
+                    reasons.append("receipt_claim_material_mismatch")
+            elif claim_locator is None or expected_locator is None:
+                material_fields_missing = True
+            excerpt_sha = claim.get("excerpt_sha256")
+            if excerpt_sha is not None and span_text is not None:
+                if excerpt_sha != text_sha256(span_text):
+                    _diag(diagnostics, "receipt_claim_material_mismatch",
+                          f"receipt[{receipt_index}] claim {claim_id} "
+                          "excerpt hash is not the transported span's text",
+                          item_id=span_id)
+                    reasons.append("receipt_claim_material_mismatch")
+            elif excerpt_sha is None:
+                material_fields_missing = True
+            if material_fields_missing:
+                _diag(diagnostics, "material_field_missing_unknown",
+                      f"receipt[{receipt_index}] claim {claim_id} lacks "
+                      "locator/excerpt hash; material identity stays "
+                      "unknown (lenient policy)", severity="info",
+                      item_id=span_id)
     if parameter_id not in parameters:
         _diag(diagnostics, "receipt_parameter_not_in_input",
               f"receipt[{receipt_index}] cites parameter {parameter_id} "

@@ -936,3 +936,165 @@ def test_projected_multi_parent_context_resolves_actual_span_parent():
     assert "consumption_source_hash_mismatch" not in codes(report)
     assert "receipt_claim_material_mismatch" not in codes(report)
     assert "receipt_claim_source_mismatch" not in codes(report)
+
+
+# ---------------------------------------------------------------------------
+# 25 R2-01 rework: the claim's own material must be the bound span's material
+# ---------------------------------------------------------------------------
+
+def _two_real_runs_same_capture():
+    """Two genuine consume runs over ONE validated wire: run A binds the CEO
+    answer span, run B binds the table row span, both with the same local
+    claim_id and parameter (each run's input holds its own unique claim)."""
+    context = validated("2")
+    value = context.to_dict()
+    ceo = next(s for s in value["evidence_spans"]
+               if s["structured_value"]["unit_kind"] == "transcript_speaker_block"
+               and s["raw_text"].startswith("[CEO]"))
+    table = next(s for s in value["evidence_spans"]
+                 if s["structured_value"]["unit_kind"] == "table_row")
+    table_group = next(g for g in value["reading_context"]["groups"]
+                       if table["span_id"] in g["evidence_ids"])
+    runs = {}
+    for name, span, extra in (
+        ("ceo", ceo, {}),
+        ("table", table, {"citation_group_id": table_group["group_id"],
+                          "citation_view": 0}),
+    ):
+        data = document(context)
+        entry = binding(value, "answer" if name == "ceo" else "table_row",
+                        claim_id="w20_cl", parameter_id=PARAMETER)
+        entry["span_id"] = span["span_id"]
+        entry.update(extra)
+        with patch("source_narrative_context.read_narrative_context",
+                   return_value=context):
+            linked, receipt = consume_narrative_input(
+                data, request={"as_of_date": value["as_of_date"]},
+                bindings=[entry], source_id="filing",
+                catalog_config=Path("isolated-not-opened.json"),
+            )
+        runs[name] = {"span": span, "linked": linked, "receipt": receipt,
+                      "forecast": run_forecast(linked, mode="draft")}
+    return value, runs
+
+
+def test_swapped_material_receipt_between_same_source_runs():
+    value, runs = _two_real_runs_same_capture()
+    # Receipt B (table material) on forecast A (CEO claim material): the
+    # table span must not pass as used — the final claim's locator/excerpt
+    # identify different material from the same capture.
+    report = build(runs["ceo"]["forecast"], receipts=[runs["table"]["receipt"]],
+                   contexts=[value])
+    span_item = find(report, "span", runs["table"]["span"]["span_id"])
+    assert span_item["status"] == "unverifiable"
+    assert "receipt_claim_material_mismatch" in reasons(span_item)
+    assert span_item["cited_by"] == []
+    # Receipt A on forecast A stays the legitimate used chain.
+    ok = build(runs["ceo"]["forecast"], receipts=[runs["ceo"]["receipt"]],
+               contexts=[value])
+    assert find(ok, "span", runs["ceo"]["span"]["span_id"])["status"] == "used"
+    assert "receipt_claim_material_mismatch" not in codes(ok)
+
+
+def test_claim_material_contradictions_and_missing_fields():
+    value, linked, receipt, forecast = real_chain()
+    ceo_span_id = span_id(value, "answer")
+    # Mutate the FINAL artifact's embedded input document directly: the
+    # engine rejects a claim whose excerpt hash disagrees with its own
+    # excerpt, but the observer faces arbitrary artifact+receipt pairs.
+    def artifact_with_claim(**overrides):
+        artifact = json.loads(json.dumps(forecast))
+        claim = next(c for c in artifact["input_document"]["evidence_claims"]
+                     if c["claim_id"] == "w20_cl")
+        claim.update(overrides)
+        return artifact
+    # A claim locator pointing at other material of the same capture.
+    report = build(artifact_with_claim(
+        locator="loc:v1/paragraph:4/chars:155-180"), receipts=[receipt],
+        contexts=[value])
+    span_item = find(report, "span", ceo_span_id)
+    assert span_item["status"] == "unverifiable"
+    assert "receipt_claim_material_mismatch" in reasons(span_item)
+    # A claim excerpt hash from other material.
+    report = build(artifact_with_claim(
+        excerpt_sha256=text_sha256("other material of the same capture")),
+        receipts=[receipt], contexts=[value])
+    span_item = find(report, "span", ceo_span_id)
+    assert span_item["status"] == "unverifiable"
+    assert "receipt_claim_material_mismatch" in reasons(span_item)
+    # Missing optional claim material stays lenient-unknown, never a failure.
+    stripped = json.loads(json.dumps(forecast))
+    claim = next(c for c in stripped["input_document"]["evidence_claims"]
+                 if c["claim_id"] == "w20_cl")
+    del claim["locator"], claim["excerpt_sha256"]
+    report = build(stripped, receipts=[receipt], contexts=[value])
+    assert find(report, "span", ceo_span_id)["status"] == "used"
+    assert "material_field_missing_unknown" in codes(report)
+
+
+def test_same_parameter_multi_evidence_paths_stay_legal():
+    value, runs = _two_real_runs_same_capture()
+    # One parameter, two different spans bound as two claims in ONE input —
+    # legal multi-evidence; both spans used, both claims used.
+    data = document(validated("2"))
+    ceo_span = runs["ceo"]["span"]
+    table_span = runs["table"]["span"]
+    table_group = next(g for g in value["reading_context"]["groups"]
+                       if table_span["span_id"] in g["evidence_ids"])
+    entries = [
+        binding(value, "answer", claim_id="ev_ceo", parameter_id=PARAMETER),
+        {**binding(value, "table_row", claim_id="ev_table", parameter_id=PARAMETER),
+         "citation_group_id": table_group["group_id"], "citation_view": 0},
+    ]
+    with patch("source_narrative_context.read_narrative_context",
+               return_value=validated("2")):
+        linked, receipt = consume_narrative_input(
+            data, request={"as_of_date": value["as_of_date"]}, bindings=entries,
+            source_id="filing", catalog_config=Path("isolated-not-opened.json"),
+        )
+    forecast = run_forecast(linked, mode="draft")
+    report = build(forecast, receipts=[receipt], contexts=[value])
+    assert find(report, "span", ceo_span["span_id"])["status"] == "used"
+    assert find(report, "span", table_span["span_id"])["status"] == "used"
+    assert find(report, "claim", "ev_ceo")["status"] == "used"
+    assert find(report, "claim", "ev_table")["status"] == "used"
+    assert "receipt_claim_material_mismatch" not in codes(report)
+
+
+# ---------------------------------------------------------------------------
+# 26 R2-02 rework: corrupt DEFLATE streams fail named, not with a traceback
+# ---------------------------------------------------------------------------
+
+def test_corrupt_deflate_gzip_is_normalized_to_named_failure(tmp_path, capsys, monkeypatch):
+    import gzip as gzip_mod
+    monkeypatch.chdir(tmp_path)
+    capsys.readouterr()
+    header = b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03"
+    bad = tmp_path / "bad-deflate.json.gz"
+    bad.write_bytes(header + b"\xff\xff\xff\xff\xff\xff\xff\xff\xff")  # 19 bytes
+    with pytest.raises(audit.AdoptionAuditError) as caught:
+        cli._read_bytes(bad, 4096)
+    assert caught.value.code == "input_decompress_failed"
+    fresh = tmp_path / "fresh.json"
+    assert cli.main(["--forecast", str(bad), "--max-input-bytes", "4096",
+                     "--output", str(fresh)]) == 2
+    assert "input_decompress_failed" in capsys.readouterr().err
+    assert not fresh.exists()
+    # The same boundary across nearby corruption shapes.
+    truncated = tmp_path / "truncated.json.gz"
+    value, linked, receipt, forecast = real_chain()
+    good = tmp_path / "good.json.gz"
+    good.write_bytes(gzip_mod.compress(
+        json.dumps(forecast, ensure_ascii=False).encode("utf-8")))
+    decompressed = len(json.dumps(forecast, ensure_ascii=False).encode("utf-8"))
+    limit = decompressed + 1024
+    raw = good.read_bytes()
+    truncated.write_bytes(raw[:len(raw) // 2])
+    for path in (truncated,):
+        assert cli.main(["--forecast", str(path), "--max-input-bytes",
+                         str(limit)]) == 2
+        assert "input_decompress_failed" in capsys.readouterr().err
+    # Exactly at limit passes, over limit fails; both named paths already
+    # covered by test 23 — here only the legal boundary re-check.
+    assert cli.main(["--forecast", str(good), "--max-input-bytes",
+                     str(limit), "--output", str(tmp_path / "ok.json")]) == 0

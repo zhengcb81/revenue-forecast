@@ -56,6 +56,7 @@ def _gunzip_bounded(data: bytes, limit: int, path: Path) -> bytes:
     named instead of crashing.
     """
     import io
+    import zlib
 
     reader = gzip.GzipFile(fileobj=io.BytesIO(data))
     out = io.BytesIO()
@@ -67,7 +68,7 @@ def _gunzip_bounded(data: bytes, limit: int, path: Path) -> bytes:
                 break
             out.write(chunk)
             remaining -= len(chunk)
-    except (EOFError, gzip.BadGzipFile, OSError) as error:
+    except (EOFError, gzip.BadGzipFile, OSError, zlib.error) as error:
         raise audit.AdoptionAuditError(
             "input_decompress_failed",
             f"{path} is not readable gzip: {error}") from error

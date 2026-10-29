@@ -41,3 +41,11 @@
 - 独立复审第二轮（e4657377）：F1 FIXED、全部探针无回归、F2裁定不阻塞，OPEN_findings=[]，verdict PASS。记录落盘delivery/w20-rf-adoption/review/rework-review.md；原initial/final审查保留。
 - 最终实测（复审agent）：W20全量37 passed（5.81s）；回归106 passed（3.44s）；ruff clean；工区clean。
 - handoff.md/json刷新：tested/reviewed_code_commit=e4657377，文件SHA按e4657377字节更新（README与e2e未改动保留原SHA），补rework节与RF-R1/R2/R3逐项PASS。
+## 2026-10-29 R2定点补完（ROOT第二轮返工）
+
+- ROOT返工单两项：RF-R2-01/P1 claim实际材料边缺失（同源两次consume、同claim_id/param、不同span材料，A forecast配B receipt仍判used）；RF-R2-02/P2 19B坏DEFLATE抛zlib.error逃逸为exit 1。
+- RED：3个测试失败记录（材料交换/矛盾、坏DEFLATE；多证据正例先绿作守护）。
+- 修复：(1) `_evaluate_dependency` claim材料边——receipt引用的claim按consume合同（一次绑定新建唯一claim：locator=span定位[投影为source_locator]、excerpt=raw_text、excerpt_sha=text_sha256(raw_text)）核对locator与excerpt_sha256；矛盾→receipt_claim_material_mismatch unverifiable；claim缺locator/excerpt_sha→material_field_missing_unknown info宽松；/3投影按structured_value.source_locator解析。(2) `_gunzip_bounded` except加zlib.error（不捕全部异常）→input_decompress_failed，exit 2无半输出。
+- ROOT探针重放：material_swap→unverifiable+receipt_claim_material_mismatch；same_material_positive→used；bad_deflate→rejected input_decompress_failed。
+- 测试：矛盾用例改为直接改最终产物内嵌input_document（引擎会拒绝自相矛盾claim，观察者面对任意产物+回执组合）；不变量测试覆盖同capture两种span两次真实consume交换、locator/excerptSHA矛盾、合法多证据/多路径（同参数两span两claim均used）、缺可选字段unknown。
+- 实测：W20全量41 passed（5.50s）；回归106 passed；ruff clean。
