@@ -34,3 +34,10 @@
 - 修复：(1) `_evaluate_dependency`重写为共享receipt-resolution：span材料→canonical parent经capture映射到RF本地source→提供source_id/locator/parser与运输span逐边核对→claim归属/材料/target边→param存在→run公式边；缺hash仍宽松unknown（链走span自身parent哈希）；新增命名码receipt_source_mismatch/receipt_span_hash_mismatch/receipt_locator_mismatch/receipt_parser_mismatch/receipt_claim_source_mismatch/receipt_claim_material_mismatch/receipt_claim_target_mismatch/span_material_not_provided。(2) span按canonical聚合全部intact路径cited_by并集+内容排序去重，invalid路径保留各自诊断（span_dependencies_aggregated info替换误导性的"several receipts"）；顺序/拆分回执不变性测试。(3) `_gunzip_bounded`流式解压最多limit+1即命名resource_limit，截断/损坏→input_decompress_failed，失败不留半输出。
 - ROOT探针重放：foreign_span→unverifiable+receipt_span_hash_mismatch；wrong_explicit_source_id→unverifiable+receipt_source_mismatch；two_valid_bindings→used+slot_years[2026,2027]；gzip_bound→rejected resource_limit。
 - 实测：单元34+e2e 2=36 passed（7.14s）；回归106 passed；ruff clean。
+## 2026-10-29 R1返工收尾（复验PASS）
+
+- 独立复审第一轮（a1edda18）：三项ROOT返工全FIXED，但新发现[P2] F1——/3多父投影parent_sha固定取refs[0]，span实际父在refs[1]时合法回执被误判unverifiable（三条假诊断）。OPEN=[F1]。
+- 修复（e4657377）：span_material按每个span自身source_id在(source_ref+parent_source_refs)解析实际父；span展示字段同源。新增RED→GREEN测试test_projected_multi_parent_context_resolves_actual_span_parent（真实validate_narrative_response+consume+run_forecast链）。
+- 独立复审第二轮（e4657377）：F1 FIXED、全部探针无回归、F2裁定不阻塞，OPEN_findings=[]，verdict PASS。记录落盘delivery/w20-rf-adoption/review/rework-review.md；原initial/final审查保留。
+- 最终实测（复审agent）：W20全量37 passed（5.81s）；回归106 passed（3.44s）；ruff clean；工区clean。
+- handoff.md/json刷新：tested/reviewed_code_commit=e4657377，文件SHA按e4657377字节更新（README与e2e未改动保留原SHA），补rework节与RF-R1/R2/R3逐项PASS。
