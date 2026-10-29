@@ -49,3 +49,11 @@
 - ROOT探针重放：material_swap→unverifiable+receipt_claim_material_mismatch；same_material_positive→used；bad_deflate→rejected input_decompress_failed。
 - 测试：矛盾用例改为直接改最终产物内嵌input_document（引擎会拒绝自相矛盾claim，观察者面对任意产物+回执组合）；不变量测试覆盖同capture两种span两次真实consume交换、locator/excerptSHA矛盾、合法多证据/多路径（同参数两span两claim均used）、缺可选字段unknown。
 - 实测：W20全量41 passed（5.50s）；回归106 passed；ruff clean。
+## 2026-10-29 R2定点补完收尾（复审PASS）
+
+- 独立复审（956b51d4）：RF-R2-01/RF-R2-02 均 FIXED（9组独立探针：material_swap unverifiable、同材料 used、/3多父与多证据正例无误伤、19B坏DEFLATE exit2命名、strip语义与引擎恒等）；新发现[P3] /1伪投影键误报边界。OPEN=[P3]。
+- P3收敛（f75c9fe2）：span_material按context schema判projectedness（与consume适配器同规则），键存在判断移除；守护测试就位。同复审agent复验：P3 FIXED、全部探针零回归、OPEN=[]、verdict PASS。
+- 复审指出的先在墙钟flake（scaling的t1>0.02下限快机器偶发击穿）收敛为恒执行的比例+绝对余量断言；W20套件5次连跑稳定42 passed。
+- 记录落盘delivery/w20-rf-adoption/review/rework-r2-review.md；此前各轮审查保留。
+- handoff.md/json刷新：tested/reviewed_code_commit=f75c9fe2；audit/cli/单测SHA按新字节更新；requirements补RF-R1/R2/R3（ROOT确认关闭）与RF-R2-01/02（PASS）。
+- 推送：分支codex/w20-rf-adoption-20261028推至收尾commit。STOP等ROOT接收。

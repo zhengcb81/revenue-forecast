@@ -399,8 +399,10 @@ def test_scaling_is_linear_and_resource_bound_enforced():
     second = build(large)
     t2 = time.perf_counter() - start
     assert second["counts"]["items"] == 2 * first["counts"]["items"]
-    assert t1 > 0.02, f"workload too small to observe scaling: {t1}"
-    assert t2 < max(4.0 * t1, t1 + 1.0), (t1, t2)
+    # Always executed: the ratio governs once the workload dominates the
+    # clock noise; a small absolute slack absorbs fast-machine jitter where
+    # a wall-clock floor would flake.
+    assert t2 < 4.0 * t1 + 0.05, (t1, t2)
     with pytest.raises(audit.AdoptionAuditError) as caught:
         build(small, max_items=10)
     assert caught.value.code == "resource_limit"

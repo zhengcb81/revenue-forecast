@@ -11,65 +11,243 @@
     "8b221153",
     "7716c7da",
     "a1edda18",
-    "e4657377"
+    "e4657377",
+    "956b51d4",
+    "f75c9fe2"
   ],
-  "tested_code_commit": "e4657377",
-  "reviewed_code_commit": "e4657377",
-  "tested_reviewed_note": "tested_code_commit 与 reviewed_code_commit 为同一最终实现 commit e4657377（R1返工+多父修复）。7716c7da 为ROOT验收受审的交接文档 commit，a1edda18/e4657377 为返工实现。其后仅 handoff/文档 commit 允许不同，源码无变化。",
+  "tested_code_commit": "f75c9fe2",
+  "reviewed_code_commit": "f75c9fe2",
+  "tested_reviewed_note": "tested_code_commit 与 reviewed_code_commit 为同一最终实现 commit f75c9fe2（R2定点补完+复审P3收敛）。7716c7da 为ROOT第一轮验收受审的交接文档 commit；a1edda18/e4657377 为R1返工；956b51d4/f75c9fe2 为R2定点补完。其后仅 handoff/文档 commit 允许不同，源码无变化。",
   "rework": {
-    "return_order": "company-wiki/docs/plans/du11-source-closure-2026-10-18/review/w20-reception-20261029/RETURN_RF.md",
-    "root_verdict_before": "CHANGES_REQUESTED",
-    "items": [
-      {"id": "RF-R1", "severity": "P1", "title": "whole-chain receipt resolution", "status": "FIXED", "evidence": "review/rework-review.md; foreign_span/wrong_source_id/错locator/错parser/错claim target/错claim source/错claim material/跨run 全部命名unverifiable; 双合法来源不串线; 缺hash仍宽松"},
-      {"id": "RF-R2", "severity": "P2", "title": "aggregate all span paths", "status": "FIXED", "evidence": "review/rework-review.md; 同回执/拆回执/倒序并集一致; invalid路径保留诊断; two_valid_bindings years={2026,2027}"},
-      {"id": "RF-R3", "severity": "P2", "title": "bounded gzip decompression", "status": "FIXED", "evidence": "review/rework-review.md; limit+1流式; 炸弹/截断/损坏命名失败; 失败不留半输出"}
+    "return_orders": [
+      "company-wiki/docs/plans/du11-source-closure-2026-10-18/review/w20-reception-20261029/RETURN_RF.md",
+      "company-wiki/docs/plans/du11-source-closure-2026-10-18/review/w20-reception-r2-20261029/RETURN_RF.md"
     ],
-    "followup_fix": "/3 multi-parent actual-parent resolution (rework-review F1) FIXED at e4657377"
+    "root_verdict_before": "CHANGES_REQUESTED (R1: three items CLOSED by ROOT; R2: two items open)",
+    "items": [
+      {
+        "id": "RF-R1",
+        "severity": "P1",
+        "title": "whole-chain receipt resolution",
+        "status": "CLOSED_BY_ROOT",
+        "evidence": "r2 return order '已关闭' section; review/rework-review.md"
+      },
+      {
+        "id": "RF-R2",
+        "severity": "P2",
+        "title": "aggregate all span paths",
+        "status": "CLOSED_BY_ROOT",
+        "evidence": "r2 return order '已关闭' section"
+      },
+      {
+        "id": "RF-R3",
+        "severity": "P2",
+        "title": "bounded gzip decompression",
+        "status": "CLOSED_BY_ROOT",
+        "evidence": "r2 return order '已关闭' section"
+      },
+      {
+        "id": "RF-R2-01",
+        "severity": "P1",
+        "title": "claim material identity edge (locator/excerpt vs bound span)",
+        "status": "FIXED",
+        "evidence": "review/rework-r2-review.md; ROOT material_swap probe -> unverifiable + receipt_claim_material_mismatch; same-material -> used; /3 multi-parent and multi-evidence positives unaffected; missing fields -> material_field_missing_unknown info"
+      },
+      {
+        "id": "RF-R2-02",
+        "severity": "P2",
+        "title": "normalize zlib.error to named failure",
+        "status": "FIXED",
+        "evidence": "review/rework-r2-review.md; 19B bad DEFLATE -> exit 2 input_decompress_failed, no half output; precise except tuple, no bare except"
+      }
+    ],
+    "followup_fixes": "rework-review P3 (/3 multi-parent) and rework-r2-review P3 (/1 stray source_locator key: projectedness now follows context schema like the adapter) both FIXED; pre-existing wall-clock flake in scaling test converged to always-executed ratio+slack assertion"
   },
   "files": [
-    {"path": "tools/narrative_adoption_audit/__init__.py", "sha256": "1ff2cbed856cac6c465ac454003e9a1f63333d2f7e50239c88fddb483d745d1f"},
-    {"path": "tools/narrative_adoption_audit/audit.py", "sha256": "0329cc7275a6ff8b0cf3b499152973292f17e5d0a359638e569598593507bb43"},
-    {"path": "tools/narrative_adoption_audit/cli.py", "sha256": "e790715c0187d21416c273a9b8456c61f622820ea68b7d4ea457a08029f37141"},
-    {"path": "tools/narrative_adoption_audit/README.md", "sha256": "d632b26d1210f552fd5355342ddedb364e128e21ef49a2401288a9833a8e3cce"},
-    {"path": "tests/test_w20_narrative_adoption_audit.py", "sha256": "484d630474ba70e5da2c49618c01059d026205d943ce8c8092854b826e18ab31"},
-    {"path": "tests/test_w20_narrative_adoption_e2e.py", "sha256": "aca860921a393734b67adf319aae27433748cedca170b5fb78990d5eff681b08"},
-    {"path": "docs/plans/w20-rf-adoption-2026-10-28/construction_card.md", "sha256": "135ef4a401440cbc722be8449c618c7656070ef980775ce16cf0e9e1c66214c5"},
-    {"path": "docs/plans/w20-rf-adoption-2026-10-28/findings.md", "sha256": "bf5107653a4f84a0934197d766ec23a51783087fe9f75bca4d60addd32673bb3"},
-    {"path": "docs/plans/w20-rf-adoption-2026-10-28/task_plan.md", "sha256": "322a9e5460beffe717c371accd9ff30d2555481b8906bafaa72b655ef6ebc064"},
-    {"path": "docs/plans/w20-rf-adoption-2026-10-28/progress.md", "sha256": "78ab05e028b32a4900fc4d8a1c2f59800a104c606645d2abecbfc8c3cf1022ec"},
-    {"path": "delivery/w20-rf-adoption/review/initial.md", "sha256": "7af1e444b8b4dd2612ece8a64c0298e51f47f25d64847dad36583c584f419bc4"},
-    {"path": "delivery/w20-rf-adoption/review/initial.json", "sha256": "ade843e8bce4f33777fdba2f7d572e4d6d89af4cf2a5a322912ac373d7583d8b"}
+    {
+      "path": "tools/narrative_adoption_audit/__init__.py",
+      "sha256": "1ff2cbed856cac6c465ac454003e9a1f63333d2f7e50239c88fddb483d745d1f"
+    },
+    {
+      "path": "tools/narrative_adoption_audit/audit.py",
+      "sha256": "f140cc0f3331e7076b7edbcac2b533e19c8215ea42b8f0bb8f3d5464317f7fb0"
+    },
+    {
+      "path": "tools/narrative_adoption_audit/cli.py",
+      "sha256": "436c6487cca3d6d4591b7237098d49f8275d035b70ebf07d5684c08a6147ff35"
+    },
+    {
+      "path": "tools/narrative_adoption_audit/README.md",
+      "sha256": "d632b26d1210f552fd5355342ddedb364e128e21ef49a2401288a9833a8e3cce"
+    },
+    {
+      "path": "tests/test_w20_narrative_adoption_audit.py",
+      "sha256": "d4dccbc6a4bf4f7413c7ee9d3597457d0708c345297e125174b372b346f53880"
+    },
+    {
+      "path": "tests/test_w20_narrative_adoption_e2e.py",
+      "sha256": "aca860921a393734b67adf319aae27433748cedca170b5fb78990d5eff681b08"
+    },
+    {
+      "path": "docs/plans/w20-rf-adoption-2026-10-28/construction_card.md",
+      "sha256": "135ef4a401440cbc722be8449c618c7656070ef980775ce16cf0e9e1c66214c5"
+    },
+    {
+      "path": "docs/plans/w20-rf-adoption-2026-10-28/findings.md",
+      "sha256": "bf5107653a4f84a0934197d766ec23a51783087fe9f75bca4d60addd32673bb3"
+    },
+    {
+      "path": "docs/plans/w20-rf-adoption-2026-10-28/task_plan.md",
+      "sha256": "322a9e5460beffe717c371accd9ff30d2555481b8906bafaa72b655ef6ebc064"
+    },
+    {
+      "path": "docs/plans/w20-rf-adoption-2026-10-28/progress.md",
+      "sha256": "78ab05e028b32a4900fc4d8a1c2f59800a104c606645d2abecbfc8c3cf1022ec"
+    },
+    {
+      "path": "delivery/w20-rf-adoption/review/initial.md",
+      "sha256": "7af1e444b8b4dd2612ece8a64c0298e51f47f25d64847dad36583c584f419bc4"
+    },
+    {
+      "path": "delivery/w20-rf-adoption/review/initial.json",
+      "sha256": "ade843e8bce4f33777fdba2f7d572e4d6d89af4cf2a5a322912ac373d7583d8b"
+    }
   ],
-  "files_note": "SHA 为 e4657377 时点实测字节 SHA。task_plan/progress 为本轮收尾时点（收尾 commit 仅更新这两份 PWF 与 handoff/review 文档自身；产品源码与测试以上表前六项为准）。旧 8b221153 时点被返工覆盖的三个文件（audit/cli/单测）已按新字节刷新；README 与 e2e 本轮未改动故保留原 SHA。",
+  "files_note": "SHA 为 f75c9fe2 时点实测字节 SHA。R2 返工覆盖 audit.py/cli.py/单测三文件已刷新；README 与 e2e 本轮未改动保留原 SHA。task_plan/progress 为收尾时点，收尾 commit 仅更新 PWF 与 handoff/review 文档自身。",
   "requirements": [
-    {"id": "R1 显式输入/只写显式输出/拒绝覆盖/无扫描联网DB模型", "evidence": "cli.py 全部路径显式；--output open(x|xb) 独占创建+resolve 比对拒绝等于输入；复审 R1 满足", "status": "PASS"},
-    {"id": "R2 canonical ID/display key 隔离/support区分/hash政策", "evidence": "span urn/sha 连接；display_key_collision_not_joined；/4 reading_support_use 唯一授权；R1返工后整链边核对；hash 必验+hash_missing_unknown 宽松；单测2/8/16/21", "status": "PASS"},
-    {"id": "R3 逐项引用映射+四状态+actual IDs+定位+named reason", "evidence": "items[].{status,cited_by[{node_type,location,ids}],reasons}；input echo 不作采用证据；单测1/4/5/17/22", "status": "PASS"},
-    {"id": "R4 引用链判直接支撑/仅context/多节点复用/未进图；不猜用不测心", "evidence": "复用既有 reader 契约；not_observed 不断言没用；准备失败(unverifiable)与缺观察(not_observed)分列；R2聚合多路径", "status": "PASS"},
-    {"id": "R5 只核已有绑定口径/不另算收入/不LLM/不rating", "evidence": "口径诊断纯观察；diagnostic_only_not_a_permission_gate=true", "status": "PASS"},
-    {"id": "R6 无新DB调度权限/版本化report/资源界/线性", "evidence": "rf-narrative-adoption-report/1；--max-items/--max-input-bytes（压缩+解压两侧受界）超界命名 exit2；一次索引+O(1)查", "status": "PASS"},
-    {"id": "RF-R1 整链验证（返工单）", "evidence": "a1edda18 实现 + e4657377 多父修正；ROOT 两反例+新增反例全数 unverifiable 命名诊断；两合法来源正例不串线；review/rework-review.md 第一轮 FIXED", "status": "PASS"},
-    {"id": "RF-R2 全路径聚合（返工单）", "evidence": "canonical span cited_by 并集+内容排序；跨回执/顺序不变性测试；invalid 不吞 valid；review/rework-review.md FIXED", "status": "PASS"},
-    {"id": "RF-R3 gzip 有界（返工单）", "evidence": "_gunzip_bounded 流式 limit+1；炸弹/截断/损坏测试；exit2 无半输出；review/rework-review.md FIXED", "status": "PASS"},
-    {"id": "测试包11项全覆盖", "evidence": "S2 核对表 11/11；R1返工后扩至35单元", "status": "PASS"},
-    {"id": "真实CLI端到端两类驱动模型", "evidence": "e2e direct_revenue 真子进程全链 + direct_growth biren；数值不变+字节稳定+snapshot交叉", "status": "PASS"},
-    {"id": "独立审查：初审→修复→复审→返工→复审，OPEN清空", "evidence": "review/initial.*（14项OPEN修复）、review/final.*（PASS）、review/rework-review.md（两轮，最终 OPEN=[] PASS）", "status": "PASS"},
-    {"id": "只读回放已有脱敏真实RF版本", "evidence": "以已入库真实 e2e/fixtures/biren_input.json（脱敏合成标记）正式产物观察代替；如实记 PARTIAL", "status": "PARTIAL"}
+    {
+      "id": "R1 显式输入/只写显式输出/拒绝覆盖/无扫描联网DB模型",
+      "evidence": "cli.py 全部路径显式；--output open(x|xb) 独占创建+resolve 比对拒绝等于输入；复审 R1 满足",
+      "status": "PASS"
+    },
+    {
+      "id": "R2 canonical ID/display key 隔离/support区分/hash政策",
+      "evidence": "span urn/sha 连接；display_key_collision_not_joined；/4 reading_support_use 唯一授权；R1返工后整链边核对；hash 必验+hash_missing_unknown 宽松；单测2/8/16/21",
+      "status": "PASS"
+    },
+    {
+      "id": "R3 逐项引用映射+四状态+actual IDs+定位+named reason",
+      "evidence": "items[].{status,cited_by[{node_type,location,ids}],reasons}；input echo 不作采用证据；单测1/4/5/17/22",
+      "status": "PASS"
+    },
+    {
+      "id": "R4 引用链判直接支撑/仅context/多节点复用/未进图；不猜用不测心",
+      "evidence": "复用既有 reader 契约；not_observed 不断言没用；准备失败(unverifiable)与缺观察(not_observed)分列；R2聚合多路径",
+      "status": "PASS"
+    },
+    {
+      "id": "R5 只核已有绑定口径/不另算收入/不LLM/不rating",
+      "evidence": "口径诊断纯观察；diagnostic_only_not_a_permission_gate=true",
+      "status": "PASS"
+    },
+    {
+      "id": "R6 无新DB调度权限/版本化report/资源界/线性",
+      "evidence": "rf-narrative-adoption-report/1；--max-items/--max-input-bytes（压缩+解压两侧受界）超界命名 exit2；一次索引+O(1)查",
+      "status": "PASS"
+    },
+    {
+      "id": "测试包11项全覆盖",
+      "evidence": "S2 核对表 11/11；R1返工后扩至35单元",
+      "status": "PASS"
+    },
+    {
+      "id": "真实CLI端到端两类驱动模型",
+      "evidence": "e2e direct_revenue 真子进程全链 + direct_growth biren；数值不变+字节稳定+snapshot交叉",
+      "status": "PASS"
+    },
+    {
+      "id": "独立审查：初审→修复→复审→返工→复审，OPEN清空",
+      "evidence": "review/initial.*（14项OPEN修复）、review/final.*（PASS）、review/rework-review.md（两轮，最终 OPEN=[] PASS）",
+      "status": "PASS"
+    },
+    {
+      "id": "只读回放已有脱敏真实RF版本",
+      "evidence": "以已入库真实 e2e/fixtures/biren_input.json（脱敏合成标记）正式产物观察代替；如实记 PARTIAL",
+      "status": "PARTIAL"
+    },
+    {
+      "id": "RF-R1 整链验证（返工单）",
+      "evidence": "a1edda18 + e4657377；ROOT 第一轮两反例拒绝；ROOT R2 返工单确认关闭",
+      "status": "PASS"
+    },
+    {
+      "id": "RF-R2 全路径聚合（返工单）",
+      "evidence": "a1edda18；ROOT R2 返工单确认关闭",
+      "status": "PASS"
+    },
+    {
+      "id": "RF-R3 gzip 有界（返工单）",
+      "evidence": "a1edda18；ROOT R2 返工单确认关闭",
+      "status": "PASS"
+    },
+    {
+      "id": "RF-R2-01 claim 材料身份边（第二轮返工单）",
+      "evidence": "956b51d4 实现 + f75c9fe2 投影判定收敛；material_swap unverifiable、同材料 used、矛盾/缺字段/多证据//3多父/strip 不变量测试；独立复审 review/rework-r2-review.md FIXED",
+      "status": "PASS"
+    },
+    {
+      "id": "RF-R2-02 zlib.error 归一（第二轮返工单）",
+      "evidence": "956b51d4；19B 坏 DEFLATE exit 2 命名无半输出；精确 except；独立复审 FIXED",
+      "status": "PASS"
+    },
+    {
+      "id": "RF-R1 整链验证（返工单）",
+      "evidence": "a1edda18 实现 + e4657377 多父修正；ROOT 两反例+新增反例全数 unverifiable 命名诊断；两合法来源正例不串线；review/rework-review.md 第一轮 FIXED",
+      "status": "PASS"
+    },
+    {
+      "id": "RF-R2 全路径聚合（返工单）",
+      "evidence": "canonical span cited_by 并集+内容排序；跨回执/顺序不变性测试；invalid 不吞 valid；review/rework-review.md FIXED",
+      "status": "PASS"
+    },
+    {
+      "id": "RF-R3 gzip 有界（返工单）",
+      "evidence": "_gunzip_bounded 流式 limit+1；炸弹/截断/损坏测试；exit2 无半输出；review/rework-review.md FIXED",
+      "status": "PASS"
+    }
   ],
   "tests": [
-    {"command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_w20_narrative_adoption_audit.py tests/test_w20_narrative_adoption_e2e.py", "exit_code": 0, "passed": 37, "failed": 0, "seconds": 5.81, "scope": "W20全量：35单元（含返工反例/聚合/gzip/多父）+2真实子进程e2e（独立复审agent实测）"},
-    {"command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_recognition_bridge.py tests/test_du11_narrative_citation_context.py tests/test_du11_narrative_citation_consumption.py tests/test_du11_narrative_citation_wire.py tests/test_research_support_diagnostics.py tests/test_reading_support_use.py", "exit_code": 0, "passed": 106, "failed": 0, "seconds": 3.44, "scope": "相邻回归短包（独立复审agent实测）"},
-    {"command": "ruff check --no-cache tools/narrative_adoption_audit tests/test_w20_narrative_adoption_audit.py tests/test_w20_narrative_adoption_e2e.py", "exit_code": 0, "passed": null, "failed": null, "seconds": 1, "scope": "lint clean"},
-    {"command": "ROOT rf-evidence/probe.py 四案例本地重放（作者实施）", "exit_code": 0, "passed": 4, "failed": 0, "seconds": 5, "scope": "foreign_span→unverifiable; wrong_explicit_source_id→unverifiable; two_valid_bindings→used years[2026,2027]; gzip_bound→rejected resource_limit"}
+    {
+      "command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_w20_narrative_adoption_audit.py tests/test_w20_narrative_adoption_e2e.py",
+      "exit_code": 0,
+      "passed": 42,
+      "failed": 0,
+      "seconds": 5.15,
+      "scope": "W20全量：40单元+2真实子进程e2e；5次连跑稳定全绿（独立复审agent实测41-42 passed）"
+    },
+    {
+      "command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_recognition_bridge.py tests/test_du11_narrative_citation_context.py tests/test_du11_narrative_citation_consumption.py tests/test_du11_narrative_citation_wire.py tests/test_research_support_diagnostics.py tests/test_reading_support_use.py",
+      "exit_code": 0,
+      "passed": 106,
+      "failed": 0,
+      "seconds": 5.36,
+      "scope": "相邻回归短包"
+    },
+    {
+      "command": "ruff check --no-cache tools/narrative_adoption_audit tests/test_w20_narrative_adoption_audit.py tests/test_w20_narrative_adoption_e2e.py",
+      "exit_code": 0,
+      "passed": null,
+      "failed": null,
+      "seconds": 1,
+      "scope": "lint clean"
+    },
+    {
+      "command": "ROOT 两轮探针案例本地重放（作者实施）",
+      "exit_code": 0,
+      "passed": 7,
+      "failed": 0,
+      "seconds": 10,
+      "scope": "R1: foreign_span/wrong_source_id/two_valid_bindings/gzip_bound；R2: material_swap/same_material_positive/bad_deflate 全按预期"
+    }
   ],
   "review": {
-    "agent_id": "fresh independent general-purpose agent 2026-10-29（返工复审+复验同一独立agent两轮；初审/终审为2026-10-28另一批独立agent）",
-    "report": "delivery/w20-rf-adoption/review/rework-review.md",
+    "agent_id": "fresh independent general-purpose agent 2026-10-29（R2复审+P3复验同一独立agent；此前各轮为另外几批独立agent）",
+    "report": "delivery/w20-rf-adoption/review/rework-r2-review.md",
     "open_findings": []
   },
   "cleanup": {
     "before": "初态：受审HEAD 7716c7da 树clean；ROOT返工单未动作者工区（production_or_author_writes=false）",
-    "after": "返工每轮后 git status clean；pytest owned树 teardown 逐项断言恢复；两轮独立复审探针仓库外自清、复审确认 zero 残留；fixtures 零改动",
+    "after": "返工每轮后 git status clean；pytest owned树 teardown 逐项断言恢复；各轮独立复审探针仓库外自清（复审确认 zero 残留）；fixtures 零改动；W20套件5次连跑无残留",
     "restored": true,
     "bytes_added": null
   },
@@ -84,13 +262,14 @@
     "无执行追踪：观察最终产物声明的引用接线，非模型内心",
     "wired 闭包在非合同畸形形状上比引擎略宽（保守方向；真实形状探针一致）",
     "--pretty 分支无直接单测（open(x) 独占保证，探针验证）",
+    "未运行真实收费预测；ROOT 用真实材料关闭 actual RF adoption 仍待 ROOT",
     "span_dependencies_aggregated 为每被绑span一条info（复审裁定不阻塞，可选降噪）",
-    "未运行真实收费预测；ROOT 用真实材料关闭 actual RF adoption 仍待 ROOT"
+    "scaling 测试时长比例为恒执行的\"比例+绝对余量\"断言（t2 < 4*t1 + 0.05），非纯墙钟下限"
   ],
   "root_followups": [
     "用真实脱敏 RF 产物+真实 consumption 回执跑一遍 cli.py 做真实材料观察",
     "决定主线是否薄接线",
     "可选：为 forecast.dependencies 提供批量 upstream 闭包公开接口"
   ],
-  "remote_status": "已配置远端 origin (https://github.com/zhengcb81/revenue-forecast.git)；分支 codex/w20-rf-adoption-20261028 推送至 e4657377 后的收尾 commit"
+  "remote_status": "已配置远端 origin (https://github.com/zhengcb81/revenue-forecast.git)；分支 codex/w20-rf-adoption-20261028 推送至 f75c9fe2 后的收尾 commit"
 }
