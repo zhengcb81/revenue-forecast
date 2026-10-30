@@ -961,11 +961,21 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
 
 
 def _reading_extension(bundle: dict) -> dict:
-    return {"reading_context": bundle["reading_context"]} if "reading_context" in bundle else {}
+    return {key: bundle[key] for key in ("reading_context", "summary_assessment") if key in bundle}
+
+
+def _summary_observation(bundle: dict) -> None:
+    from narrative_summary_observations import validate_summary_observation
+    try:
+        validate_summary_observation(bundle)
+    except (ValueError, TypeError, KeyError) as exc:
+        raise NarrativeTransportError("blocked", "invalid_summary_assessment") from exc
 
 
 def _bundle_fields(bundle: dict, base: set[str]) -> None:
-    _exact(bundle, base | ({"reading_context"} if "reading_context" in bundle else set()), "invalid_narrative_bundle")
+    from narrative_summary_observations import ASSESSED_SCHEMAS
+    extra = {"summary_assessment"} if bundle.get("schema_version") in ASSESSED_SCHEMAS else set()
+    _exact(bundle, base | extra | ({"reading_context"} if "reading_context" in bundle else set()), "invalid_narrative_bundle")
 
 
 def _bundle(body: bytes, request: dict, receipt: dict, manifest: dict) -> dict:
@@ -975,7 +985,7 @@ def _bundle(body: bytes, request: dict, receipt: dict, manifest: dict) -> dict:
     bundle = decode_object(body, limit=BODY_LIMIT)
     _require(canonical_bytes(bundle) == body, "noncanonical_bundle")
     _bundle_fields(bundle, BUNDLE_FIELDS)
-    _require(bundle["schema_version"] == "narrative-bundle/2.0", "unsupported_narrative_bundle")
+    _require(bundle["schema_version"] in {"narrative-bundle/2.0", "narrative-bundle/2.1"}, "unsupported_narrative_bundle")
     _require(bundle["source_ref"] == ref["source_ref"] and _sha(bundle["expected_read_policy_sha256"]),
              "bundle_source_mismatch")
     _bundle_contents(bundle, receipt, manifest)
@@ -995,6 +1005,7 @@ def _bundle_contents(bundle: dict, receipt: dict, manifest: dict) -> None:
     _replay(bundle["replay"], len(spans))
     _lineage(bundle, bundle["source_ref"], set(by_id))
     _diagnostics(bundle)
+    _summary_observation(bundle)
 
 
 def _declared_language(metadata: dict) -> None:
@@ -1215,7 +1226,7 @@ def _projection_bundle(body: bytes, ref: dict) -> dict:
     fields = (BUNDLE_FIELDS - {"source_ref", "expected_read_policy_sha256", "transcript_lineage",
                              "transcript_byte_bindings"}) | {"subject_binding"}
     _bundle_fields(bundle, fields)
-    _require(bundle["schema_version"] == "narrative-bundle/3.0", "unsupported_narrative_bundle")
+    _require(bundle["schema_version"] in {"narrative-bundle/3.0", "narrative-bundle/3.1"}, "unsupported_narrative_bundle")
     return bundle
 
 
@@ -1244,6 +1255,7 @@ def _projected_response(request: dict, body: bytes, receipt: dict) -> NarrativeC
                        selection["status"] == "skipped_no_narrative")
     _replay(bundle["replay"], len(spans))
     _diagnostics(bundle, subject["parent_source_refs"][0]["content_sha256"])
+    _summary_observation(bundle)
     return NarrativeContext({"schema_version": "revenue-narrative-context/3", "narrative_ref": ref,
         "subject_binding": subject, "parent_source_refs": subject["parent_source_refs"],
         "as_of_date": request["as_of_date"], "source_metadata": metadata, "selection": selection,

@@ -42,6 +42,8 @@ def narrative_read_receipt(context: NarrativeContext) -> dict:
                        parent_count=value["read_receipt"]["parent_count"],
                        lineage_sha256=value["read_receipt"]["lineage_sha256"])
     receipt["citation_trace"] = citation_trace(value)
+    if "summary_assessment" in value:
+        receipt["summary_assessment"] = deepcopy(value["summary_assessment"])
     return receipt
 
 

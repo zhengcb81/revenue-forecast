@@ -1,0 +1,9 @@
+# Assessed narrative observations in RF
+
+RF reads explicit raw bundle2.1/projected3.1 from the public CWP interface and retains summary_assessment in both context and consumption receipt. Legacy2.0/3.0 remain unchanged. New prompt4.2 and producer1.1 cannot be hidden in legacy envelopes or stripped of observations. Skipped non-narrative documents retain explicit null assessment/model, not fabricated semantic approval.
+
+The pure wire consumer checks field/recipe/claim binding, finite diagnostic shape and task set algebra, plus conservative quality flags. It does not import CWP, repeat source admission/PDF parsing, or claim semantic coverage: semantic_status and subfact_coverage_status remain not_evaluated. Observation hashes are integrity metadata, not human permissions.
+
+Validation: ROOT177 related tests/2.13s; fixed CI mypy scope15 sources passed; scoped ruff passed. Independent permanent21 plus frozen20 tests41P/1.49s, four-file final stable seal, 0OPEN. Three pre-existing assurance WIP excluded. An additional exploratory --follow-imports=normal type run exposed two historical out-of-gate type errors (forecast/dependencies inference and source_narrative_context optional narrowing); it was not the configured CI gate, which passes. They remain documented separately rather than silently weakening or broadening the gate.
+
+This accepts engineering compatibility only. Real paid new-protocol summary, source fidelity, recovery, and an actual RF parameter/formula adoption are still ROOT responsibilities under company-wiki docs/plans/du11-source-closure-2026-10-18/review/source-information-20261030/description-final/M3_PRODUCTION_WIRING.md. Deployment uses only the three changed runtime files through the canonical selective installer, preserving config/output and deduplicating destination junctions.
