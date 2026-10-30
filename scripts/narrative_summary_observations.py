@@ -7,14 +7,68 @@ classification, prose diagnostics and locator replay remain CWP responsibilities
 from __future__ import annotations
 
 from copy import deepcopy
+from dataclasses import dataclass
 import json
 import re
+from types import MappingProxyType
 from typing import Any
 
 from contracts.evidence import canonical_sha256
 
 ASSESSED_SCHEMAS = frozenset({"narrative-bundle/2.1", "narrative-bundle/3.1"})
+# Historical public alias; decisions use the explicit recipe catalog below.
 PROMPT = "reading-source-scoped/4.2.0"
+_BASE_DEPENDENCIES = frozenset(
+    {
+        "matching",
+        "task_plan",
+        "admission",
+        "scoped_view",
+        "encoding",
+        "claim_roles",
+        "assessment",
+    }
+)
+_BASE_RULES = frozenset(
+    {
+        "possible_attribution_loss",
+        "possible_negation_degree_loss",
+        "possible_modality_mismatch",
+        "unmatched_claim_scope",
+        "ambiguous_claim_scope",
+    }
+)
+
+
+@dataclass(frozen=True)
+class _WireRecipe:
+    prompt: str
+    assessor: str
+    dependencies: frozenset[str]
+    rules: frozenset[str]
+    producer: str = "1.1.0"
+    plan_max_claims: int = 40
+
+
+# Only published wire compatibility is registered. No CWP implementation or
+# source-frame logic is imported or executed by this consumer.
+_WIRE_RECIPES = MappingProxyType(
+    {
+        PROMPT: _WireRecipe(
+            PROMPT, "source-summary-assessment/1.0.0", _BASE_DEPENDENCIES, _BASE_RULES
+        ),
+        "reading-source-scoped/4.3.0": _WireRecipe(
+            "reading-source-scoped/4.3.0",
+            "source-summary-assessment/1.1.0",
+            _BASE_DEPENDENCIES | {"assertion_frames"},
+            _BASE_RULES
+            | {
+                "possible_current_action_as_future",
+                "possible_project_capacity_basis_loss",
+            },
+        ),
+    }
+)
 _FIELDS = {
     "schema_version",
     "validator",
@@ -57,13 +111,16 @@ def validate_summary_observation(bundle: dict) -> dict | None:
         model["prompt_version"] if model is not None else bundle["versions"]["prompt"]
     )
     assessed = bundle["schema_version"] in ASSESSED_SCHEMAS
-    _require(assessed == (prompt == PROMPT))
+    recipe = _WIRE_RECIPES.get(prompt) if isinstance(prompt, str) else None
+    _require(assessed == (recipe is not None))
     if not assessed:
         _require("summary_assessment" not in bundle)
         return None
+    if recipe is None:
+        raise ValueError("invalid_summary_observation")
     _require(
-        bundle["versions"]["prompt"] == PROMPT
-        and bundle["versions"]["bundle_producer"] == "1.1.0"
+        bundle["versions"]["prompt"] == recipe.prompt
+        and bundle["versions"]["bundle_producer"] == recipe.producer
     )
     if summary["status"] == "summary_not_needed":
         _require(
@@ -73,7 +130,8 @@ def validate_summary_observation(bundle: dict) -> dict | None:
         )
         _require(
             bundle["quality_status"] == "skipped_no_narrative"
-            and not bundle["evidence_spans"] and bundle["versions"]["model"] is None
+            and not bundle["evidence_spans"]
+            and bundle["versions"]["model"] is None
         )
         return None
     report = bundle.get("summary_assessment")
@@ -93,7 +151,7 @@ def validate_summary_observation(bundle: dict) -> dict | None:
     )
     _require(
         report["schema_version"] == "summary-assessment/1"
-        and report["plan_max_claims"] == 40
+        and report["plan_max_claims"] == recipe.plan_max_claims
     )
     _require(type(report["plan_max_claims"]) is int)
     _require(report["scope"] == "selected_source_tasks_only")
@@ -101,10 +159,6 @@ def validate_summary_observation(bundle: dict) -> dict | None:
         report["semantic_status"]
         == report["subfact_coverage_status"]
         == "not_evaluated"
-    )
-    _require(
-        bundle["versions"]["prompt"] == PROMPT
-        and bundle["versions"]["bundle_producer"] == "1.1.0"
     )
     _require(bundle["versions"]["model"] == model["model_id"])
     draft = summary["draft"]
@@ -127,7 +181,7 @@ def validate_summary_observation(bundle: dict) -> dict | None:
         and set(validator) == {"version", "implementation_sha256", "dependencies"}
     )
     _require(
-        validator["version"] == "source-summary-assessment/1.0.0"
+        validator["version"] == recipe.assessor
         and _sha(validator["implementation_sha256"])
     )
     _require(
@@ -139,10 +193,15 @@ def validate_summary_observation(bundle: dict) -> dict | None:
             for key, value in validator["dependencies"].items()
         )
     )
-    _require(set(validator["dependencies"]) == {"matching", "task_plan", "admission",
-        "scoped_view", "encoding", "claim_roles", "assessment"})
-    _require(validator["implementation_sha256"] == canonical_sha256(validator["dependencies"]))
-    _require(bundle["quality_status"] == ("needs_review" if draft["status"] == "needs_review" else "verified"))
+    _require(set(validator["dependencies"]) == recipe.dependencies)
+    _require(
+        validator["implementation_sha256"]
+        == canonical_sha256(validator["dependencies"])
+    )
+    _require(
+        bundle["quality_status"]
+        == ("needs_review" if draft["status"] == "needs_review" else "verified")
+    )
     keys = {}
     for name in (
         "source_admitted_task_keys",
@@ -182,15 +241,28 @@ def validate_summary_observation(bundle: dict) -> dict | None:
     _require(isinstance(report["excluded_tasks"], list))
     excluded_keys: set[str] = set()
     for row in report["excluded_tasks"]:
-        _require(isinstance(row, dict) and row.get("status") in ("unavailable", "duplicate"))
-        fields = {"task_key", "status", "reason"} | ({"representative"} if row["status"] == "duplicate" else set())
+        _require(
+            isinstance(row, dict) and row.get("status") in ("unavailable", "duplicate")
+        )
+        fields = {"task_key", "status", "reason"} | (
+            {"representative"} if row["status"] == "duplicate" else set()
+        )
         _require(set(row) == fields)
-        _require(isinstance(row["task_key"], str) and re.fullmatch(r"t[1-9][0-9]*", row["task_key"]) is not None)
+        _require(
+            isinstance(row["task_key"], str)
+            and re.fullmatch(r"t[1-9][0-9]*", row["task_key"]) is not None
+        )
         _require(row["task_key"] not in admitted | excluded_keys)
         excluded_keys.add(row["task_key"])
-        _require(isinstance(row["reason"], str) and re.fullmatch(r"[a-z][a-z0-9_]{0,79}", row["reason"]) is not None)
+        _require(
+            isinstance(row["reason"], str)
+            and re.fullmatch(r"[a-z][a-z0-9_]{0,79}", row["reason"]) is not None
+        )
         if row["status"] == "duplicate":
-            _require(isinstance(row["representative"], str) and row["representative"] in admitted)
+            _require(
+                isinstance(row["representative"], str)
+                and row["representative"] in admitted
+            )
     diagnostics = report["diagnostics"]
     count = report["diagnostic_count"]
     _require(isinstance(diagnostics, list) and len(diagnostics) <= 64)
@@ -216,15 +288,18 @@ def validate_summary_observation(bundle: dict) -> dict | None:
             and set(row) == {"task_key", "claim_id", "source_span_id", "rule_code"}
         )
         rule = row["rule_code"]
-        _require(row["claim_id"] in risks and isinstance(rule, str) and rule in {
-            "possible_attribution_loss", "possible_negation_degree_loss", "possible_modality_mismatch",
-            "unmatched_claim_scope", "ambiguous_claim_scope"})
+        _require(
+            row["claim_id"] in risks and isinstance(rule, str) and rule in recipe.rules
+        )
         if rule in {"unmatched_claim_scope", "ambiguous_claim_scope"}:
             _require(row["task_key"] is None and row["source_span_id"] is None)
         else:
             _require(isinstance(row["task_key"], str) and row["task_key"] in requested)
-            _require(isinstance(row["source_span_id"], str) and row["source_span_id"] in {
-                span["span_id"] for span in bundle["evidence_spans"]})
+            _require(
+                isinstance(row["source_span_id"], str)
+                and row["source_span_id"]
+                in {span["span_id"] for span in bundle["evidence_spans"]}
+            )
     if count or not report["requested_emission_complete"]:
         _require(
             draft["status"] == "needs_review"

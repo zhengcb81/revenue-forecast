@@ -1,0 +1,7 @@
+# Atomic scoped recipe public wire support
+
+The finite immutable public catalog pairs prompt4.2 exclusively with assessor1.0/7 dependencies/old5 finite rules, and prompt4.3 with assessor1.1/8 dependencies including assertion_frames/2 additional possible rules. Both retain assessed bundle2.1/3.1, producer1.1 and cap40. New raw/projected/skip capability does not change old wire, unknown tuples do not fall through. No CWP imports, source reclassification, PDF parsing, permission chain or forecast recomputation is introduced.
+
+TDD13RED/44PASS to57PASS, related6 modules262P/3.97s; exact configured CI mypy command15 sources passed, scoped ruff/format/diff passed. Exploratory alternate broad type run exposed historical unchanged orchestration errors; it was not the configured gate and was not used to rewrite validation. ROOT independent57P/0.92s, producer-to-RF raw/projected /6,/7 four actual code wire probes and mismatches passed; exact three paths sealed, only consumer/test changed.
+
+Deploy only scripts/narrative_summary_observations.py with canonical selective installer, preserve config/output and existing assurance WIP. Real /7 prose fidelity, actual paid response/cache recovery and real company native model adoption remain ROOT responsibilities. This change only consumes observations, never promotes not_evaluated to semantic approval or original-span adoption to summary-claim adoption.
