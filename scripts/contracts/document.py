@@ -40,8 +40,6 @@ from contracts.evidence import (
     require,
     text_sha256,
     validate_claim_ids,
-    validate_source_capture,
-    valid_source_url,
 )
 from asset_ownership import (
     validate_segment_geography,
@@ -58,6 +56,7 @@ from forecast.calc import (
     sensitivity_domain_bounds,
 )
 from contracts.source_clock import SourceClockError, source_information_eligibility, validate_source_events
+from contracts.source_provenance import validate_source_provenance
 from research.coverage import validate_research_coverage
 from research.drivers import validate_growth_driver_tree
 from research.revenue_basis import (
@@ -289,10 +288,6 @@ def validate_sources(
             source_type in SOURCE_RANKS,
             f"unsupported source_type for {source_id}: {source_type}",
         )
-        require(
-            valid_source_url(source.get("url")),
-            f"invalid, search-page, or placeholder URL for {source_id}",
-        )
         for field in ("title", "publisher", "page_or_section"):
             require(
                 isinstance(source.get(field), str) and source[field].strip(),
@@ -304,8 +299,8 @@ def validate_sources(
             raise ForecastInputError(f"{source_id}: {exc}") from exc
         if source.get("accessed_date") is not None:
             parse_iso_date(source["accessed_date"], f"{source_id}.accessed_date")
-        if require_capture:
-            validate_source_capture(source, as_of, information_eligibility=information)
+        validate_source_provenance(source, as_of, require_capture=require_capture,
+                                   information_eligibility=information)
         enriched = dict(source)
         enriched["source_rank"] = SOURCE_RANKS[source_type]
         index[source_id] = enriched

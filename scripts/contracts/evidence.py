@@ -345,7 +345,9 @@ def validate_host_receipt(receipt: Any) -> None:
     Ed25519 key; when absent the receipt is a plain self-reported attestation
     (subject to the R2.1 capability gate at publication time).
     """
-    require(isinstance(receipt, dict), "capture host_receipt must be an object")
+    if not isinstance(receipt, dict):
+        require(False, "capture host_receipt must be an object")
+        return
     required = {
         "host_receipt_schema_version",
         "issuer",
@@ -356,15 +358,12 @@ def validate_host_receipt(receipt: Any) -> None:
         "timestamp",
         "receipt_sha256",
     }
-    require(
-        set(receipt) <= required | SIGNATURE_FIELDS,
-        "invalid capture host_receipt fields",
-    )
-    require(required <= set(receipt), "invalid capture host_receipt fields")
-    require(
-        set(SIGNATURE_FIELDS) & set(receipt) in (set(), SIGNATURE_FIELDS),
-        "capture host_receipt signature fields must come together",
-    )
+    if not required <= set(receipt) <= required | SIGNATURE_FIELDS:
+        require(False, "invalid capture host_receipt fields")
+        return
+    if SIGNATURE_FIELDS & set(receipt) not in (set(), SIGNATURE_FIELDS):
+        require(False, "capture host_receipt signature fields must come together")
+        return
     require(
         receipt["host_receipt_schema_version"] == HOST_RECEIPT_SCHEMA_VERSION,
         "unsupported host receipt schema version",
@@ -417,8 +416,9 @@ def validate_source_capture(
     """Validate a tool-linked source snapshot without claiming external fact truth."""
     source_id = source.get("source_id", "<unknown>")
     capture = source.get("capture")
-    require(isinstance(capture, dict), f"{source_id}.capture is required")
-    assert isinstance(capture, dict)  # narrow for mypy; require() already enforced
+    if not isinstance(capture, dict):
+        require(False, f"{source_id}.capture is required")
+        return {}
     required = {
         "capture_schema_version",
         "capture_method",
@@ -431,7 +431,9 @@ def validate_source_capture(
         "host_receipt",
         "receipt_sha256",
     }
-    require(set(capture) == required, f"invalid capture fields for {source_id}")
+    if set(capture) != required:
+        require(False, f"invalid capture fields for {source_id}")
+        return {}
     require(
         capture["capture_schema_version"] == EVIDENCE_CAPTURE_SCHEMA_VERSION,
         f"unsupported capture schema for {source_id}",
@@ -445,7 +447,11 @@ def validate_source_capture(
             isinstance(capture[field], str) and capture[field].strip(),
             f"{source_id}.capture.{field} is required",
         )
+    collector = _COLLECTOR.get()
+    error_count = len(collector.errors) if collector is not None else 0
     validate_host_receipt(capture.get("host_receipt"))
+    if collector is not None and len(collector.errors) != error_count:
+        return dict(capture)
     captured = parse_iso_date(
         capture["captured_date"], f"{source_id}.capture.captured_date"
     )
