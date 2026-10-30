@@ -24,7 +24,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from contracts.evidence import canonical_sha256
+from contracts.evidence import ForecastInputError, canonical_sha256
+from analysis.confidence import confidence_calculation_version
 
 REGISTRY_FILE = "publications.jsonl"
 ENV_REGISTRY = "REVENUE_PUBLICATION_REGISTRY"
@@ -33,6 +34,25 @@ DEFAULT_PUBLISHER = "revenue-forecast"
 
 class RegistryError(RuntimeError):
     """Raised when the registry is missing, corrupt, or unavailable."""
+
+
+
+def _confidence_revision(confidence: Any) -> str:
+    """Use the scoring owner's finite revisions, never arbitrary group labels."""
+    if not isinstance(confidence, dict):
+        raise RegistryError("invalid confidence calculation version container")
+    try:
+        return confidence_calculation_version(confidence)
+    except ForecastInputError as exc:
+        raise RegistryError(str(exc)) from exc
+
+
+def _entry_confidence_revision(entry: dict[str, Any]) -> str:
+    # Missing means historical stable-fsum/1. Do not mutate/re-hash old rows.
+    return _confidence_revision(
+        {"calculation_version": entry["confidence_calculation_version"]}
+        if "confidence_calculation_version" in entry else {}
+    )
 
 
 def registry_file() -> Path:
@@ -72,6 +92,7 @@ def _read_entries() -> list[dict[str, Any]]:
             raise RegistryError(
                 f"registry line {lineno}: chain break (prev_line_sha256 mismatch)"
             )
+        _entry_confidence_revision(entry)
         previous = claimed
         entries.append(entry)
     return entries
@@ -149,6 +170,7 @@ def register_publication(
             "receipt_sha256": canonical_sha256(receipt) if isinstance(receipt, dict) else None,
             "engine_version": result.get("engine_version"),
             "schema_version": result.get("schema_version"),
+            "confidence_calculation_version": _confidence_revision(result.get("confidence", {})),
             "publisher": os.environ.get("REVENUE_PUBLISHER", DEFAULT_PUBLISHER),
             "input_summary_sha256": input_summary_sha256(result),
             "artifact_type": artifact_type,
@@ -161,6 +183,10 @@ def register_publication(
 
 def register_snapshot(snapshot: dict[str, Any]) -> None:
     """Register a backtest snapshot's anchor (snapshot_id <-> input_sha256)."""
+    forecast = snapshot.get("forecast_result", {})
+    if not isinstance(forecast, dict):
+        raise RegistryError("invalid confidence calculation version forecast container")
+    revision = _confidence_revision(forecast.get("confidence", {}))
     _append(
         {
             "registered_at": _utc_now_iso(),
@@ -171,6 +197,7 @@ def register_snapshot(snapshot: dict[str, Any]) -> None:
             else None,
             "engine_version": snapshot.get("engine_version"),
             "schema_version": snapshot.get("forecast_schema_version"),
+            "confidence_calculation_version": revision,
             "publisher": os.environ.get("REVENUE_PUBLISHER", DEFAULT_PUBLISHER),
             "input_summary_sha256": input_summary_sha256(snapshot.get("forecast_result", {})),
             "artifact_type": "snapshot",
@@ -200,24 +227,25 @@ def audit(result_files: list[Path] | None = None, *, since: str | None = None) -
     if since is not None:
         entries = [entry for entry in entries if entry.get("registered_at", "") >= since]
     # Conflict = the same input anchored to different results *within one
-    # engine/schema generation and artifact type* (the D2 forgery shape).
+    # engine/schema/confidence generation and artifact type* (D2 forgery).
     # Cross-version result differences (same input re-run under a newer
     # engine) and forecast-vs-snapshot pairs (different artifact types
     # referencing the same anchor) are normal history.
-    by_generation: dict[tuple[str, str, str, str], set[str]] = {}
+    by_generation: dict[tuple[str, str | None, str | None, str, str], set[str]] = {}
     for entry in entries:
         generation = (
             entry["input_sha256"],
             entry.get("engine_version"),
             entry.get("schema_version"),
             entry.get("artifact_type", "forecast"),
+            _entry_confidence_revision(entry),
         )
         by_generation.setdefault(generation, set()).add(entry["result_sha256"])
-    for (anchor, engine, schema, artifact_type), result_hashes in by_generation.items():
+    for (anchor, engine, schema, artifact_type, revision), result_hashes in by_generation.items():
         if len(result_hashes) > 1:
             problems.append(
                 f"conflict: input {anchor[:16]}... (engine {engine}, schema {schema}, "
-                f"{artifact_type}) registered {len(result_hashes)} distinct result hashes"
+                f"{artifact_type}, confidence {revision}) registered {len(result_hashes)} distinct result hashes"
             )
     registered_anchors = {entry["input_sha256"] for entry in entries}
     for path in result_files or []:

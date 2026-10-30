@@ -72,7 +72,18 @@ python scripts/revenue_forecast.py input.json --output forecast.json --markdown 
 
 ## Confidence numerical revision
 
-Current emissions identify `confidence.calculation_version="stable-fsum/1"`.
+Current emissions identify `confidence.calculation_version="source-evidence/2"`.
+For each revenue-used parameter, freshness gives one vote to each original
+capture, and quality gives one vote to each (original capture, support type).
+The existing capture SHA identifies an origin; legacy records without a capture
+use the existing source ID. Repeated quotes and same-SHA aliases cannot add
+votes. Evidence claims and independent measurements remain intact. Conflicting
+publication dates use the oldest known date with a limitation; all-unknown dates
+receive no freshness credit. Availability does not become publication freshness.
+
+Historical `stable-fsum/1` outputs retain their original per-claim calculation;
+strong validation selects the recorded finite revision and never relabels old
+scores. Both marked revisions are checked exactly.
 Shared exposures use canonical parameter keys and compensated sums; every
 new confidence component, coverage, concentration and score is recomputed
 exactly across independent processes. This is an evidence/workflow score,
@@ -85,3 +96,18 @@ source facts, identity/periods, input bindings and all artifact hashes remain
 checked. Unknown/null revisions, non-finite or boolean numbers and substantive
 component changes are errors. Older methodology outputs still need their
 pinned emitting runtime when this compatibility bound does not apply.
+
+
+## Publication generations and missing provenance labels
+
+Publication-registry rows derive `confidence_calculation_version` from the
+actual forecast; snapshot rows use their nested forecast. Audit treats this
+finite revision as part of a calculation generation. Old rows without the
+field keep their legacy interpretation and original chain bytes. A legitimate
+new scoring revision can reuse the same input without a false conflict;
+conflicting hashes within one revision still fail. Do not clear historical
+rows or change a forecast version merely to work around a revision collision.
+
+In the source table, an unknown original URL is shown as its plain source ID,
+not a link to `None`, a path or a fabricated URI. Unknown publication is shown
+as unknown; the validated JSON retains its null value.

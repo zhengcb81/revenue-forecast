@@ -93,15 +93,17 @@ def test_shared_weight_contributions_retain_small_terms_and_stable_keys():
 
 def test_new_confidence_contract_is_exact_and_legacy_float_noise_is_bounded():
     expected = confidence_model.calculate_confidence(*synthetic_case())
-    assert expected['calculation_version'] == 'stable-fsum/1'
+    assert expected['calculation_version'] == 'source-evidence/2'
     confidence_model.validate_confidence_recomputation(expected, expected)
     perturbed = copy.deepcopy(expected)
     key = 'verified_claim_quality'
     perturbed['components'][key] = math.nextafter(perturbed['components'][key], math.inf)
     with pytest.raises(ForecastInputError, match='components'):
         confidence_model.validate_confidence_recomputation(expected, perturbed)
-    legacy = copy.deepcopy(perturbed)
+    expected = confidence_model.calculate_confidence(*synthetic_case(), calculation_version='stable-fsum/1')
+    legacy = copy.deepcopy(expected)
     legacy.pop('calculation_version')
+    legacy['components'][key] = math.nextafter(legacy['components'][key], math.inf)
     confidence_model.validate_confidence_recomputation(expected, legacy)
     legacy['components'][key] += .000001
     with pytest.raises(ForecastInputError, match='components'):
@@ -114,7 +116,7 @@ def test_new_confidence_contract_is_exact_and_legacy_float_noise_is_bounded():
     ('historical_accuracy', {'wape': None, 'observations': False}),
 ])
 def test_legacy_compatibility_cannot_hide_changed_contract_fields(path, value):
-    expected = confidence_model.calculate_confidence(*synthetic_case())
+    expected = confidence_model.calculate_confidence(*synthetic_case(), calculation_version='stable-fsum/1')
     legacy = copy.deepcopy(expected)
     legacy.pop('calculation_version', None)
     legacy[path] = value
@@ -131,7 +133,7 @@ def test_unknown_calculation_revision_does_not_fall_back_to_legacy():
 
 @pytest.mark.parametrize('steps,accepted', [(0, True), (64, True), (65, False)])
 def test_legacy_roundoff_has_an_explicit_ulp_boundary(steps, accepted):
-    expected = confidence_model.calculate_confidence(*synthetic_case())
+    expected = confidence_model.calculate_confidence(*synthetic_case(), calculation_version='stable-fsum/1')
     legacy = copy.deepcopy(expected)
     legacy.pop('calculation_version')
     key = 'verified_claim_quality'
@@ -148,7 +150,7 @@ def test_legacy_roundoff_has_an_explicit_ulp_boundary(steps, accepted):
 
 @pytest.mark.parametrize('value', [float('nan'), float('inf'), True])
 def test_legacy_roundoff_never_accepts_nonfinite_or_boolean_values(value):
-    expected = confidence_model.calculate_confidence(*synthetic_case())
+    expected = confidence_model.calculate_confidence(*synthetic_case(), calculation_version='stable-fsum/1')
     legacy = copy.deepcopy(expected)
     legacy.pop('calculation_version')
     legacy['components']['verified_claim_quality'] = value
@@ -165,7 +167,7 @@ def test_formal_publication_is_strongly_valid_in_other_processes():
     produced = subprocess.run([sys.executable, '-B', '-c', emit], env=environment,
                               cwd=ROOT, capture_output=True, text=True, timeout=20, check=True)
     payload = json.loads(produced.stdout)
-    assert payload['result']['confidence']['calculation_version'] == 'stable-fsum/1'
+    assert payload['result']['confidence']['calculation_version'] == 'source-evidence/2'
     verify = ('import json,sys; from revenue_report import validate_published_forecast; '
               'pair=json.load(sys.stdin); validate_published_forecast(pair["result"],pair["input"])')
     for seed in (1, 2, 17):

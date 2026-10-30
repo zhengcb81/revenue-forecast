@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from datetime import date
 from typing import Any
 
 from collections import defaultdict
@@ -16,11 +17,74 @@ from contracts.document import validate_historical_accuracy_records
 from forecast.dependencies import segment_parameter_uses
 
 
-CONFIDENCE_CALCULATION_VERSION = "stable-fsum/1"
+LEGACY_CONFIDENCE_CALCULATION_VERSION = "stable-fsum/1"
+CONFIDENCE_CALCULATION_VERSION = "source-evidence/2"
 # Only unmarked legacy confidence may differ by final floating-point bits.
 # 64 binary64 ULPs cover the observed positive-weight reductions; never use
 # revenue reconciliation tolerance for dimensionless confidence scores.
 LEGACY_CONFIDENCE_MAX_ULPS = 64
+
+
+
+def _require_calculation_version(version: Any) -> str:
+    require(
+        isinstance(version, str)
+        and version in (LEGACY_CONFIDENCE_CALCULATION_VERSION, CONFIDENCE_CALCULATION_VERSION),
+        "unknown confidence calculation version",
+    )
+    return version
+
+
+def confidence_calculation_version(observed: dict[str, Any]) -> str:
+    """Dispatch immutable historical outputs; only an absent marker is legacy."""
+    return _require_calculation_version(
+        observed.get("calculation_version", LEGACY_CONFIDENCE_CALCULATION_VERSION)
+    )
+
+
+def _claim_quality(claim: dict[str, Any]) -> float:
+    return (1.0 if claim["support_type"] == "exact_value" else
+            0.8 if claim["support_type"] == "policy_support" else 0.7)
+
+
+def _origin_key(source_id: str, source: dict[str, Any]) -> tuple[str, str]:
+    """Use existing validated original bytes, with legacy source-ID fallback."""
+    sha = source.get("capture", {}).get("snapshot_sha256")
+    return ("sha256", sha) if sha else ("source_id", source_id)
+
+
+def _freshness_credit(age: int) -> float:
+    return 1.0 if age <= 180 else 0.8 if age <= 365 else 0.5 if age <= 730 else 0.2
+
+
+def _source_evidence_metrics(
+    parameter_claims: list[dict[str, Any]], sources: dict[str, Any], as_of: date,
+) -> tuple[float, float, bool, bool]:
+    """Score units, never mutate claims: origin/role quality, origin freshness.
+
+    Multiple independent measurements and roles stay in the evidence contract.
+    A repeat quote is not another score vote. Availability proves cutoff, not
+    publication freshness; conflicting alias publication dates use the oldest
+    known date, and an entirely unknown origin earns zero freshness credit.
+    """
+    origins: dict[tuple[str, str], set[date]] = defaultdict(set)
+    quality_units: dict[tuple[tuple[str, str], str], float] = {}
+    for claim in parameter_claims:
+        source = sources[claim["source_id"]]
+        origin = _origin_key(claim["source_id"], source)
+        published = source.get("published_date")
+        origins[origin]  # Retain an unknown-date origin in the denominator.
+        if published is not None:
+            origins[origin].add(parse_iso_date(published, "published_date"))
+        quality_units[(origin, claim["support_type"])] = _claim_quality(claim)
+    quality = math.fsum(quality_units[key] for key in sorted(quality_units)) / len(quality_units)
+    freshness = math.fsum(
+        _freshness_credit((as_of - min(origins[key])).days) if origins[key] else 0.0
+        for key in sorted(origins)
+    ) / len(origins)
+    return quality, freshness, any(not dates for dates in origins.values()), any(
+        len(dates) > 1 for dates in origins.values()
+    )
 
 
 def parameter_revenue_weights(
@@ -113,7 +177,10 @@ def calculate_confidence(
     validated: dict[str, Any],
     result: dict[str, Any],
     sensitivities: list[dict[str, Any]],
+    *,
+    calculation_version: str = CONFIDENCE_CALCULATION_VERSION,
 ) -> dict[str, Any]:
+    _require_calculation_version(calculation_version)
     parameters = validated["parameter_index"]
     claims = validated["claim_index"]
     weights = parameter_revenue_weights(data, result)
@@ -127,33 +194,42 @@ def calculate_confidence(
     quality_terms: list[float] = []
     freshness_terms: list[float] = []
     as_of = validated["as_of_date"]
+    unknown_publication = False
+    conflicting_publication = False
     for parameter_id, weight in weights.items():
         claim_ids = parameters[parameter_id].get("claim_ids", [])
         if not claim_ids:
             continue
         parameter_claims = [claims[claim_id] for claim_id in claim_ids]
-        quality = math.fsum(
-            1.0
-            if claim["support_type"] == "exact_value"
-            else 0.8
-            if claim["support_type"] == "policy_support"
-            else 0.7
-            for claim in parameter_claims
-        ) / len(parameter_claims)
-        ages = [
-            (
-                as_of
-                - parse_iso_date(
-                    validated["source_index"][claim["source_id"]]["published_date"],
-                    "published_date",
-                )
-            ).days
-            for claim in parameter_claims
-        ]
-        freshness = math.fsum(
-            1.0 if age <= 180 else 0.8 if age <= 365 else 0.5 if age <= 730 else 0.2
-            for age in ages
-        ) / len(ages)
+        if calculation_version == CONFIDENCE_CALCULATION_VERSION:
+            quality, freshness, unknown, conflicting = _source_evidence_metrics(
+                parameter_claims, validated["source_index"], as_of,
+            )
+            unknown_publication |= unknown
+            conflicting_publication |= conflicting
+        else:
+            quality = math.fsum(
+                1.0
+                if claim["support_type"] == "exact_value"
+                else 0.8
+                if claim["support_type"] == "policy_support"
+                else 0.7
+                for claim in parameter_claims
+            ) / len(parameter_claims)
+            ages = [
+                (
+                    as_of
+                    - parse_iso_date(
+                        validated["source_index"][claim["source_id"]]["published_date"],
+                        "published_date",
+                    )
+                ).days
+                for claim in parameter_claims
+            ]
+            freshness = math.fsum(
+                1.0 if age <= 180 else 0.8 if age <= 365 else 0.5 if age <= 730 else 0.2
+                for age in ages
+            ) / len(ages)
         quality_terms.append(weight * quality)
         freshness_terms.append(weight * freshness)
     quality_numerator = math.fsum(quality_terms)
@@ -260,6 +336,10 @@ def calculate_confidence(
         )
         if condition
     ]
+    if unknown_publication:
+        limitations.append("Evidence origin has unknown publication date; no publication freshness credit")
+    if conflicting_publication:
+        limitations.append("Evidence origin has conflicting publication dates; oldest known date used for freshness")
     _append_history_limitations(
         limitations, data, historical_observations, usable_origins,
     )
@@ -280,7 +360,7 @@ def calculate_confidence(
             "Company-level forecast adjustments are disclosed separately from operating growth-driver ranking"
         )
     output = {
-        "calculation_version": CONFIDENCE_CALCULATION_VERSION,
+        "calculation_version": calculation_version,
         "score": score,
         "rating": rating,
         "components": components,
@@ -325,8 +405,8 @@ def validate_confidence_recomputation(
     """
     legacy = "calculation_version" not in observed
     require(
-        legacy or observed.get("calculation_version") == CONFIDENCE_CALCULATION_VERSION,
-        "unknown confidence calculation version",
+        confidence_calculation_version(observed) == confidence_calculation_version(expected),
+        "confidence calculation version recomputation mismatch",
     )
     components = observed.get("components")
     require(

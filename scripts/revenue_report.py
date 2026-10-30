@@ -31,7 +31,7 @@ from revenue_core import (
     validate_source_capture,
 )
 from contracts.evidence import scenario_ordered
-from analysis.confidence import validate_confidence_recomputation
+from analysis.confidence import confidence_calculation_version, validate_confidence_recomputation
 from contracts.annual_consumption import validate_annual_consumption
 from forecast.calc import opening_base_bridge, scenario_forecast_parameter_ids
 from research.revenue_basis import (
@@ -1434,6 +1434,7 @@ def _validate_forecast_output(
         reconstructed_validated,
         result,
         result.get("sensitivities", []),
+        calculation_version=confidence_calculation_version(confidence),
     )
     validate_confidence_recomputation(expected_confidence, confidence)
     theme = result.get("theme_analysis")
@@ -2035,9 +2036,13 @@ def render_markdown(result: dict[str, Any]) -> str:
         ]
     )
     for source in result["sources"]:
+        source_label = _escape(source["source_id"])
+        if source["url"] is not None:
+            source_label = f"[{source_label}]({_escape(source['url'])})"
+        published_label = "未知" if source["published_date"] is None else _escape(source["published_date"])
         lines.append(
-            f"| [{_escape(source['source_id'])}]({_escape(source['url'])}) | {_escape(source.get('source_rank', '—'))} | "
-            f"{_escape(source['source_type'])} | {_escape(source['publisher'])} | {_escape(source['published_date'])} | "
+            f"| {source_label} | {_escape(source.get('source_rank', '—'))} | "
+            f"{_escape(source['source_type'])} | {_escape(source['publisher'])} | {published_label} | "
             f"{_escape(source['page_or_section'])} | {_escape(source['title'])} |"
         )
     lines.append("")

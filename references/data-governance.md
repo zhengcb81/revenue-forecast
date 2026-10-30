@@ -21,8 +21,8 @@ Every source requires:
 - `source_id`;
 - accepted `source_type`;
 - a display title and publisher; verified company-wiki v2 originals may have no declared title. The RF adapter uses a document-kind/source-ID display label in that case, while keeping the original unknown title in `company_wiki_trace.source_manifest`; this label is not a claimed document title and adds no source facts or acquisition requirement.
-- original public HTTP(S) URL to the underlying page or filing; preserve the producer's actual URL rather than inventing an HTTPS alias or repeating a verified local download; RF treats this field as provenance and acquisition remains the configured provider's responsibility;
-- `published_date` and optional `accessed_date`;
+- original public HTTP(S) URL when known. A verified registered company-wiki v2 original may retain `source_url=null` only with the complete bound SourceRef, source manifest, public read receipt and capture trace. Preserve unknowns; never invent URLs, pseudo-URIs, paths or empty strings, and never repeat a verified download merely to obtain a URL. Acquisition remains the configured source owner's responsibility;
+- `published_date` when known, and optional `accessed_date`. An unknown publication date remains null; historical eligibility then needs the existing exact-SHA availability proof from the explicitly configured SourceReader2.2 path. Read time, file mtime and a company event date cannot invent publication. Unknown publication earns no freshness credit; availability proves only the information cutoff;
 - page, table, note, paragraph, or section locator.
 - a schema-1.0 capture receipt binding the tool trace, capture date, whole-source snapshot hash, untrusted-data treatment, and prompt-injection disposition.
 
@@ -30,7 +30,7 @@ The script rejects placeholder domains, local addresses, common search-result ho
 
 Important: syntax and receipt validation cannot prove that a URL is accessible, that a model truly used the named tool, or that the content supports a parameter. They prove internal linkage and tamper evidence. The research agent must open the underlying page and verify the cited passage before registering it; authenticated invocation proof belongs to the host harness.
 
-Source rank does not directly raise forecast confidence. Confidence uses revenue-weighted verified claim coverage, claim support type, and freshness, preventing a user-declared high-rank source from mechanically increasing the score.
+Source rank does not directly raise forecast confidence. Confidence uses revenue-weighted verified claim coverage, claim support type, and freshness. In source-evidence/2, each parameter counts an original capture once for freshness and each (capture, support type) once for quality. Repeating a quote cannot add weight; genuine new sources or roles can. All underlying claims and measurements remain available. Historical stable-fsum/1 scores retain their original algorithm. This is an evidence/workflow measure, not a calibrated forecast probability.
 
 ## Evidence claim contract
 
