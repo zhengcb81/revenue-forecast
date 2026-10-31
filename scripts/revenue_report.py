@@ -1506,7 +1506,12 @@ def validate_forecast_output(
 def _num(value: Any) -> str:
     if value is None:
         return "—"
-    return f"{float(value):,.2f}"
+    number = float(value)
+    # Preserve ordinary money-table formatting, but never erase a real
+    # per-unit coefficient, ratio or small signed sensitivity as +/-0.00.
+    if number != 0 and abs(number) < 0.005:
+        return f"{number:.8g}"
+    return f"{number:,.2f}"
 
 
 def _pct(value: Any) -> str:
@@ -2003,8 +2008,8 @@ def render_markdown(result: dict[str, Any]) -> str:
             "",
             "## 参数—证据claim映射",
             "",
-            "| 参数ID | 身份 | 数值 | 期间 | 维度 | Claim ID | 来源ID | 支持类型 | 定位 | 短摘录 |",
-            "|---|---|---:|---|---|---|---|---|---|---|",
+            "| 参数ID | 身份 | 数值 | 单位 | 期间 | 维度 | Claim ID | 来源ID | 支持类型 | 定位 | 短摘录 |",
+            "|---|---|---:|---|---|---|---|---|---|---|---|",
         ]
     )
     claims = {claim["claim_id"]: claim for claim in result["evidence_claims"]}
@@ -2018,13 +2023,35 @@ def render_markdown(result: dict[str, Any]) -> str:
             )
         if not claim_ids:
             lines.append(
-                f"| {_escape(parameter['parameter_id'])} | {_escape(parameter['kind'])} | {_num(parameter['value'])} | {_escape(displayed_period)} | {_escape(parameter['dimension'])} | — | — | — | — | — |"
+                f"| {_escape(parameter['parameter_id'])} | {_escape(parameter['kind'])} | {_num(parameter['value'])} | {_escape(parameter['unit'])} | {_escape(displayed_period)} | {_escape(parameter['dimension'])} | — | — | — | — | — |"
             )
         for claim_id in claim_ids:
             claim = claims[claim_id]
             lines.append(
-                f"| {_escape(parameter['parameter_id'])} | {_escape(parameter['kind'])} | {_num(parameter['value'])} | {_escape(displayed_period)} | {_escape(parameter['dimension'])} | {_escape(claim_id)} | {_escape(claim['source_id'])} | {_escape(claim['support_type'])} | {_escape(claim['locator'])} | {_escape(claim['excerpt'])} |"
+                f"| {_escape(parameter['parameter_id'])} | {_escape(parameter['kind'])} | {_num(parameter['value'])} | {_escape(parameter['unit'])} | {_escape(displayed_period)} | {_escape(parameter['dimension'])} | {_escape(claim_id)} | {_escape(claim['source_id'])} | {_escape(claim['support_type'])} | {_escape(claim['locator'])} | {_escape(claim['excerpt'])} |"
             )
+
+    adopted = [c for c in result["evidence_claims"] if "narrative_summary_use" in c]
+    if adopted:
+        lines.extend(["", "## 资料摘要的实际采用", ""])
+        for claim in adopted:
+            proof = claim["narrative_summary_use"]
+            entry, summary = proof["entry"], proof["summary_claim"]
+            lines.extend([
+                f"### {_escape(entry['parameter_id'])} / {_escape(summary['claim_id'])}", "",
+                f"- Artifact SHA：`{proof['narrative_ref']['artifact_sha256']}`",
+                f"- 原文 SHA：`{proof['source_ref']['content_sha256']}`",
+                f"- 来源质量：{_escape(proof['quality_status'])}；摘要语义：{_escape(proof['semantic_status'] or 'not_evaluated')}。资料引用不表示投资结论通过。",
+                f"- 采用理由（分析者）：{_escape(entry['research_reason'])}",
+                f"- 实际公式依赖：{_escape(entry['formula_refs'])}", "",
+                "摘要内容（保留原不确定性；事实短摘录仅为定位锚）：", "",
+                "> " + _escape(summary['text']), "",
+                "| 分区 | Span ID | 原文定位 | 原文 |", "|---|---|---|---|",
+            ])
+            support = set(entry["support_evidence_ids"])
+            for span in proof["evidence_spans"]:
+                role = "事实支持" if span["span_id"] in support else "上下文"
+                lines.append(f"| {role} | {_escape(span['span_id'])} | {_escape(span['locator'])} | {_escape(span['raw_text'])} |")
 
     lines.extend(
         [

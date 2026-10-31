@@ -749,6 +749,10 @@ def validate_evidence_claims(
                     claim.get("period") == parameter["period"],
                     f"claim period mismatch for parameter {target_id}",
                 )
+        if "narrative_summary_use" in claim:
+            from narrative_summary_provenance import validate_summary_provenance
+
+            validate_summary_provenance(data, claim, source_index[source_id], parameter_index)
         index[claim_id] = dict(claim)
 
     for parameter_id, parameter in parameter_index.items():

@@ -114,7 +114,10 @@ def test_optional_lineage_binds_actual_claim_without_changing_native_values(kind
     legacy, old_receipt = consume(request, context, data, [binding])
     updated, receipt = consume(request, context, data, [choose(binding, summary)])
     assert data == frozen
-    assert updated == legacy
+    without_provenance = deepcopy(updated)
+    for row in without_provenance["evidence_claims"]:
+        row.pop("narrative_summary_use", None)
+    assert without_provenance == legacy
     assert {k: v for k, v in receipt.items() if k != "summary_use"} == old_receipt
     claim = next(
         c for c in updated["evidence_claims"] if c["claim_id"] == binding["claim_id"]

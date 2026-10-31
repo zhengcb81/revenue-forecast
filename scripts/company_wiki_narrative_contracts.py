@@ -1305,3 +1305,16 @@ def validate_reference_response(request: dict, body: bytes, receipt_bytes: bytes
         _require(ref["schema_version"] == "narrative-ref/1" and ref["source_ref"] == request["source_ref"],
                  "reference_source_mismatch")
     return deepcopy(ref)
+
+
+def validate_evidence_span_record(value: Any, subject: dict | None = None) -> dict:
+    """Reuse raw/projected wire rules for RF's frozen citation evidence."""
+    return deepcopy(_span_core(value) if subject is None else _projected_span(value, subject))
+
+
+def validate_summary_claim_record(value: Any, evidence_spans: list[dict]) -> dict:
+    """Reuse the wire's summary/role rules without pretending to reopen a bundle."""
+    known = {span["span_id"]: span for span in evidence_spans}
+    claim = _claim(value, known)
+    _claim_roles(claim, known)
+    return deepcopy(claim)

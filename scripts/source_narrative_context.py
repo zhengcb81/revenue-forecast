@@ -230,6 +230,9 @@ def consume_narrative_input(
                     formula_refs=formula_refs,
                 )
             )
+            from narrative_summary_provenance import build_summary_provenance
+
+            native_claim["narrative_summary_use"] = build_summary_provenance(value, summary_uses[-1])
         claims.append(native_claim)
         claim_ids.add(cid)
         parameter = index[pid]

@@ -126,6 +126,23 @@ def _summary(value: dict, request: dict | None = None) -> tuple[dict, list[dict]
     return draft, claims
 
 
+def validate_summary_scope(resolution: dict, support: list, context: list) -> None:
+    """One owner for closed-view and standalone original-evidence roles."""
+    span_id = resolution["span_id"]
+    if resolution["closure"] == "citation_view":
+        _require(
+            set(support) == set(resolution["support_evidence_ids"])
+            and set(context) == set(resolution["context_evidence_ids"]),
+            "summary_use_citation_scope_mismatch",
+        )
+    elif resolution["closure"] == "ungrouped":
+        _require(
+            support == [span_id] and not context, "summary_use_closure_unavailable"
+        )
+    else:
+        raise SummaryUsageError("summary_use_closure_unavailable")
+
+
 def summary_use_entry(
     value: dict,
     *,
@@ -181,18 +198,7 @@ def summary_use_entry(
         ),
         "summary_use_parent_mismatch",
     )
-    if resolution["closure"] == "citation_view":
-        _require(
-            set(support) == set(resolution["support_evidence_ids"])
-            and set(context) == set(resolution["context_evidence_ids"]),
-            "summary_use_citation_scope_mismatch",
-        )
-    elif resolution["closure"] == "ungrouped":
-        _require(
-            support == [span_id] and not context, "summary_use_closure_unavailable"
-        )
-    else:
-        raise SummaryUsageError("summary_use_closure_unavailable")
+    validate_summary_scope(resolution, support, context)
     _require(
         bool(formula_refs)
         and native_claim.get("target_type") == "parameter"

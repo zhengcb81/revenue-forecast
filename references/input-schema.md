@@ -311,3 +311,13 @@ If no supported conversion is available, a run-rate target may honestly use
 scenarios. Do not manufacture a conversion or force ARR into annual revenue
 to pass a target gate. See [management-targets.md](management-targets.md) for
 the complete treatment contract and research interpretation.
+
+
+## Optional adopted-summary provenance
+
+An evidence claim created from an explicit company-wiki `summary_use` also
+keeps `narrative_summary_use` (`revenue-summary-provenance/1`) inside the native
+input. See [summary adoption](summary-adoption.md) for its bounded complete
+support/context closure, source-anchor distinction and publication semantics.
+The parameter must actually use the claim; no source I/O is performed by the
+calculation layer. Older claims without this field retain their behavior.

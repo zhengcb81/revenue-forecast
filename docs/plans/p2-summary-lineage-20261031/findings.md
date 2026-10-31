@@ -1,0 +1,7 @@
+# 有效发现
+
+真实v3公式运行并不等于完整摘要采用：source adapter仅返回旁收据，正式native claim保留第一原文段。新增可持久证据DTO，每条仅一份实际采用的完整闭包，既有input/result/snapshot哈希同时绑定理由；不是第二签收或权限系统。
+
+独审发现单段/assessed合法无group时的角色列表为null，不能对其set；与intake复用validate_summary_scope，单段必须单原文、无context。present-null拒绝；采用claim须仍在used参数claim_ids。投影compact subject只含身份，选定父引用与pointer/byte-range由既有_projected_span验证，不假称完整外部bundle可由部分DTO独立验真。
+
+实际华利数据：Sina原API unit/scale仍null，人民币元和数值经正式年报核实；万双转pairs，Footwear与Other分开。2023IR仅历史机制，2026情景显式条件假设，最新沟通与独立校准仍缺。formal是结构发布，不是买方研究完备性认证。
