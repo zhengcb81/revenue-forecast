@@ -24,7 +24,7 @@ from test_company_wiki_narrative_reader import _resign  # noqa: E402
 from test_narrative_source_preparation_transport import _fake  # noqa: E402
 from test_w04_public_consumer import projected_wire  # noqa: E402
 
-FIXTURES = ROOT / "docs/plans/shared-reading-consumer-2026-10-14/fixtures"
+FIXTURES = ROOT / "tests/fixtures/shared_reading_wire"
 
 
 def actual(version="090"):
