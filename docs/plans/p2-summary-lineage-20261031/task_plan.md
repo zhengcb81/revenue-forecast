@@ -5,7 +5,7 @@ ROOT内部主线修复，不是新外包卡。总控唯一入口为company-wiki�
 
 ## Next Step
 
-V7完整长anchor证据合同已独审，正常发布/精确CI与3逻辑入口定点部署由ROOT收口；随后恢复R4实际compute/report/snapshot/客户时点压力及公司四审。v5/v6旧工程通过保留，不代签新R4/公司质量。
+V7完整长anchor已独审、8eb8fe08正常发布、精确CI41282340171成功及3入口定点部署/新进程通过。ROOT继续R4新图summary实际采用、主与客户时点压力compute/report/snapshot和公司四审；本证据合同节点不再等待发布。
 
 - A COMPLETE：独审v3暴露完整语义/理由只在旁收据、错误操作数锚、小非零单价显示0.00；先写真正能失败的回归。
 - B COMPLETE：RF纯证据DTO贯穿input/forecast/snapshot/report，闭包复用既有owner，投影复用wire，实际参数反向引用。计算层零来源IO；旧无summary-use行为保留。

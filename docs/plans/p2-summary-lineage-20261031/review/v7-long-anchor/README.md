@@ -20,3 +20,7 @@
 纯工程：`python -B -X utf8 -m pytest -q tests/test_summary_long_excerpt.py tests/test_summary_publication_lineage.py tests/test_ci_smoke_plan.py`。合成wire夹具全部在tests内，不依赖docs/本机数据湖/付费服务。真实input为当前作者包，只读重放由来源/资格接口负责，不复制完整原件或整库。
 
 旧无adopted-summary的raw snippet/target、actual revenue backtest仍守原500字合同，它们不在本次完整summary intake链。旧合法输入/金额/公式不变，计算层无来源IO。PASS只证明有界完整引用合同与本地一致性，不独立认证任意外部重建原件或代签所有公司研究。期间补集能力及研究反证/经营幅度仍按原P3质量/四审收口。
+
+## 正常发布、精确CI与部署
+
+main/origin运行提交`8eb8fe0817e3c619faae2253c69b30e707d38f7e`；normal commit/push与pre-push690P/1skip/36subtests/44.89s，[精确CI41282340171](https://github.com/zhengcb81/revenue-forecast/actions/runs/41282340171)SUCCESS。仅3运行文件定点部署3逻辑/2物理入口共6写，repeat0写，3fresh process实际native验证8卡/519字成功，原input未改。Git stash仅造成两外来manifest换行变化，已按提交前字节准确复原，四外来WIP前后SHA相同；未回退真实外部新增内容。当前继续R4新图重接/正式主与压力publication/snapshot及公司四审，不额外POST。

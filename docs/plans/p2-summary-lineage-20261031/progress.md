@@ -9,3 +9,5 @@
 2026-11-01：同一新版华利artifact v6经实际native链及45独立断言通过，0新POST/下载；正式产物和收据见review/v6，replay.py --case v6可隔离离线重跑。生产代码无delta；v5原签名保留，公司研究/P3仍OPEN。
 
 2026-11-01 V7：根因是把完整summary anchor误当手工500字excerpt。先5真RED，最终11新例/91域与独立110项通过，实际8卡input原样PASS。仅两runtime、说明、11case、共用smoke选择与1条选择断言；普通路径不import可选模块。128KiB fullproof界/完整闭包不变，此节点0新POST。先前launcher/observer作者错误与1真实POST保留；正常发布/CI/定点同步由总控登记，公司经济/期间能力不冒通过。
+
+2026-11-01 V7发布闭合：8eb8fe08 main/origin，normal690P/1skip/36subtests/44.89s，CI41282340171成功；3文件/2物理6写、repeat0、3fresh入口真实8卡nativePASS。前后4外来WIP raw SHA相同，两个Git换行副作用已仅按原字节恢复。当前转R4正式主/客户时点及公司独审，非经济PASS。
