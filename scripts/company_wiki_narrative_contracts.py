@@ -784,6 +784,22 @@ def _diagnostic_target(value: Any, code: str) -> dict:
 def _selection_diagnostic(value: Any, *, legacy_aggregate: bool) -> None:
     required = {"code", "count"}
     _require(isinstance(value, dict), "invalid_reading_diagnostic")
+    # Published reading-context-wire/1.1 source-quality diagnostics are data,
+    # not permission decisions. Preserve their finite schema independently of
+    # selection-budget diagnostics and never infer processing completeness.
+    if isinstance(value.get("code"), str) and value["code"] in {"source_grammar_unavailable", "source_grammar_scope_limit",
+                              "source_assessment_incomplete"}:
+        fields = required | {"phase", "dimension", "external_model_cost", "known_unit_ids",
+                             "known_unit_count", "known_unit_ids_limited"}
+        _require(value.keys() == fields and _integer(value["count"], 1)
+                 and value["phase"] == value["dimension"] == "source_readability"
+                 and value["external_model_cost"] is False, "invalid_reading_diagnostic")
+        ids = _trace_id_list(value["known_unit_ids"], cap=16, pattern=_NARRATIVE_UNIT_ID)
+        _require(_integer(value["known_unit_count"], max(1, len(ids)))
+                 and type(value["known_unit_ids_limited"]) is bool
+                 and value["known_unit_ids_limited"] == (value["known_unit_count"] > len(ids)),
+                 "invalid_reading_diagnostic")
+        return
     if legacy_aggregate and value.keys() == required:
         _require(_trace_code(value["code"]) and _integer(value["count"], 1),
                  "invalid_reading_diagnostic")
@@ -868,6 +884,9 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
     else:
         _require("selection_trace" not in value, "invalid_reading_context")
         extra = _READING_SAMPLING_FIELDS if present_sampling else set()
+    if schema == "du-production-reading/4" and "source_processing_complete" in value:
+        _require(type(value["source_processing_complete"]) is bool, "invalid_reading_context")
+        extra = extra | {"source_processing_complete"}
     context = _exact(value, _READING_FIELDS | extra, "invalid_reading_context")
     attributed = schema in {"du-production-reading/2", "du-production-reading/3", "du-production-reading/4"}
     version = context["reading_policy_version"]
