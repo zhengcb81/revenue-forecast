@@ -12,3 +12,5 @@ ROOT内部主线修复，不是新外包卡。总控唯一入口为company-wiki�
 - C ENGINEERING_REVIEW_PASS：实际v5同一M8 artifact→native公式/正式产物；32独立断言、1%参数扰动6断言；最终新29例通过，既有域/安装闭包亦验证。详见review。
 
 验收范围：工程采用链，不代签整家公司研究、P1整体或P3公司循环。原件不改，原语言，不新增人工许可。不碰RF主工区的3个assurance定时产物WIP。
+
+2026-11-01：同一新版华利artifact v6经实际native链及45独立断言通过，0新POST/下载；正式产物和收据见review/v6，replay.py --case v6可隔离离线重跑。生产代码无delta；v5原签名保留，公司研究/P3仍OPEN。

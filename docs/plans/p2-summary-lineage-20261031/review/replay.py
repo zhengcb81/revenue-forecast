@@ -1,5 +1,6 @@
 """Replay one frozen real RF input offline in an isolated publication registry."""
 from pathlib import Path
+import argparse
 import gzip
 import json
 import os
@@ -15,8 +16,12 @@ from revenue_report import validate_published_forecast, render_markdown
 
 
 def main():
-    data = json.loads(gzip.decompress((HERE / "receipts/input.json.gz").read_bytes()))
-    saved = json.loads(gzip.decompress((HERE / "receipts/forecast.json.gz").read_bytes()))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--case", choices=("v5", "v6"), default="v5")
+    case = parser.parse_args().case
+    receipt_dir = HERE / "receipts" if case == "v5" else HERE / case / "receipts"
+    data = json.loads(gzip.decompress((receipt_dir / "input.json.gz").read_bytes()))
+    saved = json.loads(gzip.decompress((receipt_dir / "forecast.json.gz").read_bytes()))
     original_connect = socket.socket.connect
     previous_registry = os.environ.get("REVENUE_PUBLICATION_REGISTRY")
     def deny(sock, address):
