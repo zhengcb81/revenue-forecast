@@ -151,10 +151,15 @@ must be true before the copy is allowed to stand as a new version.
 
 Two traps to check explicitly:
 
-- **The excerpt character limit.** Native claims accept 10-500 characters.
-  A contiguous own-business range that exceeds 500 must be split at a paragraph
-  boundary into two source-owned ranges; truncating mid-sentence loses the
-  qualifying clause that made the excerpt usable.
+- **Evidence snippets and complete adopted quotes.** Manually authored and
+  legacy snippet claims keep their 10–500-character limit. A published summary
+  adopted through the narrative reader carries the complete selected source
+  anchor in `excerpt` and the complete `narrative_summary_use` closure. Its size
+  is bounded by the existing 128-KiB full-proof DTO limit, not the short-snippet
+  limit. Native validation checks exact anchor text, source/locator, support and
+  context, and the actual parameter/formula dependency. A missing or fabricated
+  proof never bypasses those checks. Do not clip the quote, split a source-owned
+  card in RF, or remove a future/negative qualifier just to shorten it.
 - **Diagnostic strings in enum fields.** A preparation or review package may
   invent a value such as `unknown_mechanism_no_role_fix`. It is a diagnostic
   label, not a member of the native `evidence_role` enum. Never write it into

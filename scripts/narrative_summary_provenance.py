@@ -99,6 +99,18 @@ def build_summary_provenance(value, entry):
     )
 
 
+def validate_summary_excerpt_bound(excerpt):
+    """Bound a complete adopted anchor without changing source-owned cards.
+
+    This length check never establishes provenance. The document owner must
+    still validate the exact full anchor, source, context and formula closure
+    through validate_summary_provenance. Reuse its existing full-proof byte
+    limit rather than introduce another source selection or model budget.
+    """
+    _require(10 <= len(excerpt) and len(excerpt.encode("utf-8")) <= MAX_BYTES,
+             "excerpt_byte_bound")
+
+
 def validate_summary_provenance(data, claim, source, parameters):
     """Validate optional durable linkage using existing span/citation/DAG owners."""
     if "narrative_summary_use" not in claim:

@@ -642,10 +642,15 @@ def validate_evidence_claims(
                 f"{claim_id}.{field} is required",
             )
         excerpt = claim["excerpt"].strip()
-        require(
-            10 <= len(excerpt) <= 500,
-            f"{claim_id}.excerpt must contain 10-500 characters",
-        )
+        if "narrative_summary_use" in claim:
+            from narrative_summary_provenance import validate_summary_excerpt_bound
+
+            validate_summary_excerpt_bound(excerpt)
+        else:
+            require(
+                10 <= len(excerpt) <= 500,
+                f"{claim_id}.excerpt must contain 10-500 characters",
+            )
         require(
             claim.get("excerpt_sha256") == text_sha256(excerpt),
             f"claim excerpt hash mismatch: {claim_id}",
