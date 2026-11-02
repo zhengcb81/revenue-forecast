@@ -118,13 +118,54 @@ def test_snapshot_generations_can_coexist_and_same_generation_still_conflicts():
     assert any("conflict" in problem for problem in registry.audit())
 
 
-def test_reordering_otherwise_valid_rows_still_breaks_chain(isolated_registry):
+def _as_legacy_chain(rows):
+    """Synthetic historical v1 rows; new register_publication emits v2."""
+    previous = None
+    legacy = []
+    for row in rows:
+        payload = {key: value for key, value in row.items() if key not in {"line_sha256", "index_schema_version"}}
+        payload["prev_line_sha256"] = previous
+        entry = {**payload, "line_sha256": canonical_sha256(payload)}
+        legacy.append(entry)
+        previous = entry["line_sha256"]
+    return legacy
+
+
+def test_v2_reordering_keeps_both_confidence_generations_auditable(isolated_registry):
     registry.register_publication(result("stable-fsum/1"))
-    registry.register_publication(result())
-    lines = isolated_registry.read_text("utf-8").splitlines()
-    isolated_registry.chmod(stat.S_IWRITE | stat.S_IREAD)
-    isolated_registry.write_text("\n".join(reversed(lines)) + "\n", encoding="utf-8")
+    registry.register_publication(result(result_sha="c" * 64))
+    rows = registry.lookup("a" * 64)
+    assert all(row["index_schema_version"] == "publication-index/2" for row in rows)
+    isolated_registry.write_text("\n".join(json.dumps(row) for row in reversed(rows)) + "\n", encoding="utf-8")
+    assert registry.audit() == []
+    history = registry.lookup("a" * 64)
+    assert {(row["confidence_calculation_version"], row["result_sha256"]) for row in history} == {
+        ("stable-fsum/1", "b" * 64), ("source-evidence/2", "c" * 64)}
+
+
+def test_explicit_legacy_v1_row_reordering_still_breaks_its_actual_chain(isolated_registry):
+    registry.register_publication(result("stable-fsum/1"))
+    registry.register_publication(result(result_sha="c" * 64))
+    rows = _as_legacy_chain(registry.lookup("a" * 64))
+    isolated_registry.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+    assert registry.audit() == []
+    isolated_registry.write_text("\n".join(json.dumps(row) for row in reversed(rows)) + "\n", encoding="utf-8")
     assert any("chain break" in problem for problem in registry.audit())
+    with pytest.raises(registry.RegistryError, match="chain break"):
+        registry.lookup("a" * 64)
+
+
+@pytest.mark.parametrize("legacy", [True, False])
+def test_changed_row_hash_still_rejects_in_either_index_generation(isolated_registry, legacy):
+    registry.register_publication(result())
+    rows = registry.lookup("a" * 64)
+    if legacy:
+        rows = _as_legacy_chain(rows)
+    rows[0]["result_sha256"] = "f" * 64  # Do not resign the actual mutated row.
+    isolated_registry.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+    assert any("hash mismatch" in problem for problem in registry.audit())
+    with pytest.raises(registry.RegistryError, match="hash mismatch"):
+        registry.lookup("a" * 64)
 
 
 def test_missing_confidence_legacy_fixture_is_recorded_as_stable_revision():

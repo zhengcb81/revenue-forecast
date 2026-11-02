@@ -42,3 +42,21 @@ def test_pre_push_child_environment_drops_parent_git_context(
     for name in _REPOSITORY_CONTEXT:
         assert name not in captured
     assert captured["GIT_CONFIG_PARAMETERS"] == "scoped-safe-directory"
+
+
+def test_actual_child_git_uses_its_own_repo_under_parent_hook_context(monkeypatch, tmp_path):
+    child = tmp_path / "child-repo"
+    subprocess.run(["git", "init", "-q", str(child)], check=True,
+        capture_output=True, env=pre_push_gate._subprocess_environment())
+    monkeypatch.setenv("GIT_DIR", str(ROOT / ".git"))
+    monkeypatch.setenv("GIT_WORK_TREE", str(ROOT))
+    monkeypatch.setenv("GIT_INDEX_FILE", str(ROOT / ".git" / "index"))
+    monkeypatch.setenv("REVENUE_ATTESTATION_PROVIDER", "should-not-be-called-in-tests")
+    code = (
+        "import os,pathlib,subprocess,sys;"
+        "assert not os.environ.get('REVENUE_ATTESTATION_PROVIDER');"
+        "assert os.environ.get('PYTHON_DOTENV_DISABLED')=='1';"
+        "actual=subprocess.check_output(['git','-C',sys.argv[1],'rev-parse','--show-toplevel'],text=True).strip();"
+        "assert pathlib.Path(actual).resolve()==pathlib.Path(sys.argv[1]).resolve()"
+    )
+    assert pre_push_gate._run([sys.executable, "-B", "-c", code, str(child)], "isolated child Git") == 0
