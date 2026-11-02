@@ -128,7 +128,7 @@ def test_proof_cannot_be_borrowed_from_a_different_raw_sha_even_in_current_mode(
 
 @pytest.mark.parametrize("mutation", [
     "schema", "missing", "extra", "path", "bad_date", "bool_date", "list_basis", "bool_sha",
-    "absolute_reference", "blank_locator", "control_reference", "oversize_locator", "list_proof",
+    "absolute_reference", "blank_locator", "control_reference", "list_proof",
 ])
 def test_malformed_availability_is_a_bounded_contract_refusal(mutation):
     proof = _valid_proof()
@@ -154,14 +154,23 @@ def test_malformed_availability_is_a_bounded_contract_refusal(mutation):
         proof["locator"] = " "
     elif mutation == "control_reference":
         proof["evidence_ref"] = "capture:\nsecret"
-    elif mutation == "oversize_locator":
-        proof["locator"] = "x" * 2049
     else:
         proof = []
     with pytest.raises(NarrativeTransportError) as caught:
         validate_narrative_response(*_wire(proof=proof))
     assert caught.value.status == "blocked"
     assert "untrusted" not in str(caught.value) and "secret" not in str(caught.value)
+
+
+def test_long_availability_locator_preserves_complete_bound_proof():
+    proof = _valid_proof()
+    proof["locator"] = "capture:complete-original-member/" + "x" * 6400
+    request, body, raw = _wire(proof=proof)
+    original = deepcopy((request, body, raw))
+    context = validate_narrative_response(request, body, raw).to_dict()
+    assert context["read_receipt"]["availability_evidence"] == proof
+    assert context["narrative_ref"]["artifact_sha256"] == hashlib.sha256(body).hexdigest()
+    assert (request, body, raw) == original
 
 
 @pytest.mark.parametrize("mutation,reason", [("raw_sha", "manifest_source_mismatch"),
