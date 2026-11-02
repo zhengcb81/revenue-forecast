@@ -6,3 +6,8 @@
 ## 2026-11-02 最新调度：先解耦
 
 用户明确不接受半解耦并行。本计划改为DEFERRED_UNTIL_DECOUPLING，未派发、业务实施未启动；ROOT集中完成 C:/Users/郑曾波/Projects/company-wiki/docs/plans/du11-source-closure-2026-10-18/review/architecture-reassessment-20261102/DECOUPLING_FIRST.md 后，依据实际接口重新校准此卡再激活。此前READY建议已被取代。
+
+
+## D3责任接口（2026-11-02）
+
+RF原文/摘要公开命令可独立替换，FF连接适配器统一六操作，CWP拥有真实字节/入库，ET负责实际provider计量。消费者普通测试不检出上游或读其库。核心SHA/身份/期次/版本保留，JSON排版、重复固定预算和历史人工签收不作新许可。

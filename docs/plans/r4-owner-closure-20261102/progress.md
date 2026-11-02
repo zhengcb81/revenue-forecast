@@ -6,3 +6,8 @@
 ## 2026-11-02 最新调度：先解耦
 
 用户明确不接受半解耦并行。本计划改为DEFERRED_UNTIL_DECOUPLING，未派发、业务实施未启动；ROOT集中完成 C:/Users/郑曾波/Projects/company-wiki/docs/plans/du11-source-closure-2026-10-18/review/architecture-reassessment-20261102/DECOUPLING_FIRST.md 后，依据实际接口重新校准此卡再激活。此前READY建议已被取代。
+
+
+## 2026-11-02 — D3更新
+
+ROOT独审通过：当前组合39P/0skip，公开端点替换、预算链、真实只读和定点安装均实测。参见总控review/decoupling-20261102；未提前派发仓内业务。

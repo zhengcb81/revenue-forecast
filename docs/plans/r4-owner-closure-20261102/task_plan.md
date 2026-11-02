@@ -1,13 +1,13 @@
 # RF仓内主线整改：R4计算语义闭合
 
-状态：DEFERRED_UNTIL_DECOUPLING / 用户要求先完成解耦，暂不派发。PLAN_ID=r4-owner-closure-20261102；PWF_PLAN_ROOT=docs/plans。
-工作仓：C:/Users/郑曾波/Projects/revenue-forecast。基线75c3b0e0d1eb083ab29e8c9e833ed1f95c16e688。
+状态：READY_NOT_DISPATCHED / ROOT D3工程独审已通过，本仓业务尚未开工。PLAN_ID=r4-owner-closure-20261102；PWF_PLAN_ROOT=docs/plans。
+工作仓：C:/Users/郑曾波/Projects/revenue-forecast。解耦源码基线f09755277473168fa439b77e6b4c1fa4af44a802（启动时核主线及保留WIP）。
 总控：C:/Users/郑曾波/Projects/company-wiki/docs/plans/du11-source-closure-2026-10-18/review/architecture-reassessment-20261102/COORDINATION.md。
 这是既有R4责任的本仓实施入口，不是新目标、不重建预测引擎。解耦阶段ROOT集中负责必要跨仓改造；解耦验收后另一harness只写AUDIT，你只写RF，目录不重叠。解耦D3通过后再激活本仓业务任务；不能提前离线施工。
 
 ## Next Step
 
-当前只保留任务清单，等待ROOT按 C:/Users/郑曾波/Projects/company-wiki/docs/plans/du11-source-closure-2026-10-18/review/architecture-reassessment-20261102/DECOUPLING_FIRST.md 完成D3。通过后先按实际公开接口/版本校准本计划，再执行下列原定第一步。不是逐材料许可，不要求用户再给授权。
+D3公开端口/隔离与39项组合已完成；以总控CURRENT_STATUS和release确认交付版本。总控启动本线时执行下列第一步；本轮未派发，不需要逐材料许可。
 
 解耦后第一步：读取本计划、findings/progress及原R4诊断；确认当前HEAD/已有WIP，冻结原有20个ghost与10个期间向量的期待，首先在本仓公共validator重现，不把旧收据当最新代码结果。
 
