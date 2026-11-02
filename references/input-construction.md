@@ -151,12 +151,13 @@ must be true before the copy is allowed to stand as a new version.
 
 Two traps to check explicitly:
 
-- **Evidence snippets and complete adopted quotes.** Manually authored and
-  legacy snippet claims keep their 10–500-character limit. A published summary
-  adopted through the narrative reader carries the complete selected source
-  anchor in `excerpt` and the complete `narrative_summary_use` closure. Its size
-  is bounded by the existing 128-KiB full-proof DTO limit, not the short-snippet
-  limit. Native validation checks exact anchor text, source/locator, support and
+- **Complete checked evidence and adopted quotes.** Retain the complete
+  nonempty source excerpt and its hash; there is no separate character-count
+  permission for manual or legacy claims. A published summary adopted through
+  the narrative reader carries the selected source anchor in `excerpt` and the
+  complete `narrative_summary_use` closure. Actual transport and task resource
+  budgets belong to their owners, without another proof-size veto. Native
+  validation checks exact anchor text, source/locator, support and
   context, and the actual parameter/formula dependency. A missing or fabricated
   proof never bypasses those checks. Do not clip the quote, split a source-owned
   card in RF, or remove a future/negative qualifier just to shorten it.

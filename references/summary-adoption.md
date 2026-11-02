@@ -8,9 +8,11 @@ this optional field retain their prior behavior; a present null is invalid.
 The DTO contains the verified narrative artifact reference and read result,
 parent source reference, selected summary, original support/context spans,
 the selected citation view, quality flags, analyst research reason and actual
-native formula references. It is bounded to 128 KiB per used claim, never the
-whole source or bundle. The short native `excerpt` is labeled a source anchor;
-the full meaning remains in the DTO and is shown separately in the report.
+native formula references. It contains only the adopted claim's complete
+local closure, rather than the whole unselected source bundle. There is no
+separate proof-size or excerpt-length permission; the transport and task owners
+enforce their actual resource budgets. The native `excerpt` retains its checked
+source anchor; the full meaning and qualifiers remain visible in the DTO/report.
 
 `validate_summary_scope` is shared with intake: an explicit closed citation view
 keeps its entire support/context closure; an ungrouped claim can use its one
