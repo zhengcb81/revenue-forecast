@@ -17,6 +17,8 @@ from company_wiki_narrative_process import run_bounded
 def _command(config: Path, operation: str, reader_command: Sequence[str] | None) -> list[str]:
     if not isinstance(config, Path) or not config.is_absolute():
         raise NarrativeTransportError("blocked", "invalid_catalog_configuration")
+    if isinstance(reader_command, (str, bytes)):
+        raise NarrativeTransportError("blocked", "invalid_reader_command")
     command = list(reader_command) if reader_command is not None else [
         sys.executable, "-B", "-m", "company_wiki.source_catalog.narrative_transport_cli",
     ]

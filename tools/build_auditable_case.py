@@ -24,6 +24,17 @@ def _load(path):
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
+def _reader_command(raw):
+    if raw is None:
+        return None
+    value = json.loads(raw)
+    if not isinstance(value, list) or not value or not all(
+        isinstance(arg, str) and arg for arg in value
+    ):
+        raise ValueError("--narrative-reader-command-json must be a non-empty JSON array of strings")
+    return tuple(value)
+
+
 def assemble_case(data, research, preparations, *, as_of):
     out = deepcopy(data)
     require(out["as_of_date"] == as_of, "assembly information date must match native input")
@@ -60,6 +71,8 @@ def main(argv=None):
     parser.add_argument("--bindings", type=Path)
     parser.add_argument("--source-id")
     parser.add_argument("--catalog-config", type=Path)
+    parser.add_argument("--narrative-reader-command-json",
+                        help="JSON argv prefix for the public narrative reader")
     parser.add_argument("--delay-request", type=Path, help="optional independent illustrative dated bridge request")
     args = parser.parse_args(argv)
     require(not args.output_root.exists(), "assembly output root must be initially absent")
@@ -69,8 +82,11 @@ def main(argv=None):
         require(args.bindings is not None and args.source_id is not None and args.catalog_config is not None, "narrative read requires bindings/source/config")
         from source_narrative_context import consume_narrative_input
         data, consumption = consume_narrative_input(data, request=_load(args.narrative_request),
-            bindings=_load(args.bindings), source_id=args.source_id, catalog_config=args.catalog_config)
-    elif any(x is not None for x in (args.bindings, args.source_id, args.catalog_config)):
+            bindings=_load(args.bindings), source_id=args.source_id,
+            catalog_config=args.catalog_config.resolve(),
+            reader_command=_reader_command(args.narrative_reader_command_json))
+    elif any(x is not None for x in (args.bindings, args.source_id, args.catalog_config,
+                                     args.narrative_reader_command_json)):
         raise ValueError("narrative binding flags require --narrative-request")
     validated = validate_document(data)
     diagnostic = analyze_operating_research(data, validated)

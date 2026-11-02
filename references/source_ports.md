@@ -4,6 +4,8 @@ RF读取来源只通过SourceRef/版本化公开资料包与进程端口，不�
 
 - prepare_source_result/prepare_source：source_reader_command为原文公开CLI的argv前缀；narrative_reader_command独立配置摘要公开CLI。CLI分别提供--source-reader-command-json与--narrative-reader-command-json。
 - prepare_registered_source_result：同样支持原文command注入，复用已有逻辑来源。
+- 摘要实际采用走同一条端口：consume_narrative_input的reader_command与prepare的narrative_reader_command同形；build_auditable_case与run_narrative_consumption_e2e都提供--narrative-reader-command-json。一次采用只实际读一次。
+- 同一进程内已由公开reader验证的NarrativeContext可直接交给consume（context=）绑定，不再重复读取/请求。该交接面与reader连接互斥，且要求请求的引用/as-of/来源/发行方约束与context一致；拒绝时为ValueError，读取失败仍为NarrativeTransportError。两个CLI各自只做自己那一次读取，跨进程不共享已验证context（没有可重验的便携context载体）。
 - command省略时保留既有本地CWP CLI部署；显式command的catalog_config是绝对不透明句柄，由所选生产者解释。RF不要求该句柄指向本机source_catalog.yaml。
 - metadata/reference只表示定位，真正使用仍读原始或资料包字节，按实收SHA/大小、核心身份/期次/as-of及公开质量语义解释。摘要只作来源材料，不能自己变成已验证的预测。
 

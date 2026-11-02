@@ -1,19 +1,20 @@
 """Connect one verified narrative read to RF input claims and used parameters.
 
 This module never resolves paths, downloads, parses originals, or starts a model.
-The existing reader verifies the bundle once; this adapter only links excerpts
-selected by the caller to an existing revenue calculation graph. The source
-owner's support/context closure and a bounded coverage diagnostic are retained in
-a versioned citation trace; the claim fields and the formula dependencies stay
-exactly as they were.
+The existing reader verifies the bundle once through the configured public reader
+port; this adapter only links excerpts selected by the caller to an existing
+revenue calculation graph. The source owner's support/context closure and a
+bounded coverage diagnostic are retained in a versioned citation trace; the claim
+fields and the formula dependencies stay exactly as they were.
 """
 
 from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
+from typing import Sequence
 
-from company_wiki_narrative_contracts import NarrativeContext
+from company_wiki_narrative_contracts import NarrativeContext, validate_narrative_request
 from company_wiki_narrative_reader import read_narrative_context
 from contracts.evidence import text_sha256
 from contracts.source_clock import utc_timestamp
@@ -151,26 +152,84 @@ def _binding_selection(binding: dict) -> tuple[str | None, int | None]:
     return selection(binding)
 
 
-def consume_narrative_input(
+def _request_constraints(request: dict, value: dict) -> None:
+    """Re-check the request's identity constraints against a handed-over context.
+
+    The read path applies these inside the wire validator; a context that arrived
+    through another composition boundary must not become evidence for a request
+    that names a different source or issuer.
+    """
+    expected = request.get("expected_source")
+    if expected is not None:
+        manifest = value.get("manifest")
+        for key, item in expected.items():
+            if item is not None and (
+                not isinstance(manifest, dict)
+                or type(manifest.get(key)) is not type(item)
+                or manifest.get(key) != item
+            ):
+                raise ValueError("verified narrative context does not match the requested source")
+    issuer = request.get("expected_issuer")
+    if issuer is not None:
+        subject = value.get("subject_binding")
+        actual = subject.get("issuer") if isinstance(subject, dict) else None
+        for key, item in issuer.items():
+            if not isinstance(actual, dict) or (
+                type(actual.get(key)) is not type(item) or actual.get(key) != item
+            ):
+                raise ValueError("verified narrative context does not match the requested issuer")
+
+
+def _verified_context(
+    request: dict,
+    *,
+    catalog_config: Path | None,
+    timeout_seconds: float,
+    reader_command: Sequence[str] | None,
+    context: NarrativeContext | None,
+) -> NarrativeContext:
+    """Read once through the configured port, or accept an already verified context."""
+    if context is None:
+        if catalog_config is None:
+            raise ValueError(
+                "narrative consumption requires a catalog configuration or a verified context"
+            )
+        return read_narrative_context(
+            request, catalog_config=catalog_config, timeout_seconds=timeout_seconds,
+            reader_command=reader_command,
+        )
+    if catalog_config is not None or reader_command is not None:
+        raise ValueError(
+            "a handed-over narrative context cannot be combined with a reader connection"
+        )
+    if not isinstance(context, NarrativeContext):
+        raise ValueError("narrative consumption requires a verified NarrativeContext")
+    request = validate_narrative_request(request)
+    value = context.to_dict()
+    if (
+        value.get("narrative_ref") != request["narrative_ref"]
+        or value.get("as_of_date") != request["as_of_date"]
+    ):
+        raise ValueError("verified narrative context does not match the requested reference")
+    receipt = value.get("read_receipt")
+    if not isinstance(receipt, dict) or (
+        receipt.get("status") != "ok" or receipt.get("replay_status") != "verified"
+    ):
+        raise ValueError("verified narrative context carries no verified read receipt")
+    _request_constraints(request, value)
+    return context
+
+
+def _bind_verified_context(
     data: dict,
     *,
+    context: NarrativeContext,
     request: dict,
     bindings: list[dict],
     source_id: str,
-    catalog_config: Path,
-    timeout_seconds: float = 30,
-    verified_by: str = "RF narrative reader",
+    verified_by: str,
 ) -> tuple[dict, dict]:
-    """Read a bundle once and bind selected spans to existing used parameters.
-
-    A metadata reference or an unreferenced summary yields not_consumed. No
-    assumption value or evidence role is inferred from a summary's existence.
-    Invalid/unavailable references propagate the existing bounded read failure.
-    A span the source attributes to the context partition never becomes support.
-    """
-    context = read_narrative_context(
-        request, catalog_config=catalog_config, timeout_seconds=timeout_seconds
-    )
+    """Bind one already verified context; no process, request or second read."""
     value = context.to_dict()
     updated = deepcopy(data)
     source = next(
@@ -269,3 +328,45 @@ def consume_narrative_input(
 
         receipt["summary_use"] = summary_use_receipt(value, summary_uses)
     return updated, receipt
+
+
+def consume_narrative_input(
+    data: dict,
+    *,
+    request: dict,
+    bindings: list[dict],
+    source_id: str,
+    catalog_config: Path | None = None,
+    timeout_seconds: float = 30,
+    verified_by: str = "RF narrative reader",
+    reader_command: Sequence[str] | None = None,
+    context: NarrativeContext | None = None,
+) -> tuple[dict, dict]:
+    """Read a bundle once and bind selected spans to existing used parameters.
+
+    ``reader_command`` is the replaceable public reader port; omitting it keeps
+    the existing local CWP CLI deployment, so a caller that already has a working
+    endpoint no longer falls back to that module. ``context`` hands over a context
+    this process already verified: the same evidence binds without a second read
+    or request, and the request's reference, information date, source and issuer
+    constraints are re-checked against it. A handed-over context is an in-process
+    composition boundary for orchestration code, not a portable credential, so it
+    cannot be combined with a reader connection and the two CLIs each perform
+    their own single read. A metadata reference or an unreferenced summary yields
+    not_consumed. No assumption value or evidence role is inferred from a
+    summary's existence. Invalid/unavailable references propagate the existing
+    bounded read failure. A span the source attributes to the context partition
+    never becomes support. A rejected handover raises ``ValueError``; a reader
+    failure keeps its bounded ``NarrativeTransportError`` status and reason.
+    """
+    return _bind_verified_context(
+        data,
+        context=_verified_context(
+            request, catalog_config=catalog_config, timeout_seconds=timeout_seconds,
+            reader_command=reader_command, context=context,
+        ),
+        request=request,
+        bindings=bindings,
+        source_id=source_id,
+        verified_by=verified_by,
+    )
