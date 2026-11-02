@@ -135,13 +135,11 @@ def _nonfinite(_value: str) -> None:
     raise NarrativeTransportError("blocked", "nonfinite_json")
 
 
-def decode_object(raw: bytes, *, limit: int | None = None, one_line: bool = False) -> dict:
+def decode_object(raw: bytes, *, limit: int | None = None) -> dict:
     _require(isinstance(raw, bytes), "invalid_wire_bytes")
     _require(limit is None or len(raw) <= limit, "wire_size_limit")
     try:
         text = raw.decode("utf-8", errors="strict")
-        if one_line:
-            _require(text.endswith("\n") and len(text.splitlines()) == 1, "receipt_line_count")
         value = json.loads(text, object_pairs_hook=_pairs, parse_constant=_nonfinite)
         _require(isinstance(value, dict), "wire_object_required")
         _pathless(value)
@@ -1327,7 +1325,7 @@ def _projected_response(request: dict, body: bytes, receipt: dict) -> NarrativeC
 
 def _validated_response(request: dict, body: bytes, receipt_bytes: bytes) -> NarrativeContext:
     request = validate_narrative_request(request)
-    receipt = decode_object(receipt_bytes, limit=RECEIPT_LIMIT, one_line=True)
+    receipt = decode_object(receipt_bytes, limit=RECEIPT_LIMIT)
     if request["schema_version"] == "narrative-read-request/3":
         return _projected_response(request, body, receipt)
     manifest = _receipt(receipt, request)
@@ -1354,7 +1352,7 @@ def validate_narrative_response(request: dict, body: bytes, receipt_bytes: bytes
 def validate_reference_response(request: dict, body: bytes, receipt_bytes: bytes) -> dict:
     request = validate_reference_request(request)
     ref = validate_narrative_ref(decode_object(body, limit=REQUEST_LIMIT))
-    receipt = decode_object(receipt_bytes, limit=RECEIPT_LIMIT, one_line=True)
+    receipt = decode_object(receipt_bytes, limit=RECEIPT_LIMIT)
     _with_extensions(receipt, {"schema_version", "status", "narrative_ref"}, "invalid_reference_receipt")
     projected = request["schema_version"] == "narrative-reference-request/3"
     _require(receipt["schema_version"] == ("narrative-read-receipt/3" if projected else "narrative-read-receipt/1") and

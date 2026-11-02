@@ -304,3 +304,16 @@ def test_missing_registered_language_does_not_contradict_detected_language(langu
     else:
         with pytest.raises(NarrativeTransportError, match="bundle_manifest_mismatch"):
             validate_narrative_response(request, body, _canonical(receipt) + b"\n")
+
+
+def test_narrative_receipt_accepts_equivalent_json_whitespace():
+    request, body, receipt = _valid()
+    expected = validate_narrative_response(request, body, receipt).to_dict()
+    pretty = json.dumps(json.loads(receipt), indent=2).encode()
+    assert validate_narrative_response(request, body, pretty).to_dict() == expected
+
+
+def test_narrative_receipt_does_not_accept_a_second_json_document():
+    request, body, receipt = _valid()
+    with pytest.raises(NarrativeTransportError):
+        validate_narrative_response(request, body, receipt + b"{}\n")
