@@ -91,10 +91,14 @@ def _revenue_source_type(handle: dict) -> str:
     return _SOURCE_TYPE_BY_KIND[kind]
 
 
-def _catalog_config_for_reader(catalog_config: Path | None) -> Path:
+def _catalog_config_for_reader(catalog_config: Path | None, *, external: bool = False) -> Path:
     """Resolve the required catalog config; named failure before outbound."""
     if not isinstance(catalog_config, Path):
         raise RuntimeError("SourceRef v2 requires company_wiki_catalog_config")
+    if external:
+        if not catalog_config.is_absolute():
+            raise RuntimeError("reader config handle must be absolute")
+        return catalog_config
     try:
         resolved = catalog_config.expanduser().resolve(strict=True)
     except OSError as exc:
@@ -249,7 +253,7 @@ def _prepare_source_ref_v2(
     catalog_config: Path,
     *,
     timeout_seconds: float, source_reader_receipt_version: str = "2.1",
-    registered_read: bool = False,
+    registered_read: bool = False, source_reader_command: tuple[str, ...] | None = None,
 ) -> dict:
     """Open and record one pathless candidate using company-wiki's verifier."""
     from company_wiki_source_reader_v2 import open_source_version_v2, validate_source_reader_receipt_version
@@ -260,6 +264,8 @@ def _prepare_source_ref_v2(
     version = validate_source_reader_receipt_version(source_reader_receipt_version)
     deadline = _read_deadline(timeout_seconds)
     reader_options = {"source_reader_receipt_version": version} if version == "2.2" else {}
+    if source_reader_command is not None:
+        reader_options["reader_command"] = source_reader_command
     fiscal_year = _validate_v2_candidate(request, handle)
     outcome, downloads = ("reused_existing", 0) if registered_read else _v2_resolution_events(handle)
     original = open_source_version_v2(
@@ -373,6 +379,7 @@ def _registered_manifest_constraints(candidate: dict, manifest: dict) -> None:
 def prepare_registered_source_result(
     candidate: dict, *, as_of_date: str, company_wiki_catalog_config: Path,
     timeout_seconds: float = 30.0, source_reader_receipt_version: str = "2.1",
+    source_reader_command: tuple[str, ...] | None = None,
 ) -> dict:
     """Read a registered pathless official source through the same exact verifier.
 
@@ -384,8 +391,9 @@ def prepare_registered_source_result(
                ("document_kind", "fiscal_year", "fiscal_period")}
     request["as_of_date"] = as_of_date
     source = _prepare_source_ref_v2(request, candidate,
-        _catalog_config_for_reader(company_wiki_catalog_config), timeout_seconds=timeout_seconds,
-        source_reader_receipt_version=source_reader_receipt_version, registered_read=True)
+        _catalog_config_for_reader(company_wiki_catalog_config, external=source_reader_command is not None), timeout_seconds=timeout_seconds,
+        source_reader_receipt_version=source_reader_receipt_version, registered_read=True,
+        source_reader_command=source_reader_command)
     return {"schema_version": "source-preparation-result/1", "source": source,
             "filing_fetch": None, "narrative": None}
 
@@ -402,6 +410,8 @@ def prepare_source_result(
     company_wiki_catalog_config: Path | None = None,
     narrative_request: dict | None = None,
     source_reader_receipt_version: str = "2.1",
+    source_reader_command: tuple[str, ...] | None = None,
+    narrative_reader_command: tuple[str, ...] | None = None,
 ) -> dict:
     """Orchestrate the real chain and return the RevenueSourceRecord.
 
@@ -416,7 +426,9 @@ def prepare_source_result(
     version = validate_source_reader_receipt_version(source_reader_receipt_version)
     deadline = _read_deadline(timeout_seconds)
     reader_options = {"source_reader_receipt_version": version} if version == "2.2" else {}
-    catalog_config = _catalog_config_for_reader(company_wiki_catalog_config)
+    if source_reader_command is not None:
+        reader_options["reader_command"] = source_reader_command
+    catalog_config = _catalog_config_for_reader(company_wiki_catalog_config, external=source_reader_command is not None)
     command = _filing_fetch_command(
         python,
         filing_fetch_root=filing_fetch_root,
@@ -431,15 +443,19 @@ def prepare_source_result(
             request,
             select_filing(filing_fetch),
             catalog_config,
-            timeout_seconds=_remaining_timeout(deadline), **reader_options,
+            timeout_seconds=_remaining_timeout(deadline),
+            source_reader_command=source_reader_command,
+            **{k: v for k, v in reader_options.items() if k != "reader_command"},
         )
         narrative = None
         if narrative_request is not None:
             stage = "narrative_reader"
             from company_wiki_narrative_reader import read_narrative_context
             from source_narrative_context import narrative_read_receipt
+            narrative_options = ({"reader_command": narrative_reader_command}
+                                 if narrative_reader_command is not None else {})
             context = read_narrative_context(narrative_request, catalog_config=catalog_config,
-                                             timeout_seconds=_remaining_timeout(deadline))
+                timeout_seconds=_remaining_timeout(deadline), **narrative_options)
             value = context.to_dict()
             refs = value["parent_source_refs"] if value.get("schema_version") == "revenue-narrative-context/3" else [value["source_ref"]]
             if select_filing(filing_fetch)["source_ref"] not in refs:
@@ -462,6 +478,8 @@ def prepare_source(
     filing_fetch_root: Path | None = None, source_reader_v2: bool = True,
     company_wiki_catalog_config: Path | None = None, narrative_request: dict | None = None,
     source_reader_receipt_version: str = "2.1",
+    source_reader_command: tuple[str, ...] | None = None,
+    narrative_reader_command: tuple[str, ...] | None = None,
 ) -> dict:
     """Compatibility source-only entry; the full result is an explicit sidecar."""
     return prepare_source_result(
@@ -469,6 +487,8 @@ def prepare_source(
         company_wiki_config=company_wiki_config, filing_fetch_root=filing_fetch_root,
         source_reader_v2=source_reader_v2, company_wiki_catalog_config=company_wiki_catalog_config,
         narrative_request=narrative_request, source_reader_receipt_version=source_reader_receipt_version,
+        source_reader_command=source_reader_command,
+        narrative_reader_command=narrative_reader_command,
     )["source"]
 
 
@@ -504,6 +524,8 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="override the filing-fetch skill root for the chain (E2E)",
     )
+    parser.add_argument("--source-reader-command-json", help="JSON argv prefix for the public original reader")
+    parser.add_argument("--narrative-reader-command-json", help="JSON argv prefix for the public narrative reader")
     args = parser.parse_args(argv)
 
     for stream in (sys.stdin, sys.stdout, sys.stderr):
@@ -525,6 +547,10 @@ def main(argv: list[str] | None = None) -> int:
             company_wiki_catalog_config=args.company_wiki_catalog_config,
             narrative_request=narrative_request,
             source_reader_receipt_version=args.source_reader_receipt_version,
+            source_reader_command=(tuple(json.loads(args.source_reader_command_json))
+                                   if args.source_reader_command_json else None),
+            narrative_reader_command=(tuple(json.loads(args.narrative_reader_command_json))
+                                      if args.narrative_reader_command_json else None),
         )
     except (json.JSONDecodeError, ValueError) as exc:
         sys.stderr.write(json.dumps({"error_code": "bad_request", "error": str(exc)}))

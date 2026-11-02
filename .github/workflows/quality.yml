@@ -31,11 +31,8 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: python -m pip install pytest pyyaml requests pymupdf cryptography "ruff==0.15.18" "mypy==1.19.0"
-      - name: Fetch pinned source dependencies
+      - name: Isolate consumer checks
         run: |
-          SIBLING_DIR="$(dirname "$GITHUB_WORKSPACE")"
-          python tools/ci_checkout_siblings.py --manifest compatibility/current.json --sibling-root "$SIBLING_DIR" --skip revenue
-          echo "PYTHONPATH=$SIBLING_DIR/company-wiki/src" >> "$GITHUB_ENV"
           echo "PYTHONDONTWRITEBYTECODE=1" >> "$GITHUB_ENV"
           echo "PYTHONUTF8=1" >> "$GITHUB_ENV"
       - name: Complete CI source and forecast checks

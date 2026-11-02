@@ -80,8 +80,6 @@ def _reject_nonfinite(_value: str) -> None:
 def _one_json_line(raw: bytes) -> dict[str, Any]:
     try:
         decoded = raw.decode("utf-8", errors="strict")
-        if not decoded.endswith("\n") or len(decoded.splitlines()) != 1:
-            raise SourceVersionTransportError("source receipt must be one JSON line")
         value = json.loads(
             decoded, object_pairs_hook=_unique_pairs, parse_constant=_reject_nonfinite,
         )
@@ -138,9 +136,14 @@ def _validate_ref(source_ref: dict[str, Any]) -> None:
 def _run_reader(
     source_ref: dict[str, Any], config: Path, timeout_seconds: float, *,
     source_reader_receipt_version: str = "2.1",
+    reader_command: tuple[str, ...] | None = None,
 ) -> subprocess.CompletedProcess[bytes]:
+    prefix = reader_command if reader_command is not None else (
+        sys.executable, "-B", "-m", "company_wiki.source_catalog.source_reader_cli")
+    if not prefix or any(not isinstance(arg, str) or not arg.strip() for arg in prefix):
+        raise SourceVersionTransportError("invalid source reader command")
     command = [
-        sys.executable, "-B", "-m", "company_wiki.source_catalog.source_reader_cli",
+        *prefix,
         "--config", str(config),
         "--document-id", source_ref["document_id"],
         "--source-id", source_ref["source_id"],
@@ -230,7 +233,9 @@ def validate_source_reader_receipt_version(value: Any) -> str:
 
 def _validate_receipt_shape(receipt: dict[str, Any], *, source_reader_receipt_version: str = "2.1") -> None:
     expected = _RECEIPT_FIELDS if source_reader_receipt_version == "2.1" else _RECEIPT_FIELDS | {"availability_evidence"}
-    if set(receipt) != expected or receipt.get("schema_version") != source_reader_receipt_version or receipt.get("status") != "ok":
+    if (set(receipt) - {"extensions"} != expected
+            or ("extensions" in receipt and not isinstance(receipt["extensions"], dict))
+            or receipt.get("schema_version") != source_reader_receipt_version or receipt.get("status") != "ok"):
         raise SourceVersionTransportError("source receipt fields/status invalid")
 
 
@@ -246,6 +251,7 @@ def open_source_version_v2(
     *, source_ref: dict[str, Any], catalog_config: Path,
     as_of_date: str, expected_fiscal_year: int | None,
     timeout_seconds: float = 30.0, source_reader_receipt_version: str = "2.1",
+    reader_command: tuple[str, ...] | None = None,
 ) -> VerifiedOriginalRead:
     """Return one immutable verified read; historical tuple unpack remains supported."""
     version = validate_source_reader_receipt_version(source_reader_receipt_version)
@@ -253,6 +259,8 @@ def open_source_version_v2(
         source_ref, catalog_config, as_of_date, expected_fiscal_year, timeout_seconds,
     )
     reader_options = {"source_reader_receipt_version": version} if version == "2.2" else {}
+    if reader_command is not None:
+        reader_options["reader_command"] = reader_command
     opened = _run_reader(source_ref, catalog_config, timeout_seconds, **reader_options)
     if opened.returncode != 0:
         _raise_reader_refusal(opened)

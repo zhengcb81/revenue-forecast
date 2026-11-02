@@ -98,6 +98,14 @@ def _pathless(value: Any) -> None:
             _pathless(child)
 
 
+def _with_extensions(value: Any, fields: set[str], reason: str) -> dict:
+    """Only the published non-authoritative extension namespace may evolve."""
+    optional = {"extensions"} if isinstance(value, dict) and "extensions" in value else set()
+    if optional:
+        _require(isinstance(value["extensions"], dict), reason)
+    return _exact(value, fields | optional, reason)
+
+
 def _exact(value: Any, fields: set[str], reason: str) -> dict:
     _require(isinstance(value, dict) and set(value) == fields, reason)
     return value
@@ -307,7 +315,7 @@ def _manifest(receipt: dict, request: dict) -> dict:
 
 def _receipt(receipt: dict, request: dict) -> dict:
     optional = {"availability_evidence"} if "availability_evidence" in receipt else set()
-    _exact(receipt, RECEIPT_FIELDS | optional, "invalid_read_receipt")
+    _with_extensions(receipt, RECEIPT_FIELDS | optional, "invalid_read_receipt")
     _require(receipt["schema_version"] == "narrative-read-receipt/1", "unsupported_read_receipt")
     _require(receipt["status"] == "ok" and receipt["replay_status"] == "verified", "unverified_read_receipt")
     validate_narrative_ref(receipt["narrative_ref"])
@@ -1012,10 +1020,13 @@ def _reading_extension(bundle: dict) -> dict:
 
 
 def _bundle_fields(bundle: dict, base: set[str]) -> None:
-    optional = {"reading_context", "summary_assessment", "prompt_review"}
+    optional = {"reading_context", "summary_assessment", "prompt_review", "extensions"}
     required = base - optional
     _require(isinstance(bundle, dict) and required <= bundle.keys()
              and bundle.keys() <= required | optional, "invalid_narrative_bundle")
+
+    if "extensions" in bundle:
+        _require(isinstance(bundle["extensions"], dict), "invalid_narrative_extensions")
 
 
 def _bundle(body: bytes, request: dict, receipt: dict, manifest: dict) -> dict:
@@ -1023,7 +1034,6 @@ def _bundle(body: bytes, request: dict, receipt: dict, manifest: dict) -> dict:
     _require(len(body) == ref["byte_size"] and hashlib.sha256(body).hexdigest() == ref["artifact_sha256"],
              "artifact_bytes_mismatch")
     bundle = decode_object(body, limit=BODY_LIMIT)
-    _require(canonical_bytes(bundle) == body, "noncanonical_bundle")
     _bundle_fields(bundle, BUNDLE_FIELDS)
     _require(bundle["schema_version"] in {"narrative-bundle/2.0", "narrative-bundle/2.1"}, "unsupported_narrative_bundle")
     _require(bundle["source_ref"] == ref["source_ref"] and _sha(bundle["expected_read_policy_sha256"]),
@@ -1262,7 +1272,7 @@ def _projected_summary(value: Any, subject: dict, spans: dict[str, dict], langua
 
 
 def _projected_receipt(receipt: dict, request: dict) -> None:
-    _exact(receipt, PROJECTED_RECEIPT_FIELDS, "invalid_read_receipt")
+    _with_extensions(receipt, PROJECTED_RECEIPT_FIELDS, "invalid_read_receipt")
     _require(receipt["schema_version"] == "narrative-read-receipt/3" and receipt["status"] == "ok" and
              receipt["replay_status"] == "verified", "unverified_read_receipt")
     validate_narrative_ref(receipt["narrative_ref"])
@@ -1276,7 +1286,6 @@ def _projection_bundle(body: bytes, ref: dict) -> dict:
     _require(len(body) == ref["byte_size"] and hashlib.sha256(body).hexdigest() == ref["artifact_sha256"],
              "artifact_bytes_mismatch")
     bundle = decode_object(body, limit=BODY_LIMIT)
-    _require(canonical_bytes(bundle) == body, "noncanonical_bundle")
     fields = (BUNDLE_FIELDS - {"source_ref", "expected_read_policy_sha256", "transcript_lineage",
                              "transcript_byte_bindings"}) | {"subject_binding"}
     _bundle_fields(bundle, fields)
@@ -1346,7 +1355,7 @@ def validate_reference_response(request: dict, body: bytes, receipt_bytes: bytes
     request = validate_reference_request(request)
     ref = validate_narrative_ref(decode_object(body, limit=REQUEST_LIMIT))
     receipt = decode_object(receipt_bytes, limit=RECEIPT_LIMIT, one_line=True)
-    _exact(receipt, {"schema_version", "status", "narrative_ref"}, "invalid_reference_receipt")
+    _with_extensions(receipt, {"schema_version", "status", "narrative_ref"}, "invalid_reference_receipt")
     projected = request["schema_version"] == "narrative-reference-request/3"
     _require(receipt["schema_version"] == ("narrative-read-receipt/3" if projected else "narrative-read-receipt/1") and
              receipt["status"] == "metadata_only" and receipt["narrative_ref"] == ref,

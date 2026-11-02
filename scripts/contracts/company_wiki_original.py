@@ -172,8 +172,10 @@ def validate_receipt(receipt_value: Any, ref: dict[str, Any]) -> dict[str, Any]:
         if receipt.get("schema_version") == "2.1"
         else _RECEIPT_FIELDS | {"availability_evidence"}
     )
-    if receipt.get("schema_version") not in {"2.1", "2.2"} or set(receipt) != expected:
+    if receipt.get("schema_version") not in {"2.1", "2.2"} or set(receipt) - {"extensions"} != expected:
         raise OriginalProvenanceError("source read receipt fields/schema are invalid")
+    if "extensions" in receipt and not isinstance(receipt["extensions"], dict):
+        raise OriginalProvenanceError("source receipt extensions must be an object")
     if receipt.get("status") != "ok":
         raise OriginalProvenanceError("source read receipt is not successful")
     for field in ("document_id", "source_id", "content_sha256", "byte_size"):

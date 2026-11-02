@@ -112,7 +112,11 @@ def _dag_ancestors(role: str) -> list[str]:
     imported ROLE_DEPENDENCIES: ROLE_DEPENDENCIES[role] IS the direct parent
     list, walked transitively.  A role is read ONLY when every ancestor is
     also reusable (AR-03: a changed normalized invalidates its dependents)."""
-    from company_wiki.source_catalog.artifact_dag import ROLE_DEPENDENCIES
+    # Frozen public legacy /1 role vocabulary. Current producer implementation
+    # is deliberately not imported; production source preparation uses /2 raw.
+    ROLE_DEPENDENCIES = {"normalized": (), "markdown": ("normalized",),
+        "summary": ("normalized",), "sections": ("normalized",),
+        "consumer_analysis": ("summary",)}
 
     result: list[str] = []
     seen: set[str] = set()
