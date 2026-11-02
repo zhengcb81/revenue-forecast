@@ -13,3 +13,8 @@
 ROOT独审通过：当前组合39P/0skip，公开端点替换、预算链、真实只读和定点安装均实测。参见总控review/decoupling-20261102；未提前派发仓内业务。
 
 D3收尾格式补漏：回执的单行/末尾换行不作许可；仍拒绝多对象、重复键和错误实际SHA。RED已复现，RF75项、ROOT双消费者20项增量通过；两个运行文件定点同步、重复零写。
+
+
+## 2026-11-02 — 全面复核校正
+
+ROOT三独立审查与小探针确认六项解耦遗漏，原D3覆盖范围不足以说明全局完成。本仓业务状态改为DEFERRED_UNTIL_D4_CLOSURE；本次仅更新计划，未实施产品改造。本仓实际摘要consume与两工具漏接可替换端点，归ROOT D4-02。完整报告：C:/Users/郑曾波/Projects/company-wiki/docs/plans/du11-source-closure-2026-10-18/review/decoupling-recheck-20261102/README.md。保留原研究/attempt未完责任及既有WIP。

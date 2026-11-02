@@ -11,3 +11,8 @@
 ## D3责任接口（2026-11-02）
 
 RF原文/摘要公开命令可独立替换，FF连接适配器统一六操作，CWP拥有真实字节/入库，ET负责实际provider计量。消费者普通测试不检出上游或读其库。核心SHA/身份/期次/版本保留，JSON排版、重复固定预算和历史人工签收不作新许可。
+
+
+## 2026-11-02 — 全面复核校正
+
+ROOT三独立审查与小探针确认六项解耦遗漏，原D3覆盖范围不足以说明全局完成。本仓业务状态改为DEFERRED_UNTIL_D4_CLOSURE；本次仅更新计划，未实施产品改造。本仓实际摘要consume与两工具漏接可替换端点，归ROOT D4-02。完整报告：C:/Users/郑曾波/Projects/company-wiki/docs/plans/du11-source-closure-2026-10-18/review/decoupling-recheck-20261102/README.md。保留原研究/attempt未完责任及既有WIP。
