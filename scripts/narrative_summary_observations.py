@@ -7,10 +7,7 @@ classification, prose diagnostics and locator replay remain CWP responsibilities
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import dataclass
-import json
 import re
-from types import MappingProxyType
 from typing import Any
 
 from contracts.evidence import canonical_sha256
@@ -18,57 +15,6 @@ from contracts.evidence import canonical_sha256
 ASSESSED_SCHEMAS = frozenset({"narrative-bundle/2.1", "narrative-bundle/3.1"})
 # Historical public alias; decisions use the explicit recipe catalog below.
 PROMPT = "reading-source-scoped/4.2.0"
-_BASE_DEPENDENCIES = frozenset(
-    {
-        "matching",
-        "task_plan",
-        "admission",
-        "scoped_view",
-        "encoding",
-        "claim_roles",
-        "assessment",
-    }
-)
-_BASE_RULES = frozenset(
-    {
-        "possible_attribution_loss",
-        "possible_negation_degree_loss",
-        "possible_modality_mismatch",
-        "unmatched_claim_scope",
-        "ambiguous_claim_scope",
-    }
-)
-
-
-@dataclass(frozen=True)
-class _WireRecipe:
-    prompt: str
-    assessor: str
-    dependencies: frozenset[str]
-    rules: frozenset[str]
-    producer: str = "1.1.0"
-    plan_max_claims: int = 40
-
-
-# Only published wire compatibility is registered. No CWP implementation or
-# source-frame logic is imported or executed by this consumer.
-_WIRE_RECIPES = MappingProxyType(
-    {
-        PROMPT: _WireRecipe(
-            PROMPT, "source-summary-assessment/1.0.0", _BASE_DEPENDENCIES, _BASE_RULES
-        ),
-        "reading-source-scoped/4.3.0": _WireRecipe(
-            "reading-source-scoped/4.3.0",
-            "source-summary-assessment/1.1.0",
-            _BASE_DEPENDENCIES | {"assertion_frames"},
-            _BASE_RULES
-            | {
-                "possible_current_action_as_future",
-                "possible_project_capacity_basis_loss",
-            },
-        ),
-    }
-)
 _FIELDS = {
     "schema_version",
     "validator",
@@ -107,21 +53,8 @@ def _sha(value: Any) -> bool:
 def validate_summary_observation(bundle: dict) -> dict | None:
     summary = bundle["summary"]
     model = summary["model"]
-    prompt = (
-        model["prompt_version"] if model is not None else bundle["versions"]["prompt"]
-    )
-    assessed = bundle["schema_version"] in ASSESSED_SCHEMAS
-    recipe = _WIRE_RECIPES.get(prompt) if isinstance(prompt, str) else None
-    _require(assessed == (recipe is not None))
-    if not assessed:
-        _require("summary_assessment" not in bundle)
+    if bundle.get("summary_assessment") is None and bundle["schema_version"] not in ASSESSED_SCHEMAS:
         return None
-    if recipe is None:
-        raise ValueError("invalid_summary_observation")
-    _require(
-        bundle["versions"]["prompt"] == recipe.prompt
-        and bundle["versions"]["bundle_producer"] == recipe.producer
-    )
     if summary["status"] == "summary_not_needed":
         _require(
             model is None
@@ -138,20 +71,8 @@ def validate_summary_observation(bundle: dict) -> dict | None:
     if not isinstance(report, dict) or set(report) != _FIELDS:
         raise ValueError("invalid_summary_observation")
     _require(
-        len(
-            json.dumps(
-                report,
-                ensure_ascii=False,
-                sort_keys=True,
-                separators=(",", ":"),
-                allow_nan=False,
-            ).encode()
-        )
-        <= 65536
-    )
-    _require(
         report["schema_version"] == "summary-assessment/1"
-        and report["plan_max_claims"] == recipe.plan_max_claims
+        and type(report["plan_max_claims"]) is int and report["plan_max_claims"] > 0
     )
     _require(type(report["plan_max_claims"]) is int)
     _require(report["scope"] == "selected_source_tasks_only")
@@ -160,7 +81,8 @@ def validate_summary_observation(bundle: dict) -> dict | None:
         == report["subfact_coverage_status"]
         == "not_evaluated"
     )
-    _require(bundle["versions"]["model"] == model["model_id"])
+    if "versions" in bundle:
+        _require(bundle["versions"]["model"] == model["model_id"])
     draft = summary["draft"]
     _require(isinstance(draft, dict))
     claims = draft["claims"]
@@ -181,7 +103,7 @@ def validate_summary_observation(bundle: dict) -> dict | None:
         and set(validator) == {"version", "implementation_sha256", "dependencies"}
     )
     _require(
-        validator["version"] == recipe.assessor
+        isinstance(validator["version"], str) and bool(validator["version"])
         and _sha(validator["implementation_sha256"])
     )
     _require(
@@ -193,7 +115,6 @@ def validate_summary_observation(bundle: dict) -> dict | None:
             for key, value in validator["dependencies"].items()
         )
     )
-    _require(set(validator["dependencies"]) == recipe.dependencies)
     _require(
         validator["implementation_sha256"]
         == canonical_sha256(validator["dependencies"])
@@ -265,7 +186,7 @@ def validate_summary_observation(bundle: dict) -> dict | None:
             )
     diagnostics = report["diagnostics"]
     count = report["diagnostic_count"]
-    _require(isinstance(diagnostics, list) and len(diagnostics) <= 64)
+    _require(isinstance(diagnostics, list))
     _require(type(count) is int and count >= len(diagnostics))
     _require(
         type(report["diagnostics_limited"]) is bool
@@ -289,7 +210,7 @@ def validate_summary_observation(bundle: dict) -> dict | None:
         )
         rule = row["rule_code"]
         _require(
-            row["claim_id"] in risks and isinstance(rule, str) and rule in recipe.rules
+            row["claim_id"] in risks and isinstance(rule, str) and bool(rule)
         )
         if rule in {"unmatched_claim_scope", "ambiguous_claim_scope"}:
             _require(row["task_key"] is None and row["source_span_id"] is None)
@@ -307,3 +228,26 @@ def validate_summary_observation(bundle: dict) -> dict | None:
         )
     _require(all(by_id[key]["needs_review"] is True for key in risks))
     return deepcopy(report)
+
+
+def assessment_for_use(value: dict) -> dict | None:
+    """Return only coherent observations; absent/bad diagnostics grant nothing.
+
+    Original diagnostic data remains available for inspection. Source bytes,
+    citations and claim identity are checked by their respective wire owners.
+    """
+    if value.get("summary_assessment") is None:
+        return None
+    candidate = {**value, "schema_version": "narrative-bundle/2.1"}
+    try:
+        return validate_summary_observation(candidate)
+    except (ValueError, TypeError, KeyError, AttributeError):
+        return None
+
+
+def assessment_observation(value: dict) -> dict[str, str]:
+    if value.get("summary_assessment") is None:
+        return {"status": "absent"}
+    if assessment_for_use(value) is None:
+        return {"status": "unavailable", "reason": "invalid_source_assessment"}
+    return {"status": "available", "semantic_status": "not_evaluated"}

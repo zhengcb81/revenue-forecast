@@ -471,17 +471,11 @@ def run_forecast(data: dict[str, Any], *, mode: str = "formal") -> dict[str, Any
     result["result_sha256"] = canonical_sha256(result)
     if mode == "formal":
         validate_publication_receipt(result)
-        # R1.2 (N-01): a formal publication is only real once it is registered —
-        # the registry is the artifact-external authority.  A missing or
-        # unwritable registry fails the whole publication (fail closed).
-        from publication_registry import RegistryError, register_publication
-
-        try:
-            register_publication(result)
-        except RegistryError as exc:
-            raise ForecastInputError(
-                f"formal publication failed: registry unavailable: {exc}"
-            ) from exc
+        # A self-contained validated artifact is usable independently of the
+        # rebuildable discovery index. Its owner returns a diagnostic on I/O
+        # failure; no history-wide permission or signing requirement is added.
+        from publication_registry import register_publication
+        register_publication(result)
     return result
 
 

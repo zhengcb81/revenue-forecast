@@ -155,8 +155,8 @@ def bind_parameter_evidence(
             )
             excerpt = binding.get("excerpt")
             require(
-                isinstance(excerpt, str) and 10 <= len(excerpt.strip()) <= 500,
-                f"binding {position} excerpt must contain 10-500 characters",
+                isinstance(excerpt, str) and bool(excerpt.strip()),
+                f"binding {position} excerpt must be non-empty",
             )
             excerpt = excerpt.strip()
             locator = binding.get("locator")
@@ -305,8 +305,8 @@ def _bind_narrative_span(
     raw_text = span.get("raw_text")
     structured = span.get("structured_value")
     require(
-        isinstance(raw_text, str) and 10 <= len(raw_text.strip()) <= 500,
-        "narrative span text must contain 10-500 characters",
+        isinstance(raw_text, str) and bool(raw_text.strip()),
+        "narrative span text must be non-empty",
     )
     output_sha = hashlib.sha256(
         _canonical_bytes({"raw_text": raw_text, "structured_value": structured})

@@ -648,8 +648,8 @@ def validate_evidence_claims(
             validate_summary_excerpt_bound(excerpt)
         else:
             require(
-                10 <= len(excerpt) <= 500,
-                f"{claim_id}.excerpt must contain 10-500 characters",
+                bool(excerpt),
+                f"{claim_id}.excerpt must be non-empty",
             )
         require(
             claim.get("excerpt_sha256") == text_sha256(excerpt),

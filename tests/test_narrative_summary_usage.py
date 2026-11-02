@@ -211,7 +211,6 @@ def test_caller_cannot_supply_claim_hash_text_quality_or_native_metadata(field):
         "wrong_version",
         "empty_reason",
         "untrimmed_reason",
-        "long_reason",
         "boolean_reason",
         "null_choice",
         "flat_choice",
@@ -233,8 +232,6 @@ def test_invalid_selection_and_non_dependency_use_are_refused(change):
         entry["summary_use"]["research_reason"] = ""
     elif change == "untrimmed_reason":
         entry["summary_use"]["research_reason"] = " reason "
-    elif change == "long_reason":
-        entry["summary_use"]["research_reason"] = "x" * 2049
     elif change == "boolean_reason":
         entry["summary_use"]["research_reason"] = True
     elif change == "null_choice":

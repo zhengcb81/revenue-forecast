@@ -144,7 +144,7 @@ def test_du_production_reading_v3_accepts_bounded_trace_diagnostics_and_proofs()
     "unknown_bare_diagnostic", "invalid_schema_type",
     "boolean_count", "bad_proof_page", "unbound_proof", "partial_proof_fields",
 ])
-def test_du_production_reading_v3_rejects_bad_trace_diagnostics_and_proofs(mutation):
+def test_v3_source_relations_are_verified_and_bad_diagnostics_are_observations(mutation):
     def upgrade(reading):
         _upgrade_to_v3(reading)
         left, right = _unit_id(100), _unit_id(101)
@@ -174,8 +174,18 @@ def test_du_production_reading_v3_rejects_bad_trace_diagnostics_and_proofs(mutat
             group["source_proofs"][0]["right"] = _unit_id(102)
         else:
             del group["source_proof_target_unit_ids"]
-    with pytest.raises(NarrativeTransportError):
-        validate_narrative_response(*changed(upgrade))
+    wire = changed(upgrade)
+    if mutation in {"missing_trace", "extra_trace", "unbound_span", "trace_path",
+                    "unknown_diagnostic", "unknown_bare_diagnostic", "boolean_count"}:
+        value = validate_narrative_response(*wire).to_dict()
+        original = json.loads(wire[1])
+        assert value["evidence_spans"] == original["evidence_spans"]
+        assert value["summary"] == original["summary"]
+        expected = "absent" if mutation == "missing_trace" else "unavailable"
+        assert any(row["status"] == expected for row in value["reading_diagnostic_observations"])
+    else:
+        with pytest.raises(NarrativeTransportError):
+            validate_narrative_response(*wire)
 
 
 def _fit_reading_size(reading, target):
@@ -192,7 +202,7 @@ def _fit_reading_size(reading, target):
     raise AssertionError("unable to fit reading context to its wire bound")
 
 
-def test_reading_context_accepts_published_bound_and_refuses_one_byte_over():
+def test_reading_context_representation_size_is_not_a_source_permission():
     def exact(reading):
         _upgrade_to_v3(reading)
         _fit_reading_size(reading, 192 * 1024)
@@ -200,8 +210,7 @@ def test_reading_context_accepts_published_bound_and_refuses_one_byte_over():
     def over(reading):
         _upgrade_to_v3(reading)
         _fit_reading_size(reading, 192 * 1024 + 1)
-    with pytest.raises(NarrativeTransportError, match="reading_bytes_limit"):
-        validate_narrative_response(*changed(over))
+    assert validate_narrative_response(*changed(over)).to_dict()["reading_context"]
 
 
 def test_actual_080_wire_keeps_legacy_context_shape():
@@ -374,14 +383,20 @@ def test_shared_reading_shape_and_reference_errors_are_explicit(mutation):
         else:
             context["unread"]["opaque_pages"] = [True]
 
-    with pytest.raises(NarrativeTransportError):
-        validate_narrative_response(*changed(mutate))
+    if mutation in {"raw_body", "unknown_diagnostic"}:
+        value = validate_narrative_response(*changed(mutate)).to_dict()
+        assert value["evidence_spans"]
+        if mutation == "unknown_diagnostic":
+            assert value["reading_diagnostic_observations"][0]["status"] == "unavailable"
+    else:
+        with pytest.raises(NarrativeTransportError):
+            validate_narrative_response(*changed(mutate))
 
 
 @pytest.mark.parametrize(
     "bound", ["depth", "nodes", "bytes", "string", "groups", "policies", "facets"]
 )
-def test_reading_context_resource_bounds_are_distinct_contract_errors(bound):
+def test_reading_representation_has_no_quota_but_duplicate_identity_stays_invalid(bound):
     def mutate(context):
         if bound == "depth":
             nested = None
@@ -401,8 +416,12 @@ def test_reading_context_resource_bounds_are_distinct_contract_errors(bound):
         else:
             context["business_facets"] *= 17
 
-    with pytest.raises(NarrativeTransportError, match="reading_.*limit"):
-        validate_narrative_response(*changed(mutate))
+    if bound == "groups":
+        # Repeating the same identity is still invalid, independently of size.
+        with pytest.raises(NarrativeTransportError, match="duplicate_reading_group"):
+            validate_narrative_response(*changed(mutate))
+    else:
+        assert validate_narrative_response(*changed(mutate)).to_dict()["reading_context"]
 
 
 def test_unsampled_earlier_du1_shape_is_explicitly_supported_without_promoting_coverage():

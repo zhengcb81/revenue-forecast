@@ -21,7 +21,6 @@ from publication_registry import (  # noqa: E402
     register_publication,
 )
 from revenue_core import (  # noqa: E402
-    ForecastInputError,
     canonical_sha256,
     run_forecast,
 )
@@ -77,15 +76,15 @@ class PublicationRegistryTests(unittest.TestCase):
             lookup(result["input_sha256"])
         self.assertTrue(any("hash mismatch" in p for p in audit()))
 
-    def test_formal_publication_fails_when_registry_unavailable(self) -> None:
+    def test_formal_publication_survives_unavailable_rebuildable_index(self) -> None:
         # RED (R1.2 #4): an unwritable registry must fail the whole formal
         # publication — never silently skip registration.
         blocking = Path(self._temporary.name) / "blocking" / "sub"
         blocking.parent.mkdir(parents=True)
         blocking.write_text("not a directory", encoding="utf-8")
         os.environ["REVENUE_PUBLICATION_REGISTRY"] = str(blocking / "registry")
-        with self.assertRaisesRegex(ForecastInputError, "registry unavailable"):
-            run_forecast(forecast_document())
+        result = run_forecast(forecast_document())
+        self.assertEqual(result["publication_receipt"]["formal_output_mode"], "formal")
 
     def test_audit_reports_unregistered_claim(self) -> None:
         # An artifact anchored to an input that was never registered must be

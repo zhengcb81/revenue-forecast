@@ -14,7 +14,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from company_wiki_narrative_contracts import (  # noqa: E402
-    RECEIPT_LIMIT, NarrativeTransportError, canonical_bytes, validate_narrative_response,
+    NarrativeTransportError, canonical_bytes, validate_narrative_response,
 )
 from company_wiki_narrative_reader import read_narrative_context  # noqa: E402
 from test_company_wiki_narrative_reader import _resign, _valid  # noqa: E402
@@ -177,14 +177,14 @@ def test_new_proof_does_not_replace_existing_source_or_request_binding(mutation,
         validate_narrative_response(request, body, canonical_bytes(receipt) + b"\n")
 
 
-def test_only_named_optional_receipt_key_is_admitted_and_size_limit_remains():
+def test_only_named_optional_receipt_key_is_admitted_independent_of_size():
     request, body, raw = _wire(proof=_valid_proof())
     receipt = json.loads(raw)
     receipt["unexpected"] = True
     with pytest.raises(NarrativeTransportError, match="invalid_read_receipt"):
         validate_narrative_response(request, body, canonical_bytes(receipt) + b"\n")
-    receipt["unexpected"] = "x" * RECEIPT_LIMIT
-    with pytest.raises(NarrativeTransportError, match="wire_size_limit"):
+    receipt["unexpected"] = "x" * (16 * 1024 + 1)
+    with pytest.raises(NarrativeTransportError, match="invalid_read_receipt"):
         validate_narrative_response(request, body, canonical_bytes(receipt) + b"\n")
     duplicate = raw.replace(b'"availability_evidence":', b'"availability_evidence":null,"availability_evidence":', 1)
     with pytest.raises(NarrativeTransportError, match="duplicate_json_key"):

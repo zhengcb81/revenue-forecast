@@ -9,7 +9,6 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from company_wiki_narrative_contracts import (  # noqa: E402
     validate_narrative_response,
-    NarrativeTransportError,
 )
 from source_narrative_context import narrative_read_receipt  # noqa: E402
 from contracts.evidence import canonical_sha256  # noqa: E402
@@ -96,7 +95,7 @@ def test_assessment_is_preserved_as_source_observation_not_rf_semantic_verdict()
 @pytest.mark.parametrize(
     "mutation", ["missing", "legacy", "claims", "producer", "semantics", "risk_quality"]
 )
-def test_invalid_observation_envelope_is_refused_without_source_reparse(mutation):
+def test_invalid_observation_is_reported_without_rejecting_source(mutation):
     request, bundle, receipt = assessed_wire()
     if mutation == "missing":
         del bundle["summary_assessment"]
@@ -124,8 +123,19 @@ def test_invalid_observation_envelope_is_refused_without_source_reparse(mutation
                 }
             ],
         )
-    with pytest.raises(NarrativeTransportError):
-        read(request, bundle, receipt)
+    value = read(request, bundle, receipt).to_dict()
+    assert value["evidence_spans"] == bundle["evidence_spans"]
+    observation = value["summary_assessment_observation"]
+    expected_status = {'missing': 'absent', 'legacy': 'absent', 'claims': 'unavailable', 'producer': 'available', 'semantics': 'unavailable', 'risk_quality': 'unavailable'}
+    assert observation["status"] == expected_status[mutation]
+    if observation["status"] == "unavailable":
+        assert value["summary_assessment"] is None
+        assert value["provided_summary_assessment"] == bundle["summary_assessment"]
+    elif observation["status"] == "available":
+        assert value["summary_assessment"]["semantic_status"] == "not_evaluated"
+    if bundle["summary"].get("draft") and bundle["summary"]["draft"]["status"] == "needs_review":
+        assert value["quality_status"] == "needs_review"
+
 
 
 def test_projected_context_preserves_observations_without_a_new_context_variant():
@@ -191,7 +201,7 @@ def test_skipped_new_protocol_does_not_fabricate_a_model_or_assessment():
         "skip_model",
     ],
 )
-def test_published_wire_invariants_remain_permanent_regressions(mutation):
+def test_diagnostic_mutations_never_gain_source_or_semantic_authority(mutation):
     request, bundle, receipt = assessed_wire()
     report = bundle["summary_assessment"]
     if mutation == "dependency_key":
@@ -264,8 +274,19 @@ def test_published_wire_invariants_remain_permanent_regressions(mutation):
             selection_status="skipped_no_narrative",
             quality_status="skipped_no_narrative",
         )
-    with pytest.raises(NarrativeTransportError):
-        read(request, bundle, receipt)
+    value = read(request, bundle, receipt).to_dict()
+    assert value["evidence_spans"] == bundle["evidence_spans"]
+    observation = value["summary_assessment_observation"]
+    expected_status = {'dependency_key': 'available', 'dependency_hash': 'unavailable', 'excluded_status': 'unavailable', 'excluded_overlap': 'unavailable', 'excluded_reason': 'unavailable', 'excluded_representative': 'unavailable', 'diagnostic_rule': 'available', 'diagnostic_task': 'unavailable', 'diagnostic_span': 'unavailable', 'diagnostic_null_scope': 'unavailable', 'quality_laundering': 'unavailable', 'skip_model': 'absent'}
+    assert observation["status"] == expected_status[mutation]
+    if observation["status"] == "unavailable":
+        assert value["summary_assessment"] is None
+        assert value["provided_summary_assessment"] == bundle["summary_assessment"]
+    elif observation["status"] == "available":
+        assert value["summary_assessment"]["semantic_status"] == "not_evaluated"
+    if bundle["summary"].get("draft") and bundle["summary"]["draft"]["status"] == "needs_review":
+        assert value["quality_status"] == "needs_review"
+
 
 
 def recipe_wire(prompt, *, projected=False):
@@ -359,7 +380,7 @@ def test_recipe_skip_has_null_model_and_assessment(prompt, projected):
         "quality_laundering",
     ],
 )
-def test_recipe_tuple_cannot_mix_versions_or_dependency_sets(prompt, mutation):
+def test_source_algorithm_versions_are_observations_not_consumer_permissions(prompt, mutation):
     request, bundle, receipt = recipe_wire(prompt)
     validator = bundle["summary_assessment"]["validator"]
     atomic = prompt == "reading-source-scoped/4.3.0"
@@ -385,8 +406,19 @@ def test_recipe_tuple_cannot_mix_versions_or_dependency_sets(prompt, mutation):
     else:
         bundle["summary"]["draft"]["status"] = "needs_review"
     validator["implementation_sha256"] = canonical_sha256(validator["dependencies"])
-    with pytest.raises(NarrativeTransportError):
-        read(request, bundle, receipt)
+    value = read(request, bundle, receipt).to_dict()
+    assert value["evidence_spans"] == bundle["evidence_spans"]
+    observation = value["summary_assessment_observation"]
+    expected_status = {'other_assessor': 'available', 'other_recipe_dependencies': 'available', 'missing_dependency': 'available', 'extra_dependency': 'available', 'unknown_prompt': 'available', 'quality_laundering': 'unavailable'}
+    assert observation["status"] == expected_status[mutation]
+    if observation["status"] == "unavailable":
+        assert value["summary_assessment"] is None
+        assert value["provided_summary_assessment"] == bundle["summary_assessment"]
+    elif observation["status"] == "available":
+        assert value["summary_assessment"]["semantic_status"] == "not_evaluated"
+    if bundle["summary"].get("draft") and bundle["summary"]["draft"]["status"] == "needs_review":
+        assert value["quality_status"] == "needs_review"
+
 
 
 @pytest.mark.parametrize(
@@ -428,19 +460,11 @@ def test_diagnostic_rules_belong_to_their_explicit_assessor(prompt, rule):
             }
         ],
     )
-    if prompt == "reading-source-scoped/4.2.0" and rule in {
-        "possible_current_action_as_future",
-        "possible_project_capacity_basis_loss",
-    }:
-        with pytest.raises(NarrativeTransportError):
-            read(request, bundle, receipt)
-    else:
-        context = read(request, bundle, receipt)
-        observed = narrative_read_receipt(context)
-        assert observed["summary_assessment"] == report
-        assert observed["summary_assessment"]["semantic_status"] == "not_evaluated"
-        assert observed["quality_status"] == "needs_review"
-        assert observed["status"] == "not_consumed"
+    context = read(request, bundle, receipt)
+    observed = narrative_read_receipt(context)
+    assert observed["summary_assessment"] == report
+    assert observed["summary_assessment"]["semantic_status"] == "not_evaluated"
+    assert observed["quality_status"] == "needs_review"
 
 
 @pytest.mark.parametrize(

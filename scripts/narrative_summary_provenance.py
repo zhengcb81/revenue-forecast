@@ -1,4 +1,4 @@
-"""Bounded RF evidence DTO for an actually read, explicitly adopted summary.
+"""RF evidence DTO for an actually read, explicitly adopted summary.
 
 The source adapter constructs this from the verified public reader exactly once.
 Calculation/publication only revalidate the frozen RF data; they never reopen a
@@ -8,7 +8,6 @@ local consistency, not external authenticity independently of the source reader.
 """
 
 from copy import deepcopy
-import json
 
 from company_wiki_narrative_contracts import (
     NarrativeTransportError,
@@ -22,12 +21,11 @@ from forecast.dependencies import parameter_formula_refs
 from narrative_citation_context import resolve_span, citation_dependency
 from narrative_summary_usage import (
     SummaryUsageError,
-    MAX_REASON_CHARS,
     validate_summary_scope,
 )
 
 SCHEMA = "revenue-summary-provenance/1"
-MAX_BYTES = 128 * 1024
+MAX_BYTES = None  # Historical public name, no representation permission.
 FIELDS = {
     "schema_version",
     "narrative_ref",
@@ -76,7 +74,8 @@ def build_summary_provenance(value, entry):
             "groups": [g for g in reading["groups"] if g["group_id"] == group_id],
         }
     )
-    assessment = value.get("summary_assessment") or {}
+    from narrative_summary_observations import assessment_for_use
+    assessment = assessment_for_use(value) or {}
     return deepcopy(
         {
             "schema_version": SCHEMA,
@@ -107,8 +106,7 @@ def validate_summary_excerpt_bound(excerpt):
     through validate_summary_provenance. Reuse its existing full-proof byte
     limit rather than introduce another source selection or model budget.
     """
-    _require(10 <= len(excerpt) and len(excerpt.encode("utf-8")) <= MAX_BYTES,
-             "excerpt_byte_bound")
+    _require(isinstance(excerpt, str) and bool(excerpt.strip()), "excerpt_empty")
 
 
 def validate_summary_provenance(data, claim, source, parameters):
@@ -121,11 +119,6 @@ def validate_summary_provenance(data, claim, source, parameters):
         and set(proof) == FIELDS
         and proof.get("schema_version") == SCHEMA,
         "schema",
-    )
-    _require(
-        len(json.dumps(proof, ensure_ascii=False, allow_nan=False).encode())
-        <= MAX_BYTES,
-        "byte_bound",
     )
     ref = _wire(validate_narrative_ref, proof["narrative_ref"])
     parent = _wire(validate_source_ref, proof["source_ref"])
@@ -221,8 +214,7 @@ def validate_summary_provenance(data, claim, source, parameters):
     _require(
         isinstance(reason, str)
         and bool(reason)
-        and reason == reason.strip()
-        and len(reason) <= MAX_REASON_CHARS,
+        and reason == reason.strip(),
         "reason",
     )
     sid = entry.get("span_id")

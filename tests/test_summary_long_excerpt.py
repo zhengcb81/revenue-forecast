@@ -74,36 +74,39 @@ def test_complete_long_summary_anchor_validates_without_clipping(length, prefix)
     assert text.endswith(' Expansion remains a future plan.')
 
 
-@pytest.mark.parametrize('fault', ['no_proof', 'empty_proof', 'foreign_text', 'missing_context'])
+@pytest.mark.parametrize('fault', ['empty_proof', 'foreign_text', 'missing_context'])
 def test_long_excerpt_cannot_bypass_complete_provenance_validation(fault):
     updated, claim, _ = long_summary_input(519)
-    if fault == 'no_proof':
-        claim.pop('narrative_summary_use')
-    elif fault == 'empty_proof':
+    if fault == 'empty_proof':
         claim['narrative_summary_use'] = {}
     elif fault == 'foreign_text':
         claim['excerpt'] += ' This is an unsupported additional assertion.'
         claim['excerpt_sha256'] = text_sha256(claim['excerpt'])
     else:
         claim['narrative_summary_use']['evidence_spans'] = []
-    expected = {'no_proof': '10-500 characters', 'empty_proof': 'summary_provenance_schema',
+    expected = {'empty_proof': 'summary_provenance_schema',
         'foreign_text': 'summary_provenance_anchor', 'missing_context': 'summary_provenance_scope'}
     with pytest.raises(ValueError, match=expected[fault]):
         validate_document(updated)
 
 
-def test_existing_full_proof_byte_bound_still_applies():
+def test_large_tampered_summary_is_rejected_by_provenance_not_representation():
     updated, claim, _ = long_summary_input(519)
-    from narrative_summary_provenance import MAX_BYTES
-    claim['narrative_summary_use']['summary_claim']['text'] = 'x' * MAX_BYTES
-    with pytest.raises(ValueError, match='summary_provenance_byte_bound'):
+    claim['narrative_summary_use']['summary_claim']['text'] = 'x' * (128 * 1024 + 1)
+    with pytest.raises(ValueError, match='summary_provenance_'):
         validate_document(updated)
 
 
-def test_long_source_anchor_does_not_replace_byte_bound_with_character_count():
+def test_large_tampered_multibyte_anchor_is_rejected_by_source_binding():
     updated, claim, _ = long_summary_input(519)
-    from narrative_summary_provenance import MAX_BYTES
-    claim['excerpt'] = '界' * (MAX_BYTES // 3 + 1)
+    claim['excerpt'] = '界' * (128 * 1024 // 3 + 1)
     claim['excerpt_sha256'] = text_sha256(claim['excerpt'])
-    with pytest.raises(ValueError, match='summary_provenance_excerpt_byte_bound'):
+    with pytest.raises(ValueError, match='summary_provenance_anchor'):
         validate_document(updated)
+
+
+def test_source_claim_without_optional_summary_use_is_not_a_summary_adoption_claim():
+    updated, claim, _ = long_summary_input(519)
+    claim.pop("narrative_summary_use")
+    validate_document(updated)
+    assert "narrative_summary_use" not in claim

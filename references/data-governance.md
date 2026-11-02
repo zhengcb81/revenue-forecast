@@ -36,7 +36,7 @@ Source rank does not directly raise forecast confidence. Confidence uses revenue
 
 Growth-driver evidence uses the same checked claim registry as numerical parameters; do not create a parallel citation system. Search-result snippets, unsourced summaries, and model-generated text are discovery leads, not evidence claims. Product reviews, channel stock-outs, weather, peer performance, and similar observations may support an indirect node only when their inference distance is disclosed and the causal bridge to the company's modeled revenue driver is explicit.
 
-Do not connect parameters directly to a URL and call that evidence. Register a claim with target identity, locator, short checked excerpt, excerpt hash, retrieved-content hash, verification status/person/date, and extracted value/unit/period where applicable. The claim source must also be registered on the target parameter.
+Do not connect parameters directly to a URL and call that evidence. Register a claim with target identity, locator, complete checked excerpt (short display excerpts may use real source ranges), excerpt hash, retrieved-content hash, verification status/person/date, and extracted value/unit/period where applicable. The claim source must also be registered on the target parameter.
 
 ## Parameter identities
 
@@ -81,3 +81,14 @@ Prefer official machine-readable data where available, but reconcile it to the f
 ## Freshness
 
 Use quarterly or faster evidence for users, bookings, shipments, capacity, utilization, prices, and market share; annual evidence for slow-moving installed bases; and event-driven updates for approvals, launches, contract awards, acquisitions, disposals, and policy changes.
+
+
+## Source metadata and representation
+
+A quote's length, policy depth, diagnostic count or serialized proof size is not
+proof of its quality and is not a permission. Keep complete nonempty source
+anchors, including short numeric/unit statements, with their real locators,
+source/capture hashes and any required context. Optional malformed/unknown
+review or assessment metadata remains an unavailable observation and cannot
+promote the source to reviewed, true or accepted. Use the actual transport and
+task resource budgets once; do not add another hardcoded quota inside each DTO.

@@ -7,7 +7,7 @@ import sys
 from typing import Sequence
 
 from company_wiki_narrative_contracts import (
-    BODY_LIMIT, RECEIPT_LIMIT, REQUEST_LIMIT, NarrativeContext, NarrativeTransportError,
+    RECEIPT_LIMIT, REQUEST_LIMIT, NarrativeContext, NarrativeTransportError,
     canonical_bytes, decode_object, validate_narrative_request, validate_narrative_response,
     validate_reference_request, validate_reference_response,
 )
@@ -46,12 +46,17 @@ def _refused(returncode: int, stdout: bytes, stderr: bytes) -> None:
 def read_narrative_context(
     request: dict, *, catalog_config: Path, timeout_seconds: float = 30,
     reader_command: Sequence[str] | None = None,
+    max_response_bytes: int | None = None, max_receipt_bytes: int | None = None,
 ) -> NarrativeContext:
     """Read one exact artifact, then check bytes, identity, time and citations."""
     request = validate_narrative_request(request)
+    if max_response_bytes is not None and (type(max_response_bytes) is not int or max_response_bytes <= 0):
+        raise NarrativeTransportError("blocked", "invalid_reader_limit")
+    declared_size = request["narrative_ref"]["byte_size"]
+    response_budget = declared_size if max_response_bytes is None else min(declared_size, max_response_bytes)
     result = run_bounded(
         _command(catalog_config, "read", reader_command), canonical_bytes(request),
-        stdout_limit=BODY_LIMIT, stderr_limit=RECEIPT_LIMIT, timeout_seconds=timeout_seconds,
+        stdout_limit=response_budget, stderr_limit=max_receipt_bytes, timeout_seconds=timeout_seconds,
     )
     _refused(result.returncode, result.stdout, result.stderr)
     return validate_narrative_response(request, result.stdout, result.stderr)

@@ -11,7 +11,7 @@ from threading import Event, Thread
 import time
 from typing import BinaryIO, Sequence, cast
 
-from company_wiki_narrative_contracts import NarrativeTransportError, REQUEST_LIMIT
+from company_wiki_narrative_contracts import NarrativeTransportError
 from company_wiki_narrative_tree import ProcessTree
 from company_wiki_narrative_posix import transfer_posix
 
@@ -26,7 +26,7 @@ class ReaderOutput:
 @dataclass
 class _Capture:
     stream: BufferedReader
-    limit: int
+    limit: int | None
     overflow: Event
     data: bytearray = field(default_factory=bytearray)
     error: bool = False
@@ -34,10 +34,10 @@ class _Capture:
     def collect(self) -> None:
         try:
             while True:
-                chunk = self.stream.read1(min(4096, self.limit - len(self.data) + 1))
+                chunk = self.stream.read1(4096 if self.limit is None else min(4096, self.limit - len(self.data) + 1))
                 if not chunk:
                     return
-                if len(self.data) + len(chunk) > self.limit:
+                if self.limit is not None and len(self.data) + len(chunk) > self.limit:
                     self.overflow.set()
                     return
                 self.data.extend(chunk)
@@ -58,12 +58,12 @@ def _write_input(stream: BinaryIO, data: bytes) -> None:
             pass
 
 
-def _options(command: Sequence[str], data: bytes, timeout: float, limits: tuple[int, int]) -> None:
+def _options(command: Sequence[str], data: bytes, timeout: float, limits: tuple[int | None, int | None]) -> None:
     _command_option(command)
-    if not isinstance(data, bytes) or len(data) > REQUEST_LIMIT:
+    if not isinstance(data, bytes):
         raise NarrativeTransportError("blocked", "request_size_limit")
     _timeout_option(timeout)
-    if any(type(limit) is not int or limit < 1 for limit in limits):
+    if any(limit is not None and (type(limit) is not int or limit < 1) for limit in limits):
         raise NarrativeTransportError("blocked", "invalid_reader_limit")
 
 
@@ -158,13 +158,13 @@ def _capture_result(process: subprocess.Popen[bytes], captures: list[_Capture], 
     return ReaderOutput(process.returncode, bytes(captures[0].data), bytes(captures[1].data))
 
 
-def _captures(process: subprocess.Popen[bytes], limits: tuple[int, int],
+def _captures(process: subprocess.Popen[bytes], limits: tuple[int | None, int | None],
               overflow: Event) -> list[_Capture]:
     return [_Capture(cast(BufferedReader, process.stdout), limits[0], overflow),
             _Capture(cast(BufferedReader, process.stderr), limits[1], overflow)]
 
 
-def _channels(process: subprocess.Popen[bytes], limits: tuple[int, int], data: bytes,
+def _channels(process: subprocess.Popen[bytes], limits: tuple[int | None, int | None], data: bytes,
               overflow: Event) -> tuple[list[_Capture], list[Thread]]:
     captures = _captures(process, limits, overflow)
     threads = [Thread(target=capture.collect, name=f"rf-narrative-{process.pid}-pipe-{index}")
@@ -183,14 +183,14 @@ def _start_threads(threads: list[Thread]) -> None:
 
 
 def _run_posix(process: subprocess.Popen[bytes], captures: list[_Capture], data: bytes,
-               limits: tuple[int, int], deadline: float) -> None:
+               limits: tuple[int | None, int | None], deadline: float) -> None:
     streams = (cast(BinaryIO, process.stdin), cast(BinaryIO, process.stdout), cast(BinaryIO, process.stderr))
     transfer_posix(streams, data, [capture.data for capture in captures], limits, deadline)
 
 
 def run_bounded(
-    command: Sequence[str], data: bytes, *, stdout_limit: int,
-    stderr_limit: int, timeout_seconds: float = 30,
+    command: Sequence[str], data: bytes, *, stdout_limit: int | None,
+    stderr_limit: int | None, timeout_seconds: float = 30,
 ) -> ReaderOutput:
     """Cap bytes and contain the tree through wait, drain and shared cleanup."""
     _options(command, data, timeout_seconds, (stdout_limit, stderr_limit))

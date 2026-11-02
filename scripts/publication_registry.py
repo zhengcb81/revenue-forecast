@@ -1,24 +1,19 @@
-"""Append-only publication registry (R1.2, roadmap RC-1 / N-01).
+"""Rebuildable publication discovery index, not artifact-use permission.
 
-The registry is the artifact-external authority that records which input
-anchors were actually published by ``run_forecast``.  It turns ``input_sha256``
-from a self-reported anchor into an externally queryable fact: a consumer can
-ask "was this input ever published, and to which results?" and a forged
-artifact anchored to an unpublished (or misregistered) input is rejected.
-
-Structure: append-only JSONL, one entry per line, chained line hashes
-(``prev_line_sha256`` -> ``line_sha256``) so any mid-file tampering breaks the
-chain and is detected by ``lookup``/``audit``/``_read_entries``.  Writes are
-fsync'd; after each append the file is set read-only (best-effort, as an
-accidental-overwrite guard — the chain hash is the actual integrity gate).
+Each new row is independently hashed and fsync'd. A missing, corrupt, or
+unwritable history cannot invalidate a self-contained, validated result.
+Saved artifacts retain their own input/result hashes and validation rules;
+``rebuild_publications`` reconstructs this optional index from those artifacts.
+Explicit legacy lookup/audit still checks historical chained-row integrity.
+No chmod or host-signature requirement is imposed by index maintenance.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
-import stat
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -88,7 +83,7 @@ def _read_entries() -> list[dict[str, Any]]:
         payload = {key: value for key, value in entry.items() if key != "line_sha256"}
         if canonical_sha256(payload) != claimed:
             raise RegistryError(f"registry line {lineno}: hash mismatch (tampered)")
-        if entry.get("prev_line_sha256") != previous:
+        if entry.get("index_schema_version") != "publication-index/2" and entry.get("prev_line_sha256") != previous:
             raise RegistryError(
                 f"registry line {lineno}: chain break (prev_line_sha256 mismatch)"
             )
@@ -98,40 +93,36 @@ def _read_entries() -> list[dict[str, Any]]:
     return entries
 
 
-def _set_read_only(path: Path) -> None:
-    """Best-effort accidental-overwrite guard (the chain hash is the real gate)."""
-    try:
-        path.chmod(stat.S_IREAD)
-    except OSError:
-        pass
-
-
 def _clear_read_only(path: Path) -> None:
-    try:
-        path.chmod(stat.S_IWRITE | stat.S_IREAD)
-    except OSError:
-        pass
+    """Retired compatibility hook; indexes no longer change filesystem modes."""
 
 
-def _append(entry: dict[str, Any]) -> None:
-    """Append one entry with a chained line hash; fail closed on any problem."""
+def _append(entry: dict[str, Any]) -> dict[str, str]:
+    """Append a rebuildable independent index row, never consult old authority.
+
+    An index cannot establish source authenticity. Legacy chained rows remain
+    inspectable by explicit audit, but their corruption cannot veto a new row
+    or a valid self-contained forecast. No chmod or history-wide preflight.
+    """
     path = registry_file()
+    payload = {key: value for key, value in entry.items() if key != "line_sha256"}
+    payload["index_schema_version"] = "publication-index/2"
+    line = {**payload, "line_sha256": canonical_sha256(payload)}
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-    except OSError as exc:
-        raise RegistryError(f"publication registry unavailable: {exc}") from exc
-    # Write-precheck: a corrupt or unverifiable existing registry blocks writes.
-    existing = _read_entries()
-    payload = {key: value for key, value in entry.items() if key != "line_sha256"}
-    payload["prev_line_sha256"] = existing[-1]["line_sha256"] if existing else None
-    line = {**payload, "line_sha256": canonical_sha256(payload)}
-    if path.exists():
-        _clear_read_only(path)
-    with path.open("a", encoding="utf-8", newline="\n") as handle:
-        handle.write(json.dumps(line, ensure_ascii=False, sort_keys=True) + "\n")
-        handle.flush()
-        os.fsync(handle.fileno())
-    _set_read_only(path)
+        with path.open("ab+") as handle:
+            handle.seek(0, 2)
+            if handle.tell():
+                handle.seek(-1, 2)
+                if handle.read(1) != b"\n":
+                    handle.write(b"\n")
+            handle.write(json.dumps(line, ensure_ascii=False, sort_keys=True).encode() + b"\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+    except OSError:
+        logging.getLogger(__name__).warning("publication_index_unavailable: validated artifact remains usable")
+        return {"status": "unavailable", "reason": "publication_index_io_error"}
+    return {"status": "indexed"}
 
 
 def input_summary_sha256(result: dict[str, Any]) -> str:
@@ -152,8 +143,8 @@ def register_publication(
     artifact_id: str | None = None,
     note: str = "run_forecast formal",
     validation_status: str = "validated",
-) -> None:
-    """Register a published artifact's anchor.  Raises RegistryError on failure.
+) -> dict[str, str]:
+    """Index a published artifact's anchor.  Raises RegistryError on failure.
 
     ZR-701: *validation_status* distinguishes explicit Draft artifacts
     (``"draft"`` — computed but not strong-validated; the entry carries no
@@ -162,7 +153,7 @@ def register_publication(
     simply lack it and stay readable.
     """
     receipt = result.get("publication_receipt")
-    _append(
+    return _append(
         {
             "registered_at": _utc_now_iso(),
             "input_sha256": result["input_sha256"],
@@ -181,13 +172,13 @@ def register_publication(
     )
 
 
-def register_snapshot(snapshot: dict[str, Any]) -> None:
+def register_snapshot(snapshot: dict[str, Any]) -> dict[str, str]:
     """Register a backtest snapshot's anchor (snapshot_id <-> input_sha256)."""
     forecast = snapshot.get("forecast_result", {})
     if not isinstance(forecast, dict):
         raise RegistryError("invalid confidence calculation version forecast container")
     revision = _confidence_revision(forecast.get("confidence", {}))
-    _append(
+    return _append(
         {
             "registered_at": _utc_now_iso(),
             "input_sha256": snapshot["input_sha256"],
@@ -288,3 +279,36 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+def rebuild_publications(result_files: list[Path], *, output_path: Path) -> dict[str, int]:
+    """Rebuild discovery data from individually validated persisted artifacts.
+
+    This explicit maintenance entry never edits the input reports or trusts an
+    old index. Validation and actual output-write errors remain real failures.
+    """
+    from revenue_report import validate_forecast_output
+    rows = []
+    for path in result_files:
+        result = json.loads(path.read_text(encoding="utf-8"))
+        validate_forecast_output(result)
+        payload = {"index_schema_version": "publication-index/2", "registered_at": _utc_now_iso(),
+            "input_sha256": result["input_sha256"], "result_sha256": result["result_sha256"],
+            "receipt_sha256": canonical_sha256(result["publication_receipt"]),
+            "engine_version": result["engine_version"], "schema_version": result["schema_version"],
+            "confidence_calculation_version": _confidence_revision(result.get("confidence", {})),
+            "publisher": DEFAULT_PUBLISHER, "artifact_type": "forecast", "artifact_id": None,
+            "note": "rebuilt_from_validated_artifact", "validation_status": "validated"}
+        rows.append({**payload, "line_sha256": canonical_sha256(payload)})
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output_path.with_name(output_path.name + f".{os.getpid()}.tmp")
+    try:
+        with temporary.open("w", encoding="utf-8", newline="\n") as handle:
+            for row in rows:
+                handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, output_path)
+    finally:
+        temporary.unlink(missing_ok=True)
+    return {"indexed": len(rows)}

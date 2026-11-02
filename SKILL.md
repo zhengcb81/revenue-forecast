@@ -50,18 +50,23 @@ See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 **Dated contributions (4.3.0 / schema 3.10 opt-in):** any real finite inclusive window (`period_start <= period_end`, same-day included) may carry a dated consolidated contribution — e.g. an acquisition post-control flow 2026-05-31..2026-06-30 — inside the fiscal-year window, with cross-FY amounts split by source or explicit estimate. Full-year claims must preserve actual input windows and temporal lineage through derived aliases, including annual wrappers. A rationale (口径解释) may explain a real perimeter gap, independent business scopes or a residual subtraction; it never permits changing known dates or summing the same economic flow twice — an out-of-scope pre-control gap is never zero-filled and a partial contribution never poses as a full-year base. Derived annual revenue must also preserve actual unit/period ancestry: stock, scalar or ratio aliases cannot become recognized income; use genuine annual ARPU/turnover or an explicit native stock-flow model. Reports show real window dates, amounts and sources; output identity fields are checked against the frozen bound input so rehashed tampering fails. Schema 3.9 keeps its 3/6/12-month rule and 3.7/3.8 unchanged; 3.10 is emitted only by engine 4.3.0. See [references/dated-contribution.md](references/dated-contribution.md).
 
-**Attestation (4.0.0, R2):** every formal publication receipt carries
-`attestation_status` — `host_signed` only when `REVENUE_ATTESTATION_PROVIDER`
-names a runnable signer, otherwise `unattested` (invest-* consumers reject
-unattested by default; explicit downgrades are traced in the adapter).
-Source captures may carry Ed25519-signed `host_receipt`s verified against
-`config/trusted_signer_public_keys.json` (see `tools/host_signer/`).
+**Publication and provenance:** a formal result is self-contained: its frozen
+input, source/citation linkage, deterministic calculations and result hash are
+validated before delivery. Host attestation is optional provenance metadata;
+`unattested` does not prevent normal use, and an existing `host_signed` claim
+must still verify. Do not require a signer, permission file, manual receipt or
+canary. The global publication index is rebuildable discovery data, never
+permission to calculate, read or export a valid artifact. Index I/O failures are
+named diagnostics; a failure to write the actual requested artifact is still a
+real output failure. Old chained index rows remain readable/auditable unchanged.
 
-**Publication registry (4.0.0, R1.2):** every formal `run_forecast` and
-snapshot registers its input anchor in `artifacts/registry/publications.jsonl`
-(append-only, chained line hashes). `python scripts/publication_registry.py
-lookup --input-sha X` / `audit`; invest-* consumers require a registered
-anchor by default (`require_registered_input`).
+**Source observations and resources:** policy/trace/assessment/review data does
+not grant or deny source access. Unknown or damaged optional observations stay
+unavailable; they never become reviewed/accepted facts. Source bytes, identity,
+period/as-of and support/context citation partitions remain validated by their
+owners. Do not clip anchors or impose a second JSON/string/count quota. The
+narrative transport collects exactly the artifact's declared bytes and obeys
+actual caller-supplied byte/time budgets, without changing source text.
 
 Revenue model metadata and pure calculators are registered in `scripts/model_registry.py`. Add or change a model there; do not add formula dispatch branches to `revenue_core.py`.
 

@@ -20,9 +20,11 @@ from contracts.source_clock import (
     validate_availability_evidence, validate_source_events,
 )
 
-BODY_LIMIT = 1_310_720
-RECEIPT_LIMIT = 16 * 1024
-REQUEST_LIMIT = 16 * 1024
+# Compatibility names: representation is not a resource permission. The
+# transport enforces explicit limits (and exact declared artifact byte size).
+BODY_LIMIT = None
+RECEIPT_LIMIT = None
+REQUEST_LIMIT = None
 SOURCE_PREFIX = "urn:company-wiki:source:sha256:"
 SPAN_PREFIX = "urn:company-wiki:evidence-span:sha256:"
 EXPECTED_FIELDS = {"canonical_entity_id", "market", "security_id", "document_kind",
@@ -125,8 +127,9 @@ def _nonfinite(_value: str) -> None:
     raise NarrativeTransportError("blocked", "nonfinite_json")
 
 
-def decode_object(raw: bytes, *, limit: int, one_line: bool = False) -> dict:
-    _require(isinstance(raw, bytes) and len(raw) <= limit, "wire_size_limit")
+def decode_object(raw: bytes, *, limit: int | None = None, one_line: bool = False) -> dict:
+    _require(isinstance(raw, bytes), "invalid_wire_bytes")
+    _require(limit is None or len(raw) <= limit, "wire_size_limit")
     try:
         text = raw.decode("utf-8", errors="strict")
         if one_line:
@@ -185,7 +188,7 @@ def validate_narrative_ref(value: Any) -> dict:
     _require(isinstance(ref["artifact_version_id"], str) and
              _ID.fullmatch(ref["artifact_version_id"]) is not None, "invalid_artifact_id")
     _require(_sha(ref["artifact_sha256"]), "invalid_artifact_sha")
-    _require(_integer(ref["byte_size"], 1) and ref["byte_size"] <= BODY_LIMIT, "invalid_artifact_size")
+    _require(_integer(ref["byte_size"], 1), "invalid_artifact_size")
     if projected:
         validate_subject_ref(ref["subject_ref"])
         _require(_sha(ref["generation_sha256"]), "invalid_generation_sha")
@@ -203,14 +206,14 @@ def _constraints(value: Any) -> dict:
         if key == "fiscal_year":
             _require(_integer(constraint, 1900) and constraint <= 9999, "invalid_fiscal_year")
         else:
-            _require(_text(constraint) and len(constraint) <= 256, "invalid_source_constraint")
+            _require(_text(constraint), "invalid_source_constraint")
     return fields
 
 
 def _issuer_constraint(key: str, value: Any) -> None:
     if key in {"provider_company_id", "provider_activity_company_id"} and type(value) is int:
         return
-    _require(_text(value) and len(value) <= 256, "invalid_issuer_constraint")
+    _require(_text(value), "invalid_issuer_constraint")
 
 
 def _issuer_constraints(value: Any) -> dict | None:
@@ -236,7 +239,6 @@ def validate_narrative_request(value: Any) -> dict:
         _date(request["as_of_date"])
     (_issuer_constraints if projected else _constraints)(request[constraint_key])
     _pathless(request)
-    _require(len(canonical_bytes(request)) + 1 <= REQUEST_LIMIT, "request_size_limit")
     return deepcopy(request)
 
 
@@ -252,7 +254,6 @@ def validate_reference_request(value: Any) -> dict:
     else:
         validate_source_ref(request["source_ref"])
     _pathless(request)
-    _require(len(canonical_bytes(request)) + 1 <= REQUEST_LIMIT, "request_size_limit")
     return deepcopy(request)
 
 
@@ -505,12 +506,6 @@ def _byte_binding(binding: Any, lineage: dict, source: dict) -> None:
 
 
 def _diagnostics(bundle: dict, source_sha256: str | None = None) -> None:
-    review = _exact(bundle["prompt_review"], {"status", "source_sha256", "evidence_sha256", "policy_hash",
-                                            "reviewed_at"}, "invalid_prompt_diagnostic")
-    _require(review["status"] in {"not_detected", "detected_and_ignored", "not_reviewed"},
-             "invalid_prompt_diagnostic")
-    if review["source_sha256"] is not None:
-        _require(review["source_sha256"] == (source_sha256 or bundle["source_ref"]["content_sha256"]), "prompt_source_mismatch")
     versions = _exact(bundle["versions"], {"parser", "selector", "material", "model", "prompt",
                                          "bundle_producer"}, "invalid_bundle_versions")
     _require(all(_text(versions[key]) for key in ("parser", "selector", "bundle_producer")),
@@ -518,10 +513,10 @@ def _diagnostics(bundle: dict, source_sha256: str | None = None) -> None:
 
 
 
-READING_CONTEXT_LIMIT = 192 * 1024
+READING_CONTEXT_LIMIT = None  # Compatibility diagnostic; no independent representation quota.
 _READING_FIELDS = {"schema_version", "reading_policy_version", "reading_policies", "business_facets",
                    "constraints", "groups", "unread", "deferred", "layout_coverage"}
-_READING_SAMPLING_FIELDS = {"deferred_count", "deferred_limited", "selection_diagnostics"}
+_READING_SAMPLING_FIELDS = {"deferred_count", "deferred_limited"}
 _READING_POLICY_FIELDS = {"profile_id", "profile_version", "family", "summary_focus", "policy_components",
     "reading_questions", "context_requirements", "family_policy", "negative_hints", "semantic_units", "section_priorities"}
 _READING_FACET_FIELDS = {"id", "version", "content_digest", "selection_basis", "business_questions", "summary_focus",
@@ -531,42 +526,35 @@ _READING_FORBIDDEN = _PATH_KEYS | {"raw_text", "body", "observation", "evidence_
 
 
 def _reading_json(value: Any) -> None:
-    """Bound policy data before recursive projection; never interpret it as code.
+    """Check pathless JSON data, without imposing a second resource policy.
 
-    These are the producer's published finite-wire ceilings. Arbitrary policy
-    content stays data; no source IO, policy lookup or original-byte verification
-    is repeated by this consumer.
+    Policy and diagnostic content stays data. Actual transport resource budgets
+    are enforced by the reader; no source IO or original verification is repeated.
     """
     stack = [(value, 0)]
-    visited = 0
     while stack:
         item, depth = stack.pop()
-        visited += 1
-        _require(visited <= 30000 and depth <= 12, "reading_structure_limit")
         if item is None or type(item) in {bool, int, float}:
             continue  # The existing JSON decoder already rejects nonfinite numbers.
         if isinstance(item, str):
-            _require(len(item) <= 16384, "reading_string_limit")
+            pass
         elif isinstance(item, dict):
-            _require(len(item) <= 256, "reading_object_limit")
-            _require(all(isinstance(key, str) and len(key) <= 128 for key in item), "invalid_reading_key")
-            _require(not (_READING_FORBIDDEN & set(item)), "reading_payload_forbidden")
+            _require(all(isinstance(key, str) for key in item), "invalid_reading_key")
+            _require(not (_PATH_KEYS & set(item)), "reading_payload_forbidden")
             stack.extend((child, depth + 1) for child in item.values())
         elif isinstance(item, list):
-            _require(len(item) <= 4096, "reading_array_limit")
             stack.extend((child, depth + 1) for child in item)
         else:
             raise NarrativeTransportError("blocked", "invalid_reading_json")
 
 
-def _reading_rows(value: Any, *, limit: int = 4096) -> list:
+def _reading_rows(value: Any) -> list:
     _require(isinstance(value, list), "invalid_reading_array")
-    _require(len(value) <= limit, "reading_array_limit")
     return value
 
 
-def _reading_texts(value: Any, *, limit: int = 4096) -> list:
-    values = _reading_rows(value, limit=limit)
+def _reading_texts(value: Any) -> list:
+    values = _reading_rows(value)
     _require(all(_text(entry) for entry in values), "invalid_reading_text")
     return values
 
@@ -592,9 +580,9 @@ def _trace_code(value: Any) -> bool:
     return isinstance(value, str) and _TRACE_CODE.fullmatch(value) is not None
 
 
-def _trace_section(value: Any, *, cap: int) -> tuple[int, list[dict]]:
+def _trace_section(value: Any) -> tuple[int, list[dict]]:
     section = _exact(value, {"count", "limited", "samples"}, "invalid_selection_trace_section")
-    samples = _reading_rows(section["samples"], limit=cap)
+    samples = _reading_rows(section["samples"])
     _require(all(isinstance(row, dict) for row in samples)
              and _integer(section["count"], len(samples))
              and type(section["limited"]) is bool
@@ -603,15 +591,15 @@ def _trace_section(value: Any, *, cap: int) -> tuple[int, list[dict]]:
     return section["count"], samples
 
 
-def _trace_id_list(value: Any, *, cap: int, pattern: re.Pattern) -> list[str]:
-    rows = _reading_texts(value, limit=cap)
+def _trace_id_list(value: Any, *, pattern: re.Pattern) -> list[str]:
+    rows = _reading_texts(value)
     _require(all(pattern.fullmatch(row) is not None for row in rows), "invalid_selection_trace_ids")
     return rows
 
 
 def _trace_sample_count(row: dict, ids_key: str, count_key: str, limited_key: str,
-                        *, cap: int) -> None:
-    ids = _trace_id_list(row[ids_key], cap=cap, pattern=_NARRATIVE_UNIT_ID)
+                        ) -> None:
+    ids = _trace_id_list(row[ids_key], pattern=_NARRATIVE_UNIT_ID)
     count = row[count_key]
     _require(_integer(count, len(ids)) and type(row[limited_key]) is bool
              and row[limited_key] == (count > len(ids)), "invalid_selection_trace_ids")
@@ -628,13 +616,12 @@ def _selection_trace(value: Any, spans: dict[str, dict]) -> None:
     }, "invalid_selection_trace_admission")
     admission_count, samples = _trace_section({
         "count": admission["count"], "limited": admission["limited"], "samples": admission["samples"],
-    }, cap=16)
+    })
     admitted, rejected, rejection_counts = (
         admission["admitted_count"], admission["rejected_count"], admission["rejection_counts"]
     )
     _require(_integer(admitted) and _integer(rejected) and admitted + rejected == admission_count
-             and isinstance(rejection_counts, dict) and len(rejection_counts) <= 32
-             and all(_trace_code(code) and _integer(count, 1)
+             and isinstance(rejection_counts, dict) and all(_trace_code(code) and _integer(count, 1)
                      for code, count in rejection_counts.items())
              and sum(rejection_counts.values()) == rejected,
              "invalid_selection_trace_admission")
@@ -654,13 +641,13 @@ def _selection_trace(value: Any, spans: dict[str, dict]) -> None:
         else:
             sampled_rejected += 1
             _require(_trace_code(row["reason"]), "invalid_selection_trace_admission_sample")
-        fact_reasons = _trace_id_list(row["fact_reasons"], cap=4, pattern=_TRACE_CODE)
+        fact_reasons = _trace_id_list(row["fact_reasons"], pattern=_TRACE_CODE)
         _require(_integer(row["fact_reason_count"], len(fact_reasons))
                  and type(row["fact_reasons_limited"]) is bool
                  and row["fact_reasons_limited"] == (row["fact_reason_count"] > len(fact_reasons)),
                  "invalid_selection_trace_admission_sample")
         _trace_sample_count(row, "required_unit_ids", "required_unit_count",
-                            "required_unit_ids_limited", cap=8)
+                            "required_unit_ids_limited")
         _require(_integer(row["priority"], 1), "invalid_selection_trace_admission_sample")
         selected = row["selected_span_id"]
         _require(selected is None or (isinstance(selected, str)
@@ -669,7 +656,7 @@ def _selection_trace(value: Any, spans: dict[str, dict]) -> None:
     _require(sampled_admitted <= admitted and sampled_rejected <= rejected,
              "invalid_selection_trace_admission")
 
-    package_count, packages = _trace_section(trace["eligible_packages"], cap=16)
+    package_count, packages = _trace_section(trace["eligible_packages"])
     for row in packages:
         _exact(row, {"package_ref", "kind", "member_unit_ids", "member_count", "member_limited",
                      "anchor_unit_ids", "anchor_count", "anchor_limited", "required_unit_ids",
@@ -681,10 +668,10 @@ def _selection_trace(value: Any, spans: dict[str, dict]) -> None:
             ("anchor_unit_ids", "anchor_count", "anchor_limited"),
             ("required_unit_ids", "required_count", "required_limited"),
         ):
-            _trace_sample_count(row, ids_key, count_key, limited_key, cap=8)
+            _trace_sample_count(row, ids_key, count_key, limited_key)
     _require(package_count >= len(packages), "invalid_selection_trace_package")
 
-    withheld_count, withheld = _trace_section(trace["withheld"], cap=32)
+    withheld_count, withheld = _trace_section(trace["withheld"])
     for row in withheld:
         _exact(row, {"package_ref", "reason", "status", "known_unit_ids",
                      "known_unit_count", "known_unit_ids_limited"}, "invalid_selection_trace_withheld")
@@ -693,10 +680,10 @@ def _selection_trace(value: Any, spans: dict[str, dict]) -> None:
                  and (row["status"] is None or _trace_code(row["status"])),
                  "invalid_selection_trace_withheld")
         _trace_sample_count(row, "known_unit_ids", "known_unit_count",
-                            "known_unit_ids_limited", cap=8)
+                            "known_unit_ids_limited")
     _require(withheld_count >= len(withheld), "invalid_selection_trace_withheld")
 
-    selected_count, selected = _trace_section(trace["selected"], cap=32)
+    selected_count, selected = _trace_section(trace["selected"])
     _require(len(spans) <= selected_count <= trace["source_unit_count"]
              and (bool(spans) or selected_count == 0), "invalid_selection_trace_selected")
     seen_units: set[str] = set()
@@ -718,12 +705,12 @@ def _reading_proofs(group: dict, schema: str) -> set[str]:
                              and present == fields), "invalid_reading_group_proof_fields")
     if not present:
         return set()
-    proof_ids = _trace_id_list(group["source_proof_unit_ids"], cap=128, pattern=_NARRATIVE_UNIT_ID)
-    targets = _trace_id_list(group["source_proof_target_unit_ids"], cap=256, pattern=_NARRATIVE_UNIT_ID)
+    proof_ids = _trace_id_list(group["source_proof_unit_ids"], pattern=_NARRATIVE_UNIT_ID)
+    targets = _trace_id_list(group["source_proof_target_unit_ids"], pattern=_NARRATIVE_UNIT_ID)
     _require(bool(proof_ids) and len(proof_ids) == len(set(proof_ids))
              and len(targets) == len(set(targets)), "invalid_reading_group_proof_ids")
     closure = set(proof_ids) | set(targets)
-    proofs = _reading_rows(group["source_proofs"], limit=128)
+    proofs = _reading_rows(group["source_proofs"])
     _require(bool(proofs), "invalid_reading_group_proofs")
     edges: set[tuple[str, str]] = set()
     for raw in proofs:
@@ -744,10 +731,10 @@ def _reading_proofs(group: dict, schema: str) -> set[str]:
                  and proof["right_ordinal"] > proof["left_ordinal"],
                  "invalid_reading_group_proof_coordinates")
         column, frame = proof["column"], proof["coordinate_frame"]
-        _require((type(column) is int or (_text(column) and len(column) <= 256))
-                 and _text(frame) and len(frame) <= 256,
+        _require((type(column) is int or (_text(column)))
+                 and _text(frame),
                  "invalid_reading_group_proof_coordinates")
-        furniture = _trace_id_list(proof["furniture_unit_ids"], cap=24, pattern=_NARRATIVE_UNIT_ID)
+        furniture = _trace_id_list(proof["furniture_unit_ids"], pattern=_NARRATIVE_UNIT_ID)
         _require(len(furniture) == len(set(furniture)) and set(furniture) <= closure,
                  "invalid_reading_group_proof_furniture")
     return fields
@@ -760,7 +747,7 @@ def _diagnostic_target(value: Any, code: str) -> dict:
     _require(isinstance(item["item_id"], str)
              and _NARRATIVE_UNIT_ID.fullmatch(item["item_id"]) is not None,
              "invalid_reading_diagnostic_target")
-    ids = _trace_id_list(item["item_ids"], cap=16, pattern=_NARRATIVE_UNIT_ID)
+    ids = _trace_id_list(item["item_ids"], pattern=_NARRATIVE_UNIT_ID)
     _require(_integer(item["item_count"], 1) and item["item_count"] >= len(ids)
              and type(item["item_ids_limited"]) is bool
              and item["item_ids_limited"] == (item["item_count"] > len(ids)),
@@ -770,7 +757,7 @@ def _diagnostic_target(value: Any, code: str) -> dict:
              and _READING_GROUP_ID.fullmatch(group_id) is not None),
              "invalid_reading_diagnostic_target")
     _require(isinstance(item["locator"], str) and _READING_LOCATOR.fullmatch(item["locator"]) is not None
-             and len(item["locator"]) <= 512, "invalid_reading_diagnostic_target")
+             and bool(item["locator"]), "invalid_reading_diagnostic_target")
     used, requested, limit, closure = (item[k] for k in ("used", "requested", "limit", "closure_size"))
     _require(_integer(used) and _integer(requested, 1)
              and _integer(limit, 0 if code == "character_budget" else 1)
@@ -794,7 +781,7 @@ def _selection_diagnostic(value: Any, *, legacy_aggregate: bool) -> None:
         _require(value.keys() == fields and _integer(value["count"], 1)
                  and value["phase"] == value["dimension"] == "source_readability"
                  and value["external_model_cost"] is False, "invalid_reading_diagnostic")
-        ids = _trace_id_list(value["known_unit_ids"], cap=16, pattern=_NARRATIVE_UNIT_ID)
+        ids = _trace_id_list(value["known_unit_ids"], pattern=_NARRATIVE_UNIT_ID)
         _require(_integer(value["known_unit_count"], max(1, len(ids)))
                  and type(value["known_unit_ids_limited"]) is bool
                  and value["known_unit_ids_limited"] == (value["known_unit_count"] > len(ids)),
@@ -819,8 +806,8 @@ def _selection_diagnostic(value: Any, *, legacy_aggregate: bool) -> None:
                   "character_budget": {"selection_characters"},
                   "work_budget_exhausted": {"selection_work", "document_work"},
                   "missing_required_context": {"selection_policy"}}
-    _require(_text(phase) and len(phase) <= 80 and cost is False and _text(dimension)
-             and len(dimension) <= 80 and dimension in dimensions.get(code, set()),
+    _require(_text(phase) and cost is False and _text(dimension)
+             and dimension in dimensions.get(code, set()),
              "invalid_reading_diagnostic")
     if code in {"budget_full", "character_budget"}:
         base = required | {"phase", "external_model_cost", "dimension", "used", "limit"}
@@ -830,7 +817,7 @@ def _selection_diagnostic(value: Any, *, legacy_aggregate: bool) -> None:
         _require(_integer(value["used"]) and _integer(value["limit"], low)
                  and value["used"] <= value["limit"], "invalid_reading_diagnostic")
         if value.keys() == enriched:
-            targets = _reading_rows(value["targets"], limit=32)
+            targets = _reading_rows(value["targets"])
             _require(type(value["targets_limited"]) is bool and len(targets) <= value["count"]
                      and value["targets_limited"] == (value["count"] > len(targets)),
                      "invalid_reading_diagnostic")
@@ -850,7 +837,7 @@ def _selection_diagnostic(value: Any, *, legacy_aggregate: bool) -> None:
         _require(value.keys() in (base, enriched), "invalid_reading_diagnostic")
         if value.keys() == enriched:
             limit, maximum = value["limit"], value["max_closure_size"]
-            targets = _reading_rows(value["targets"], limit=32)
+            targets = _reading_rows(value["targets"])
             _require(_integer(limit, 1) and _integer(maximum, 1) and maximum > limit
                      and type(value["targets_limited"]) is bool and len(targets) <= value["count"]
                      and value["targets_limited"] == (value["count"] > len(targets)),
@@ -868,7 +855,6 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
     if value is None:
         return
     _reading_json(value)
-    _require(len(canonical_bytes(value)) <= READING_CONTEXT_LIMIT, "reading_bytes_limit")
     schema_value = value.get("schema_version") if isinstance(value, dict) else None
     _require(isinstance(schema_value, str) and schema_value in {
         "du-production-reading/1", "du-production-reading/2", "du-production-reading/3", "du-production-reading/4",
@@ -877,13 +863,12 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
     present_sampling = _READING_SAMPLING_FIELDS & value.keys()
     if present_sampling:
         _require(present_sampling == _READING_SAMPLING_FIELDS, "invalid_reading_context")
+    extra = present_sampling | ({"selection_diagnostics"} & value.keys())
     if schema in {"du-production-reading/3", "du-production-reading/4"}:
-        _require(present_sampling == _READING_SAMPLING_FIELDS and "selection_trace" in value,
-                 "invalid_reading_context")
-        extra = _READING_SAMPLING_FIELDS | {"selection_trace"}
+        _require(present_sampling == _READING_SAMPLING_FIELDS, "invalid_reading_context")
+        extra |= {"selection_trace"} & value.keys()
     else:
         _require("selection_trace" not in value, "invalid_reading_context")
-        extra = _READING_SAMPLING_FIELDS if present_sampling else set()
     if schema == "du-production-reading/4" and "source_processing_complete" in value:
         _require(type(value["source_processing_complete"]) is bool, "invalid_reading_context")
         extra = extra | {"source_processing_complete"}
@@ -893,21 +878,21 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
     prefix = "du-sent-policy/1+"
     _require(isinstance(version, str) and version.startswith(prefix)
              and _sha(version[len(prefix):]), "invalid_reading_policy_version")
-    for policy in _reading_rows(context["reading_policies"], limit=128):
+    for policy in _reading_rows(context["reading_policies"]):
         _exact(policy, _READING_POLICY_FIELDS, "invalid_reading_policy")
         for component in _reading_rows([] if policy["policy_components"] is None else policy["policy_components"]):
             _exact(component, {"kind", "id", "version", "content_digest"}, "invalid_reading_component")
             _require(_sha(component["content_digest"]), "invalid_reading_component_digest")
-    for facet in _reading_rows(context["business_facets"], limit=16):
+    for facet in _reading_rows(context["business_facets"]):
         _exact(facet, _READING_FACET_FIELDS, "invalid_reading_facet")
         _require(_sha(facet["content_digest"]), "invalid_reading_facet_digest")
         for check in _reading_rows([] if facet["confusion_checks"] is None else facet["confusion_checks"]):
             _exact(check, {"risk", "required_context_slots"}, "invalid_reading_confusion_check")
             _require(_text(check["risk"]), "invalid_reading_confusion_check")
             _reading_texts(check["required_context_slots"])
-    _reading_texts(context["constraints"], limit=32)
+    _reading_texts(context["constraints"])
     group_ids: set[str] = set()
-    for group in _reading_rows(context["groups"], limit=512):
+    for group in _reading_rows(context["groups"]):
         _require(isinstance(group, dict), "invalid_reading_group")
         proof_extra = _reading_proofs(group, schema)
         _exact(group, {"group_id", "kind", "section_role", "evidence_ids"}
@@ -923,7 +908,7 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
         _require(len({spans[ref]["source_id"] for ref in refs}) == 1,
                  "reading_group_parent_mismatch")
         if attributed:
-            views = _reading_rows(group["citation_views"], limit=2)
+            views = _reading_rows(group["citation_views"])
             _require(bool(views), "missing_reading_citation_view")
             seen_support: set[frozenset[str]] = set()
             for raw_view in views:
@@ -971,30 +956,66 @@ def _reading_context(value: Any, spans: dict[str, dict]) -> None:
                  and type(context["deferred_limited"]) is bool
                  and context["deferred_limited"] == (context["deferred_count"] > len(context["deferred"])),
                  "invalid_reading_deferred_counts")
-        for row in _reading_rows(context["selection_diagnostics"], limit=128):
-            _selection_diagnostic(row, legacy_aggregate=schema in {
-                "du-production-reading/1", "du-production-reading/2",
-            })
-    if schema in {"du-production-reading/3", "du-production-reading/4"}:
-        _selection_trace(context["selection_trace"], spans)
 
 
 def _reading_extension(bundle: dict) -> dict:
-    return {key: bundle[key] for key in ("reading_context", "summary_assessment") if key in bundle}
+    from contracts.source_diagnostics import review_observation
+    from narrative_summary_observations import assessment_observation
+    source = bundle.get("source_ref", {})
+    fields = {key: bundle[key] for key in ("reading_context",) if key in bundle}
+    observed = assessment_observation(bundle)
+    fields["summary_assessment_observation"] = observed
+    if "summary_assessment" in bundle:
+        fields["summary_assessment"] = bundle["summary_assessment"] if observed["status"] == "available" else None
+        if observed["status"] == "unavailable":
+            fields["provided_summary_assessment"] = bundle["summary_assessment"]
+    fields["prompt_review_observation"] = review_observation(
+        bundle.get("prompt_review"), source.get("content_sha256"))
+    draft = bundle.get("summary", {}).get("draft")
+    claims = draft.get("claims", []) if isinstance(draft, dict) else []
+    fields["validated_summary_claims_sha256"] = hashlib.sha256(canonical_bytes(claims)).hexdigest()
+    if isinstance(draft, dict) and (draft.get("status") == "needs_review" or
+            any(claim.get("needs_review") is True for claim in claims)):
+        if bundle["quality_status"] != "needs_review":
+            fields["provided_quality_status"] = bundle["quality_status"]
+            fields["quality_status"] = "needs_review"
+    model = bundle.get("summary", {}).get("model")
+    expected_model = model.get("model_id") if isinstance(model, dict) else None
+    fields["model_observation"] = {"status": "available" if bundle.get("versions", {}).get("model") == expected_model else "unavailable"}
 
-
-def _summary_observation(bundle: dict) -> None:
-    from narrative_summary_observations import validate_summary_observation
-    try:
-        validate_summary_observation(bundle)
-    except (ValueError, TypeError, KeyError) as exc:
-        raise NarrativeTransportError("blocked", "invalid_summary_assessment") from exc
+    reading = bundle.get("reading_context")
+    if isinstance(reading, dict):
+        observations = []
+        diagnostics = reading.get("selection_diagnostics", [])
+        if "selection_diagnostics" not in reading:
+            observations.append({"status": "absent", "reason": "selection_diagnostics_absent"})
+        if isinstance(diagnostics, list):
+            for row in diagnostics:
+                try:
+                    _selection_diagnostic(row, legacy_aggregate=reading.get("schema_version") in {
+                        "du-production-reading/1", "du-production-reading/2"})
+                except (NarrativeTransportError, TypeError, ValueError, KeyError) as error:
+                    observations.append({"status": "unavailable",
+                        "reason": getattr(error, "reason", "invalid_reading_diagnostic")})
+        else:
+            observations.append({"status": "unavailable", "reason": "invalid_reading_diagnostic"})
+        if "selection_trace" in reading:
+            try:
+                _selection_trace(reading["selection_trace"], {span["span_id"]: span for span in bundle["evidence_spans"]})
+            except (NarrativeTransportError, TypeError, ValueError, KeyError) as error:
+                observations.append({"status": "unavailable",
+                    "reason": getattr(error, "reason", "invalid_selection_trace")})
+        else:
+            observations.append({"status": "absent", "reason": "selection_trace_absent"})
+        fields["reading_diagnostic_observations"] = observations
+    return fields
 
 
 def _bundle_fields(bundle: dict, base: set[str]) -> None:
-    from narrative_summary_observations import ASSESSED_SCHEMAS
-    extra = {"summary_assessment"} if bundle.get("schema_version") in ASSESSED_SCHEMAS else set()
-    _exact(bundle, base | extra | ({"reading_context"} if "reading_context" in bundle else set()), "invalid_narrative_bundle")
+    optional = {"reading_context", "summary_assessment", "prompt_review"}
+    required = base - optional
+    _require(isinstance(bundle, dict) and required <= bundle.keys()
+             and bundle.keys() <= required | optional, "invalid_narrative_bundle")
 
 
 def _bundle(body: bytes, request: dict, receipt: dict, manifest: dict) -> dict:
@@ -1024,7 +1045,6 @@ def _bundle_contents(bundle: dict, receipt: dict, manifest: dict) -> None:
     _replay(bundle["replay"], len(spans))
     _lineage(bundle, bundle["source_ref"], set(by_id))
     _diagnostics(bundle)
-    _summary_observation(bundle)
 
 
 def _declared_language(metadata: dict) -> None:
@@ -1102,13 +1122,28 @@ def _replay(value: Any, count: int) -> None:
              and replay["locator_count"] == count, "invalid_replay")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, init=False)
 class NarrativeContext:
-    """Validated source excerpts and draft claims; never a calculated forecast."""
-    value: dict
+    """Immutable verified projection, not a permission or unforgeable token."""
+    _payload: bytes
+
+    def __init__(self, _value=None):
+        raise ValueError("raw narrative data must pass validate_narrative_response")
+
+    @property
+    def value(self) -> dict:
+        return self.to_dict()
 
     def to_dict(self) -> dict:
-        return deepcopy(self.value)
+        return json.loads(self._payload)
+
+
+def _context_from_verified(value: dict) -> NarrativeContext:
+    # An internal composition boundary, not a security credential. The public
+    # wire validator above/below owns source/reference/claim verification once.
+    result = object.__new__(NarrativeContext)
+    object.__setattr__(result, "_payload", canonical_bytes(value))
+    return result
 
 
 def _projection_parents(subject: dict, receipt: dict) -> None:
@@ -1274,8 +1309,7 @@ def _projected_response(request: dict, body: bytes, receipt: dict) -> NarrativeC
                        selection["status"] == "skipped_no_narrative")
     _replay(bundle["replay"], len(spans))
     _diagnostics(bundle, subject["parent_source_refs"][0]["content_sha256"])
-    _summary_observation(bundle)
-    return NarrativeContext({"schema_version": "revenue-narrative-context/3", "narrative_ref": ref,
+    return _context_from_verified({"schema_version": "revenue-narrative-context/3", "narrative_ref": ref,
         "subject_binding": subject, "parent_source_refs": subject["parent_source_refs"],
         "as_of_date": request["as_of_date"], "source_metadata": metadata, "selection": selection,
         "quality_status": bundle["quality_status"], "evidence_spans": spans,
@@ -1289,7 +1323,7 @@ def _validated_response(request: dict, body: bytes, receipt_bytes: bytes) -> Nar
         return _projected_response(request, body, receipt)
     manifest = _receipt(receipt, request)
     bundle = _bundle(body, request, receipt, manifest)
-    return NarrativeContext({
+    return _context_from_verified({
         "schema_version": "revenue-narrative-context/1",
         "narrative_ref": request["narrative_ref"], "source_ref": bundle["source_ref"],
         "as_of_date": request["as_of_date"], "manifest": manifest,

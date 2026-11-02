@@ -7,8 +7,7 @@ bytes, receipt, identity, period and information date before use by RF.
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
-import hashlib
+from datetime import date
 import json
 import math
 import os
@@ -18,12 +17,10 @@ import subprocess
 import sys
 from typing import Any
 
-from source_period_semantics import valid_fiscal_year
-from filing_upstream_cause import validated_source_failure_reason
-from contracts.source_clock import (
-    SourceClockError, qualify_source_information, validate_availability_evidence,
-    validate_source_events,
+from contracts.company_wiki_original import (
+    OriginalProvenanceError, VerifiedOriginalRead, verify_original_read,
 )
+from filing_upstream_cause import validated_source_failure_reason
 
 
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
@@ -64,6 +61,10 @@ class SourceVersionTransportError(RuntimeError):
         self.source_failure_reason = validated_source_failure_reason(source_failure_reason)
 
 
+
+
+
+
 def _unique_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
@@ -71,7 +72,6 @@ def _unique_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
             raise SourceVersionTransportError("duplicate JSON key in source receipt")
         result[key] = value
     return result
-
 
 def _reject_nonfinite(_value: str) -> None:
     raise SourceVersionTransportError("nonfinite JSON number in source receipt")
@@ -105,23 +105,8 @@ def _date(value: Any, field: str) -> date:
         raise SourceVersionTransportError(f"{field} must be an ISO date") from exc
 
 
-def _check_datetime_zone(parsed: datetime, field: str, require_utc: bool) -> None:
-    offset = parsed.utcoffset()
-    if parsed.tzinfo is None or offset is None:
-        raise SourceVersionTransportError(f"{field} must be timezone-aware")
-    if require_utc and offset.total_seconds() != 0:
-        raise SourceVersionTransportError(f"{field} must be UTC")
 
 
-def _datetime(value: Any, field: str, *, require_utc: bool = False) -> datetime:
-    if not isinstance(value, str) or not value.strip():
-        raise SourceVersionTransportError(f"{field} must be timezone-aware")
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise SourceVersionTransportError(f"{field} must be timezone-aware") from exc
-    _check_datetime_zone(parsed, field, require_utc)
-    return parsed.astimezone(UTC)
 
 
 def _valid_ref_text(value: Any) -> bool:
@@ -178,79 +163,16 @@ def _run_reader(
         raise SourceVersionTransportError("source reader CLI unavailable", source_failure_reason="reader_unavailable") from exc
 
 
-def _validate_review_shape(review: dict[str, Any]) -> None:
-    if set(review) != _REVIEW_FIELDS:
-        raise SourceVersionTransportError("source receipt review shape invalid")
-    if review["status"] not in _REVIEW_STATUSES:
-        raise SourceVersionTransportError("source receipt review status invalid")
 
 
-def _validate_review_hashes(review: dict[str, Any]) -> None:
-    for field in ("evidence_sha256", "policy_hash"):
-        if review[field] is not None and not _valid_sha256(review[field]):
-            raise SourceVersionTransportError(f"source receipt review {field} invalid")
 
 
-def _validate_review(review: Any, source_ref: dict[str, Any]) -> None:
-    # The review is diagnostic. It is not an authorization or a precondition.
-    if review is None:
-        return
-    if not isinstance(review, dict):
-        raise SourceVersionTransportError("source receipt review shape invalid")
-    _validate_review_shape(review)
-    if review["source_sha256"] is not None and (
-        review["source_sha256"] != source_ref["content_sha256"]
-    ):
-        raise SourceVersionTransportError("source receipt review source mismatch")
-    _validate_review_hashes(review)
-    if review["reviewed_at"] is not None:
-        _datetime(review["reviewed_at"], "source receipt review reviewed_at")
 
 
-def _validate_manifest_identity(
-    manifest: dict[str, Any], source_ref: dict[str, Any],
-) -> None:
-    fields = ("document_id", "source_id", "content_sha256", "byte_size", "mime_type")
-    for field in fields:
-        if type(manifest[field]) is not type(source_ref[field]) or (
-            manifest[field] != source_ref[field]
-        ):
-            raise SourceVersionTransportError(f"source manifest {field} mismatch", source_failure_reason="source_identity_mismatch")
 
 
-def _validate_manifest_period(
-    manifest: dict[str, Any], as_of: date, fiscal_year: int | None, *,
-    availability_evidence: Any = None, current_read_at: str | None = None,
-) -> None:
-    if not valid_fiscal_year(manifest["document_kind"], manifest["fiscal_year"]) or (
-        type(manifest["fiscal_year"]) is not type(fiscal_year) or manifest["fiscal_year"] != fiscal_year
-    ):
-        raise SourceVersionTransportError("source manifest fiscal_year mismatch", source_failure_reason="fiscal_year_mismatch")
-    try:
-        information = qualify_source_information(
-            source_sha256=manifest["content_sha256"], published_date=manifest["published_date"],
-            as_of=as_of, availability_evidence=availability_evidence,
-        )
-        validate_source_events(eligibility=information,
-            original_retrieved_at=manifest["retrieved_at"], current_read_at=current_read_at)
-    except SourceClockError as exc:
-        raise SourceVersionTransportError(str(exc), source_failure_reason=validated_source_failure_reason(str(exc).partition(":")[0])) from exc
-    period_end = manifest["period_end"]
-    if period_end is not None and _date(period_end, "source manifest period_end") > information.available_by:
-        label = "publication" if information.published_date is not None else "verified availability"
-        raise SourceVersionTransportError(f"source manifest period ends after {label}")
 
 
-def _validate_manifest(
-    manifest: Any, source_ref: dict[str, Any], as_of: date, fiscal_year: int | None, *,
-    availability_evidence: Any = None, current_read_at: str | None = None,
-) -> dict[str, Any]:
-    if not isinstance(manifest, dict) or set(manifest) != _MANIFEST_FIELDS:
-        raise SourceVersionTransportError("source receipt manifest fields invalid")
-    _validate_manifest_identity(manifest, source_ref)
-    _validate_manifest_period(manifest, as_of, fiscal_year,
-        availability_evidence=availability_evidence, current_read_at=current_read_at)
-    return manifest
 
 
 def _validate_timeout(timeout_seconds: float) -> None:
@@ -312,54 +234,20 @@ def _validate_receipt_shape(receipt: dict[str, Any], *, source_reader_receipt_ve
         raise SourceVersionTransportError("source receipt fields/status invalid")
 
 
-def _validate_receipt_identity(
-    receipt: dict[str, Any], source_ref: dict[str, Any],
-) -> None:
-    fields = ("document_id", "source_id", "content_sha256", "byte_size")
-    for field in fields:
-        if type(receipt[field]) is not type(source_ref[field]) or (
-            receipt[field] != source_ref[field]
-        ):
-            raise SourceVersionTransportError(f"source receipt {field} mismatch", source_failure_reason="source_identity_mismatch")
 
 
-def _validate_receipt_policies(receipt: dict[str, Any]) -> None:
-    fields = ("policy_sha256", "source_read_policy_sha256")
-    for field in fields:
-        if not _valid_sha256(receipt[field]):
-            raise SourceVersionTransportError(f"source receipt {field} invalid")
 
 
-def _validate_success_receipt(
-    receipt: dict[str, Any], source_ref: dict[str, Any], as_of: date,
-    fiscal_year: int | None, *, source_reader_receipt_version: str = "2.1",
-) -> dict[str, Any]:
-    _validate_receipt_shape(receipt, source_reader_receipt_version=source_reader_receipt_version)
-    _validate_receipt_identity(receipt, source_ref)
-    _validate_receipt_policies(receipt)
-    _datetime(receipt["read_at"], "source receipt read_at", require_utc=True)
-    _validate_review(receipt["review"], source_ref)
-    try:
-        validate_availability_evidence(receipt.get("availability_evidence"), source_ref["content_sha256"])
-    except SourceClockError as exc:
-        raise SourceVersionTransportError(str(exc), source_failure_reason=validated_source_failure_reason(str(exc).partition(":")[0])) from exc
-    return _validate_manifest(receipt["manifest"], source_ref, as_of, fiscal_year,
-        availability_evidence=receipt.get("availability_evidence"), current_read_at=receipt["read_at"])
 
 
-def _verify_bytes(body: bytes, source_ref: dict[str, Any]) -> None:
-    if len(body) != source_ref["byte_size"] or (
-        hashlib.sha256(body).hexdigest() != source_ref["content_sha256"]
-    ):
-        raise SourceVersionTransportError("source bytes SHA-256/size mismatch", source_failure_reason="source_bytes_mismatch")
 
 
 def open_source_version_v2(
     *, source_ref: dict[str, Any], catalog_config: Path,
     as_of_date: str, expected_fiscal_year: int | None,
     timeout_seconds: float = 30.0, source_reader_receipt_version: str = "2.1",
-) -> tuple[bytes, dict[str, Any], dict[str, Any]]:
-    """Return verified source bytes, a pathless receipt, and a same-call manifest."""
+) -> VerifiedOriginalRead:
+    """Return one immutable verified read; historical tuple unpack remains supported."""
     version = validate_source_reader_receipt_version(source_reader_receipt_version)
     as_of = _validate_open_request(
         source_ref, catalog_config, as_of_date, expected_fiscal_year, timeout_seconds,
@@ -369,12 +257,15 @@ def open_source_version_v2(
     if opened.returncode != 0:
         _raise_reader_refusal(opened)
     receipt = _one_json_line(opened.stderr)
-    manifest = _validate_success_receipt(
-        receipt, source_ref, as_of, expected_fiscal_year, source_reader_receipt_version=version,
-    )
-    _verify_bytes(opened.stdout, source_ref)
+    _validate_receipt_shape(receipt, source_reader_receipt_version=version)
     bare_receipt = {key: value for key, value in receipt.items() if key != "manifest"}
-    return opened.stdout, bare_receipt, manifest
+    try:
+        return verify_original_read(body=opened.stdout, source_ref=source_ref, receipt=bare_receipt,
+            manifest=receipt["manifest"], as_of=as_of, expected_fiscal_year=expected_fiscal_year)
+    except OriginalProvenanceError as exc:
+        raise SourceVersionTransportError(str(exc),
+            source_failure_reason=validated_source_failure_reason(str(exc).partition(":")[0])) from exc
+
 
 
 __all__ = ["SourceVersionTransportError", "open_source_version_v2"]

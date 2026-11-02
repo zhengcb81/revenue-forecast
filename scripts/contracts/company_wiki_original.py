@@ -6,6 +6,9 @@ Legacy opaque document IDs and reader 2.1/2.2 shapes retain their exact rules.
 
 from __future__ import annotations
 from datetime import date, datetime
+from dataclasses import dataclass
+import hashlib
+import json
 import re
 from typing import Any
 from contracts.evidence import valid_source_url
@@ -180,7 +183,6 @@ def validate_receipt(receipt_value: Any, ref: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(value, str) or not _SHA256_RE.fullmatch(value):
             raise OriginalProvenanceError(f"source read receipt {field} is invalid")
     _aware_datetime(receipt.get("read_at"), "source read receipt read_at")
-    _validate_review(receipt.get("review"), ref)
     try:
         validate_availability_evidence(
             receipt.get("availability_evidence"), ref["content_sha256"]
@@ -190,40 +192,12 @@ def validate_receipt(receipt_value: Any, ref: dict[str, Any]) -> dict[str, Any]:
     return receipt
 
 
-def _validate_review_shape(review: dict[str, Any]) -> None:
-    if set(review) != _REVIEW_FIELDS:
-        raise OriginalProvenanceError("source read receipt review is invalid")
-    if review.get("status") not in _PROMPT_INJECTION_STATUSES:
-        raise OriginalProvenanceError("source read receipt review is invalid")
 
 
-def _validate_review_source(review: dict[str, Any], ref: dict[str, Any]) -> None:
-    digest = review.get("source_sha256")
-    if digest is not None and digest != ref["content_sha256"]:
-        raise OriginalProvenanceError("source read receipt review source mismatch")
 
 
-def _validate_review_hashes(review: dict[str, Any]) -> None:
-    for field in ("evidence_sha256", "policy_hash"):
-        digest = review.get(field)
-        if digest is not None and (
-            not isinstance(digest, str) or not _SHA256_RE.fullmatch(digest)
-        ):
-            raise OriginalProvenanceError(
-                f"source read receipt review {field} is invalid"
-            )
 
 
-def _validate_review(review: Any, ref: dict[str, Any]) -> None:
-    if review is None:
-        return
-    value = _object(review, "source read receipt review")
-    _validate_review_shape(value)
-    _validate_review_source(value, ref)
-    _validate_review_hashes(value)
-    reviewed_at = value.get("reviewed_at")
-    if reviewed_at is not None:
-        _aware_datetime(reviewed_at, "source read receipt review reviewed_at")
 
 
 def _validate_manifest_identity(
@@ -327,3 +301,60 @@ def validate_manifest(
     )
     _validate_manifest_url(manifest)
     return manifest, published
+
+
+_UNSPECIFIED_YEAR = object()
+
+
+@dataclass(frozen=True, init=False)
+class VerifiedOriginalRead:
+    """One immutable, source-owned verification result; not a permission token.
+
+    Nested public dictionaries are materialized from frozen bytes. Callers may
+    edit those copies but cannot change the verified read being composed.
+    """
+    body: bytes
+    _ref: bytes
+    _receipt: bytes
+    _manifest: bytes
+    information: InformationEligibility
+    as_of: date
+
+    def __init__(self):
+        raise TypeError("raw source data must pass verify_original_read")
+
+    @property
+    def source_ref(self) -> dict:
+        return json.loads(self._ref)
+
+    @property
+    def read_receipt(self) -> dict:
+        return json.loads(self._receipt)
+
+    @property
+    def manifest(self) -> dict:
+        return json.loads(self._manifest)
+
+    def __iter__(self):
+        # Preserve the public reader's historical body, receipt, manifest unpack.
+        return iter((self.body, self.read_receipt, self.manifest))
+
+
+def verify_original_read(*, body: bytes, source_ref: dict, receipt: dict,
+                         manifest: dict, as_of: date,
+                         expected_fiscal_year: Any = _UNSPECIFIED_YEAR) -> VerifiedOriginalRead:
+    ref = validate_ref(source_ref)
+    read = validate_receipt(receipt, ref)
+    observed, information = validate_manifest(manifest, ref, as_of,
+        availability_evidence=read.get("availability_evidence"), current_read_at=read["read_at"])
+    if expected_fiscal_year is not _UNSPECIFIED_YEAR:
+        if type(observed["fiscal_year"]) is not type(expected_fiscal_year) or observed["fiscal_year"] != expected_fiscal_year:
+            raise OriginalProvenanceError("fiscal_year_mismatch: source manifest fiscal_year mismatch")
+    if not isinstance(body, bytes) or len(body) != ref["byte_size"] or hashlib.sha256(body).hexdigest() != ref["content_sha256"]:
+        raise OriginalProvenanceError("source_bytes_mismatch: source bytes SHA-256/size mismatch")
+    result = object.__new__(VerifiedOriginalRead)
+    for key, value in (("body", body), ("_ref", ref), ("_receipt", read), ("_manifest", observed),
+                       ("information", information), ("as_of", as_of)):
+        object.__setattr__(result, key, json.dumps(value, ensure_ascii=False, allow_nan=False).encode()
+                           if key in {"_ref", "_receipt", "_manifest"} else value)
+    return result

@@ -11,7 +11,7 @@ from company_wiki_narrative_contracts import NarrativeTransportError
 
 
 def _register(selector: selectors.BaseSelector, streams: tuple[BinaryIO, BinaryIO, BinaryIO],
-              data: bytes, limits: tuple[int, int]) -> None:
+              data: bytes, limits: tuple[int | None, int | None]) -> None:
     if sys.platform != "win32":
         for pipe in streams:
             os.set_blocking(pipe.fileno(), False)
@@ -40,21 +40,21 @@ def _write(selector: selectors.BaseSelector, key: selectors.SelectorKey, data: b
 
 
 def _read(selector: selectors.BaseSelector, key: selectors.SelectorKey,
-          buffers: list[bytearray], index: int, limit: int) -> None:
+          buffers: list[bytearray], index: int, limit: int | None) -> None:
     try:
-        chunk = os.read(key.fd, min(4096, limit - len(buffers[index]) + 1))
+        chunk = os.read(key.fd, 4096 if limit is None else min(4096, limit - len(buffers[index]) + 1))
     except BlockingIOError:
         return
     if not chunk:
         selector.unregister(key.fileobj)
         return
-    if len(buffers[index]) + len(chunk) > limit:
+    if limit is not None and len(buffers[index]) + len(chunk) > limit:
         raise NarrativeTransportError("unavailable", "reader_output_limit")
     buffers[index].extend(chunk)
 
 
 def transfer_posix(streams: tuple[BinaryIO, BinaryIO, BinaryIO], data: bytes,
-                   buffers: list[bytearray], limits: tuple[int, int], deadline: float) -> None:
+                   buffers: list[bytearray], limits: tuple[int | None, int | None], deadline: float) -> None:
     """Own and cancel local descriptors even if an unsupported child detaches."""
     cursor = 0
     try:

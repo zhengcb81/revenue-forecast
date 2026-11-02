@@ -253,34 +253,36 @@ def _prepare_source_ref_v2(
 ) -> dict:
     """Open and record one pathless candidate using company-wiki's verifier."""
     from company_wiki_source_reader_v2 import open_source_version_v2, validate_source_reader_receipt_version
-    from company_wiki_source_v2 import build_revenue_source_record_from_verified_read
+    from company_wiki_source_v2 import (build_revenue_source_record_from_verified_read,
+        build_revenue_source_record_from_original)
+    from contracts.company_wiki_original import VerifiedOriginalRead
 
     version = validate_source_reader_receipt_version(source_reader_receipt_version)
     deadline = _read_deadline(timeout_seconds)
     reader_options = {"source_reader_receipt_version": version} if version == "2.2" else {}
     fiscal_year = _validate_v2_candidate(request, handle)
     outcome, downloads = ("reused_existing", 0) if registered_read else _v2_resolution_events(handle)
-    body, receipt, manifest = open_source_version_v2(
+    original = open_source_version_v2(
         source_ref=handle["source_ref"],
         catalog_config=catalog_config,
         as_of_date=str(request.get("as_of_date", "")),
         expected_fiscal_year=fiscal_year,
         timeout_seconds=_remaining_timeout(deadline), **reader_options,
     )
+    body, receipt, manifest = original
     if registered_read:
         _registered_manifest_constraints(handle, manifest)
-    record = build_revenue_source_record_from_verified_read(
-        source_ref=handle["source_ref"],
-        read_receipt=receipt,
-        source_bytes=body,
-        source_manifest=manifest,
-        source_candidate=handle,
-        as_of_date=str(request.get("as_of_date", "")),
-        source_type=_revenue_source_type(handle),
-        publisher=str(handle.get("provider") or "company-wiki"),
-        page_or_section="1",
-        prompt_injection_status=handle.get("prompt_injection_status"),
-    )
+    options = dict(source_candidate=handle, source_type=_revenue_source_type(handle),
+        publisher=str(handle.get("provider") or "company-wiki"), page_or_section="1",
+        prompt_injection_status=handle.get("prompt_injection_status"))
+    if isinstance(original, VerifiedOriginalRead):
+        record = build_revenue_source_record_from_original(original=original, **options)
+    else:
+        # Historical injected/tuple readers are raw inputs, never trusted by a
+        # boolean. The public raw builder validates them at that boundary.
+        record = build_revenue_source_record_from_verified_read(source_ref=handle["source_ref"],
+            read_receipt=receipt, source_bytes=body, source_manifest=manifest,
+            as_of_date=str(request.get("as_of_date", "")), **options)
     record["reuse_receipt"] = {
         "parser_calls": None,
         "llm_calls": None,

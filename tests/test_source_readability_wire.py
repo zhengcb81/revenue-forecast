@@ -97,7 +97,7 @@ def test_bounded_source_readability_diagnostic_is_transported_exactly(code):
         "nonbool_limited",
     ],
 )
-def test_source_readability_diagnostic_rejects_wrong_shape_and_unbounded_data(mutation):
+def test_source_readability_observation_validates_truthful_shape_without_size_quota(mutation):
     row = deepcopy(diagnostic())
     if mutation == "unknown_code":
         row["code"] = "unpublished_source_rule"
@@ -132,11 +132,13 @@ def test_source_readability_diagnostic_rejects_wrong_shape_and_unbounded_data(mu
         row["known_unit_ids_limited"] = False
     else:
         row["known_unit_ids_limited"] = 1
-    with pytest.raises(
-        NarrativeTransportError,
-        match="invalid_reading_diagnostic|invalid_selection_trace_ids|reading_array_limit",
-    ):
+    if mutation == "too_many_ids":
+        # Cardinality is not a source permission; real IDs/counts still match.
         _selection_diagnostic(row, legacy_aggregate=False)
+    else:
+        with pytest.raises(NarrativeTransportError,
+                           match="invalid_reading_diagnostic|invalid_selection_trace_ids"):
+            _selection_diagnostic(row, legacy_aggregate=False)
 
 
 @pytest.mark.parametrize(

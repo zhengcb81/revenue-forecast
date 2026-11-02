@@ -12,7 +12,7 @@ import sys
 from typing import Sequence
 
 from company_wiki_narrative_contracts import (
-    REQUEST_LIMIT, NarrativeTransportError, canonical_bytes, decode_object,
+    NarrativeTransportError, canonical_bytes, decode_object,
 )
 from company_wiki_narrative_reader import find_narrative_reference, read_narrative_context
 
@@ -27,15 +27,22 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--company-wiki-catalog-config", type=Path, required=True)
     parser.add_argument("--operation", choices=("reference", "read"), default="read")
     parser.add_argument("--timeout-seconds", type=float, default=30)
+    parser.add_argument("--max-response-bytes", type=int, help="explicit transport resource budget, not a source quality threshold")
+    parser.add_argument("--max-receipt-bytes", type=int, help="optional explicit transport diagnostic budget")
     parser.add_argument("--reader-executable", help="explicit installed CWP command; default Python module")
     try:
         args = parser.parse_args(argv)
-        request = decode_object(sys.stdin.buffer.read(REQUEST_LIMIT + 1), limit=REQUEST_LIMIT)
+        request = decode_object(sys.stdin.buffer.read())
         command = [args.reader_executable] if args.reader_executable else None
         kwargs = {
             "catalog_config": args.company_wiki_catalog_config,
             "timeout_seconds": args.timeout_seconds, "reader_command": command,
         }
+        if args.operation == "read":
+            if args.max_response_bytes is not None:
+                kwargs["max_response_bytes"] = args.max_response_bytes
+            if args.max_receipt_bytes is not None:
+                kwargs["max_receipt_bytes"] = args.max_receipt_bytes
         if args.operation == "reference":
             result = find_narrative_reference(request, **kwargs)
         else:

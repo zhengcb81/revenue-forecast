@@ -19,7 +19,6 @@ from narrative_citation_context import citation_dependency
 BINDING_SCHEMA = "revenue-summary-use-binding/1"
 RECEIPT_SCHEMA = "revenue-summary-use/1"
 _CHOICE_FIELDS = {"schema_version", "summary_claim_id", "research_reason"}
-MAX_REASON_CHARS = 2048
 
 
 class SummaryUsageError(ValueError):
@@ -111,18 +110,11 @@ def _summary(value: dict, request: dict | None = None) -> tuple[dict, list[dict]
         or value.get("quality_status") == "needs_review",
         "summary_use_quality_mismatch",
     )
-    if "summary_assessment" in value:
-        report = _object(value["summary_assessment"], "summary_use_assessment_invalid")
-        _require(
-            report.get("claims_sha256") == canonical_sha256(claims),
-            "summary_use_claims_hash_mismatch",
-        )
-        _require(
-            report.get("semantic_status")
-            == report.get("subfact_coverage_status")
-            == "not_evaluated",
-            "summary_use_assessment_invalid",
-        )
+    bound_claims = value.get("validated_summary_claims_sha256")
+    if bound_claims is not None:
+        _require(bound_claims == canonical_sha256(claims), "summary_use_claims_hash_mismatch")
+    # Optional source observations never establish or deny source authenticity.
+    # The frozen span/citation/claim owners above still validate actual support.
     return draft, claims
 
 
@@ -167,8 +159,7 @@ def summary_use_entry(
     _require(
         _text(selected_id)
         and isinstance(reason, str)
-        and _text(reason)
-        and len(reason) <= MAX_REASON_CHARS,
+        and _text(reason),
         "summary_use_binding_invalid",
     )
     draft, claims = _summary(value, request)
@@ -245,7 +236,8 @@ def summary_use_receipt(value: dict, entries: list[dict]) -> dict:
     """Serialize only actual joined uses; reading alone has no such receipt."""
     _require(bool(entries), "summary_use_native_dependency_missing")
     draft, claims = _summary(value)
-    report = value.get("summary_assessment")
+    from narrative_summary_observations import assessment_for_use
+    report = assessment_for_use(value)
     return {
         "schema_version": RECEIPT_SCHEMA,
         "status": "used_in_parameter_rationale",

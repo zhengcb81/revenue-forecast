@@ -74,17 +74,24 @@ present and well-formed; only the host can certify they are truthful.
 
 ## Delivery narrative
 
-Every formal artifact must be accompanied by an explicit trust-boundary
-statement (fill the template at `docs/templates/trust-boundary.md` into
-`TRUST_BOUNDARY.md` next to the artifact, per `docs/session-checklist.md` §7).
-Chat summaries and report preambles must state the guarantee scope:
+Describe limitations in the generated report/receipt itself. No separate
+`TRUST_BOUNDARY.md`, manual signature or approval document is required to make a
+valid artifact deliverable. Structure/hash/recomputation establish internal
+consistency and input-output linkage, not external truth or search completeness.
+Optional host-signed events may record a stronger provenance claim, and any such
+claim must verify; absence of a signer is ordinary `unattested` provenance.
 
-- **Provable by structure / hash / recomputation**: schema conformance,
-  publication receipt, deterministic reproduction, input-output binding.
-- **Dependent on host trust**: tool invocation actually occurred, search
-  exhaustiveness, source bytes truthful before hashing, conclusion wording.
+The global publication index supports version discovery and may be rebuilt from
+validated saved artifacts with `publication_registry.rebuild_publications`.
+Index corruption or I/O failure is diagnostic and does not invalidate a different
+self-contained result. Old index bytes remain available for explicit audit; the
+runtime does not toggle filesystem permissions or read all historical rows as a
+publication precondition. Actual artifact writes remain atomic and must succeed
+before claiming that requested output was saved.
 
-The runtime never certifies the second class. A `formal_output_mode="formal"`
-artifact without a trust-boundary statement is incomplete for delivery; if the
-host environment provides signed tool-event receipts, the statement records
-that upgrade instead of the absence of attestation.
+Optional source review/assessment/trace anomalies do not deny a verified source.
+RF preserves unavailable/raw observations separately, never fabricates reviewed
+or semantic-accepted labels, and retains strict source-byte, reference, date,
+unit and formula checks. A captured context is an immutable projection returned
+by the one public wire validator; raw data is validated there rather than made
+trusted by a caller-supplied success flag.

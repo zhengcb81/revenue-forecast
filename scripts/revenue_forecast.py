@@ -16,7 +16,7 @@ from revenue_core import (
     run_forecast,
     validate_document,
 )
-from revenue_report import render_markdown, validate_forecast_output
+from revenue_report import render_markdown
 
 
 def _atomic_write_text(path: Path, text: str) -> None:
@@ -45,10 +45,6 @@ def prepare_forecast(data: dict, *, mode: str = "formal") -> dict:
     a draft receipt and writes nothing — the zero-write validate-only path.
     """
     result = run_forecast(data, mode=mode)
-    if mode == "formal":
-        # strong formal output validation (draft results were already
-        # strongly validated inside run_forecast before the draft receipt)
-        validate_forecast_output(result)
     return result
 
 

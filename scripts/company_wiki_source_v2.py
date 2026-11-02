@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-import hashlib
 from typing import Any
 
 from company_wiki_source import (
@@ -14,15 +13,14 @@ from company_wiki_source import (
     _iso_date,
     _required_text,
 )
-from contracts.evidence import build_host_receipt, ForecastInputError
-from contracts.source_provenance import validate_source_provenance
+from contracts.evidence import build_host_receipt
 
 
 from contracts.company_wiki_original import (
     OriginalProvenanceError, SOURCE_READER_TOOL,
     _OUTCOMES, _FORBIDDEN_LOCATION_FIELDS,
-    validate_ref as _validate_ref, validate_receipt as _validate_receipt,
-    validate_manifest as _validate_manifest,
+    validate_ref as _validate_ref,
+    VerifiedOriginalRead, verify_original_read,
 )
 _TOOL_NAME = SOURCE_READER_TOOL
 
@@ -102,15 +100,14 @@ def _validate_candidate(
 def _diagnostic_status(
     supplied: Any, candidate: dict[str, Any], receipt: dict[str, Any],
 ) -> str:
-    candidate_status = candidate.get("prompt_injection_status")
-    for value in (supplied, candidate_status):
-        if value is not None and value not in _PROMPT_INJECTION_STATUSES:
-            raise CompanyWikiSourceError("invalid prompt_injection_status")
-    review = receipt.get("review")
-    if isinstance(review, dict):
-        return review["status"]
-    status = supplied if supplied is not None else candidate_status
-    return status if status is not None else "not_reviewed"
+    from contracts.source_diagnostics import review_observation
+    observation = review_observation(receipt.get("review"), receipt.get("content_sha256"))
+    if observation["status"] == "available":
+        return observation["prompt_injection_status"]
+    if observation["status"] == "unavailable":
+        return "not_reviewed"
+    status = supplied if supplied is not None else candidate.get("prompt_injection_status")
+    return status if isinstance(status, str) and status in _PROMPT_INJECTION_STATUSES else "not_reviewed"
 
 
 def _display_title(manifest: dict[str, Any]) -> str:
@@ -136,15 +133,24 @@ def build_revenue_source_record_from_verified_read(
 ) -> dict[str, Any]:
     """Build a pathless, byte-verified source record with a read receipt."""
     try:
-        ref = _validate_ref(source_ref)
-        receipt = _validate_receipt(read_receipt, ref)
-        if not isinstance(source_bytes, bytes):
-            raise CompanyWikiSourceError("verified source bytes must be bytes")
-        if len(source_bytes) != ref["byte_size"] or hashlib.sha256(source_bytes).hexdigest() != ref["content_sha256"]:
-            raise CompanyWikiSourceError("verified source bytes SHA-256/size mismatch")
-        as_of = _iso_date(as_of_date, "as_of_date")
-        manifest, information = _validate_manifest(source_manifest, ref, as_of,
-            availability_evidence=receipt.get("availability_evidence"), current_read_at=receipt["read_at"])
+        original = verify_original_read(body=source_bytes, source_ref=source_ref,
+            receipt=read_receipt, manifest=source_manifest, as_of=_iso_date(as_of_date, "as_of_date"))
+        return build_revenue_source_record_from_original(original=original,
+            source_candidate=source_candidate, source_type=source_type, publisher=publisher,
+            page_or_section=page_or_section, prompt_injection_status=prompt_injection_status)
+    except OriginalProvenanceError as exc:
+        raise CompanyWikiSourceError(str(exc)) from exc
+
+
+def build_revenue_source_record_from_original(*, original: VerifiedOriginalRead,
+    source_candidate: dict[str, Any], source_type: str, publisher: str,
+    page_or_section: str, prompt_injection_status: str | None = "not_reviewed") -> dict[str, Any]:
+    """Compose the already verified immutable read, never a caller bypass flag."""
+    if not isinstance(original, VerifiedOriginalRead):
+        raise TypeError("original must be a VerifiedOriginalRead")
+    try:
+        ref, receipt, manifest = original.source_ref, original.read_receipt, original.manifest
+        information = original.information
         candidate = _validate_candidate(source_candidate, ref, manifest)
         if source_type not in _SOURCE_TYPES:
             raise CompanyWikiSourceError(f"unsupported revenue source_type: {source_type}")
@@ -174,6 +180,7 @@ def build_revenue_source_record_from_verified_read(
             timestamp=read_at,
         )
         capture["receipt_sha256"] = _canonical_sha256(capture)
+        from contracts.source_diagnostics import review_observation
         record = {
             "source_id": ref["source_id"],
             "source_type": source_type,
@@ -186,6 +193,7 @@ def build_revenue_source_record_from_verified_read(
             "capture": capture,
             "company_wiki_trace": {
                 "source_ref": dict(ref),
+                "review_observation": review_observation(receipt.get("review"), ref["content_sha256"]),
                 "read_receipt": dict(receipt),
                 "source_manifest": dict(manifest),
                 "source_candidate": {
@@ -196,14 +204,10 @@ def build_revenue_source_record_from_verified_read(
         }
         if receipt.get("availability_evidence") is not None:
             record["availability_evidence"] = dict(receipt["availability_evidence"])
-        try:
-            validate_source_provenance(record, as_of, information_eligibility=information)
-        except ForecastInputError as exc:
-            raise CompanyWikiSourceError(str(exc)) from exc
         return record
     except OriginalProvenanceError as exc:
         raise CompanyWikiSourceError(str(exc)) from exc
 
 
 
-__all__ = ["build_revenue_source_record_from_verified_read"]
+__all__ = ["build_revenue_source_record_from_verified_read", "build_revenue_source_record_from_original"]
