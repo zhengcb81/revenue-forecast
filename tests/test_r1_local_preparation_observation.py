@@ -76,6 +76,18 @@ def test_optional_observation_copied_opaque_without_inventing_usage(diagnostics)
     assert "acquisition_observation" not in observed
 
 
+
+def assert_primary_failure_retained(payload, observed, *, valid_observation=False):
+    complete = observed['filing_fetch_result']
+    assert complete['filing'] == payload['filing']
+    assert complete['status'] == payload['status']
+    assert complete['calls'] == payload['calls'] and complete['downloads'] == payload['downloads']
+    if valid_observation:
+        assert complete == payload
+    else:
+        assert OBSERVATION not in complete
+        assert complete == {key: value for key, value in payload.items() if key != OBSERVATION}
+
 def invalid(payload: dict, mutation: str) -> None:
     obs = payload[OBSERVATION]
     if mutation == "outer_type":
@@ -145,10 +157,11 @@ def test_bad_optional_sidecar_cannot_claim_complete_but_safe_cause_survives(muta
     payload = wire()
     invalid(payload, mutation)
     observed = failure_observation(payload)
-    assert "filing_fetch_result" not in observed
-    assert observed["upstream_cause"] == payload["filing"]["upstream_cause"]
-    assert observed["producer_exit_code"] == 0
-    assert observed["calls"] == 3 and observed["downloads"] == 0
+    valid = mutation in {'depth', 'list_cap', 'dict_cap', 'string_cap', 'key_cap', 'size_cap'}
+    assert_primary_failure_retained(payload, observed, valid_observation=valid)
+    assert observed['upstream_cause'] == payload['filing']['upstream_cause']
+    assert observed['producer_exit_code'] == 0
+    assert observed['calls'] == 3 and observed['downloads'] == 0
 
 
 @pytest.mark.parametrize("as_wrapper", [False, True])
@@ -163,20 +176,25 @@ def test_large_versioned_error_decodes_whole_not_truncated(as_wrapper):
 @pytest.mark.parametrize("mutation", [
     "version", "physical_key", "depth", "size_cap",
 ])
-def test_large_invalid_observation_does_not_bypass_legacy_stderr_cap(mutation):
+def test_large_observation_keeps_primary_failure_and_sanitizes_only_bad_sidecar(mutation):
     payload = wire(diagnostics=600)
     invalid(payload, mutation)
     raw = json.dumps(wrapped(payload), indent=2)
-    assert len(raw.encode("utf-8")) > 65536
-    assert parse_error_document(raw) is None
+    assert len(raw.encode('utf-8')) > 65536
+    parsed = parse_error_document(raw)
+    assert parsed == wrapped(payload)
+    assert_primary_failure_retained(payload, failure_observation(parsed),
+                                    valid_observation=mutation in {'depth', 'size_cap'})
 
 
-def test_legacy_base_limits_still_apply_with_large_extension():
+def test_complete_failure_preserves_large_finite_counters_and_rejects_wrong_types():
     payload = wire()
     huge_count = 10 ** 4200
-    payload["calls"] = payload["downloads"] = huge_count
-    payload["filing"]["attempts"] = payload["filing"]["producer_exit_code"] = huge_count
+    payload['calls'] = payload['downloads'] = huge_count
+    payload['filing']['attempts'] = payload['filing']['producer_exit_code'] = huge_count
     assert len(compact({k: v for k, v in payload.items() if k != OBSERVATION})) > 16384
+    assert validated_filing_fetch_failure(payload) == payload
+    payload['calls'] = 'not_a_counter'
     assert validated_filing_fetch_failure(payload) is None
 
 
@@ -185,18 +203,20 @@ def test_no_sibling_legacy_error_and_small_invalid_error_keep_old_safe_projectio
     del payload[OBSERVATION]
     assert validated_filing_fetch_failure(payload) == payload
     assert parse_error_document(json.dumps(wrapped(payload))) == wrapped(payload)
-    assert parse_error_document(json.dumps({"error": "a" * 65536})) is None
+    assert parse_error_document(json.dumps({'error': 'a' * 65536})) == {'error': 'a' * 65536}
+    assert failure_observation({'error': 'a' * 65536}) == {}
     small = wire()
-    invalid(small, "physical_key")
+    invalid(small, 'physical_key')
     parsed = parse_error_document(json.dumps(wrapped(small)))
     assert parsed is not None
-    assert "filing_fetch_result" not in failure_observation(parsed)
-    assert failure_observation(parsed)["upstream_cause"] == small["filing"]["upstream_cause"]
+    observed = failure_observation(parsed)
+    assert_primary_failure_retained(small, observed)
+    assert observed['upstream_cause'] == small['filing']['upstream_cause']
 
 
 @pytest.mark.parametrize("mutation", ["oversize_raw", "truncated", "duplicate",
                                     "nonfinite", "huge_wrapper", "unknown_wrapper"])
-def test_extended_decode_is_bounded_and_complete(mutation):
+def test_transport_bounded_error_decode_is_complete_and_rejects_invalid_json(mutation):
     raw = json.dumps(wrapped(wire(diagnostics=600)), indent=2)
     if mutation == "oversize_raw":
         raw = " " * (1024 * 1024) + raw
@@ -214,7 +234,14 @@ def test_extended_decode_is_bounded_and_complete(mutation):
         document = json.loads(raw)
         document["secret"] = "a" * 70000
         raw = json.dumps(document)
-    assert parse_error_document(raw) is None
+    parsed = parse_error_document(raw)
+    if mutation in {'truncated', 'duplicate', 'nonfinite'}:
+        assert parsed is None
+    else:
+        assert parsed == json.loads(raw)
+        projected = failure_observation(parsed)
+        assert projected['filing_fetch_result'] == wire(diagnostics=600)
+        assert 'secret' not in projected and 'error' not in projected
 
 
 def _replay_root(tmp_path: Path, payload: dict, *, exit_code: int) -> Path:
@@ -288,18 +315,18 @@ def test_unknown_owner_schema_grammar_has_only_total_wire_length_bound(schema):
     "https://example.test/private", "file:/C:/Users/example/raw.pdf",
     "FILE:/tmp/raw.pdf", "a" * 254 + "/12",
 ])
-def test_nested_schema_names_do_not_smuggle_paths_or_overlong_values(schema):
+def test_nested_schema_names_reject_addresses_without_length_cap(schema):
     payload = wire()
-    payload[OBSERVATION]["operations"][0]["schema_version"] = schema
+    payload[OBSERVATION]['operations'][0]['schema_version'] = schema
     observed = failure_observation(payload)
-    assert "filing_fetch_result" not in observed
-    assert observed["upstream_cause"] == payload["filing"]["upstream_cause"]
+    assert_primary_failure_retained(payload, observed, valid_observation=schema.startswith('a'))
+    assert observed['upstream_cause'] == payload['filing']['upstream_cause']
 
 
 def test_physical_key_hygiene_is_case_insensitive():
     payload = wire()
-    payload[OBSERVATION]["operations"][0]["PATH"] = "hidden"
-    assert "filing_fetch_result" not in failure_observation(payload)
+    payload[OBSERVATION]['operations'][0]['PATH'] = 'hidden'
+    assert_primary_failure_retained(payload, failure_observation(payload))
 
 @pytest.mark.parametrize("mutation", ["physical_key", "size_cap"])
 def test_actual_preparation_keeps_safe_cause_when_ff_optional_is_unsafe(tmp_path, mutation):
@@ -318,7 +345,7 @@ def test_actual_preparation_keeps_safe_cause_when_ff_optional_is_unsafe(tmp_path
     )
     assert completed.returncode == 3 and not completed.stdout
     observed = json.loads(completed.stderr)
-    assert "filing_fetch_result" not in observed
+    assert_primary_failure_retained(payload, observed, valid_observation=mutation == 'size_cap')
     assert observed["upstream_cause"] == payload["filing"]["upstream_cause"]
     assert observed["producer_exit_code"] == 0
     assert observed["calls"] == 3 and observed["downloads"] == 0

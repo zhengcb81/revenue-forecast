@@ -77,7 +77,7 @@ def validate_availability_evidence(value: Any, source_sha256: str | None) -> dic
     iso_date(value["available_by"], "availability_evidence.available_by")
     for field in ("evidence_ref", "locator"):
         text = value[field]
-        if not isinstance(text, str) or not text.strip() or text != text.strip() or len(text) > 2048 or any(ord(c) < 32 for c in text):
+        if not isinstance(text, str) or not text.strip() or text != text.strip() or any(ord(c) < 32 for c in text):
             raise SourceClockError(f"source_availability_invalid: {field} is invalid")
     ref = value["evidence_ref"]
     if ref.startswith(("/", "\\", "file:")) or re.match(r"[A-Za-z]:[\\/]", ref):

@@ -166,9 +166,6 @@ def _validate_growth_driver_evidence(
         isinstance(evidence_nodes, list) and evidence_nodes,
         f"{driver_id}.evidence_nodes must be a non-empty list",
     )
-    require(
-        len(evidence_nodes) <= 10, f"{driver_id}.evidence_nodes cannot exceed 10 items"
-    )
     normalized_nodes: list[dict[str, Any]] = []
     for position, node in enumerate(evidence_nodes):
         require(
@@ -475,8 +472,8 @@ def validate_growth_driver_tree(
         }
 
     require(
-        1 <= len(drivers) <= 10,
-        "growth_driver_tree modeled status requires 1-10 drivers",
+        bool(drivers),
+        "growth_driver_tree modeled status requires at least one driver",
     )
     segment_names = [
         segment.get("name")

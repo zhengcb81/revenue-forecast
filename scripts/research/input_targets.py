@@ -102,10 +102,6 @@ def build_management_target(
             f"{name} is required to build management target {target_id}",
         )
     require(
-        10 <= len(excerpt.strip()) <= 500,
-        f"excerpt for {target_id} must contain 10-500 characters",
-    )
-    require(
         measurement_basis in MANAGEMENT_TARGET_MEASUREMENT_BASES,
         f"invalid measurement basis for {target_id}: {measurement_basis}",
     )

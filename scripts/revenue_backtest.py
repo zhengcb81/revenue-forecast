@@ -325,7 +325,7 @@ def _validate_actual_claims(
             )
         excerpt = claim["excerpt"].strip()
         require(
-            10 <= len(excerpt) <= 500
+            bool(excerpt)
             and claim.get("excerpt_sha256") == text_sha256(excerpt),
             f"actual claim excerpt/hash mismatch: {claim_id}",
         )
