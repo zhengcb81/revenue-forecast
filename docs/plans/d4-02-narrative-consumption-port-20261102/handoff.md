@@ -7,7 +7,7 @@
 | 项 | 值 |
 |---|---|
 | 基线 HEAD | `4a56e920`（`docs: reopen decoupling gaps after full entrypoint review`） |
-| 交付 commit | 见本次提交（handoff 与该提交同批；commit 记录在本文件所在目录的提交说明中） |
+| 交付 commit | `7688226d`（8 files / +761 −23；本 handoff 在该提交内，随后仅追加本行记录） |
 | 工作树 | 只含本卡路径 + 既有定时产物（`assurance/runs/*`）与既有未跟踪目录（`.planning/`、`delivery/`、`output/`），未触碰 |
 | 跨仓改动 | 0（CWP/FF/StockWiki/ET/AUDIT 未改；CWP `integration/`、ROOT runner 未改） |
 
