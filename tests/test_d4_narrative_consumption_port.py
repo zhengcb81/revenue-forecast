@@ -528,7 +528,7 @@ def test_d4_build_auditable_case_forwards_the_narrative_reader_port(tmp_path):
     validate_document(linked)
 
 
-def test_d4_prepared_source_reaches_adoption_through_replaceable_ports(tmp_path):
+def test_d4_prepared_source_reaches_adoption_through_replaceable_ports(tmp_path, monkeypatch):
     """The card's pass criterion: prepare, real consume, RF validation, report."""
     from source_preparation import prepare_registered_source_result
     from test_company_wiki_source_v2 import _candidate
@@ -536,6 +536,14 @@ def test_d4_prepared_source_reaches_adoption_through_replaceable_ports(tmp_path)
     from test_research_evidence_roles import calibrated_document
 
     document = calibrated_document()
+    assert not any(name.split(".")[0] == "company_wiki" for name in sys.modules)
+    # Any import of company_wiki in this process hits the raising stub, so the
+    # prepare half is covered as well as the CLI child below.
+    stub = tmp_path / "no-cwp" / "company_wiki"
+    stub.mkdir(parents=True)
+    (stub / "__init__.py").write_text(
+        "raise AssertionError('the preparation chain imported company_wiki')\n", encoding="utf-8")
+    monkeypatch.syspath_prepend(str(stub.parent))
     receipt = _receipt()
     source_command, source_wire = _source_producer(
         tmp_path / "source-producer", BODY, canonical_bytes(receipt))
@@ -551,11 +559,6 @@ def test_d4_prepared_source_reaches_adoption_through_replaceable_ports(tmp_path)
     data, source_id = _write_assembly_fixture(
         tmp_path, request, _binding(value, "0_base_2026"), document, preparation=prepared)
     assert source_id == prepared["source"]["source_id"]
-    # Any import of company_wiki in the assembly process hits this raising stub.
-    stub = tmp_path / "no-cwp" / "company_wiki"
-    stub.mkdir(parents=True)
-    (stub / "__init__.py").write_text(
-        "raise AssertionError('the assembly chain imported company_wiki')\n", encoding="utf-8")
     output = tmp_path / "assembled"
     run = subprocess.run(
         [sys.executable, "-X", "utf8", "-B", str(ROOT / "tools/build_auditable_case.py"),

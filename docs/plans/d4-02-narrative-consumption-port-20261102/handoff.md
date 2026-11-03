@@ -7,8 +7,8 @@
 | 项 | 值 |
 |---|---|
 | 基线 HEAD | `4a56e920`（`docs: reopen decoupling gaps after full entrypoint review`） |
-| 交付 commit | `7688226d`（主实现）+ `cac65c8`（补记交付 hash）+ `7e8a46cd`（审计整改：全链用例、双 binding 用例、CWP 桩遮蔽、本文件重写）；随后一个提交只更新本行 |
-| 工作树 | 本卡路径之外只有：`assurance/runs/*` 四个定时 T2/T3 账本的**既有**未提交变更（内容日期 10-04…11-01，会话开始时即为 `M`，两次提交都未包含；pre-commit 的 unstaged stash/restore 会刷新其 mtime，但内容不由本卡产生），以及既有未跟踪目录 `.planning/`、`delivery/`、`output/`。未触碰 |
+| 交付 commit | `7688226d`（主实现）+ `cac65c8`（补记交付 hash）+ `7e8a46cd`（审计整改：全链用例、双 binding 用例、CLI 侧 CWP 桩、本文件重写）+ 随后一次终审整改（prepare 侧也加桩，并修正本文件措辞） |
+| 工作树 | 本卡路径之外只有：`assurance/runs/*` 四个定时 T2/T3/月度账本的**既有**未提交变更（账本内 run 时间 10-04…11-02，会话开始时即为 `M`，两次提交都未包含；pre-commit 的 unstaged stash/restore 会刷新其 mtime，但内容不由本卡产生），以及既有未跟踪目录 `.planning/`、`delivery/`、`output/`。未触碰 |
 | 跨仓改动 | 0（CWP/FF/StockWiki/ET/AUDIT 未改；CWP `integration/`、ROOT runner 未改） |
 
 修改路径：
@@ -57,8 +57,8 @@
 
 ## 测试设计要点
 
-- 两个生产者都是临时目录内**独立命名**的单文件脚本（`independent_summary_producer.py`、`independent_source_producer.py`），以 `-I -S -B` 启动：`-I` 忽略 `PYTHONPATH`/用户 site，`-S` 不加载 site-packages。测试在 `PYTHONPATH` 上放置一个 `__init__` 会抛异常的 `company_wiki` 桩，生产者显式 `import company_wiki` 后记录 `ModuleNotFoundError`；同时断言 `sys.modules` 无 `company_wiki*`、`sys.path` 无 site-packages/本仓路径。负载性的断言是请求字节哈希与 argv（`--config <opaque handle> --operation read`、`--document-id/--source-id/--content-sha256/--purpose`），`-I -S` 只保证隔离前提。
-- 两个 CLI 子进程也把同一个会抛异常的 `company_wiki` 桩放到 `PYTHONPATH` 首位：该桩会遮蔽本机 editable 安装，任何跨过端口的 CWP 导入都会让 CLI 直接失败，因此「全链无 CWP package」是被证明的，而不是仅靠 argv 推断。
+- 两个生产者都是临时目录内**独立命名**的单文件脚本（`independent_summary_producer.py`、`independent_source_producer.py`），以 `-I -S -B` 启动。生产者侧的可达性由 `-S`（不加载 site-packages）保证，`-I` 只是让 `PYTHONPATH` 也被忽略；生产者显式 `import company_wiki` 后记录 `ModuleNotFoundError`，并断言 `sys.modules` 无 `company_wiki*`、`sys.path` 无 site-packages/本仓路径。测试进程另把同一桩放到 `PYTHONPATH` 上，用于证明生产者看到的该变量确实指向一个 company_wiki 而不起作用。负载性的断言是请求字节哈希与 argv（`--config <opaque handle> --operation read`、`--document-id/--source-id/--content-sha256/--purpose`），`-I -S` 只保证隔离前提。
+- 「全链无 CWP package」两侧都加桩：prepare 在测试进程内执行，先把抛异常的 `company_wiki` 桩 `syspath_prepend` 到 `sys.path[0]`（并断言进程内此前未导入过它）；两个 CLI 子进程则把同一桩放到 `PYTHONPATH`（先于 site-packages；CLI 自己会把 `scripts/` 插到 `sys.path[0]`，该目录下没有 `company_wiki` 包）。桩会遮蔽本机 editable 安装，任何跨过端口的 CWP 导入都会直接失败，因此该结论是被证明的，而不是靠 argv 推断。`test_d4_build_auditable_case_forwards_the_narrative_reader_port` 本身只证端口透传，未加桩。
 - 生产者回放仓内冻结的公开 wire，但把父来源重定向到 RF 自己的合成来源 fixture（`tests/fixtures/cwp_source_ref_v2.json`），因此父来源绑定、span 身份、摘要引用、lineage 字节范围都是真实可验的；所有字节仍由未改动的 RF reader 校验，显式端口读出的 context 与 `validate_narrative_response` 直接验证结果逐字段相等。
 - 端口失败模式用 5 个独立进程覆盖：`exit 2 + stdout 有体`、`exit 2 + 空 stdout + 拒绝回执`、`exit 2 + traceback`、`exit 0 + 字节不符`、`exit 0 + 空回执`，全部命名拒绝且不落证据。
 - 网络/原件/付费模型：模块级 autouse 对**测试进程**断 `socket.connect`/`create_connection`/`urlopen`；子进程不受该补丁约束，它们只读 `tmp_path` 内的 fixture 字节，且测试断言其 argv 与读取计数——不存在对外请求路径。原件与模型调用为 0（只有冻结 wire 回放与合成来源字节）。
@@ -73,6 +73,10 @@
   - F3 部分处理：交接面是进程内组合边界而非凭证（契约模块 `_context_from_verified` 可构造 context），已在 docstring/文档写明信任边界，并加 verified 回执守卫。
 - 第 2 轮（同一独立审查线复审）：**APPROVED**。逐项复验 F1 的六个 `expected_source` 字段、v3 六个 issuer 键与 issuer 子集、`as_of_date=None`、互斥规则、字符串命令、两工具 CLI 真实调用，确认无回归；确认写域合规。复审提的 N1（拒绝异常类型写进文档）、N4（装配配方补新 flag）、N5（端口文档拆行）已落实。
 - 第 3 轮（独立完整性审计，逐条对卡）：**INCOMPLETE**。关键发现：交付测试没有任何一例从 `prepare` 开始（通过标准未证）；两个 CLI 子进程未与宿主 sys.path 上的 CWP checkout 隔离，因此「全链无 CWP」只是推断；另指出 handoff 若干措辞过宽（stash 复跑在交付后不可照做、`bindings` 多选无用例、网络门禁只覆盖父进程）。**整改**：新增全链用例（真实 `prepare` + 真实 CLI + 校验 + 报告，双端点、CWP 桩遮蔽）、新增双 binding 单次读取用例、两个 CLI 测试加 CWP 桩、本文件按实测重写。
+
+- 第 4 轮（终审，逐条对卡 16 项）：**COMPLETE**。逐项复验写域、17 例测试、基线可区分（`4a56e920` 上 15 例失败）、两工具真实子进程、拒绝路径与 handoff 数字。残留一条证据落点：prepare 在测试进程内执行、当时未加 CWP 桩，因此「全链无 CWP」的最后半格依赖复审者自己复跑。**已整改**：该用例现在先把抛异常的桩 `syspath_prepend` 进 `sys.path` 并断言进程内此前未导入 `company_wiki`，交付物自身即可证明两侧都无 CWP 导入；同时按终审意见修正了本文件三处措辞（assurance 账本时间区间、桩的 sys.path 位置、生产者侧隔离来自 `-S`）。
+
+- 第 4 轮（终审，逐条对卡 16 项）：**COMPLETE**。逐项复验写域、17 例测试、基线可区分（`4a56e920` 上 15 例失败）、两工具真实子进程、拒绝路径与 handoff 数字。残留一条证据落点：prepare 在测试进程内执行、当时未加 CWP 桩，因此「全链无 CWP」的最后半格依赖复审者自己复跑。**已整改**：该用例现在先把抛异常的桩 `syspath_prepend` 进 `sys.path` 并断言进程内此前未导入 `company_wiki`，交付物自身即可证明两侧都无 CWP 导入；同时按终审意见修正了本文件三处措辞（assurance 账本时间区间、桩的 sys.path 位置、生产者侧隔离来自 `-S`）。
 
 ## 临时资料清理
 
