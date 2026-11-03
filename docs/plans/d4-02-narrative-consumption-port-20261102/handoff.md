@@ -7,7 +7,7 @@
 | 项 | 值 |
 |---|---|
 | 基线 HEAD | `4a56e920`（`docs: reopen decoupling gaps after full entrypoint review`） |
-| 交付 commit | `7688226d`（主实现）+ `cac65c8`（补记交付 hash）+ 紧随其后的审计整改提交（全链用例、双 binding 用例、CWP 桩遮蔽与本文件重写；hash 见 `git log --oneline -3`） |
+| 交付 commit | `7688226d`（主实现）+ `cac65c8`（补记交付 hash）+ `7e8a46cd`（审计整改：全链用例、双 binding 用例、CWP 桩遮蔽、本文件重写）；随后一个提交只更新本行 |
 | 工作树 | 本卡路径之外只有：`assurance/runs/*` 四个定时 T2/T3 账本的**既有**未提交变更（内容日期 10-04…11-01，会话开始时即为 `M`，两次提交都未包含；pre-commit 的 unstaged stash/restore 会刷新其 mtime，但内容不由本卡产生），以及既有未跟踪目录 `.planning/`、`delivery/`、`output/`。未触碰 |
 | 跨仓改动 | 0（CWP/FF/StockWiki/ET/AUDIT 未改；CWP `integration/`、ROOT runner 未改） |
 
