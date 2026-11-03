@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import socket
 import subprocess
 import sys
@@ -90,6 +91,34 @@ sys.stderr.buffer.flush()
 '''
 
 
+SOURCE_PRODUCER = '''\
+"""Synthetic original-source producer: bytes on stdout, one receipt line."""
+import json
+import sys
+from pathlib import Path
+
+home = Path(__file__).resolve().parent
+wire = home / "wire"
+try:
+    import company_wiki  # noqa: F401
+except ImportError as exc:
+    cwp_import = type(exc).__name__
+else:
+    cwp_import = "imported"
+with (wire / "calls.jsonl").open("a", encoding="utf-8") as log:
+    log.write(json.dumps({
+        "cwp_import": cwp_import,
+        "cwp_modules": sorted(name for name in sys.modules if name.split(".")[0] == "company_wiki"),
+        "sys_path": sys.path,
+        "argv": sys.argv[1:],
+    }) + "\\n")
+sys.stdout.buffer.write((wire / "body.bin").read_bytes())
+sys.stdout.buffer.flush()
+sys.stderr.buffer.write((wire / "receipt.json").read_bytes())
+sys.stderr.buffer.flush()
+'''
+
+
 @pytest.fixture(autouse=True)
 def offline_and_path_free(monkeypatch):
     """No network, and no inherited PYTHONPATH the producer could import from."""
@@ -163,6 +192,17 @@ def _producer(root, body, receipt, mode="ok"):
     return [sys.executable, "-I", "-S", "-B", str(script)], wire
 
 
+def _source_producer(root, body, receipt):
+    """Own directory, own name, own interpreter; the payload sits beside it."""
+    wire = root / "wire"
+    wire.mkdir(parents=True)
+    (wire / "body.bin").write_bytes(body)
+    (wire / "receipt.json").write_bytes(receipt + b"\n")
+    script = root / "independent_source_producer.py"
+    script.write_text(SOURCE_PRODUCER, encoding="utf-8")
+    return [sys.executable, "-I", "-S", "-B", str(script)], wire
+
+
 def _calls(wire):
     log = wire / "calls.jsonl"
     if not log.is_file():
@@ -178,8 +218,8 @@ def _document(value):
     return data
 
 
-def _binding(value, parameter_id=PARAMETER):
-    return {"span_id": value["evidence_spans"][0]["span_id"], "claim_id": CLAIM,
+def _binding(value, parameter_id=PARAMETER, claim_id=CLAIM):
+    return {"span_id": value["evidence_spans"][0]["span_id"], "claim_id": claim_id,
             "parameter_id": parameter_id, "support_type": "rationale_support"}
 
 
@@ -253,6 +293,21 @@ def test_d4_one_consumption_reads_once_and_reaches_claim_parameter_formula_repor
     assert linked["consolidated_forecast"] == baseline["consolidated_forecast"]
     assert linked["segments"] == baseline["segments"]
     assert CLAIM in [item["claim_id"] for item in linked["evidence_claims"]]
+
+
+def test_d4_two_bindings_in_one_consumption_still_read_once(tmp_path):
+    request, command, wire, config, value = _port(tmp_path)
+    data = _document(value)
+    bindings = [_binding(value, "0_base_2026"), _binding(value, "0_low_2026", "d4-second")]
+    updated, consumed = consume_narrative_input(
+        data, request=request, bindings=bindings, source_id="filing",
+        catalog_config=config, reader_command=command)
+    assert len(_calls(wire)) == 1
+    assert consumed["status"] == "consumed"
+    assert [item["parameter_id"] for item in consumed["dependencies"]] == ["0_base_2026", "0_low_2026"]
+    assert all(item["formula_refs"] for item in consumed["dependencies"])
+    assert {CLAIM, "d4-second"} <= {item["claim_id"] for item in updated["evidence_claims"]}
+    validate_document(updated)
 
 
 def test_d4_verified_context_binds_without_a_second_read_or_request(tmp_path):
@@ -391,11 +446,11 @@ def test_d4_projected_context_handover_checks_the_issuer_constraint():
 # C-2: both public tools forward the same connection
 # ---------------------------------------------------------------------------
 
-def _write_assembly_fixture(root, request, binding, document):
+def _verified_source(document):
+    """In-process verified read; the full-chain test replaces it with a real prepare."""
     from company_wiki_source_v2 import build_revenue_source_record_from_verified_read
     from test_company_wiki_source_reader_v2 import BODY, _receipt
 
-    data = document
     raw_receipt = _receipt()
     manifest = raw_receipt.pop("manifest")
     candidate = {"status": "source_candidate", "source_ref": _ref(),
@@ -403,10 +458,19 @@ def _write_assembly_fixture(root, request, binding, document):
                  "document_kind": manifest["document_kind"], "fiscal_year": manifest["fiscal_year"],
                  "fiscal_period": manifest["fiscal_period"],
                  "resolution_outcome": "reused_existing", "download_events": 0}
-    source = build_revenue_source_record_from_verified_read(
+    return build_revenue_source_record_from_verified_read(
         source_ref=_ref(), read_receipt=raw_receipt, source_bytes=BODY, source_manifest=manifest,
-        source_candidate=candidate, as_of_date=data["as_of_date"], source_type="regulatory_filing",
-        publisher="synthetic producer fixture", page_or_section="1")
+        source_candidate=candidate, as_of_date=document["as_of_date"],
+        source_type="regulatory_filing", publisher="synthetic producer fixture",
+        page_or_section="1")
+
+
+def _write_assembly_fixture(root, request, binding, document, preparation=None):
+    data = document
+    if preparation is None:
+        preparation = {"schema_version": "source-preparation-result/1",
+                       "source": _verified_source(data), "filing_fetch": None, "narrative": None}
+    source = preparation["source"]
     source_id = source["source_id"]
 
     def rekey(value):
@@ -422,8 +486,6 @@ def _write_assembly_fixture(root, request, binding, document):
         if claim["source_id"] == source_id:
             claim["content_sha256"] = source["capture"]["snapshot_sha256"]
             claim["capture_receipt_sha256"] = source["capture"]["receipt_sha256"]
-    preparation = {"schema_version": "source-preparation-result/1", "source": source,
-                   "filing_fetch": None, "narrative": None}
     research = data.pop("operating_research")
     payloads = {"input": data, "research": research, "preparation": preparation,
                 "discovery": {"schema_version": "synthetic-discovery-receipt/1", "items": [],
@@ -466,12 +528,71 @@ def test_d4_build_auditable_case_forwards_the_narrative_reader_port(tmp_path):
     validate_document(linked)
 
 
+def test_d4_prepared_source_reaches_adoption_through_replaceable_ports(tmp_path):
+    """The card's pass criterion: prepare, real consume, RF validation, report."""
+    from source_preparation import prepare_registered_source_result
+    from test_company_wiki_source_v2 import _candidate
+    from test_company_wiki_source_reader_v2 import BODY, _receipt
+    from test_research_evidence_roles import calibrated_document
+
+    document = calibrated_document()
+    receipt = _receipt()
+    source_command, source_wire = _source_producer(
+        tmp_path / "source-producer", BODY, canonical_bytes(receipt))
+    prepared = prepare_registered_source_result(
+        _candidate(_ref(), receipt["manifest"]), as_of_date=document["as_of_date"],
+        company_wiki_catalog_config=tmp_path / "opaque-source.handle",
+        source_reader_command=source_command)
+    assert prepared["schema_version"] == "source-preparation-result/1"
+    assert prepared["source"]["capture"]["snapshot_sha256"] == _ref()["content_sha256"]
+    assert len(_calls(source_wire)) == 1
+
+    request, command, wire, config, value = _port(tmp_path)
+    data, source_id = _write_assembly_fixture(
+        tmp_path, request, _binding(value, "0_base_2026"), document, preparation=prepared)
+    assert source_id == prepared["source"]["source_id"]
+    # Any import of company_wiki in the assembly process hits this raising stub.
+    stub = tmp_path / "no-cwp" / "company_wiki"
+    stub.mkdir(parents=True)
+    (stub / "__init__.py").write_text(
+        "raise AssertionError('the assembly chain imported company_wiki')\n", encoding="utf-8")
+    output = tmp_path / "assembled"
+    run = subprocess.run(
+        [sys.executable, "-X", "utf8", "-B", str(ROOT / "tools/build_auditable_case.py"),
+         "--company", "synthetic", "--input", str(tmp_path / "input.json"),
+         "--research", str(tmp_path / "research.json"),
+         "--preparation", str(tmp_path / "preparation.json"),
+         "--discovery", str(tmp_path / "discovery.json"), "--as-of", data["as_of_date"],
+         "--output-root", str(output), "--narrative-request", str(tmp_path / "narrative.json"),
+         "--bindings", str(tmp_path / "bindings.json"), "--source-id", source_id,
+         "--catalog-config", str(config),
+         "--narrative-reader-command-json", json.dumps(command)],
+        capture_output=True, text=True, encoding="utf-8", timeout=300, check=False,
+        env={**os.environ, "PYTHONPATH": str(stub.parent)},
+    )
+    assert run.returncode == 0, run.stderr[-2000:]
+    assert len(_calls(wire)) == 1 and len(_calls(source_wire)) == 1
+    assembly = json.loads((output / "assembly.json").read_text(encoding="utf-8"))
+    assert assembly["narrative_status"] == "consumed"
+    assert assembly["source_bindings"][0]["snapshot_sha256"] == _ref()["content_sha256"]
+    linked = json.loads((output / "linked-input.json").read_text(encoding="utf-8"))
+    validate_document(linked)
+    claim = next(item for item in linked["evidence_claims"] if item["claim_id"] == CLAIM)
+    assert claim["content_sha256"] == prepared["source"]["capture"]["snapshot_sha256"]
+    result = run_forecast(linked)
+    assert CLAIM in [item["claim_id"] for item in result["evidence_claims"]]
+
+
 def test_d4_run_narrative_consumption_e2e_forwards_the_narrative_reader_port(tmp_path):
     request, command, wire, config, value = _port(tmp_path)
     data = _document(value)
     for name, payload in (("input", data), ("narrative", request), ("bindings", [_binding(value)])):
         (tmp_path / f"{name}.json").write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
     output = tmp_path / "consumed"
+    stub = tmp_path / "no-cwp-e2e" / "company_wiki"
+    stub.mkdir(parents=True)
+    (stub / "__init__.py").write_text(
+        "raise AssertionError('the consumption CLI imported company_wiki')\n", encoding="utf-8")
     run = subprocess.run(
         [sys.executable, "-X", "utf8", "-B", str(ROOT / "tools/run_narrative_consumption_e2e.py"),
          "--input", str(tmp_path / "input.json"),
@@ -480,6 +601,7 @@ def test_d4_run_narrative_consumption_e2e_forwards_the_narrative_reader_port(tmp
          "--catalog-config", str(config), "--output-root", str(output),
          "--narrative-reader-command-json", json.dumps(command)],
         capture_output=True, text=True, encoding="utf-8", timeout=300, check=False,
+        env={**os.environ, "PYTHONPATH": str(stub.parent)},
     )
     assert run.returncode == 0, run.stderr[-2000:]
     assert len(_calls(wire)) == 1
