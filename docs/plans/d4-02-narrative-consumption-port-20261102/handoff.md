@@ -76,8 +76,6 @@
 
 - 第 4 轮（终审，逐条对卡 16 项）：**COMPLETE**。逐项复验写域、17 例测试、基线可区分（`4a56e920` 上 15 例失败）、两工具真实子进程、拒绝路径与 handoff 数字。残留一条证据落点：prepare 在测试进程内执行、当时未加 CWP 桩，因此「全链无 CWP」的最后半格依赖复审者自己复跑。**已整改**：该用例现在先把抛异常的桩 `syspath_prepend` 进 `sys.path` 并断言进程内此前未导入 `company_wiki`，交付物自身即可证明两侧都无 CWP 导入；同时按终审意见修正了本文件三处措辞（assurance 账本时间区间、桩的 sys.path 位置、生产者侧隔离来自 `-S`）。
 
-- 第 4 轮（终审，逐条对卡 16 项）：**COMPLETE**。逐项复验写域、17 例测试、基线可区分（`4a56e920` 上 15 例失败）、两工具真实子进程、拒绝路径与 handoff 数字。残留一条证据落点：prepare 在测试进程内执行、当时未加 CWP 桩，因此「全链无 CWP」的最后半格依赖复审者自己复跑。**已整改**：该用例现在先把抛异常的桩 `syspath_prepend` 进 `sys.path` 并断言进程内此前未导入 `company_wiki`，交付物自身即可证明两侧都无 CWP 导入；同时按终审意见修正了本文件三处措辞（assurance 账本时间区间、桩的 sys.path 位置、生产者侧隔离来自 `-S`）。
-
 ## 临时资料清理
 
 会话中用于确认 fixture 与链路的临时探针目录（`%TEMP%/d4probe`）已删除；仓内没有本卡产生的临时目录或残留文件。`git status` 的未跟踪目录均为本卡之前既存。
@@ -87,5 +85,5 @@
 1. **ROOT 组合待办（D4-06）**：跨仓组合仍归 ROOT——StockWiki→CWP→RF prepare→摘要采用→AUDIT 导入的那一次总装，本卡只证到 RF 内部全链（prepare→consume→校验→报告，双端点、无 CWP 导入）。组合时两处命令都用 `--narrative-reader-command-json`（或 prepare 的 `narrative_reader_command`）指向同一端点。
 2. **F2（既有，写域外）**：`scripts/source_preparation.py:431` 的 `external` 只由 `source_reader_command` 判定。只把**摘要** reader 换成外部端点、原文 reader 仍走本地默认时，不透明 catalog 句柄会被当本地文件校验而在读取前失败（`resolve(strict=True)`）。绕行：同时传 `source_reader_command`（本卡的全链用例即如此）。该文件属 D3 写域，本卡未改，建议 ROOT 或 D3 线收口。
 3. **F11（设计外限）**：两个 CLI 各自只读一次；`prepare` 返回的是消费回执而非可重验的 context，没有便携 context 载体，因此 `prepare` 后再 `build` 会对同一 artifact 各读一次。已在 `references/source_ports.md` 与 docstring 写明；进程内编排可用 `context=` 免二次读取。
-4. **全套件未跑**：按卡片只跑本卡新增与受影响 RF 快测。另注：当前 HEAD 上 `tests/test_ca204_monthly_generalization.py`、`test_ca305_six_problems.py`、`test_zr1008_new_chain_cutover.py` 引用已不存在的 `test_zr709_zijin_journey`，整仓收集会失败；与本卡无关，未处理。
+4. **全套件未跑**：按卡片只跑本卡新增与受影响 RF 快测。另注：当前 HEAD 上 `tests/test_ca204_monthly_generalization.py` 与 `tests/test_zr1008_new_chain_cutover.py` import 已不存在的 `test_zr709_zijin_journey`，整仓收集以 2 个收集错误失败（`tests/test_ca305_six_problems.py` 仅以字符串提及该文件名，不影响收集）；与本卡无关，未处理。
 5. 本卡不构成真实摘要/缓存/RF 研究采用的业务验收；隔离合成端点不能替代后续真实业务链。
