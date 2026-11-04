@@ -18,3 +18,8 @@ D3收尾格式补漏：回执的单行/末尾换行不作许可；仍拒绝多�
 ## 2026-11-02 — 全面复核校正
 
 ROOT三独立审查与小探针确认六项解耦遗漏，原D3覆盖范围不足以说明全局完成。本仓业务状态改为DEFERRED_UNTIL_D4_CLOSURE；本次仅更新计划，未实施产品改造。本仓实际摘要consume与两工具漏接可替换端点，归ROOT D4-02。完整报告：C:/Users/郑曾波/Projects/company-wiki/docs/plans/du11-source-closure-2026-10-18/review/decoupling-recheck-20261102/README.md。保留原研究/attempt未完责任及既有WIP。
+
+
+## 2026-11-04 — D4解除前置依赖
+
+ROOT完成D4-01..06并通过组合验收（27 passed / 0 skipped / 0 failed，独立审查通过）。本计划从等待D4改为UNBLOCKED_READY_NOT_STARTED；仅解除依赖，RF业务实施尚未启动，等待ROOT按总计划明确调度。收据：C:/Users/郑曾波/Projects/company-wiki/docs/plans/du11-source-closure-2026-10-18/review/d4-closeout-20261104/README.md。

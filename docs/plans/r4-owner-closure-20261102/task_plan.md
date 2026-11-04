@@ -1,15 +1,15 @@
 # RF仓内主线整改：R4计算语义闭合
 
-状态：DEFERRED_UNTIL_D4_CLOSURE / 全面复核发现解耦遗漏，ROOT集中补齐后再启动本仓业务。PLAN_ID=r4-owner-closure-20261102；PWF_PLAN_ROOT=docs/plans。
+状态：READY_NOT_STARTED / D4-01..06 已由 ROOT 于 2026-11-04 完成并通过组合验收；本仓业务仍未启动，解锁不等于自动开工。PLAN_ID=r4-owner-closure-20261102；PWF_PLAN_ROOT=docs/plans。
 工作仓：C:/Users/郑曾波/Projects/revenue-forecast。解耦源码基线f09755277473168fa439b77e6b4c1fa4af44a802（启动时核主线及保留WIP）。
 总控：C:/Users/郑曾波/Projects/company-wiki/docs/plans/du11-source-closure-2026-10-18/review/architecture-reassessment-20261102/COORDINATION.md。
-这是既有R4责任的本仓实施入口，不是新目标、不重建预测引擎。解耦阶段ROOT集中负责必要跨仓改造；解耦验收后另一harness只写AUDIT，你只写RF，目录不重叠。解耦D3通过后再激活本仓业务任务；不能提前离线施工。
+这是既有R4责任的本仓实施入口，不是新目标、不重建预测引擎。解耦阶段ROOT集中负责必要跨仓改造；解耦验收后另一harness只写AUDIT，你只写RF，目录不重叠。D4关闭后由 ROOT 按总计划明确调度本仓业务；此状态更新不代表业务实施已启动。
 
 ## Next Step
 
-先由ROOT关闭D4真实入口/边界六项遗漏；本仓业务不提前施工。原D3选择集通过保留，但不能据此直接启动。复核与实施细则：C:/Users/郑曾波/Projects/company-wiki/docs/plans/du11-source-closure-2026-10-18/review/decoupling-recheck-20261102/README.md。这不是新增人工审批。
+D4-01..06 已完成：总控仓 D4 最终套件 27 passed、0 skipped、0 failed，独立审查通过；组合验收收据见 C:/Users/郑曾波/Projects/company-wiki/docs/plans/du11-source-closure-2026-10-18/review/d4-closeout-20261104/README.md。本仓 R4 责任现已解除前置依赖，但仍须由 ROOT 按总计划明确调度后开工；本次不启动业务实现。
 
-解耦后第一步：读取本计划、findings/progress及原R4诊断；确认当前HEAD/已有WIP，冻结原有20个ghost与10个期间向量的期待，首先在本仓公共validator重现，不把旧收据当最新代码结果。
+实际开工后的第一步：读取本计划、findings/progress及原R4诊断；确认当前HEAD/已有WIP，冻结原有20个ghost与10个期间向量的期待，首先在本仓公共validator重现，不把旧收据当最新代码结果。
 
 ## 输入与原责任映射
 
