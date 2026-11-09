@@ -28,6 +28,7 @@ from report_catalog_identity_resolver import (  # noqa: E402
     load_bridge_config,
     make_identity_resolver,
     resolve_identity,
+    resolve_identity_record,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -73,6 +74,9 @@ else:
     elif MODE == "entity_block_mismatch":
         payload = with_hash(payload)
         payload["entity"]["entity_id"] = {other!r}
+    elif MODE == "wrong_listing":
+        payload["entity"]["selected_listing_id"] = {other!r}
+        payload = with_hash(payload)
     elif MODE == "schema":
         payload = with_hash(payload)
         payload["schema_version"] = "stockwiki.dashboard_identity/2"
@@ -186,12 +190,27 @@ def test_resolved_lookup_returns_verified_evidence(tmp_path):
     ).encode()).hexdigest() == emitted["lookup_receipt_sha256"]
 
 
+def test_resolved_record_preserves_full_owner_dto_and_requested_listing(tmp_path):
+    _, config = _write_fake_bridge(tmp_path)
+    evidence = resolve_identity_record(ENT, config=config, listing_id=LISTING)
+    assert evidence["schema_version"] == BRIDGE_SCHEMA_VERSION
+    assert evidence["entity"]["entity_id"] == ENT
+    assert evidence["entity"]["selected_listing_id"] == LISTING
+    assert evidence["lookup_receipt_sha256"]
+
+
+def test_resolved_record_refuses_another_selected_listing(tmp_path):
+    _, config = _write_fake_bridge(tmp_path, mode="wrong_listing")
+    with pytest.raises(IdentityBridgeError, match="identity_listing_mismatch"):
+        resolve_identity_record(ENT, config=config, listing_id=LISTING)
+
+
 def _run_fake(tmp_path: Path, mode: str) -> str:
     import subprocess
 
     _, config = _write_fake_bridge(tmp_path, mode=mode)
     completed = subprocess.run(
-        [str(config.python), str(config.cli), "resolve", "--entity-id", ENT],
+        [str(config.python), "-X", "utf8", "-B", str(config.cli), "resolve", "--entity-id", ENT],
         capture_output=True, text=True, encoding="utf-8", timeout=30,
     )
     return completed.stdout

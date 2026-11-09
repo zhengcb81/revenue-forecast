@@ -1,4 +1,4 @@
-"""Explicit admin CLI wiring the trusted StockWiki resolver into W09 import.
+"""Explicit RF owner CLI wiring trusted identities into catalog admissions.
 
 Commands:
   python scripts/report_catalog_identity_cli.py resolve --entity-id ENT_... [--listing-id LST_...]
@@ -34,6 +34,12 @@ from report_catalog import CatalogError, ReportCatalog, import_w09  # noqa: E402
 from report_catalog_deployment import DeploymentError, split_owner_root  # noqa: E402
 from report_catalog_research_attempt import import_research_attempt  # noqa: E402
 from report_catalog_research_publication import import_research_publication  # noqa: E402
+from report_catalog_rf_job_import import (  # noqa: E402
+    import_rf_job,
+    load_job_import_deployment,
+    make_source_export_runner,
+    make_stockwiki_resolvers,
+)
 from report_catalog_research_identity import make_research_source_alias_resolver  # noqa: E402
 from report_catalog_source_alias import make_source_alias_resolver  # noqa: E402
 from report_catalog_identity_resolver import (  # noqa: E402
@@ -52,7 +58,9 @@ def _fail(error_code: str, detail: str) -> None:
     )
 
 
-def _admin_owner_root(value: str | None, *, catalog_file: str | None) -> Path | None:
+def _admin_owner_root(
+    value: str | None, *, catalog_file: str | None, allow_rf_job: bool = False,
+) -> Path | None:
     """Validate an explicit management workspace without creating anything.
 
     A first W09 import may have no managed catalog yet. Its fixed, existing
@@ -84,7 +92,11 @@ def _admin_owner_root(value: str | None, *, catalog_file: str | None) -> Path | 
         managed = (root / "artifacts" / "report_catalog").resolve()
         if not managed.is_relative_to(root):
             raise DeploymentError("owner_root_invalid", "managed catalog must stay inside owner root")
-        if not managed.is_dir() and not all(p.is_file() for p in markers):
+        rf_owner = allow_rf_job and all(
+            (root / "scripts" / name).is_file()
+            for name in ("report_catalog.py", "revenue_core.py")
+        )
+        if not managed.is_dir() and not all(p.is_file() for p in markers) and not rf_owner:
             raise DeploymentError("owner_root_missing", "owner root has neither managed catalog nor fixed W09 package")
     except DeploymentError:
         raise
@@ -158,12 +170,44 @@ def main(argv: list[str] | None = None) -> int:
         "--source-evidence",
         help="opt-in multi-source evidence JSON basename in this run execution directory",
     )
+    rf_job = commands.add_parser("import-rf-job")
+    rf_job.add_argument("--deployment-config", required=True)
+    rf_job.add_argument("--job-root", required=True)
+    rf_job.add_argument("--job-id", required=True)
+    rf_job.add_argument("--job-sha256", required=True,
+                        help="independently recorded SHA-256 of the completed rf-job record")
+    rf_job.add_argument("--report-sha256", required=True,
+                        help="independently recorded SHA-256 of the retained report Markdown")
+    rf_job.add_argument("--entity-id", required=True)
+    rf_job.add_argument("--listing-id", required=True)
     args = parser.parse_args(raw)
     try:
-        owner_root = _admin_owner_root(owner_root_text, catalog_file=getattr(args, "catalog_file", None))
-        if args.command in {"import-research-attempt", "import-research-publication"} and owner_root is None:
+        owner_root = _admin_owner_root(
+            owner_root_text,
+            catalog_file=getattr(args, "catalog_file", None),
+            allow_rf_job=args.command == "import-rf-job",
+        )
+        if args.command in {"import-research-attempt", "import-research-publication", "import-rf-job"} and owner_root is None:
             raise DeploymentError("owner_root_required", "research admission requires an explicit trusted owner root")
         explicit_catalog = ReportCatalog(root=owner_root) if owner_root is not None else None
+        if args.command == "import-rf-job":
+            assert explicit_catalog is not None
+            deployment = load_job_import_deployment(Path(args.deployment_config))
+            identity_resolver, issuer_proof = make_stockwiki_resolvers(deployment)
+            output = import_rf_job(
+                explicit_catalog,
+                job_root=Path(args.job_root),
+                job_id=args.job_id,
+                expected_job_sha256=args.job_sha256,
+                expected_report_sha256=args.report_sha256,
+                entity_id=args.entity_id,
+                listing_id=args.listing_id,
+                source_export=make_source_export_runner(deployment.company_wiki),
+                identity_resolver=identity_resolver,
+                issuer_proof=issuer_proof,
+            )
+            print(json.dumps(output, ensure_ascii=False, sort_keys=True, allow_nan=False))
+            return 0
         config = load_bridge_config(args.config)
         if args.command == "resolve":
             output = resolve_identity(args.entity_id, config=config, listing_id=args.listing_id)

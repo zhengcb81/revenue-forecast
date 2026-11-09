@@ -200,14 +200,15 @@ def _stderr_code(raw: bytes) -> str | None:
     return None
 
 
-def resolve_identity(
+def resolve_identity_record(
     entity_id: str, *, config: BridgeConfig, listing_id: str | None = None
 ) -> dict[str, Any]:
-    """Perform one real public lookup and return verified evidence, fail closed."""
+    """Return the complete verified public identity DTO for owner composition."""
     _require_id(entity_id, _ENTITY_ID_RE, "identity_input_invalid")
     if listing_id is not None:
         _require_id(listing_id, _LISTING_ID_RE, "identity_input_invalid")
-    argv = [str(config.python), str(config.cli), "resolve", "--entity-id", entity_id]
+    argv = [str(config.python), "-X", "utf8", "-B", str(config.cli),
+            "resolve", "--entity-id", entity_id]
     if listing_id is not None:
         argv += ["--listing-id", listing_id]
     if config.sw_root is not None:
@@ -245,6 +246,10 @@ def resolve_identity(
         raise IdentityBridgeError("bridge_response_invalid", "resolve must carry an entity block")
     if entity_block.get("entity_id") != entity_id:
         raise IdentityBridgeError("identity_subject_mismatch", "entity block names another subject")
+    if entity_block.get("identity_state") != "verified":
+        raise IdentityBridgeError("identity_not_resolved", "entity identity is not verified")
+    if listing_id is not None and entity_block.get("selected_listing_id") != listing_id:
+        raise IdentityBridgeError("identity_listing_mismatch", "response selected another listing")
     _assert_pathless(response)
     claimed = response.get("lookup_receipt_sha256")
     if not isinstance(claimed, str) or not _HEX64_RE.fullmatch(claimed):
@@ -264,13 +269,21 @@ def resolve_identity(
         raise IdentityBridgeError("bridge_response_invalid", "resolved response lacks a display name")
     if not isinstance(source_revision, str) or not source_revision.strip():
         raise IdentityBridgeError("bridge_response_invalid", "resolved response lacks a data revision")
+    return response
+
+
+def resolve_identity(
+    entity_id: str, *, config: BridgeConfig, listing_id: str | None = None
+) -> dict[str, Any]:
+    """Perform a public lookup and return the compact W09 identity projection."""
+    response = resolve_identity_record(entity_id, config=config, listing_id=listing_id)
     return {
         "authority": "stockwiki",
         "entity_id": entity_id,
         "resolution_status": "resolved",
-        "source_revision": source_revision,
-        "lookup_receipt_sha256": claimed,
-        "display_name": display_name,
+        "source_revision": response["source_revision"],
+        "lookup_receipt_sha256": response["lookup_receipt_sha256"],
+        "display_name": response["display_name"],
     }
 
 

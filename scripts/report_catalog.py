@@ -324,6 +324,11 @@ class ReportCatalog:
                      "attempt_unverified", "attempt receipt ID mismatch")
             _require(receipt.get("status") == attempt["status"],
                      "attempt_unverified", "attempt receipt status mismatch")
+        elif kind == "rf_job_record":
+            # Kept behind the catalog owner boundary: only the RF-owned job
+            # importer defines and validates this evidence format.
+            from report_catalog_rf_job_import import _validate_job_attempt
+            _validate_job_attempt(self, attempt)
         else:
             raise CatalogError("attempt_unverified", "unsupported owner attempt evidence")
         if attempt["status"] in {"failed", "cancelled"}:

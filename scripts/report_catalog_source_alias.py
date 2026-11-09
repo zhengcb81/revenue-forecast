@@ -179,6 +179,11 @@ def _read_proof(config: BridgeConfig, query: dict[str, Any]) -> dict[str, Any]:
     return response
 
 
+def read_issuer_proof(config: BridgeConfig, query: dict[str, Any]) -> dict[str, Any]:
+    """Read StockWiki issuer evidence through its public proof CLI."""
+    return _read_proof(config, query)
+
+
 def _validate_proof(response: dict[str, Any], *, entity_id: str, listing_id: str,
                     company_query: str, ref: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]:
     package = _object(response.get("owner_package"))
