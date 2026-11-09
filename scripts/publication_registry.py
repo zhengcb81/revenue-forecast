@@ -70,9 +70,14 @@ def _read_entries() -> list[dict[str, Any]]:
     path = registry_file()
     if not path.exists():
         return []
+    return validate_registry_text(path.read_text(encoding="utf-8"))
+
+
+def validate_registry_text(text: str) -> list[dict[str, Any]]:
+    """Verify legacy chained and current independent index rows."""
     entries: list[dict[str, Any]] = []
     previous: str | None = None
-    for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+    for lineno, raw in enumerate(text.splitlines(), start=1):
         if not raw.strip():
             continue
         try:

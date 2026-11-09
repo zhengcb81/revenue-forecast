@@ -116,6 +116,10 @@ CI_TESTS = (
     "tests/test_r1_target_scope.py",
     "tests/test_r1_narrative_availability.py",
     "tests/test_r1_local_preparation_observation.py",
+    "tests/test_rf_job_facade_cli.py",
+    "tests/test_report_catalog.py::test_public_report_catalog_cli_uses_only_the_selected_owner",
+    "tests/test_report_catalog.py::test_default_catalog_refuses_links_to_another_owner",
+    "tests/b34_publication/test_publication.py::test_native_stages_and_successful_whole_run_are_distinct",
 )
 
 
