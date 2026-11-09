@@ -25,6 +25,8 @@ from typing import Any, Callable
 
 from model_registry import MODEL_REGISTRY
 from contracts.constants import MONETARY_DIMENSIONS
+from owner_atomic_io import replace_file_bytes
+from owner_file_lock import OwnerFileLock
 from publication_registry import RegistryError, canonical_sha256, validate_registry_text
 from revenue_backtest import validate_snapshot
 from revenue_report import validate_published_forecast
@@ -158,13 +160,20 @@ class ReportCatalog:
         _require(isinstance(value, dict), "artifact_invalid_json", "registered artifact must be an object")
         return value
 
-    def _entries(self) -> list[dict[str, Any]]:
-        if not self.file.exists():
-            return []
+    def _catalog_bytes(self) -> bytes:
         try:
-            lines = _bounded_bytes(self.file).decode("utf-8").splitlines()
+            return self.file.read_bytes()
+        except FileNotFoundError:
+            return b""
         except OSError as exc:
             raise CatalogError("catalog_unavailable", "catalog cannot be read") from exc
+
+    def _entries(self, raw_bytes: bytes | None = None) -> list[dict[str, Any]]:
+        data = self._catalog_bytes() if raw_bytes is None else raw_bytes
+        try:
+            lines = data.decode("utf-8").splitlines()
+        except UnicodeError as exc:
+            raise CatalogError("catalog_corrupt", "catalog is not UTF-8") from exc
         entries: list[dict[str, Any]] = []
         previous: str | None = None
         for number, raw in enumerate(lines, 1):
@@ -187,7 +196,9 @@ class ReportCatalog:
         return entries
 
     def _index(self) -> tuple[dict[str, dict], dict[tuple[str, str], dict], dict[str, dict], str]:
-        entries = self._entries()
+        return self._index_entries(self._entries())
+
+    def _index_entries(self, entries: list[dict[str, Any]]) -> tuple[dict[str, dict], dict[tuple[str, str], dict], dict[str, dict], str]:
         runs: dict[str, dict] = {}
         attempts: dict[tuple[str, str], dict] = {}
         reports: dict[str, dict] = {}
@@ -325,25 +336,22 @@ class ReportCatalog:
         """Append one verified batch; an optional trusted guard runs under its lock.
 
         The guard is owner-installed Python code, never a public DTO. It runs
-        after all local validation and serialization, immediately before open
-        and append. It cannot make two independent owners atomic.
+        after all local validation and staging, immediately before the
+        atomic replacement. It cannot make two independent owners atomic.
         """
         _require(before_append is None or callable(before_append),
                  "invalid_admission_guard", "pre-append guard must be callable")
         self.file.parent.mkdir(parents=True, exist_ok=True)
-        lock = self.file.with_name(self.file.name + ".lock")
-        try:
-            descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-        except FileExistsError as exc:
-            raise CatalogError("catalog_busy", "another catalog registration is active") from exc
+        lock = OwnerFileLock(self.file.with_name(self.file.name + ".lock"))
+        if not lock.acquire():
+            raise CatalogError("catalog_busy", "another catalog registration is active")
         try:
             if before_append is None:
                 return self._add_records_locked(runs=runs, attempts=attempts, reports=reports)
             return self._add_records_locked(runs=runs, attempts=attempts, reports=reports,
                                             before_append=before_append)
         finally:
-            os.close(descriptor)
-            lock.unlink()
+            lock.release()
 
     def _add_records_locked(self, *, runs: list[dict] | None = None,
                             attempts: list[dict] | None = None,
@@ -351,7 +359,9 @@ class ReportCatalog:
                             before_append: Callable[[], None] | None = None) -> dict[str, Any]:
         runs, attempts, reports = runs or [], attempts or [], reports or []
         _require(bool(runs or attempts or reports), "empty_batch", "catalog batch is empty")
-        old_runs, old_attempts, old_reports, _ = self._index()
+        previous_bytes = self._catalog_bytes()
+        entries = self._entries(previous_bytes)
+        old_runs, old_attempts, old_reports, _ = self._index_entries(entries)
         next_runs, next_attempts, next_reports = dict(old_runs), dict(old_attempts), dict(old_reports)
         for run in runs:
             key = _clean_id(run.get("run_id"), "run_id")
@@ -394,20 +404,15 @@ class ReportCatalog:
             next_reports[key] = report
         self._verify_attempt_report_links(next_attempts, next_reports,
                                           code="attempt_report_mismatch")
-        entries = self._entries()
         payload = {"schema_version": SCHEMA_VERSION, "registered_at": _utc_now(),
                    "runs": runs, "attempts": attempts, "reports": reports,
                    "prev_line_sha256": entries[-1]["line_sha256"] if entries else None}
         line = {**payload, "line_sha256": canonical_sha256(payload)}
         serialized = json.dumps(line, ensure_ascii=False, sort_keys=True, allow_nan=False) + "\n"
         try:
-            self.file.parent.mkdir(parents=True, exist_ok=True)
-            if before_append is not None:
-                before_append()
-            with self.file.open("a", encoding="utf-8", newline="\n") as handle:
-                handle.write(serialized)
-                handle.flush()
-                os.fsync(handle.fileno())
+            separator = b"\n" if previous_bytes and not previous_bytes.endswith(b"\n") else b""
+            replace_file_bytes(self.file, previous_bytes + separator + serialized.encode("utf-8"),
+                               before_replace=before_append)
         except OSError as exc:
             raise CatalogError("catalog_unavailable", "catalog append failed") from exc
         return {"schema_version": SCHEMA_VERSION, "catalog_revision": line["line_sha256"],

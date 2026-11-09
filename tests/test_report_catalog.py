@@ -13,6 +13,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from report_catalog import CatalogError, ReportCatalog, import_w09  # noqa: E402
+from owner_file_lock import OwnerFileLock  # noqa: E402
 from publication_registry import canonical_sha256  # noqa: E402
 from revenue_core import run_forecast  # noqa: E402
 from test_recognition_bridge import forecast_document, add_parameter  # noqa: E402
@@ -354,7 +355,7 @@ def test_registration_refuses_relabelled_frozen_money(tmp_path, changes, expecte
         catalog.add_records(runs=[run], attempts=[attempt], reports=[report])
     assert error.value.code == expected_code
     assert not catalog.file.exists()
-    assert not catalog.file.with_name(catalog.file.name + ".lock").exists()
+    assert not OwnerFileLock(catalog.file.with_name(catalog.file.name + ".lock")).is_locked()
 
 
 @pytest.mark.parametrize(
@@ -465,3 +466,88 @@ def test_default_catalog_refuses_links_to_another_owner(tmp_path):
     with pytest.raises(CatalogError) as refused:
         ReportCatalog(root=owner)
     assert refused.value.code == "catalog_path_forbidden"
+
+
+
+def test_catalog_can_append_after_writer_process_exits_under_lock(tmp_path):
+    catalog, _, _, run, attempt, report = _fixture(tmp_path)
+    script = (
+        "import os,sys;"
+        "from pathlib import Path;"
+        "sys.path.insert(0,sys.argv[1]);"
+        "from report_catalog import ReportCatalog;"
+        "c=ReportCatalog(root=Path(sys.argv[2]),catalog_file=Path(sys.argv[3]));"
+        "c._add_records_locked=lambda **_: os._exit(9);"
+        "c.add_records(runs=[])"
+    )
+    exited = subprocess.run(
+        [sys.executable, "-B", "-c", script, str(Path(__file__).resolve().parents[1] / "scripts"),
+         str(tmp_path), str(catalog.file)],
+        capture_output=True, encoding="utf-8", timeout=30, check=False,
+    )
+    assert exited.returncode == 9, exited.stderr
+    assert not catalog.file.exists()
+    catalog.add_records(runs=[run], attempts=[attempt], reports=[report])
+    assert catalog.get_report(report["report_id"])["view"]["report"]["result_sha256"] == report["result_sha256"]
+
+
+
+def test_catalog_write_failure_preserves_previous_publication_and_retries_once(tmp_path, monkeypatch):
+    catalog, _, _, run, attempt, report = _fixture(tmp_path)
+    catalog.add_records(runs=[run], attempts=[attempt], reports=[report])
+    previous = catalog.file.read_bytes()
+    new_run = dict(run, run_id="run-second")
+    new_report = dict(report, run_id="run-second", report_id="rf-second")
+    new_attempt = dict(attempt, run_id="run-second", report_ids=["rf-second"])
+    original_open = Path.open
+
+    class PartialWrite:
+        def __init__(self, handle):
+            self.handle = handle
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            self.handle.close()
+
+        def write(self, data):
+            self.handle.write(data[:13])
+            self.handle.flush()
+            raise OSError("injected write interruption")
+
+    def fail_after_bytes(path, mode="r", *args, **kwargs):
+        handle = original_open(path, mode, *args, **kwargs)
+        if (path == catalog.file and mode == "a") or (
+            path.parent == catalog.file.parent and path.name.startswith(catalog.file.name + ".") and mode == "xb"
+        ):
+            return PartialWrite(handle)
+        return handle
+
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "open", fail_after_bytes)
+        with pytest.raises(CatalogError) as failed:
+            catalog.add_records(runs=[new_run], attempts=[new_attempt], reports=[new_report])
+    assert failed.value.code == "catalog_unavailable"
+    assert catalog.file.read_bytes() == previous
+    assert catalog.get_report(report["report_id"])["view"]["report"]["result_sha256"] == report["result_sha256"]
+    catalog.add_records(runs=[new_run], attempts=[new_attempt], reports=[new_report])
+    assert catalog.file.read_bytes().startswith(previous)
+    assert [row["report_id"] for row in catalog.list_reports(run["company"]["entity_id"])["items"]].count("rf-second") == 1
+
+
+
+def test_managed_catalog_history_is_not_an_individual_import_artifact(tmp_path, monkeypatch):
+    import report_catalog as catalog_module
+
+    catalog, _, _, run, _, _ = _fixture(tmp_path)
+    catalog.add_records(runs=[run])
+    previous = catalog.file.read_bytes()
+    monkeypatch.setattr(catalog_module, "MAX_ARTIFACT_BYTES", len(previous) + 1)
+
+    catalog.add_records(runs=[{**run, "run_id": "second-managed-run"}])
+    assert catalog.file.read_bytes().startswith(previous)
+    assert len(catalog.file.read_bytes()) > catalog_module.MAX_ARTIFACT_BYTES
+    assert [entry["runs"][0]["run_id"] for entry in catalog._entries()] == [
+        run["run_id"], "second-managed-run",
+    ]

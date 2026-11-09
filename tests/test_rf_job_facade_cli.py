@@ -113,3 +113,13 @@ def test_malformed_deployment_arguments_return_pathless_named_error():
     result = _run("--owner-root", "get-status", "--owner-root", "--job-id", "rfjob-test")
     assert result.returncode == 2 and result.stdout == ""
     assert json.loads(result.stderr)["error"]["code"] == "owner_root_invalid"
+
+
+def test_public_job_id_never_becomes_an_owner_path(tmp_path):
+    for args in (("get-status", "--job-id", "../other"),
+                 ("act", "--job-id", "../other", "--action", "reconcile")):
+        result = _run("--owner-root", str(tmp_path), *args)
+        assert result.returncode == 2 and result.stdout == ""
+        assert json.loads(result.stderr)["error"]["code"] == "owner_job_id_invalid"
+        assert str(tmp_path) not in result.stderr
+    assert not (tmp_path / "artifacts").exists()

@@ -15,10 +15,10 @@ import os
 from pathlib import Path
 import re
 import stat
-import sys
 import tempfile
 from typing import Any, Callable, cast
 
+from owner_file_lock import OwnerFileLock
 from report_catalog import CatalogError, ReportCatalog, _assert_pathless
 from filing_upstream_cause import STAGES, validated_filing_fetch_failure
 
@@ -1018,56 +1018,26 @@ def _closure_input(
     return metadata, summary, obs
 
 
-def _admission_lock(root: Path, path: Path) -> int:
-    """Nonblocking OS lock; a killed manager cannot leave a claimed lock file.
-
-    The zero-byte lock carrier remains stable: unlinking it while another
-    process has it open would create two distinct locks for the same catalog.
-    """
+def _admission_lock(root: Path, path: Path) -> OwnerFileLock:
+    """Hold an owner admission lock apart from the catalog append lock."""
     if path.exists():
         _not_linked(root, path)
+    lock = OwnerFileLock(path)
     try:
-        fd = os.open(path, os.O_CREAT | os.O_RDWR, 0o600)
-    except OSError as exc:
-        raise CatalogError(
-            "catalog_unavailable", "research admission lock is unavailable"
-        ) from exc
-    try:
-        os.set_inheritable(fd, False)
+        if not lock.acquire():
+            raise CatalogError("catalog_busy", "another research admission is active")
         _not_linked(root, path)
-        if sys.platform == "win32":
-            import msvcrt
-
-            os.lseek(fd, 0, os.SEEK_SET)
-            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
-        else:
-            import fcntl
-
-            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        return fd
     except OSError as exc:
-        os.close(fd)
-        raise CatalogError(
-            "catalog_busy", "another research admission is active"
-        ) from exc
+        lock.release()
+        raise CatalogError("catalog_unavailable", "research admission lock is unavailable") from exc
     except BaseException:
-        os.close(fd)
+        lock.release()
         raise
+    return lock
 
 
-def _admission_unlock(fd: int) -> None:
-    try:
-        if sys.platform == "win32":
-            import msvcrt
-
-            os.lseek(fd, 0, os.SEEK_SET)
-            msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
-        else:
-            import fcntl
-
-            fcntl.flock(fd, fcntl.LOCK_UN)
-    finally:
-        os.close(fd)
+def _admission_unlock(lock: OwnerFileLock) -> None:
+    lock.release()
 
 
 def _publish_seal(root: Path, seal: Path, body: bytes) -> None:

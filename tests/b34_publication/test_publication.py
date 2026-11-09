@@ -14,6 +14,7 @@ from .fixtures import (
     pub,
     identity,
 )
+from owner_file_lock import OwnerFileLock  # noqa: E402
 
 
 def test_native_stages_and_successful_whole_run_are_distinct(case):
@@ -219,7 +220,7 @@ def test_late_identity_change_under_catalog_lock_refuses_append(case, monkeypatc
 
     def validation(record):
         value = original(record)
-        if catalog.file.with_name(catalog.file.name + ".lock").exists():
+        if OwnerFileLock(catalog.file.with_name(catalog.file.name + ".lock")).is_locked():
             state["locked"] = True
         return value
 
@@ -238,7 +239,7 @@ def test_late_identity_change_under_catalog_lock_refuses_append(case, monkeypatc
     with pytest.raises(pub.CatalogError):
         admit(case, identity_resolver=resolver)
     assert state["locked"] and not catalog.file.exists()
-    assert not catalog.file.with_name(catalog.file.name + ".lock").exists()
+    assert not OwnerFileLock(catalog.file.with_name(catalog.file.name + ".lock")).is_locked()
     assert admit(case)["status"] == "succeeded"
 
 

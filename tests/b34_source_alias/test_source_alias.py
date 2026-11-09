@@ -18,6 +18,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 from report_catalog import CatalogError, ReportCatalog, import_w09  # noqa: E402
+from owner_file_lock import OwnerFileLock  # noqa: E402
 from report_catalog_identity_resolver import (  # noqa: E402
     BridgeConfig,
     IdentityBridgeError,
@@ -638,8 +639,8 @@ def test_trusted_append_guard_runs_after_validation_and_under_lock(
         events.append("report-validated")
         return result
 
-    def entries():
-        result = original_entries()
+    def entries(raw=None):
+        result = original_entries(raw)
         events.append("entries-read")
         return result
 
@@ -647,9 +648,9 @@ def test_trusted_append_guard_runs_after_validation_and_under_lock(
     monkeypatch.setattr(catalog, "_entries", entries)
 
     def guard():
-        assert "report-validated" in events
-        assert events[-1] == "entries-read"
-        assert catalog.file.with_name(catalog.file.name + ".lock").exists()
+        assert events == ["entries-read", "report-validated"]
+        assert len(list(catalog.file.parent.glob(f"{catalog.file.name}.*.tmp"))) == 1
+        assert OwnerFileLock(catalog.file.with_name(catalog.file.name + ".lock")).is_locked()
         assert not catalog.file.exists()
         events.append("guard")
 
@@ -658,7 +659,7 @@ def test_trusted_append_guard_runs_after_validation_and_under_lock(
     )
     assert events[-1] == "guard"
     assert catalog.file.exists()
-    assert not catalog.file.with_name(catalog.file.name + ".lock").exists()
+    assert not OwnerFileLock(catalog.file.with_name(catalog.file.name + ".lock")).is_locked()
 
 
 def test_append_guard_refusal_preserves_existing_catalog_and_releases_lock(tmp_path):
@@ -676,7 +677,7 @@ def test_append_guard_refusal_preserves_existing_catalog_and_releases_lock(tmp_p
             runs=[{**run, "run_id": "run-late-refused"}], before_append=guard
         )
     assert catalog.file.read_bytes() == before
-    assert not catalog.file.with_name(catalog.file.name + ".lock").exists()
+    assert not OwnerFileLock(catalog.file.with_name(catalog.file.name + ".lock")).is_locked()
 
 
 def test_default_append_keeps_original_private_call_signature(tmp_path, monkeypatch):

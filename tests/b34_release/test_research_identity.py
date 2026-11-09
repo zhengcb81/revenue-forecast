@@ -29,6 +29,7 @@ from b34_admin.test_research_attempt import (  # noqa: E402
 from test_company_wiki_source_v2 import BODY, _inputs, _candidate  # noqa: E402
 from company_wiki_source_v2 import build_revenue_source_record_from_verified_read  # noqa: E402
 from report_catalog import CatalogError, ReportCatalog  # noqa: E402
+from owner_file_lock import OwnerFileLock  # noqa: E402
 import report_catalog_research_identity as ri  # noqa: E402
 import report_catalog_research_attempt as admission  # noqa: E402
 from report_catalog_identity_resolver import (  # noqa: E402
@@ -520,7 +521,7 @@ def test_real_isolated_stockwiki_public_alias_accepts_single_record_anchor(
 
         def revoke_after_validation(self, attempt):
             original(self, attempt)
-            assert self.file.with_name(self.file.name + ".lock").exists()
+            assert OwnerFileLock(self.file.with_name(self.file.name + ".lock")).is_locked()
             helper.owner_action(
                 code,
                 {
@@ -537,7 +538,7 @@ def test_real_isolated_stockwiki_public_alias_accepts_single_record_anchor(
             execute()
         assert not ReportCatalog(root=root).file.exists()
         assert (
-            not ReportCatalog(root=root).file.with_name("catalog.jsonl.lock").exists()
+            not OwnerFileLock(ReportCatalog(root=root).file.with_name("catalog.jsonl.lock")).is_locked()
         )
     else:
         first = execute()

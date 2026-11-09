@@ -54,12 +54,11 @@ def test_natural_source_failure_exposes_failed_attempts(tmp_path):
     attempt = source_stage["attempts"][0]
     assert attempt["status"] == "failed"
     assert attempt["exit_code"] == 1
-    # the FF `calls` counter is a local company-wiki subprocess count, never
-    # a paid model call: it is recorded as acquisition_calls and the failed
-    # job still projects a known zero cost (0 downloads, 0 paid calls)
+    # The FF calls count records local subprocesses. A read-only source
+    # can be retried even if that count cannot establish paid usage.
     assert attempt["observations"] == {"download_events": 0, "acquisition_calls": 2}
-    assert view["cost_state"] == "known"
-    assert view["cost"] == {"currency": "USD", "value": "0.00"}
+    assert view["cost_state"] == "unknown"
+    assert view["cost"] is None
 
 
 def test_interrupted_stage_view_exposes_attempt_without_exit(tmp_path):

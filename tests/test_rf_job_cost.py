@@ -181,3 +181,63 @@ def test_deployment_rejects_negative_cost_limit(tmp_path):
     with pytest.raises(JobFacadeError) as excinfo:
         _D(bad)
     assert excinfo.value.code == "deployment_config_invalid"
+
+
+@pytest.mark.parametrize("companion_only", [False, True])
+def test_uncertain_provider_effect_keeps_cost_unknown_and_resume_read_only(tmp_path, companion_only):
+    calls = []
+    behavior = {"source": lambda stage, command: facade.AttemptOutcome(
+        exit_code=3, killed=False, elapsed_seconds=0.01)}
+    running, _ = _facade(tmp_path, calls=calls, behavior=behavior, failure_stderr={
+        "stage": "ensure", "calls": 2, "downloads": 0, "upstream_cause": {
+            "schema_version": "filing-upstream-cause/1", "operation": "ensure",
+            "code": "adapter_timeout", "provider_started": None, "usage_complete": None,
+            "retry_scope": "caller_decision",
+        },
+    })
+    if companion_only:
+        running.deployment.source_request_template["companion_transcript"] = {"intent": "fetch_if_missing"}
+    else:
+        running.deployment.source_request_template["filing_intent"] = "fetch_if_missing"
+    result = running.submit(_request())
+    view = result["job_view"]
+    assert view["status"] == "failed" and view["cost_state"] == "unknown" and view["cost"] is None
+    assert view["allowed_actions"] == ["reconcile"]
+    with pytest.raises(JobFacadeError):
+        running.act(result["owner_job_id"], "resume")
+    assert running.act(result["owner_job_id"], "reconcile")["job_view"]["cost_state"] == "unknown"
+    assert [row["stage"] for row in _recorded_requests(calls)] == ["source"]
+
+
+def test_confirmed_pre_provider_failure_can_resume_under_the_same_contract(tmp_path):
+    calls = []
+    first, _ = _facade(tmp_path, calls=calls, behavior={
+        "source": lambda stage, command: facade.AttemptOutcome(exit_code=3, killed=False, elapsed_seconds=0.01)
+    }, failure_stderr={
+        "stage": "local_prepare", "calls": 2, "downloads": 0, "upstream_cause": {
+            "schema_version": "filing-upstream-cause/1", "operation": "local_prepare",
+            "code": "catalog_busy", "provider_started": False, "usage_complete": True,
+            "retry_scope": "catalog_contention",
+        },
+    })
+    first.deployment.source_request_template["filing_intent"] = "fetch_if_missing"
+    result = first.submit(_request())
+    assert result["job_view"]["allowed_actions"] == ["resume", "reconcile"]
+    assert result["job_view"]["cost"] == {"currency": "USD", "value": "0.00"}
+    restarted, _ = _facade(tmp_path, calls=calls)
+    restarted.deployment.source_request_template["filing_intent"] = "fetch_if_missing"
+    assert restarted.act(result["owner_job_id"], "resume")["job_view"]["status"] == "succeeded"
+    assert [row["stage"] for row in _recorded_requests(calls)] == ["source", "source", "compute", "publication"]
+
+
+
+@pytest.mark.parametrize("companion_can_fetch", [False, True])
+def test_primary_reuse_does_not_supply_companion_cost(tmp_path, companion_can_fetch):
+    running, _ = _facade(tmp_path)
+    running.deployment.source_request_template["filing_intent"] = "fetch_if_missing"
+    if companion_can_fetch:
+        running.deployment.source_request_template["companion_transcript"] = {"intent": "fetch_if_missing"}
+    view = running.submit(_request())["job_view"]
+    assert view["status"] == "succeeded"
+    assert view["cost_state"] == ("unknown" if companion_can_fetch else "known")
+    assert view["cost"] == (None if companion_can_fetch else {"currency": "USD", "value": "0.00"})

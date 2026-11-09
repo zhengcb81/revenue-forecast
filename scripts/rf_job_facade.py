@@ -20,15 +20,14 @@ Trusted deployment arguments (never business input, same discipline as the
     --owner-root <absolute existing directory>   job store root
     --deployment-config <path>                   trusted chain/budget config
 
-Catalog registration stays OUTSIDE the facade (G-m8-RF-05): after a job
-succeeds, the operator or the dashboard admits the run through the existing
-explicit management command ``report_catalog_identity_cli.py import-research-attempt``.
-The facade never touches the managed report catalog; the historical catalog
-runs remain read-only history served by report_catalog_cli.py.
+Catalog registration stays outside the facade (G-m8-RF-05). The owner
+catalog admits eligible publications and unsuccessful research attempts through
+separate management commands. The public read CLI serves historical catalog
+records independently of the live job.
 
 Durability: the job state document and every stage artifact live under
 ``<owner-root>/artifacts/rf_jobs/jobs/<owner_job_id>/``.  A process that dies
-mid-stage leaves a recorded running attempt and a stale lock; a later
+mid-stage leaves a recorded running attempt and releases its kernel mutex;
 get-status derives the live state read-only, ``act reconcile`` re-derives and
 repairs the state document from the durable records + artifacts (the
 reconcile authority), and ``act resume`` continues from the first
@@ -40,13 +39,19 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import time
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, Callable, cast
+
+from filing_upstream_cause import failure_observation
+from owner_atomic_io import replace_file_bytes
+from owner_file_lock import OwnerFileLock
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -135,18 +140,7 @@ def _sha256_file(path: Path) -> str:
 
 
 def _atomic_write_text(path: Path, text: str) -> None:
-    """Same crash-safety contract as revenue_forecast._atomic_write_text:
-    write a same-dir temporary file, fsync, then os.replace."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(path.name + f".{os.getpid()}.tmp")
-    try:
-        with open(temporary, "w", encoding="utf-8", newline="\n") as handle:
-            handle.write(text)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temporary, path)
-    finally:
-        temporary.unlink(missing_ok=True)
+    replace_file_bytes(path, text.encode("utf-8"))
 
 
 def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -158,115 +152,13 @@ def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _pid_alive(pid: int | None) -> bool:
-    """Liveness probe that is safe on Windows (never signals the process)."""
-    if not isinstance(pid, int) or isinstance(pid, bool) or pid <= 0:
-        return False
-    if os.name == "nt":
-        import ctypes
-
-        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
-        STILL_ACTIVE = 259
-        kernel32 = ctypes.windll.kernel32  # type: ignore[attr-defined]
-        handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-        if not handle:
-            return False
-        try:
-            exit_code = ctypes.c_ulong()
-            if kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
-                return exit_code.value == STILL_ACTIVE
-            return False
-        finally:
-            kernel32.CloseHandle(handle)
-    import errno
-
-    try:
-        os.kill(pid, 0)
-    except OSError as exc:
-        return exc.errno == errno.EPERM
-    return True
-
-
-class JobLock:
-    """Crash-tolerant per-job mutex.
-
-    The lock is a file created with O_CREAT|O_EXCL holding the owner pid.  A
-    lock whose recorded pid is provably dead may be taken over by the next
-    orchestration.  A young unreadable lock is refused (its creator may still
-    be writing); an old unreadable lock is taken over.  Liveness never
-    signals the process (the Windows TerminateProcess trap of
-    ``os.kill(pid, 0)`` is avoided).
-    """
-
-    def __init__(self, path: Path, *, stale_after_seconds: float = 24 * 3600.0):
-        self.path = path
-        self.stale_after_seconds = stale_after_seconds
-        self._held = False
-
-    def _read(self) -> dict[str, Any] | None:
-        try:
-            return _read_json(self.path)
-        except (OSError, json.JSONDecodeError, ValueError):
-            return None
-
-    def _age(self) -> float:
-        try:
-            return time.time() - self.path.stat().st_mtime
-        except OSError:
-            return 0.0
-
-    def acquire(self) -> bool:
-        while True:
-            try:
-                self.path.parent.mkdir(parents=True, exist_ok=True)
-                fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-            except FileExistsError:
-                payload = self._read()
-                if payload is not None and _pid_alive(payload.get("pid")):
-                    return False
-                if payload is None and self._age() <= self.stale_after_seconds:
-                    return False  # young and unreadable: its creator may be alive
-                self.path.unlink(missing_ok=True)
-                continue
-            else:
-                with os.fdopen(fd, "w", encoding="utf-8") as handle:
-                    handle.write(json.dumps({"pid": os.getpid(),
-                                             "host": os.getenv("COMPUTERNAME", ""),
-                                             "started_at": _utc_now()},
-                                            ensure_ascii=False, sort_keys=True))
-                    handle.flush()
-                    os.fsync(handle.fileno())
-                self._held = True
-                return True
-
-    def release(self) -> None:
-        if self._held:
-            self.path.unlink(missing_ok=True)
-            self._held = False
-
-    def clear_if_stale(self) -> None:
-        """Remove the lock file when no live orchestration holds it."""
-        if not self.path.exists():
-            return
-        payload = self._read()
-        if payload is not None and _pid_alive(payload.get("pid")):
-            return
-        if payload is None and self._age() <= self.stale_after_seconds:
-            return
-        self.path.unlink(missing_ok=True)
-
-    def is_alive(self) -> bool:
-        if not self.path.exists():
-            return False
-        payload = self._read()
-        if payload is not None and _pid_alive(payload.get("pid")):
-            return True
-        return payload is None and self._age() <= self.stale_after_seconds
+class JobLock(OwnerFileLock):
+    """Per-job and store creation mutex using the owner lease protocol."""
 
     def __enter__(self) -> "JobLock":
         if not self.acquire():
             raise JobFacadeError("lock_unavailable",
-                                 "another orchestration of this job appears to be active")
+                                 "another orchestration of this job is active")
         return self
 
     def __exit__(self, *_exc: object) -> None:
@@ -538,25 +430,41 @@ class JobStore:
     """Durable job state under ``<owner-root>/artifacts/rf_jobs/``."""
 
     def __init__(self, owner_root: Path):
-        self.owner_root = owner_root
-        self.store_root = owner_root / "artifacts" / "rf_jobs"
+        self.owner_root = owner_root.resolve()
+        self.store_root = self._owned_path(self.owner_root / "artifacts" / "rf_jobs")
         self.jobs_dir = self.store_root / "jobs"
         self.index_dir = self.store_root / "index"
         self.locks_dir = self.store_root / "locks"
-        self.idempotency_file = self.index_dir / "idempotency.json"
-        self.jobs_index_file = self.index_dir / "jobs.jsonl"
+        self.idempotency_file = self._owned_path(self.index_dir / "idempotency.json")
+        self.jobs_index_file = self._owned_path(self.index_dir / "jobs.jsonl")
+
+    def _owned_path(self, path: Path) -> Path:
+        resolved = path.resolve()
+        if not resolved.is_relative_to(self.owner_root):
+            raise JobFacadeError("job_store_path_invalid", "job storage must stay inside the owner workspace")
+        return resolved
+
+    @staticmethod
+    def _valid_job_id(owner_job_id: Any) -> bool:
+        return isinstance(owner_job_id, str) and re.fullmatch(r"rfjob-[A-Za-z0-9_-]{1,96}", owner_job_id) is not None
+
+    def _require_job_id(self, owner_job_id: str) -> None:
+        if not self._valid_job_id(owner_job_id):
+            raise JobFacadeError("owner_job_id_invalid", "owner job id must be a job token")
 
     def job_dir(self, owner_job_id: str) -> Path:
-        return self.jobs_dir / owner_job_id
+        self._require_job_id(owner_job_id)
+        return self._owned_path(self.jobs_dir / owner_job_id)
 
     def job_file(self, owner_job_id: str) -> Path:
-        return self.job_dir(owner_job_id) / "job.json"
+        return self._owned_path(self.job_dir(owner_job_id) / "job.json")
 
     def lock(self, owner_job_id: str) -> JobLock:
-        return JobLock(self.locks_dir / f"{owner_job_id}.lock")
+        self._require_job_id(owner_job_id)
+        return JobLock(self._owned_path(self.locks_dir / f"{owner_job_id}.lock"))
 
     def _creation_lock(self) -> JobLock:
-        return JobLock(self.locks_dir / "creation.lock")
+        return JobLock(self._owned_path(self.locks_dir / "creation.lock"))
 
     def load_job(self, owner_job_id: str) -> dict[str, Any]:
         path = self.job_file(owner_job_id)
@@ -567,7 +475,8 @@ class JobStore:
         except (OSError, json.JSONDecodeError, ValueError) as exc:
             raise JobFacadeError("job_state_unreadable",
                                  "the durable job state is unreadable; reconcile is required") from exc
-        if not isinstance(payload, dict) or payload.get("schema_version") != JOB_STATE_SCHEMA:
+        if (not isinstance(payload, dict) or payload.get("schema_version") != JOB_STATE_SCHEMA
+                or payload.get("owner_job_id") != owner_job_id):
             raise JobFacadeError("job_state_unreadable",
                                  "the durable job state schema is unrecognized; reconcile is required")
         return payload
@@ -623,20 +532,20 @@ class JobStore:
                 except json.JSONDecodeError:
                     continue  # tolerate a torn trailing line after a crash
                 job_id = record.get("owner_job_id")
-                if isinstance(job_id, str):
+                if self._valid_job_id(job_id):
                     ids.append(job_id)
         return ids
 
     # ---- per-job workspace -------------------------------------------------
 
     def stage_dir(self, owner_job_id: str, stage: str) -> Path:
-        return self.job_dir(owner_job_id) / "stages" / stage
+        return self._owned_path(self.job_dir(owner_job_id) / "stages" / stage)
 
     def logs_dir(self, owner_job_id: str) -> Path:
-        return self.job_dir(owner_job_id) / "logs"
+        return self._owned_path(self.job_dir(owner_job_id) / "logs")
 
     def registry_file(self, owner_job_id: str) -> Path:
-        return self.job_dir(owner_job_id) / "registry" / "publications.jsonl"
+        return self._owned_path(self.job_dir(owner_job_id) / "registry" / "publications.jsonl")
 
     def result_artifact(self, owner_job_id: str, stage: str) -> Path:
         if stage == "source":
@@ -878,18 +787,23 @@ def _source_observations(envelope: dict[str, Any]) -> dict[str, Any] | None:
         return None
     downloads = receipt.get("download_calls")
     llm_calls = receipt.get("llm_calls")
-    if downloads not in (0, 1):
+    if type(downloads) is not int or downloads not in (0, 1):
         return None
     return {
         "download_events": downloads,
         # The v2 source chain never starts a model: llm_calls None means
         # "none invoked", observed directly from the producer receipt.
-        "model_calls": 0 if llm_calls in (None, 0) else None,
+        "model_calls": 0 if llm_calls is None or type(llm_calls) is int and llm_calls == 0 else None,
         "source_outcome": receipt.get("outcome"),
     }
 
 
-def _source_failure_observations(stderr_path: Path) -> dict[str, Any] | None:
+def _companion_read_only(request: dict[str, Any]) -> bool:
+    companion = request.get("companion_transcript")
+    return companion is None or isinstance(companion, dict) and companion.get("intent") == "reuse_only"
+
+
+def _source_failure_observations(stderr_path: Path, *, companion_read_only: bool) -> dict[str, Any] | None:
     """Real resource observations from a failed source attempt's stderr doc.
 
     The filing-fetch ``calls`` counter counts local company-wiki subprocess
@@ -910,6 +824,18 @@ def _source_failure_observations(stderr_path: Path) -> dict[str, Any] | None:
     calls = payload.get("calls")
     if isinstance(calls, int) and not isinstance(calls, bool):
         observations["acquisition_calls"] = calls
+    observed = failure_observation(payload)
+    cause = observed.get("upstream_cause")
+    companion = observed.get("companion_observation")
+    acquisition = observed.get("acquisition_observation")
+    if (observations.get("download_events") == 0 and cause is not None
+            and cause.get("provider_started") is False and cause.get("usage_complete") is True
+            and (companion_read_only or companion is not None)
+            and (acquisition is None or (acquisition["provider_started"] is False
+                and acquisition["usage_complete"] is True and acquisition["cost_usd"] is not None
+                and Decimal(acquisition["cost_usd"]) == 0))):
+        observations["source_no_external_effect"] = True
+        observations["model_calls"] = 0
     return observations or None
 
 
@@ -969,6 +895,11 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
         "command_shape": command,
         "exit_code": None,
     }
+    companion_read_only = _companion_read_only(deployment.source_request_template)
+    if stage == "source":
+        record["source_read_only"] = (
+            deployment.source_request_template.get("filing_intent") == "reuse_only" and companion_read_only
+        )
     attempts.append(record)
     job["stages"][stage]["status"] = "running"
     job["status"] = STATUS_RUNNING
@@ -986,7 +917,10 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
         raise JobFacadeError("stage_interrupted", f"stage {stage} was interrupted by its timeout")
     if outcome.exit_code != 0:
         record["status"] = "failed"
-        record["observations"] = _source_failure_observations(stderr_path) if stage == "source" else None
+        record["observations"] = (
+            _source_failure_observations(stderr_path, companion_read_only=companion_read_only)
+            if stage == "source" else None
+        )
         _mark_stage_failed(job, store, stage)
         raise JobFacadeError("stage_failed",
                              f"stage {stage} failed with exit code {outcome.exit_code}")
@@ -1021,6 +955,9 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
             _mark_stage_failed(job, store, stage)
             raise JobFacadeError("stage_failed",
                                  "the source result envelope does not carry a usable reuse receipt")
+        if (companion_read_only and observations["source_outcome"] == "reused_existing"
+                and observations["download_events"] == 0 and observations["model_calls"] == 0):
+            observations["source_no_external_effect"] = True
     else:
         observations = _compute_or_audit_observations(stage)
     record["observations"] = observations
@@ -1200,59 +1137,61 @@ def _allowed_actions(status: str) -> list[str]:
     return []
 
 
+def _source_attempt_is_safe(attempt: Any) -> bool:
+    if not isinstance(attempt, dict):
+        return False
+    observations = attempt.get("observations")
+    return attempt.get("source_read_only") is True or (
+        isinstance(observations, dict) and observations.get("source_no_external_effect") is True
+    )
+
+
 def _cost_projection(job: dict[str, Any], status: str) -> tuple[dict[str, Any] | None, str]:
-    if status == STATUS_QUEUED:
-        return None, COST_NOT_APPLICABLE
-    attempts_with_observations = 0
-    total_attempts = 0
-    paid_model_calls = 0
-    stages = job.get("stages", {})
-    for stage in STAGES:
-        stage_state = stages.get(stage, {})
-        attempts = stage_state.get("attempts", []) if isinstance(stage_state, dict) else []
-        for attempt in attempts:
-            if not isinstance(attempt, dict):
-                continue
-            total_attempts += 1
-            observations = attempt.get("observations")
-            if isinstance(observations, dict):
-                attempts_with_observations += 1
-                model_calls = observations.get("model_calls")
-                if isinstance(model_calls, int) and not isinstance(model_calls, bool):
-                    paid_model_calls += model_calls
-    if total_attempts == 0:
+    attempts = [(stage, attempt) for stage in STAGES
+                for attempt in job.get("stages", {}).get(stage, {}).get("attempts", [])]
+    if status == STATUS_QUEUED or not attempts:
         return None, COST_NOT_APPLICABLE
     if status == STATUS_RUNNING:
         return None, COST_UNKNOWN
-    if attempts_with_observations < total_attempts:
-        return None, COST_UNKNOWN
-    if paid_model_calls > 0:
-        # No pricing table exists in this deployment: a nonzero observed paid
-        # call count must stay unknown instead of inventing an amount.
-        return None, COST_UNKNOWN
+    for stage, attempt in attempts:
+        if not isinstance(attempt, dict):
+            return None, COST_UNKNOWN
+        observations = attempt.get("observations")
+        if (not isinstance(observations, dict)
+                or type(observations.get("download_events")) is not int
+                or observations["download_events"] != 0
+                or type(observations.get("model_calls")) is not int
+                or observations["model_calls"] != 0
+                or (stage == "source" and not _source_attempt_is_safe(attempt))):
+            return None, COST_UNKNOWN
     return {"currency": "USD", "value": "0.00"}, COST_KNOWN
 
 
-def job_view(job: dict[str, Any], store: JobStore) -> dict[str, Any]:
-    lock = store.lock(str(job.get("owner_job_id", "")))
-    lock_alive = lock.is_alive()
+def job_view(job: dict[str, Any], store: JobStore, *, lock_alive: bool | None = None) -> dict[str, Any]:
+    if lock_alive is None:
+        lock_alive = store.lock(str(job.get("owner_job_id", ""))).is_locked()
     status = derive_live_status(job, store, lock_alive=lock_alive)
     if status == STATUS_UNKNOWN:
         # an unparsable attempt record means the state is NOT known: keep the
         # contract pairing status=unknown <-> status_known=false intact
         return _unknown_view(job.get("owner_job_id"))
+    stage_views = derive_stage_views(job, store, lock_alive=lock_alive)
+    actions = _allowed_actions(status)
+    if (ACTION_RESUME in actions and stage_views[0]["status"] != "completed"
+            and not all(_source_attempt_is_safe(attempt) for attempt in job["stages"]["source"]["attempts"])):
+        actions.remove(ACTION_RESUME)
     view: dict[str, Any] = {
         "schema_version": PROTOCOL_SCHEMA,
         "kind": "rf_job",
         "owner_job_id": job.get("owner_job_id"),
         "status": status,
         "status_known": True,
-        "allowed_actions": _allowed_actions(status),
+        "allowed_actions": actions,
         "cost": None,
         "cost_state": COST_NOT_APPLICABLE,
         "recovery_capability": RECOVERY_DURABLE,
         "command_recovery": dict(COMMAND_RECOVERY),
-        "stages": derive_stage_views(job, store, lock_alive=lock_alive),
+        "stages": stage_views,
         "scope": job.get("scope"),
         "limits_ref": job.get("limits_ref"),
         "budget": job.get("budget"),
@@ -1262,8 +1201,8 @@ def job_view(job: dict[str, Any], store: JobStore) -> dict[str, Any]:
         "result": job.get("result"),
         "catalog_history": {
             "cli": "scripts/report_catalog_cli.py",
-            "registration": ("external explicit management import: "
-                             "scripts/report_catalog_identity_cli.py import-research-attempt"),
+            "registration": ("separate RF owner admission via import-research-publication "
+                             "or import-research-attempt"),
             "this_job_registered": False,
         },
     }
@@ -1341,11 +1280,12 @@ class JobFacade:
                 "created_at": _utc_now(),
             })
             self.store.append_jobs_index(owner_job_id, job["created_at"])
-        return self._orchestrate_locked(job, deployment=self._required_deployment())
+        return self._orchestrate_locked(owner_job_id, submitting=True)
 
     # ---- status ------------------------------------------------------------
 
     def get_status(self, owner_job_id: str) -> dict[str, Any]:
+        self.store._require_job_id(owner_job_id)
         try:
             job = self.store.load_job(owner_job_id)
         except JobFacadeError as exc:
@@ -1375,77 +1315,73 @@ class JobFacade:
                                  "the requested action is not a facade action")
         if action == ACTION_RECONCILE:
             return self._reconcile(owner_job_id)
-        try:
-            job = self.store.load_job(owner_job_id)
-        except JobFacadeError as exc:
-            if exc.code == "owner_job_not_found":
-                raise
-            raise JobFacadeError("action_not_allowed",
-                                 "an unreadable job can only be reconciled") from exc
-        view = job_view(job, self.store)
-        if action not in view["allowed_actions"]:
-            raise JobFacadeError("action_not_allowed",
-                                 f"action {action} is not allowed while the job is {view['status']}")
-        return self._resume(owner_job_id)
+        return self._orchestrate_locked(owner_job_id)
 
-    # ---- reconcile ---------------------------------------------------------
-
-    def _reconcile(self, owner_job_id: str) -> dict[str, Any]:
-        """Repair the durable state from the reconcile authority:
-        attempt records + stage artifacts + their content hashes."""
-        try:
-            job = self.store.load_job(owner_job_id)
-        except JobFacadeError:
-            # No usable records: unknown stands, and reconcile reports it
-            # honestly instead of inventing state.
-            return {"owner_job_id": owner_job_id, "job_view": _unknown_view(owner_job_id)}
-        lock = self.store.lock(owner_job_id)
-        lock_alive = lock.is_alive()
-        if not lock_alive:
-            lock.clear_if_stale()
-            lock_alive = False
-        derived = derive_live_status(job, self.store, lock_alive=lock_alive)
-        job["status"] = derived
-        job["status_known"] = derived != STATUS_UNKNOWN
+    def _repair_stages(self, job: dict[str, Any], status: str) -> bool:
+        """Repair only under the per-job owner mutex."""
+        if status == STATUS_UNKNOWN:
+            return False
+        changed = job.get("status") != status or job.get("status_known") is not True
+        job["status"] = status
+        job["status_known"] = True
         for stage in STAGES:
-            stage_state = job["stages"][stage]
-            last = _last_attempt(stage_state)
-            if (last is not None and last.get("status") == "running" and not lock_alive):
+            state = job["stages"][stage]
+            last = _last_attempt(state)
+            if last is not None and last.get("status") == "running":
                 last["status"] = "interrupted"
                 last["ended_at"] = last.get("ended_at") or _utc_now()
                 last["interrupted_by"] = "reconcile"
-            stage_state["status"] = _derive_stage_status(job, self.store, stage,
-                                                         lock_alive=lock_alive) or "unknown"
-        self.store.save_job(job)
-        return {"owner_job_id": owner_job_id, "job_view": job_view(job, self.store)}
+                changed = True
+            derived = _derive_stage_status(job, self.store, stage, lock_alive=False)
+            changed |= state.get("status") != derived
+            state["status"] = derived
+        return changed
 
-    # ---- resume ------------------------------------------------------------
-
-    def _resume(self, owner_job_id: str) -> dict[str, Any]:
-        reconciled = self._reconcile(owner_job_id)
-        if reconciled["job_view"]["status"] not in (STATUS_QUEUED, STATUS_FAILED, STATUS_INTERRUPTED):
-            raise JobFacadeError("action_not_allowed",
-                                 f"resume is not allowed while the job is "
-                                 f"{reconciled['job_view']['status']}")
-        job = self.store.load_job(owner_job_id)
-        return self._orchestrate_locked(job, deployment=self._required_deployment())
-
-    # ---- shared orchestration ----------------------------------------------
-
-    def _orchestrate_locked(self, job: dict[str, Any], *,
-                            deployment: Deployment) -> dict[str, Any]:
-        owner_job_id = job["owner_job_id"]
+    def _reconcile(self, owner_job_id: str) -> dict[str, Any]:
+        if not self.store.job_file(owner_job_id).is_file():
+            return {"owner_job_id": owner_job_id, "job_view": _unknown_view(owner_job_id)}
         lock = self.store.lock(owner_job_id)
-        with lock:
+        if not lock.acquire():
+            return self.get_status(owner_job_id)
+        try:
+            try:
+                job = self.store.load_job(owner_job_id)
+            except JobFacadeError:
+                return {"owner_job_id": owner_job_id, "job_view": _unknown_view(owner_job_id)}
+            status = derive_live_status(job, self.store, lock_alive=False)
+            if self._repair_stages(job, status):
+                self.store.save_job(job)
+            return {"owner_job_id": owner_job_id,
+                    "job_view": job_view(job, self.store, lock_alive=False)}
+        finally:
+            lock.release()
+
+    def _orchestrate_locked(self, owner_job_id: str, *, submitting: bool = False) -> dict[str, Any]:
+        if not self.store.job_file(owner_job_id).is_file():
+            raise JobFacadeError("owner_job_not_found", "no such owner job exists in the store")
+        lock = self.store.lock(owner_job_id)
+        if not lock.acquire():
+            if submitting:
+                return self.get_status(owner_job_id)
+            raise JobFacadeError("lock_unavailable", "another orchestration of this job is active")
+        try:
+            job = self.store.load_job(owner_job_id)
+            view = job_view(job, self.store, lock_alive=False)
+            if ACTION_RESUME not in view["allowed_actions"]:
+                if submitting:
+                    return {"owner_job_id": owner_job_id, "job_view": view}
+                raise JobFacadeError("action_not_allowed", "resume would not safely advance this job")
+            deployment = self._required_deployment()
+            self._repair_stages(job, view["status"])
             job["status"] = STATUS_RUNNING
-            job.pop("stop", None)  # a fresh orchestration supersedes an old stop
+            job.pop("stop", None)
             self.store.save_job(job)
             runner = self._runner_factory(self.store, owner_job_id)
             try:
                 _orchestrate(job, store=self.store, deployment=deployment, runner=runner)
-            except SimulatedProcessDeath:
-                raise  # test-only hard crash surrogate: propagate like a kill
             except JobFacadeError:
-                pass  # stage/interrupted/budget failures are recorded durably
-        return {"owner_job_id": owner_job_id,
-                "job_view": job_view(self.store.load_job(owner_job_id), self.store)}
+                pass  # phase failures are recorded durably
+            return {"owner_job_id": owner_job_id,
+                    "job_view": job_view(self.store.load_job(owner_job_id), self.store, lock_alive=False)}
+        finally:
+            lock.release()
