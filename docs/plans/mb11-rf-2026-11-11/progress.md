@@ -17,10 +17,12 @@
 
 - compare并入main后的既有主线观测：compare + job/recovery/source-port 为102 passed、2 skipped，固定push smoke为12 passed；本轮更新的更完整组合是171 passed、1 skipped。main上的 `assurance/runs/daily_alert.jsonl` 有后台追加，本次保留原内容，不纳入提交或回滚。
 
+- 发布记录：第一次push误从 company-wiki 根执行，Git因本地 refspec 不存在拒绝，未更新远端；随后从 RF 仓成功推送功能分支并快进 main。`058be4fd6` 当前已在两处。
+
 ## B37部署与来源测试增量
 
 - 从候选中独立保留了 `tests/test_report_catalog_deployment.py` 和 `tests/b37_publication_sources/`；publication-source owner实现与main同blob，无生产代码复制。
 - 锁文件测试原本要求稳定的 `catalog.jsonl.lock` 不存在，与RF `OwnerFileLock` 协议冲突。改成检查根目录文件集不变且锁未持有；没有更改owner锁实现。
 - 首轮长 `--basetemp` 下出现4个RF-job用例路径创建失败；短临时根使用相同命令复验后，最终聚焦集合为171 passed、1 skipped、71.41s。最终日志为 `b37_combined_final.log`，首轮失败数与根因在findings.md留档；pytest basetemp均在命令结束后清除。
-- 独立只读审查 PASS，见 `review/deployment_source_regressions.md`。最终部署文件单测38 passed；Ruff通过。测试文件还未提交/推送；计划更新随本次提交一起入main。
+- 独立只读审查 PASS，见 `review/deployment_source_regressions.md`。最终部署文件单测38 passed；Ruff通过。测试文件与PWF已由提交 `058be4fd6` 推送到 `codex/mb11-rf`，并快进进入 RF `main` / `origin/main`；两次push的固定smoke各12 passed。
 - scope/subject/verified-comparison测试中的3个缺口和候选实现跨模块私有调用/市场范围固定问题已归因并写入findings.md。对应候选代码留在源分支，不复制到本工区；scope功能后续先补公开边界和泛化测试，再判断并线。

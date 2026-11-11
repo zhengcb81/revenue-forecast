@@ -11,7 +11,7 @@
 - 独立工区：C:/Users/郑曾波/Projects/mb11-rf
 - 已确认全候选会触及 628 个文件；本次范围严格限制到卡片指定 19 个产品路径与当前合同测试。B37 的 19 个产品路径中 4 个已同 blob、9 个有差异、6 个主线缺失。
 - compare owner模块与CLI已由 `e060a8607` 提交并进入RF `main`；main上的PWF进度记录为 `33d880826`。其52项聚焦测试、Ruff/mypy和独立审查已通过。
-- 新增的部署/来源测试已独立复核通过，修正锁文件断言后MB-RF相关组合为171 passed、1 skipped；尚待提交并推送。
+- 新增的部署/来源测试已独立复核通过，修正锁文件断言后MB-RF相关组合为171 passed、1 skipped；提交 `058be4fd6` 已推送并进入 RF `main` / `origin/main`。
 - scope/subject/verified-compare仍未接入。候选实现有跨模块私有调用、固定IFRS/12-31/单分部支持形状和未配置的表示上限；不能按候选原样并线。详细差额和后续入口见findings.md。
 
 ## 步骤

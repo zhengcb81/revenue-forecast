@@ -13,11 +13,11 @@
 - MAX_METRICS=32对当前仅支持的revenue一项及重复项校验没有约束效用，已删除冗余计数上限。64KiB输入上限仍作为小型请求入口的资源保护；有效的四字段请求自身受字段和值形状约束。
 - Decimal 4,096位/8,192精度限制用于限定精确算术资源消耗；尚未证明会触及有效报告输入，暂不在这次compare端口修改中动它。
 
-## B37 deployment/publication-source intake (2026-11-11)
+## B37部署与来源测试调查（2026-11-11）
 
-- The public comparison API is on RF main as `e060a8607`; the corresponding main PWF update is `33d880826`.
-- The release candidate's publication-source implementation is already byte-identical to current main. Its synthetic regressions were useful and passed without changing production code.
-- A copied deployment test initially asserted that `catalog.jsonl.lock` must not exist. RF's `OwnerFileLock` intentionally leaves a stable lock carrier and releases the OS lock; the corrected tests assert that the owner's file set is unchanged and that the lock is not held. No production lock behavior changed.
-- A long Windows `--basetemp` first caused four existing RF-job tests to fail while creating deep temp files. Re-running the same suite with a short temp root passed; this was test-environment path length, not an RF-job regression.
-- The scope/subject/verified-comparison candidate is not safe to merge as-is: its modules import or call private symbols (`_clean_id`, `_json`, `_assert_pathless`, `_compare_pair`, `_identity_reasons`, `catalog._index`, `catalog._exact_report`, `catalog._read_json`, `catalog._public_report`) and bypass ReportCatalog's public reader methods. It also fixes support to IFRS, a 12-31 year end and one segment, with fixed evidence/ledger/output row and byte ceilings that are not connected to configured work budgets. Its management CLI diff removes the current `import-rf-job` command and root support. Keep this code out of main until an additive public contract is tested across accounting bases, fiscal calendars and multi-segment reports, and all existing job behavior remains intact.
-- The initial copied scope/publication test selection reported 122 passed, 1 skipped, 5 failed. Three failures were the absent scope command/wire protocol; two exposed invalid lock-file expectations. The latter are repaired in the retained deployment tests; the scope slice is deferred for public-boundary/generalization work, not marked green.
+- 比较公开API已由 `e060a8607` 进入RF main；PWF记录提交为 `33d880826`。此前主线比较/job/recovery/source-port回归为102 passed、2 skipped，push smoke为12 passed；本轮新增的更完整组合回归为171 passed、1 skipped。
+- 候选publication-source owner实现与当前main逐字节相同；保留它的合成回归即可，不复制生产实现。
+- 初版部署测试错误要求 `catalog.jsonl.lock` 不存在；RF的 `OwnerFileLock` 会留下稳定锁载体并释放OS锁。修正后的测试验证owner文件集合不变且锁未持有，没有更改锁实现。
+- Windows长 `--basetemp` 导致4个既有RF-job测试创建深层临时文件失败；相同测试换用短临时根后通过。这是测试临时路径过长，不是RF-job缺陷。
+- scope/subject/verified-comparison候选不能原样并入：它导入或调用 `_clean_id`、`_json`、`_assert_pathless`、`_compare_pair`、`_identity_reasons` 等私有符号，直接访问catalog私有索引/读取器，并绕过ReportCatalog公开reader；还固定IFRS、12月31日财年和单分部结构，设置无预算依据的证据/台账/输出行数与字节上限；候选CLI差异会删除已发布的 `import-rf-job` 命令和root支持。后续需先定义增量公开合同，并覆盖多会计准则、财年、多分部，同时保留全部job能力。
+- 首轮scope/publication候选测试为122 passed、1 skipped、5 failed：3项因scope命令或wire合同缺失，2项是锁载体断言错误。后两项已在保留的部署测试中修好；scope部分仍延期，不能记为通过。
