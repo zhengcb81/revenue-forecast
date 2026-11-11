@@ -12,3 +12,9 @@
 - 原候选有 MAX_COMPARED_ROWS=512 与 MAX_OUTPUT_BYTES=1MiB 两个固定结果门槛，且无配置/owner工作预算依据。它们可能拒绝完整合法比较结果；已删除并补600期、长locator、>1MiB CLI完整JSON回归。
 - MAX_METRICS=32对当前仅支持的revenue一项及重复项校验没有约束效用，已删除冗余计数上限。64KiB输入上限仍作为小型请求入口的资源保护；有效的四字段请求自身受字段和值形状约束。
 - Decimal 4,096位/8,192精度限制用于限定精确算术资源消耗；尚未证明会触及有效报告输入，暂不在这次compare端口修改中动它。
+
+
+## 当前主线位置
+
+- compare模块与CLI的两个缺失路径已在 `e060a8607a904547645ee8eaee347bd159004d01` 进入 main；主线随后再次运行 compare + job/recovery/source-port 关键套件为 102 passed、2 skipped，并推送至 origin/main。
+- B37 尚余9个有差异的已有模块和4个未实现的新scope/subject/verified-compare模块及对应publication-source合同；这些必须按模块责任继续TDD，不以本切片通过替代整卡验收。

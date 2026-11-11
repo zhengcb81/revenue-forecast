@@ -16,4 +16,7 @@
 
 - 独立只读审查对 compare 三文件给出 PASS；结果和范围保存在 review/compare_api_review.md。审查指出的“每行完整期次、左右定位都保留”断言已补上并重测。
 - 最终compare测试52 passed/1环境skip；Ruff、mypy通过。此前102 passed/1 skip是去掉结果门槛之前的组合回归，只作补充证据，不冒充门槛修正后的全组合结果。
-- 本地提交/并线目标为 compare纯模块与CLI，不包括余下 B37 scope/subject/publication 模块。
+- compare纯模块与CLI已本地提交并入RF main，提交号e060a860；独立施工分支与main均推送origin。
+- 合并后main运行 compare + job/recovery/source-port关键回归102 passed、2 skipped；push固定smoke 12 passed。Ruff和mypy通过。
+- RF main 当前 tracked 运行状态文件 `assurance/runs/daily_alert.jsonl` 有后台自动追加，属于既知运行数据，未纳入本次提交或回滚。
+- 完整B37差额仍未关闭；剩余scope/subject/verified compare/publication源码与9个同名模块适配继续按本计划实施。
