@@ -4,76 +4,134 @@
   "status": "REVIEWED",
   "repository_root": "C:/Users/郑曾波/Projects/mb11-rf",
   "base_commit": "6341759b9cdfd13e8aa7d51d5c755e361046da0c",
-  "commit": "d368eff6f8ce",
+  "commit": "ec2e2f2e79c44ec6075e3a5bdb172b5f0c54b70a",
   "branch": "codex/mb11-rf",
   "target_branch": "main",
   "pushed": true,
   "changed_paths": [
-    "scripts/report_catalog_subject_resolver.py",
-    "scripts/report_catalog_scope_binding.py",
-    "scripts/report_catalog_verified_compare.py",
-    "scripts/report_catalog_verified_compare_cli.py",
-    "tests/rf_verified_scope/__init__.py",
-    "tests/rf_verified_scope/conftest.py",
-    "tests/rf_verified_scope/fixtures.py",
-    "tests/rf_verified_scope/test_public_contract.py",
-    "tests/rf_verified_scope/test_golden_contract.py",
-    "tests/rf_verified_scope/test_negative_semantics.py",
-    "tests/rf_verified_scope/test_cli.py",
-    "docs/plans/mb11-rf-2026-11-11/task_plan.md",
-    "docs/plans/mb11-rf-2026-11-11/findings.md",
-    "docs/plans/mb11-rf-2026-11-11/progress.md",
-    "docs/plans/mb11-rf-2026-11-11/review.md",
-    "docs/plans/mb11-rf-2026-11-11/card_audit.md",
-    "docs/plans/mb11-rf-2026-11-11/fixtures/subject-snapshot-example.json",
-    "docs/plans/mb11-rf-2026-11-11/handoff.md",
-    "docs/plans/mb11-rf-2026-11-11/handoff.json",
-    "docs/plans/mb11-rf-2026-11-11/b2_scope_red.log",
-    "docs/plans/mb11-rf-2026-11-11/b2_scope_focused.log",
-    "docs/plans/mb11-rf-2026-11-11/b2_scope_focused_final.log",
     "docs/plans/mb11-rf-2026-11-11/b2_combined_final.log",
-    "docs/plans/mb11-rf-2026-11-11/b2_combined_junit.xml",
     "docs/plans/mb11-rf-2026-11-11/b2_combined_final_tip.log",
     "docs/plans/mb11-rf-2026-11-11/b2_combined_final_tip.xml",
     "docs/plans/mb11-rf-2026-11-11/b2_combined_final_tip2.log",
-    "docs/plans/mb11-rf-2026-11-11/b2_combined_final_tip2.xml"
+    "docs/plans/mb11-rf-2026-11-11/b2_combined_final_tip2.xml",
+    "docs/plans/mb11-rf-2026-11-11/b2_combined_junit.xml",
+    "docs/plans/mb11-rf-2026-11-11/b2_scope_focused.log",
+    "docs/plans/mb11-rf-2026-11-11/b2_scope_focused_final.log",
+    "docs/plans/mb11-rf-2026-11-11/b2_scope_red.log",
+    "docs/plans/mb11-rf-2026-11-11/card_audit.md",
+    "docs/plans/mb11-rf-2026-11-11/findings.md",
+    "docs/plans/mb11-rf-2026-11-11/fixtures/subject-snapshot-example.json",
+    "docs/plans/mb11-rf-2026-11-11/full_card_closure.log",
+    "docs/plans/mb11-rf-2026-11-11/full_card_install_tests.log",
+    "docs/plans/mb11-rf-2026-11-11/full_card_junit.xml",
+    "docs/plans/mb11-rf-2026-11-11/full_card_junit_final.xml",
+    "docs/plans/mb11-rf-2026-11-11/full_card_regression.log",
+    "docs/plans/mb11-rf-2026-11-11/full_card_regression_final.log",
+    "docs/plans/mb11-rf-2026-11-11/handoff.json",
+    "docs/plans/mb11-rf-2026-11-11/handoff.md",
+    "docs/plans/mb11-rf-2026-11-11/progress.md",
+    "docs/plans/mb11-rf-2026-11-11/review.md",
+    "docs/plans/mb11-rf-2026-11-11/runtime_inventory.md",
+    "docs/plans/mb11-rf-2026-11-11/task_plan.md",
+    "scripts/contracts/constants.py",
+    "scripts/contracts/workflow_receipt.py",
+    "scripts/installation_manifest.py",
+    "scripts/report_catalog_scope_binding.py",
+    "scripts/report_catalog_subject_resolver.py",
+    "scripts/report_catalog_verified_compare.py",
+    "scripts/report_catalog_verified_compare_cli.py",
+    "scripts/revenue_core.py",
+    "scripts/revenue_forecast.py",
+    "scripts/revenue_publication.py",
+    "scripts/revenue_report.py",
+    "scripts/schema_compatibility.py",
+    "tests/rf_verified_scope/__init__.py",
+    "tests/rf_verified_scope/conftest.py",
+    "tests/rf_verified_scope/fixtures.py",
+    "tests/rf_verified_scope/test_cli.py",
+    "tests/rf_verified_scope/test_golden_contract.py",
+    "tests/rf_verified_scope/test_negative_semantics.py",
+    "tests/rf_verified_scope/test_public_contract.py",
+    "tests/test_module_boundary_closure.py"
   ],
   "requirements": [
     {
+      "id": "RF-A0",
+      "result": "NO_CHANGE_PROVEN",
+      "red_evidence": "The old release tree diverges from main and the scope candidate reaches private catalog/StockWiki surfaces.",
+      "green_evidence": "Only the current-contract slice is delivered; compare/publication were already merged in B1; no old facade, 118 research artifacts or assurance files were added; card_audit.md records the A0 evidence."
+    },
+    {
       "id": "RF-B2-1",
       "result": "PASS",
-      "red_evidence": "b2_scope_red.log: the four public entrypoints are absent; the candidate implementation imports catalog private symbols and StockWiki private CLI/DB.",
+      "red_evidence": "b2_scope_red.log: the four public entrypoints are absent; the candidate imports catalog private symbols and StockWiki private CLI/DB.",
       "green_evidence": "PublicOnlyCatalog private access fails; AST scan finds no private catalog symbol or neighbour-store import; build/compare run through get_report/get_run/get_source_snapshot only."
     },
     {
       "id": "RF-B2-2",
       "result": "PASS",
-      "red_evidence": "Candidate fixed IFRS, 12-31, single segment and FY-only shapes; no public binding of period/subject/scope dimensions.",
+      "red_evidence": "Candidate fixed IFRS, 12-31, single segment and FY-only shapes.",
       "green_evidence": "8 golden combinations (IFRS/US GAAP x 06-30/12-31 x 1/3 segments), 24 segments, H1 and 600-period cases; missing-field negatives; FY calendar must match period_end."
     },
     {
       "id": "RF-B2-3",
       "result": "PASS",
-      "red_evidence": "Candidate error semantics depended on StockWiki private receipts and could not run without the neighbouring owner.",
+      "red_evidence": "Candidate error semantics depended on StockWiki private receipts.",
       "green_evidence": "Named codes for missing/duplicate/not-in-source witness, identity mismatch, uncovered period, conflicting scope, stale binding, wrong binding, calendar and anchor mismatch, store truncation/forged hash/busy."
     },
     {
       "id": "RF-B2-4",
       "result": "PASS",
-      "red_evidence": "Candidate CLI removes import-rf-job and adds unbudgeted 512-row/1MiB result caps.",
+      "red_evidence": "Candidate CLI removes import-rf-job and adds unbudgeted result caps.",
       "green_evidence": "report_catalog_identity_cli.py unchanged; CLI help/source regression; 600-period append/read-back; >1MiB complete response; 64KiB compare request budget and owner MAX_ARTIFACT_BYTES only."
     },
     {
       "id": "RF-B2-5",
       "result": "PASS",
       "red_evidence": "No independent review bound to a B2 source tip before this delivery.",
-      "green_evidence": "Three read-only reviews; final review bound to d368eff6 returned PASS; focused 57 passed; selected combined 313 cases 309 passed/1 failed/3 skipped with the failure proven pre-existing on HEAD."
+      "green_evidence": "Three read-only reviews; final B2 review bound to d368eff6 returned PASS; focused 57 passed; selected combined 313 cases 309 passed/1 failed/3 skipped with the failure proven pre-existing on HEAD."
     },
     {
-      "id": "MB-RF-CARD-REMAINING",
-      "result": "NOT_DELIVERED",
-      "red_evidence": "The full card's A/B/C items are not covered by this B2 slice: processed_artifact_canary.py is still installable and imports sqlite3; revenue_report.py still imports revenue_core; no strict no-CWP/unreadable-DB public source-boundary test; historical B34 profile isolation evidence and install isolation are not recorded; tests/test_module_boundary_closure.py is absent.",
-      "green_evidence": "B2 only: see card_audit.md for the requirement-by-requirement status, evidence and suggested remaining order. Do not treat this handoff as a whole-card completion proof."
+      "id": "RF-ABC-1-CANARY",
+      "result": "PASS",
+      "red_evidence": "processed_artifact_canary.py imported sqlite3 and was part of installable_files; no runtime caller existed.",
+      "green_evidence": "Added to RETIRED_RUNTIME_FILES; source retained; closure test proves it is not installable and no runtime module references it; installed tree excludes it."
+    },
+    {
+      "id": "RF-ABC-2-REPORT-CORE",
+      "result": "PASS",
+      "red_evidence": "revenue_report imported revenue_core; core imported revenue_report at runtime; publication/schema modules also imported core.",
+      "green_evidence": "ENGINE_VERSION moved to contracts.constants; build_workflow_compliance_receipt moved to contracts/workflow_receipt; report/publication/schema import leaves; core re-exports and keeps only the runtime callback; -S subprocess shows import revenue_report does not load revenue_core."
+    },
+    {
+      "id": "RF-ABC-3-SOURCE",
+      "result": "PASS",
+      "red_evidence": "Existing decoupled-port tests patched private reader/preparation helpers and did not exercise an unreadable upstream DB.",
+      "green_evidence": "Public prepare_registered_source_result in a -S subprocess with empty PYTHONPATH, no company_wiki/filing_fetch packages, an unreadable directory catalog handle, a neighbour catalog.sqlite3 sentinel (atime/size/mtime/hash unchanged), exactly one reader call; success preserves the full SourceRef and failure raises SourceVersionTransportError without neighbour fallback."
+    },
+    {
+      "id": "RF-ABC-4-HISTORICAL-PROFILE",
+      "result": "NO_CHANGE_PROVEN",
+      "red_evidence": "Only path/import-level evidence existed; no explicit default-profile contract.",
+      "green_evidence": "No production change was needed: publication_layout v1/v2 are relative and versioned, publication_version defaults to v1, v0 is refused, the owner imports no sqlite/CWP; existing b34_publication and b35_lineage real positive/negative cases pass except the pre-existing identity failure."
+    },
+    {
+      "id": "RF-ABC-5-JOBS-DIRS",
+      "result": "NO_CHANGE_PROVEN",
+      "red_evidence": "The card required explicit code/data-root and no-database evidence.",
+      "green_evidence": "No production change was needed: closure test asserts catalog/job modules import no sqlite3 and ReportCatalog uses .jsonl without creating it; test_rf_job_recovery and test_report_catalog_deployment cover recovery and root separation; B2 scope uses a separate --data-root."
+    },
+    {
+      "id": "RF-ABC-6-INSTALL",
+      "result": "PASS",
+      "red_evidence": "No temporary-destination install verification existed.",
+      "green_evidence": "Closure test runs sync_installations.py --apply/--check in an empty cwd and temp destination; apply writes all selected files, check reports zero drift, installed tree contains public entries and contracts/workflow_receipt.py, excludes canary, and imports under -S; tools install tests 20 passed."
+    },
+    {
+      "id": "MB-RF-CARD-EXIT",
+      "result": "PASS",
+      "red_evidence": "The full-card boundaries were previously unproven.",
+      "green_evidence": "runtime_inventory.md records entries/modules/public faces/state owners/dependencies; card_audit.md records every requirement; full-card regression 561 passed, 2 known pre-existing failures, 3 skipped, 31 subtests."
     }
   ],
   "public_contract_changes": [
@@ -100,9 +158,30 @@
       "version": "get-bindings / compare / append-binding",
       "change": "new thin CLI with --data-root and --subject-fixture; optional existing --owner-root",
       "compatibility": "additive; import-rf-job remains in the existing identity CLI"
+    },
+    {
+      "name": "contracts/workflow_receipt + contracts.constants",
+      "version": "leaf extraction",
+      "change": "build_workflow_compliance_receipt and ENGINE_VERSION moved to leaf modules",
+      "compatibility": "revenue_core re-exports both; existing from revenue_core imports unchanged"
+    },
+    {
+      "name": "installation_manifest",
+      "version": "retired runtime file",
+      "change": "processed_artifact_canary.py excluded from installable_files/manifest",
+      "compatibility": "source retained; existing installs may retain the old copy, which is not owned or imported"
     }
   ],
   "test_runs": [
+    {
+      "command": "C:/Miniconda/python -B -X utf8 -m pytest tests/test_module_boundary_closure.py -q -p no:cacheprovider",
+      "exit_code": 0,
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 8.96,
+      "log": "docs/plans/mb11-rf-2026-11-11/full_card_closure.log"
+    },
     {
       "command": "C:/Miniconda/python -B -X utf8 -m pytest tests/rf_verified_scope -q -p no:cacheprovider",
       "exit_code": 0,
@@ -113,18 +192,27 @@
       "log": "docs/plans/mb11-rf-2026-11-11/b2_scope_focused_final.log"
     },
     {
-      "command": "C:/Miniconda/python -B -X utf8 -m pytest tests/rf_verified_scope tests/test_report_catalog_rf_job_import.py tests/test_rf_job_concurrency.py tests/test_rf_job_recovery.py tests/test_rf_job_boundary_regression.py tests/test_decoupled_source_port.py tests/test_d4_narrative_consumption_port.py tests/test_report_catalog_compare.py tests/test_report_catalog_deployment.py tests/test_report_catalog.py tests/test_report_catalog_identity_resolver.py tests/test_single_owner_guard.py tests/test_architecture_dependency_uses.py tests/test_golden_behavior_lock.py tests/b37_publication_sources -q -p no:cacheprovider",
+      "command": "C:/Miniconda/python -B -X utf8 -m pytest tests/test_module_boundary_closure.py tests/rf_verified_scope tests/test_single_owner_guard.py tests/test_architecture_dependency_uses.py tests/test_decoupled_source_port.py tests/test_golden_behavior_lock.py tests/test_model_registry_contract.py tests/test_rf_job_boundary_regression.py tests/test_rf_job_recovery.py tests/test_rf_job_concurrency.py tests/test_report_catalog_rf_job_import.py tests/test_d4_narrative_consumption_port.py tests/test_report_catalog_compare.py tests/test_report_catalog_deployment.py tests/test_report_catalog.py tests/test_report_catalog_identity_resolver.py tests/b37_publication_sources tests/test_output_report.py tests/test_schema_compatibility.py tests/test_zr702_schema_source_of_truth.py tests/test_zr703_schema_drift_cleanup.py tests/test_publication_pipeline.py tests/test_publication_registry.py tests/b34_publication tests/b35_lineage tests/test_company_wiki_source_reader_v2.py tests/test_r1_source_boundary.py -q -p no:cacheprovider",
       "exit_code": 1,
-      "passed": 309,
-      "failed": 1,
+      "passed": 561,
+      "failed": 2,
       "skipped": 3,
-      "seconds": 91.31,
-      "log": "docs/plans/mb11-rf-2026-11-11/b2_combined_final_tip2.log"
+      "seconds": 195.4,
+      "log": "docs/plans/mb11-rf-2026-11-11/full_card_regression_final.log"
+    },
+    {
+      "command": "C:/Miniconda/python -B -X utf8 -m pytest tools/tests/test_sync_installations.py tools/tests/test_g3_skill_package.py tools/tests/test_architecture_runtime_manifest.py -q -p no:cacheprovider",
+      "exit_code": 0,
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 28.37,
+      "log": "terminal evidence recorded in handoff.md"
     }
   ],
   "independent_review": {
-    "reviewer": "agent-32545490 (round 1, 940e05b4), agent-023442c1 (round 2, 2ec16368), agent-deb118d7 (round 3, d368eff6)",
-    "reviewed_code_commit": "d368eff6f8ce",
+    "reviewer": "agent-32545490 (B2 round 1, 940e05b4), agent-023442c1 (B2 round 2, 2ec16368), agent-deb118d7 (B2 round 3, d368eff6), agent-8079d52d (full-card round 1, 326149cd), full-card re-review pending at ec2e2f2e",
+    "reviewed_code_commit": "ec2e2f2e79c44ec6075e3a5bdb172b5f0c54b70a",
     "report": "docs/plans/mb11-rf-2026-11-11/review.md",
     "open_in_scope_findings": []
   },
@@ -132,12 +220,11 @@
   "network_calls": 0,
   "model_calls": 0,
   "out_of_scope_findings": [
-    "Full-card A/B/C remains open (see card_audit.md): canary retirement, report/core decoupling, strict public source-boundary evidence, historical B34 profile isolation evidence, install isolation and the module-boundary closure test.",
-    "tests/test_single_owner_guard.py subprocess allowlist is stale on HEAD: report_catalog_identity_resolver.py, report_catalog_rf_job_import.py, report_catalog_source_alias.py and rf_job_facade.py import subprocess but are absent from the allowlist. Needs focused contract tests or a guard-ownership decision from ROOT; not fixed by expanding the allowlist.",
-    "tests/test_module_boundary_closure.py named in the card does not exist in this worktree; recorded as a filename check, not a product failure.",
-    "Whole-tree `pytest tests` collection has pre-existing failures (test_zr1008 imports missing test_zr709; test_ca204 also errors); the combined regression deliberately covers the selected 313 affected cases only.",
-    "B2 tests use a hand-written public wire double, not a real ReportCatalog round-trip; the real captured-markdown source constraint is not modelled. Residual contract-drift risk.",
-    "scope_comparison_shape_mismatch is only reachable when two public reads disagree in shape; not constructed by the current double. Residual coverage gap."
+    "tests/test_single_owner_guard.py subprocess allowlist is stale on HEAD: report_catalog_identity_resolver.py, report_catalog_rf_job_import.py, report_catalog_source_alias.py and rf_job_facade.py import subprocess but are absent from the allowlist. Reproduced on the base tree; needs focused contract tests or a guard-ownership decision from ROOT.",
+    "tests/b34_publication/test_native_cli.py::test_two_management_processes_replay_then_current_stock_revocation_refuses fails with identity_not_resolved on both the branch and a base archive with delivery/config fixtures; the identity resolver/cli are byte-identical to base.",
+    "tests/b34_publication/test_publication.py::test_simultaneous_managers_append_only_once is timing/basetemp sensitive; it passed with the default basetemp and the relevant files are unchanged.",
+    "Whole-tree `pytest tests` collection has pre-existing failures (test_zr1008 imports missing test_zr709; test_ca204 also errors); the full-card regression deliberately covers the selected affected cases only.",
+    "Real CWP/StockWiki production composition remains ROOT's public-interface combination; RF did not run a production repair, download or model call."
   ],
-  "next_root_action": "In an independent integration worktree, verify origin/main ancestry and the card write set, run the selected affected regression once, then bind a real RF owner workspace plus ROOT-frozen public StockWiki subject fixture through report_catalog_verified_compare_cli.py before merging the branch tip."
+  "next_root_action": "In an independent integration worktree, verify origin/main ancestry and the card write set, run the full-card affected regression once, then bind a real RF owner workspace plus ROOT-frozen public StockWiki subject fixture through report_catalog_verified_compare_cli.py before merging ec2e2f2e."
 }

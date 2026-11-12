@@ -35,7 +35,24 @@
 - 复核运行：`pytest tests/rf_verified_scope` → **57 passed / 7.31s**；读取 `b2_combined_final_tip2.log/.xml` → **313 例、309 passed、1 failed、3 skipped、91.31s**，唯一失败为既有 allowlist 用例。
 - 仅提示用例数文案与未提交日志，已在 PWF 与本次 handoff 提交中处理。
 
+## 整卡第一轮（绑定 326149cd）
+
+- 审查者：agent-8079d52d-ee06-433c-b534-bf8c97e5d99c（general-purpose，只读）
+- 结论：**CHANGES_REQUESTED**。代码层 canary/report-core/profile 基本通过；交付与证据层未闭合。
+- 发现与处置：
+  - Handoff blocker：handoff/card_audit/review 仍写 B2-only、commit 为 `d368eff6`、`MB-RF-CARD-REMAINING=NOT_DELIVERED`；已更新为整卡状态并绑定 `ec2e2f2e`。
+  - 运行时清单 GAP：已新增 `runtime_inventory.md`，列入口/模块/公开面/状态 owner/依赖方向/兼容退休分类。
+  - `revenue_forecast.py` pure/zero-IO 误称：已改为“引擎无隐藏 clock/network/disk 输入；formal 注册 publication，draft 不写”。
+  - 来源边界证据偏弱：已改为 `-S` + 空 `PYTHONPATH`、目录式不可读 catalog handle、邻库哨兵 atime/size/mtime/hash 全部不变、reader 仅 1 次、成功断言完整 SourceRef、失败断言 `SourceVersionTransportError` 且不含邻库路径。
+  - 安装证据偏弱：已断言 apply/check JSON、零 drift、安装树含全部入口与新 leaf、不含 canary、`-S` 导入安装后 runtime。
+  - 历史 profile 默认路径：已补默认 `publication_version="v1"` 与 v1 相对路径断言。
+- 整卡回归（`ec2e2f2e`）：**561 passed、2 failed、3 skipped、31 subtests**；两项失败为基线已复现的 allowlist 与 B34 identity 用例。
+
+## 整卡第二轮复核（绑定 ec2e2f2e）
+
+- 审查者：待本轮复核后补记；结果见下方追加。
+
 ## 结论与残余风险
 
-- 本卡 B2 范围内无可行动未修问题；三轮审查最终绑定源码 tip `d368eff6f8ce`。
-- 范围外：单 owner 守卫 allowlist 缺口、`test_module_boundary_closure.py` 缺名、全树 `pytest tests` 既有收集失败、真实 `ReportCatalog` captured-markdown 往返、`scope_comparison_shape_mismatch` 分支未构造。均不冒充已通过，交 ROOT/后续卡。
+- B2 三轮审查绑定 `d368eff6`，PASS；整卡改造与证据强化绑定 `ec2e2f2e`，第一轮 CHANGES_REQUESTED 的可行动项已修。
+- 范围外：单 owner 守卫 allowlist 缺口、B34 `identity_not_resolved`（基线已复现）、B34 并发/临时目录时序、全树 `pytest tests` 既有收集失败、真实 CWP/StockWiki 生产组合。均不冒充已通过，交 ROOT。

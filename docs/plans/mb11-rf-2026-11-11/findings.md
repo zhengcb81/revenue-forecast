@@ -48,3 +48,13 @@
 - `tests/b34_publication` + `b35_lineage` + `test_model_registry_contract.py` 为 129 passed、1 failed、31 subtests；失败用例 `test_two_management_processes_replay_then_current_stock_revocation_refuses` 不导入 B2 模块，相关 identity resolver/cli 零 diff，归为既有/环境问题，不冒充通过。
 - `tests/test_module_boundary_closure.py` 不存在；`AGENTS.md` 不存在（只有 `agents/` 目录）；`tests/b37_scope_binding/` 在本工区不存在（候选依赖 SW 私有 fixture，未迁移）。
 - 结论：B2 完成；整卡未完成。逐条见 `card_audit.md`，handoff 已声明 `MB-RF-CARD-REMAINING = NOT_DELIVERED`。
+
+## 整卡补齐（2026-11-12，`326149cd` + `ec2e2f2e`）
+
+- canary：加入 `RETIRED_RUNTIME_FILES`，`installable_files`/`manifest` 排除；源文件保留；closure 测试证明无 runtime 引用、安装树不含。旧安装中的副本不会被清理，manifest 注释已说明。
+- report/core：`revenue_report` 无 `revenue_core` 导入；`revenue_publication`/`schema_compatibility` 改 leaf；core 仅保留运行时 `validate_published_forecast` 回调与 re-export；`-S` 子进程 `core_loaded False`。`revenue_forecast` 的 pure/zero-IO 文案已改为“无隐藏 clock/network/disk 输入；formal 注册 publication，draft 不写”。
+- 来源边界：不再 patch 私有 helper；`-S` + 空 `PYTHONPATH` 子进程、公开 reader command、目录式不可读 catalog handle、邻库 `catalog.sqlite3` 哨兵（atime/size/mtime/hash 不变）、reader 仅 1 次；成功保留完整 SourceRef，失败 `SourceVersionTransportError` 且无邻库路径。
+- 历史 profile：v1 默认、v2 版本化、v0 拒绝、相对路径、无 sqlite/CWP 导入；b34/b35 真实正反例通过，除基线已复现的 `identity_not_resolved`。
+- 安装：临时 destination + 空 cwd 的 apply/check JSON、零 drift、安装树含入口与新 leaf、不含 canary、`-S` 导入安装后 runtime；tools 安装测试 20 passed。
+- 整卡回归：561 passed、2 failed、3 skipped、31 subtests；两项失败为基线已复现（subprocess allowlist、B34 identity），B34 并发用例为 basetemp 时序敏感且相关文件零 diff。
+- 结论：整卡 A0/B2/A-B-C 1–6 与出口均有关闭证据；真实 CWP/StockWiki 生产组合仍由 ROOT 公开接口执行。

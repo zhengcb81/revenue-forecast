@@ -1,92 +1,88 @@
-# MB-RF B2 交付交接
+# MB-RF 整卡交付交接
 
-> **范围声明**：本交接只覆盖 B2 切片（scope/subject/verified-compare）。整卡 A/B/C 的 canary、report/core、严格来源边界、历史 profile 证据、安装隔离与整卡闭包测试**未交付**，逐条状态见 `card_audit.md`。不得把本文件当作整张 MB-RF 卡已完成证明。
+> 范围：MB-RF 施工卡的 A0、B2 与 A/B/C 1–6。逐条状态与证据见 `card_audit.md`；运行时入口/模块/公开面/状态 owner/依赖方向见 `runtime_inventory.md`。本交接不声称 ROOT 已合并 `main`。
 
 ## 1. 基线与交付
 
-- 代码基线：RF `main` / `origin/main` = `6341759b9cdfd13e8aa7d51d5c755e361046da0c`（B1 compare 与部署/来源回归已在主线）。
-- 最终代码 tip：`d368eff6f8ce`（父 `2ec16368f9d1`，其上 `940e05b4cd82`）。
-- 分支：`codex/mb11-rf`；已推送 `origin/codex/mb11-rf`。远端当前 tip 为后续交接文档提交 `d17be476`（仅 PWF/日志/本文件，不含产品改动）；代码审查仍绑定 `d368eff6`。pre-push 固定 smoke **12 passed**；未合并主线。
-- 目标主线：RF `main`。ROOT 尚未接收/合并，本交接不声称 `MERGED`。
-- 实际产品 diff（仅新增，未改任何既有生产模块）：
-
-| 类型 | 路径 |
-|---|---|
-| 产品 | `scripts/report_catalog_subject_resolver.py` |
-| 产品 | `scripts/report_catalog_scope_binding.py` |
-| 产品 | `scripts/report_catalog_verified_compare.py` |
-| 产品 | `scripts/report_catalog_verified_compare_cli.py` |
-| 测试 | `tests/rf_verified_scope/{__init__.py,conftest.py,fixtures.py,test_public_contract.py,test_golden_contract.py,test_negative_semantics.py,test_cli.py}` |
-| PWF/证据 | `docs/plans/mb11-rf-2026-11-11/{task_plan.md,findings.md,progress.md,review.md,handoff.md,handoff.json,b2_*.log,b2_*.xml}` |
-
-`git diff 6341759b..d368eff6` 共 21 文件、+2205/-1；除 PWF 外全部为新增，`report_catalog.py`、`report_catalog_compare*.py`、`report_catalog_identity_cli.py`、`report_catalog_rf_job_import.py` 无 diff。
+- 代码基线：RF `main` / `origin/main` = `6341759b9cdfd13e8aa7d51d5c755e361046da0c`。
+- 整卡最终代码 tip：`ec2e2f2e79c44ec6075e3a5bdb172b5f0c54b70a`。
+- 提交链：`940e05b4`（B2 公开模块）→ `2ec16368`（B2 审查修复）→ `d368eff6`（B2 测试锁）→ `326149cd`（canary/report-core 整卡改造）→ `9404984d`（来源/安装证据强化）→ `ec2e2f2e`（闭包测试去重；仅测试文件）。
+- 分支：`codex/mb11-rf`；已推送 `origin/codex/mb11-rf`；目标主线 RF `main`；未合并主线。
+- 产品/测试改动（相对基线）：
+  - 新增：`scripts/report_catalog_subject_resolver.py`、`report_catalog_scope_binding.py`、`report_catalog_verified_compare.py`、`report_catalog_verified_compare_cli.py`、`scripts/contracts/workflow_receipt.py`、`tests/rf_verified_scope/`、`tests/test_module_boundary_closure.py`。
+  - 修改：`scripts/contracts/constants.py`（`ENGINE_VERSION`）、`scripts/installation_manifest.py`（canary 退休）、`scripts/revenue_core.py`（re-export/回调）、`scripts/revenue_report.py`（改 leaf 导入）、`scripts/revenue_publication.py`、`scripts/schema_compatibility.py`（改 leaf 导入）、`scripts/revenue_forecast.py`（修正 pure/zero-IO 文案）。
+  - 未改：`report_catalog.py`、`report_catalog_compare*.py`、`report_catalog_identity_cli.py`、`report_catalog_rf_job_import.py`、CWP/StockWiki/Dashboard、`assurance/runs/*`、全局 skills。
 
 ## 2. 卡片要求逐项
 
 | ID | 要求 | 根因/先红 | 归属与兼容 | 最终证明 |
 |---|---|---|---|---|
-| RF-B2-1 | 公开 DTO/reader 暴露 scope/subject/verified-compare；调用方不得读 catalog 私有面 | 候选直接 import `_clean_id/_json/_index/_exact_report/_public_report/_read_json/_compare_pair/_identity_reasons` 并依赖 SW 私有 CLI/DB；当前主线无这四个入口（`b2_scope_red.log`：入口缺失 1 failed） | RF owner 新增公开模块；只经 `get_report/get_run/get_source_snapshot`；既有 catalog/compare 协议零改动 | `test_public_contract.py`：`PublicOnlyCatalog` 私有访问即断言失败；AST 检查无私有符号/邻库导入；`test_owner_modules_import_no_catalog_privates_or_neighbour_stores` |
-| RF-B2-2 | Golden 覆盖 IFRS/US GAAP、06-30/12-31、多分部；期次/主体/scope/比较对象沿公开字段绑定；不得默认 IFRS/12-31/单分部 | 候选固定 `accounting_basis=="IFRS"`、`fiscal_year_end=="12-31"`、`len(segments)==1`、FY-only | RF owner 公开 DTO 显式字段；FY 坐标要求 `period_end` 月日=声明财年结束日；H1/Q 不受 FY 限制 | `test_golden_contract.py`：8 组准则×日历×分部、24 分部、H1、600 期；缺字段负例 |
-| RF-B2-3 | 缺源/重复源/身份/期次不匹配/冲突 scope 的稳定结果或错误 | 候选依赖 SW 私有身份与固定形状，错误语义不可复用 | RF owner 命名错误码；来源经公开 snapshot reader 核对 | `test_negative_semantics.py`：`scope_source_missing`、`scope_duplicate_source`、`scope_evidence_invalid`、`scope_identity_mismatch`、`*_scope_coordinate_not_covered`、`scope_binding_conflict`、`scope_binding_stale`、`scope_binding_not_found`、`scope_period_calendar_mismatch`、`scope_anchor_mismatch`、`scope_store_invalid`、`scope_store_busy` |
-| RF-B2-4 | 保留 `import-rf-job` 管理入口与 CLI 行为；完整结果、无任意行/字节截断 | 候选 CLI 会删除 `import-rf-job`；候选有 512 行/1MiB 等无预算依据门槛 | 未改 `report_catalog_identity_cli.py`；compare 保留已发布 64KiB 请求预算，append 证据用 owner 既有 `MAX_ARTIFACT_BYTES` | `test_cli.py`：help/源码断言 `import-rf-job`；600 期 append/回读；>1MiB 完整响应；`tests/test_report_catalog_rf_job_import.py` 在组合回归中通过 |
-| RF-B2-5 | 定向通过后跑受影响回归一次；独立审查绑定最终 tip | — | 三轮只读审查，最终绑定 `d368eff6` | 定向 57 passed；选定组合 313 例 309 passed/1 failed/3 skipped；审查 PASS（见 `review.md`） |
-
-整卡其他 A/B/C 项（canary 退休、report/core 解耦、严格来源边界、历史 profile 证据、安装隔离、整卡闭包测试）本轮**未交付**；逐条状态、证据与建议顺序见 `card_audit.md`。
+| RF-A0 | 收敛旧 release 差额；保留 main durable job/recovery/source ports；不合旧 facade/研究产物 | 候选整树与 main 分叉；scope 候选私调私有面 | 仅接 19 路径中仍属当前合同的部分；B1 compare/publication 已在 main | `card_audit.md` A0 行；`git diff` 不含旧 facade/118 研究产物/assurance |
+| RF-B2-1 | 公开 DTO/reader，禁止 catalog 私有面 | 候选 import `_clean_id/_json/_index/_exact_report/_public_report/_read_json/_compare_pair/_identity_reasons` | RF owner 新增模块；只经 `get_report/get_run/get_source_snapshot`；既有协议零改动 | `test_public_contract.py`；`PublicOnlyCatalog` + AST；`b2_scope_red.log` |
+| RF-B2-2 | IFRS/US GAAP、06-30/12-31、多分部 golden；显式绑定无默认 | 候选固定 IFRS/12-31/单分部/FY-only | 公开 DTO 显式字段；FY 日历必须匹配 `period_end` | 8 组 golden、24 分部、H1、600 期；缺字段/日历负例 |
+| RF-B2-3 | 缺源/重复源/身份/期次/冲突的稳定语义 | 候选依赖 SW 私有身份与固定形状 | RF 命名错误码；来源经公开 snapshot reader | `test_negative_semantics.py` 全错误码 |
+| RF-B2-4 | 保留 `import-rf-job`、完整结果、无任意截断 | 候选删除该命令并加 512 行/1MiB 门槛 | `report_catalog_identity_cli.py` 零 diff；compare 64KiB / append owner artifact bound | `test_cli.py`；600 期 append；>1MiB 完整响应；job 导入回归 |
+| RF-B2-5 | 定向 + 受影响回归 + 独审绑定 tip + handoff | — | 三轮 B2 审查绑定 `d368eff6` | 57 passed；313 例 309 passed/1 failed/3 skipped；`review.md` |
+| RF-A/B/C-1 | canary 不依赖 CWP SQLite/schema/DAG；未使用则退休 | canary 仍 `import sqlite3` 且可安装 | 加入 `RETIRED_RUNTIME_FILES`；源文件保留 | `test_module_boundary_closure.py`：不可安装、无 runtime 引用、安装树不含 |
+| RF-A/B/C-2 | report 直接消费 leaf；core 编排调用 report | report 仍 `from revenue_core import (...)`；core 运行时回调 report | `ENGINE_VERSION`/workflow receipt 移 leaf；core re-export 兼容 | `-S` 子进程 `core_loaded False`；AST 回调仅函数内；golden/schema/output 回归 |
+| RF-A/B/C-3 | 无 CWP/FF 包、不可读上游 DB 时 public commands 仍可 prepare/read | 既有测试 patch 私有 helper，不满足严格口径 | 公开 `prepare_registered_source_result` + 真实 reader 子进程 | `-S` + 空 `PYTHONPATH`；不可读目录 config；邻库哨兵 atime/size/mtime/hash 不变；reader 仅 1 次；失败 `SourceVersionTransportError` |
+| RF-A/B/C-4 | B34 profile 显式版本兼容；默认路径无 CWP 布局 | 只有路径/import 级证据 | 保留 v1 默认、v2 版本化；既有 b34/b35 真实正反例 | `publication_layout` v1/v2、默认 v1、v0 拒绝；无 sqlite/CWP 导入；b34/b35 回归 |
+| RF-A/B/C-5 | code/data root 分开；只读不建库；恢复不重算 | 需集中证据 | `ReportCatalog` JSONL owner state；job recovery 既有测试 | closure：无 sqlite3、`.jsonl` 不建文件；`test_rf_job_recovery`/deployment |
+| RF-A/B/C-6 | canonical installer、临时目标、空 cwd、不部署全局 | 原未做临时 destination | `sync_installations.py` 显式 destination | closure：apply/check JSON、零 drift、安装树含入口与新 leaf、不含 canary、`-S` 导入；tools 安装测试 20 passed |
+| 全卡共用规则 | 活动入口/模块/公开面/owner/依赖方向/兼容退休清单 | — | — | `runtime_inventory.md` |
+| 出口 | 边界清楚、越层工具消失/公开委托、profile 隔离有证据、安装/兼容/端口通过、独审无未修问题 | — | — | 见 §4/§5；整卡回归 561 passed/2 已知失败/3 skipped/31 subtests |
 
 ## 3. 公开接口变化
 
-默认无既有协议变更；以下均为**新增可选项/新模块**，不影响现有 `rf-report-catalog/1`、`rf-report-comparison/1`、`import-rf-job`：
+默认无既有协议变更；新增均为可加性：
 
-- `report_catalog_subject_resolver`：`SubjectQuery`、`SubjectSnapshot`、`SubjectResolver` port、`FrozenSubjectResolver.from_public_fixture(path)`；fixture schema `rf-subject-snapshot-fixture/1`，snapshot schema `rf-report-subject-snapshot/1`。
-- `report_catalog_scope_binding`：`build_scope_binding`、`validate_scope_binding`、`ScopeBindingStore`、`list_scope_bindings`、`exact_scope_pair`；binding schema `rf-report-scope-binding/1`，read schema `rf-report-scope-bindings/1`；state 路径 `<data-root>/artifacts/report_scope/verified_scope_bindings.jsonl`。
-- `report_catalog_verified_compare`：`compare_verified_scope`；schema `rf-verified-scope-comparison/1`；请求在既有 4 字段上增加 `left_binding_id`/`right_binding_id`。
-- `report_catalog_verified_compare_cli`：`get-bindings --report-id`、`compare`（stdin 请求）、`append-binding`（stdin 证据）；共享 `--data-root`、`--subject-fixture`，可选既有 `--owner-root`。
+- `report_catalog_subject_resolver`：`SubjectQuery`、`SubjectSnapshot`、`SubjectResolver`、`FrozenSubjectResolver`；fixture `rf-subject-snapshot-fixture/1`。
+- `report_catalog_scope_binding`：`build_scope_binding`、`validate_scope_binding`、`ScopeBindingStore`、`list_scope_bindings`、`exact_scope_pair`；schema `rf-report-scope-binding/1`、`rf-report-scope-bindings/1`；state `<data-root>/artifacts/report_scope/verified_scope_bindings.jsonl`。
+- `report_catalog_verified_compare`：`compare_verified_scope`；`rf-verified-scope-comparison/1`；请求增加 `left_binding_id`/`right_binding_id`。
+- `report_catalog_verified_compare_cli`：`get-bindings` / `compare` / `append-binding`；`--data-root`、`--subject-fixture`、可选 `--owner-root`。
+- `contracts/workflow_receipt.py`：`build_workflow_compliance_receipt` leaf；`revenue_core` 继续 re-export。
+- `installation_manifest`：canary 进入 `RETIRED_RUNTIME_FILES`，不再分发。
 
-ROOT 消费所需的本地 fixture 入口：`tests/rf_verified_scope/fixtures.py`（`subject_snapshot`/`write_subject_fixture`/`evidence` 均为公开 wire 形状）；可直接使用的 JSON 样例为 `docs/plans/mb11-rf-2026-11-11/fixtures/subject-snapshot-example.json`。真实 StockWiki 组合由 ROOT 用公开 subject fixture/CLI 绑定，RF 作者未改 SW。
+ROOT 可直接用 `docs/plans/mb11-rf-2026-11-11/fixtures/subject-snapshot-example.json` 作为 `--subject-fixture` 样例；真实 StockWiki 组合由 ROOT 用公开 subject fixture/CLI 绑定。
 
 ## 4. 实际测试
 
-环境：Windows，`C:/Miniconda/python`（Python 3.13.9），pytest 9.1.1；临时根 `C:/Temp/mb11b2*`，结束后删除。
+环境：Windows，`C:/Miniconda/python`（Python 3.13.9），pytest 9.1.1；临时根 `C:/Temp/mb11*`，结束后删除。
 
 | 命令 | 退出码 | pass/fail/skip | 耗时 | 日志 |
 |---|---|---|---|---|
-| `python -B -X utf8 -m pytest tests/rf_verified_scope -q -p no:cacheprovider` | 0 | 57/0/0 | 6.68s | `b2_scope_focused_final.log` |
-| `python -B -X utf8 -m pytest tests/rf_verified_scope tests/test_report_catalog_rf_job_import.py tests/test_rf_job_concurrency.py tests/test_rf_job_recovery.py tests/test_rf_job_boundary_regression.py tests/test_decoupled_source_port.py tests/test_d4_narrative_consumption_port.py tests/test_report_catalog_compare.py tests/test_report_catalog_deployment.py tests/test_report_catalog.py tests/test_report_catalog_identity_resolver.py tests/test_single_owner_guard.py tests/test_architecture_dependency_uses.py tests/test_golden_behavior_lock.py tests/b37_publication_sources -q -p no:cacheprovider` | 1 | 309/1/3 | 91.31s | `b2_combined_final_tip2.log` / `.xml` |
+| `pytest tests/test_module_boundary_closure.py -q` | 0 | 14/0/0 | 9.32s | `full_card_closure.log`（本轮） |
+| `pytest tests/rf_verified_scope -q` | 0 | 57/0/0 | 6.68s | `b2_scope_focused_final.log` |
+| 整卡综合回归（closure + B2 + 卡片证明库 + report/publication + b34/b35 + source） | 1 | 561/2/3 + 31 subtests | 195.40s | `full_card_regression_final.log` / `full_card_junit_final.xml` |
+| `pytest tools/tests/test_sync_installations.py tools/tests/test_g3_skill_package.py tools/tests/test_architecture_runtime_manifest.py -q` | 0 | 20/0/0 | 28.37s | 本轮终端记录 |
 
-- 唯一失败：`tests/test_single_owner_guard.py::test_subprocess_use_is_limited_to_contract_clients`。已用 HEAD 树复算证明 allowlist 在 B2 前已缺 `report_catalog_identity_resolver.py`、`report_catalog_rf_job_import.py`、`report_catalog_source_alias.py`、`rf_job_facade.py`；新模块无 `subprocess`。属既有缺口，交 ROOT。
+- 两项失败均为基线已复现、非本卡引入：
+  1. `tests/test_single_owner_guard.py::test_subprocess_use_is_limited_to_contract_clients`：allowlist 缺 4 个既有 subprocess 脚本，HEAD 树同样失败。
+  2. `tests/b34_publication/test_native_cli.py::test_two_management_processes_replay_then_current_stock_revocation_refuses`：`identity_not_resolved`；在基线 `6341759b` 的 `scripts/tests/delivery/config` 归档树上同样失败。
 - 3 个 skip 为既有环境/合同 skip（Dashboard 合同目录、默认 catalog 跨 owner 链接、模型族输出固定）。
-- Ruff（4 模块+新测试）通过；mypy（4 模块）通过；pre-commit 与 pre-push 固定 smoke 12 passed。
-- 未执行：整个 `tests/` 树（本工区存在既有收集失败：`test_zr1008` 导入缺失的 `test_zr709`，`test_ca204` 亦报错）；真实 StockWiki/CWP 组合；网络/模型/预测/收费调用。
+- Ruff（整卡改动文件）通过；mypy policy（`scripts/contracts/`、`schema_compatibility.py`、`filing_fetch_client.py`、`trust_anchor.py`、`company_wiki_narrative_contracts.py`）通过；pre-commit/pre-push smoke 12 passed。
+- 未执行：整个 `tests/` 树（既有收集失败 `test_zr1008` 缺 `test_zr709`、`test_ca204`）；真实 CWP/StockWiki 生产组合；网络/模型/预测/收费调用。
 
 ## 5. 独立审查
 
-- 第一轮：agent-32545490，绑定 `940e05b4`，PASS；F1–F4 本卡修复（修复提交 `2ec16368`），F5 交 ROOT，F6/F7 记录。
-- 第二轮：agent-023442c1，绑定 `2ec16368`，PASS；N1–N3 修复（修复提交 `d368eff6`），N4/N5 证据卫生处理。
-- 第三轮复核：agent-deb118d7，绑定 `d368eff6`，PASS；确认 N1–N3、无新增越界。
-- 详细发现、修复与复核见 `review.md`；最终代码审查绑定 `d368eff6`，本 handoff 仅为之后的文档提交。整卡其余 A/B/C 项未进入本轮审查，见 `card_audit.md`。
+- B2 三轮：agent-32545490（`940e05b4`）、agent-023442c1（`2ec16368`）、agent-deb118d7（`d368eff6`），均 PASS；修复提交 `2ec16368`、`d368eff6`。
+- 整卡审查：agent-8079d52d 在 `326149cd` 给出 CHANGES_REQUESTED（handoff 未更新、inventory 缺失、来源/安装证据偏弱、zero-IO 文案）；本轮已修复并提交 `ec2e2f2e`，整卡复核结果见 `review.md`。
+- 详细发现、修复与复核见 `review.md`；代码审查绑定 `ec2e2f2e`，本 handoff 为之后的文档提交。
 
 ## 6. 隔离与恢复
 
-- 测试目录初始状态：每次运行前新建空的 `C:/Temp/mb11b2*` 短根；结束状态：只删除本次自建目录，最终 `ls /c/Temp/mb11b2*` 无残留；仓内未留 pytest 临时产物。
+- 测试目录初始状态：每次运行前新建空的 `C:/Temp/mb11*` 短根；结束状态：只删除本次自建目录，最终无残留；仓内未留 pytest 临时产物。
 - 未改生产原件/配置/既有 WIP；`assurance/runs/{daily_alert.jsonl,monthly_manifest.json,weekly_alert.jsonl,weekly_manifest.json}` 未写入；未部署全局 skills；未改 CWP/StockWiki/Dashboard。
-- 业务网络调用 0、模型调用 0、费用 0/unknown；仅发生 Git fetch/push。
-- 工作树在代码提交后干净；handoff 文档提交后仍保持干净（日志随文档提交）。
+- 业务网络调用 0、模型调用 0、费用 0/unknown；仅 Git fetch/push。
+- 安装测试只写临时 destination；check 阶段 `written=[]`、`remaining_selected_drift=0`。
 
 ## 7. 安装/部署/CI/合并状态
 
-- 安装/部署：未执行全局安装；未改部署根；**整卡的临时 destination 安装隔离尚未执行**（见 `card_audit.md` A/B/C-6）。
+- 安装/部署：未执行全局安装；临时 destination 安装/检查已在闭包测试中通过。
 - CI：未运行远端 CI；本地 Ruff/mypy/pre-commit/pre-push smoke 通过。
-- 合并：分支已推送，`main` 未合并；ROOT 接收后需在集成树重跑本段受影响测试并绑定最终代码 tip。
-- 整卡剩余：canary 退休、report/core 解耦、严格来源边界、历史 profile 证据、安装隔离与 `test_module_boundary_closure.py` 未交付，不能按整卡 `MERGED` 处理。
-
-ROOT 下一步（一条可执行命令，先在独立集成工区核对 `origin/main` 与提交祖先关系）：
+- 合并：分支已推送，`main` 未合并；ROOT 接收后需在集成树重跑整卡回归并绑定 `ec2e2f2e`。
+- ROOT 下一步命令：
 
 ```powershell
-C:/Miniconda/python -B -X utf8 -m pytest tests/rf_verified_scope tests/test_report_catalog_rf_job_import.py tests/test_rf_job_concurrency.py tests/test_rf_job_recovery.py tests/test_rf_job_boundary_regression.py tests/test_decoupled_source_port.py tests/test_d4_narrative_consumption_port.py tests/test_report_catalog_compare.py tests/test_report_catalog_deployment.py tests/test_report_catalog.py tests/test_report_catalog_identity_resolver.py tests/test_single_owner_guard.py tests/test_architecture_dependency_uses.py tests/test_golden_behavior_lock.py tests/b37_publication_sources -q -p no:cacheprovider
-```
-
-真实组合时使用公开入口：
-
-```powershell
-C:/Miniconda/python -B scripts/report_catalog_verified_compare_cli.py --owner-root <RF owner workspace> get-bindings --report-id <report-id> --data-root <RF data root> --subject-fixture <ROOT-frozen subject fixture.json>
+C:/Miniconda/python -B -X utf8 -m pytest tests/test_module_boundary_closure.py tests/rf_verified_scope tests/test_single_owner_guard.py tests/test_architecture_dependency_uses.py tests/test_decoupled_source_port.py tests/test_golden_behavior_lock.py tests/test_model_registry_contract.py tests/test_rf_job_boundary_regression.py tests/test_rf_job_recovery.py tests/test_rf_job_concurrency.py tests/test_report_catalog_rf_job_import.py tests/test_d4_narrative_consumption_port.py tests/test_report_catalog_compare.py tests/test_report_catalog_deployment.py tests/test_report_catalog.py tests/test_report_catalog_identity_resolver.py tests/b37_publication_sources tests/test_output_report.py tests/test_schema_compatibility.py tests/test_zr702_schema_source_of_truth.py tests/test_zr703_schema_drift_cleanup.py tests/test_publication_pipeline.py tests/test_publication_registry.py tests/b34_publication tests/b35_lineage tests/test_company_wiki_source_reader_v2.py tests/test_r1_source_boundary.py -q -p no:cacheprovider
 ```

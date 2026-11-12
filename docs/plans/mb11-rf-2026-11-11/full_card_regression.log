@@ -1,0 +1,127 @@
+........................................................................ [ 12%]
+F..................s..................... [ 20%]
+........................................................................ [ 32%]
+....s................................................................... [ 45%]
+....s................................................................... [ 58%]
+....................................................................F... [ 70%]
+........................................................................ [ 83%]
+........................................................................ [ 96%]
+....................                                                     [100%]
+================================== FAILURES ===================================
+__ SingleOwnerGuardTests.test_subprocess_use_is_limited_to_contract_clients ___
+
+self = <test_single_owner_guard.SingleOwnerGuardTests testMethod=test_subprocess_use_is_limited_to_contract_clients>
+
+    def test_subprocess_use_is_limited_to_contract_clients(self) -> None:
+        observed: set[str] = set()
+        for path in _python_files():
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            imports_subprocess = False
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    imports_subprocess |= any(
+                        alias.name.split(".")[0] == "subprocess"
+                        for alias in node.names
+                    )
+                if isinstance(node, ast.ImportFrom):
+                    imports_subprocess |= node.module == "subprocess"
+            if imports_subprocess:
+                observed.add(path.name)
+>       self.assertEqual(observed, SUBPROCESS_CLIENTS)
+E       AssertionError: Items in the first set but not the second:
+E       'report_catalog_identity_resolver.py'
+E       'rf_job_facade.py'
+E       'report_catalog_source_alias.py'
+E       'report_catalog_rf_job_import.py'
+
+tests\test_single_owner_guard.py:58: AssertionError
+_ test_two_management_processes_replay_then_current_stock_revocation_refuses __
+
+case_factory = <function case_factory.<locals>.factory at 0x0000025FA50C34C0>
+
+    def test_two_management_processes_replay_then_current_stock_revocation_refuses(
+        case_factory,
+    ):
+        case = case_factory(real_recorder=True, version="v2")
+        spec = importlib.util.spec_from_file_location(
+            "publication_isolated_stock_fixture",
+            ROOT / "tests/b34_source_alias/test_source_alias.py",
+        )
+        helper = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(helper)
+        helper.REF = doc(case["run"] / "forecast/v2/input.json")["sources"][0][
+            "company_wiki_trace"
+        ]["source_ref"]
+        code = helper.controlled_code(case["root"])
+>       config, listing, _ = helper._native(case["root"], code)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\b34_publication\test_native_cli.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\b34_source_alias\test_source_alias.py:159: in _native
+    identity = resolve_identity(ENT, config=config, listing_id=listing)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\report_catalog_identity_resolver.py:279: in resolve_identity
+    response = resolve_identity_record(entity_id, config=config, listing_id=listing_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+entity_id = 'ENT_1b2a4d3e-0000-4a1b-8c2d-000000000001'
+config = BridgeConfig(python=WindowsPath('C:/Miniconda/python.exe'), cli=WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rfp-8904d...onds=10, max_output_bytes=262144, sw_root=WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rfp-8904d1aede/isolated-owner'))
+listing_id = 'LST_00000000-0000-4000-8000-000000000001'
+
+    def resolve_identity_record(
+        entity_id: str, *, config: BridgeConfig, listing_id: str | None = None
+    ) -> dict[str, Any]:
+        """Return the complete verified public identity DTO for owner composition."""
+        _require_id(entity_id, _ENTITY_ID_RE, "identity_input_invalid")
+        if listing_id is not None:
+            _require_id(listing_id, _LISTING_ID_RE, "identity_input_invalid")
+        argv = [str(config.python), "-X", "utf8", "-B", str(config.cli),
+                "resolve", "--entity-id", entity_id]
+        if listing_id is not None:
+            argv += ["--listing-id", listing_id]
+        if config.sw_root is not None:
+            argv += ["--root", str(config.sw_root)]
+        try:
+            completed = subprocess.run(
+                argv, stdin=subprocess.DEVNULL, capture_output=True,
+                timeout=config.timeout_seconds, cwd=config.owner_root,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise IdentityBridgeError("bridge_timeout", "identity bridge exceeded its time bound") from exc
+        except OSError as exc:
+            raise IdentityBridgeError("bridge_unavailable", exc.__class__.__name__) from exc
+        if completed.returncode != 0:
+            raise IdentityBridgeError(
+                "bridge_error", _stderr_code(completed.stderr) or f"exit_{completed.returncode}"
+            )
+        stdout = completed.stdout or b""
+        if len(stdout) > config.max_output_bytes:
+            raise IdentityBridgeError("bridge_output_too_large", "identity bridge exceeded its size bound")
+        try:
+            response = json.loads(stdout.decode("utf-8"))
+        except (UnicodeError, json.JSONDecodeError) as exc:
+            raise IdentityBridgeError("bridge_response_invalid", "response is not JSON") from exc
+        if not isinstance(response, dict):
+            raise IdentityBridgeError("bridge_response_invalid", "response must be a JSON object")
+        if response.get("schema_version") != BRIDGE_SCHEMA_VERSION:
+            raise IdentityBridgeError("bridge_schema_mismatch", repr(response.get("schema_version")))
+        if response.get("command") != "resolve" or response.get("authority") != "stockwiki":
+            raise IdentityBridgeError("bridge_response_invalid", "response is not a stockwiki resolve")
+        if response.get("entity_id") != entity_id:
+            raise IdentityBridgeError("identity_subject_mismatch", "response resolves a different entity")
+        entity_block = response.get("entity")
+        if not isinstance(entity_block, dict):
+            raise IdentityBridgeError("bridge_response_invalid", "resolve must carry an entity block")
+        if entity_block.get("entity_id") != entity_id:
+            raise IdentityBridgeError("identity_subject_mismatch", "entity block names another subject")
+        if entity_block.get("identity_state") != "verified":
+>           raise IdentityBridgeError("identity_not_resolved", "entity identity is not verified")
+E           report_catalog_identity_resolver.IdentityBridgeError: identity_not_resolved: entity identity is not verified
+
+scripts\report_catalog_identity_resolver.py:250: IdentityBridgeError
+=========================== short test summary info ===========================
+FAILED tests/test_single_owner_guard.py::SingleOwnerGuardTests::test_subprocess_use_is_limited_to_contract_clients
+FAILED tests/b34_publication/test_native_cli.py::test_two_management_processes_replay_then_current_stock_revocation_refuses
+2 failed, 560 passed, 3 skipped, 31 subtests passed in 201.12s (0:03:21)
