@@ -63,12 +63,12 @@
 
 ## 整卡收尾（2026-11-12）
 
-- 代码提交：`326149cd`（canary 退休、report/core 解耦、整卡闭包测试）、`ec2e2f2e`（来源/安装证据强化与 zero-IO 文案修正）。
+- 代码提交：`326149cd`（canary 退休、report/core 解耦、整卡闭包测试）、`9404984d`（来源/安装证据强化与 zero-IO 文案修正）、`ec2e2f2e`（闭包测试去重，仅测试文件）。
 - Canary：加入 `RETIRED_RUNTIME_FILES`，不再进入 `installable_files/manifest`；源文件保留；无 runtime 引用。
 - report/core：`ENGINE_VERSION` 移入 `contracts.constants`，workflow receipt 移入 `contracts/workflow_receipt`；report/publication/schema 改 leaf；core re-export 兼容；`-S` 子进程证明 report 不加载 core。
 - 来源边界：公开 `prepare_registered_source_result` 子进程测试，无 CWP/FF 包、空 PYTHONPATH、目录式不可读 catalog handle、邻库哨兵 atime/size/mtime/hash 不变、reader 仅 1 次；失败 `SourceVersionTransportError`。
 - 历史 profile：v1 默认、v2 版本化、v0 拒绝、相对路径、无 sqlite/CWP 导入；b34/b35 真实正反例通过（除基线已复现 identity 失败）。
 - 安装：临时 destination + 空 cwd 跑 `sync_installations.py --apply/--check`，零 drift，安装树含入口与新 leaf、不含 canary，`-S` 导入安装后 runtime；tools 安装测试 20 passed。
 - 整卡回归：`full_card_regression_final.log` / `full_card_junit_final.xml`，**561 passed、2 failed、3 skipped、31 subtests passed、195.40s**；两项失败为基线已复现（allowlist、B34 identity）。
-- 整卡闭包：`full_card_closure.log`，**14 passed、8.96s**。
+- 整卡闭包：`full_card_closure.log`，**14 passed、9.32s**。
 - 文档：`card_audit.md` 全量状态、`runtime_inventory.md` 入口/模块/owner/依赖清单、`handoff.md/json` 绑定 `ec2e2f2e`。

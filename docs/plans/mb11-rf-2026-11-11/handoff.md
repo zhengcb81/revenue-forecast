@@ -61,12 +61,15 @@ ROOT 可直接用 `docs/plans/mb11-rf-2026-11-11/fixtures/subject-snapshot-examp
   2. `tests/b34_publication/test_native_cli.py::test_two_management_processes_replay_then_current_stock_revocation_refuses`：`identity_not_resolved`；在基线 `6341759b` 的 `scripts/tests/delivery/config` 归档树上同样失败。
 - 3 个 skip 为既有环境/合同 skip（Dashboard 合同目录、默认 catalog 跨 owner 链接、模型族输出固定）。
 - Ruff（整卡改动文件）通过；mypy policy（`scripts/contracts/`、`schema_compatibility.py`、`filing_fetch_client.py`、`trust_anchor.py`、`company_wiki_narrative_contracts.py`）通过；pre-commit/pre-push smoke 12 passed。
+- 回归日志/junit 未内嵌 commit hash；它们是 `9404984d` 提交前工作树的运行结果。其后 `ec2e2f2e` 仅改 `tests/test_module_boundary_closure.py`（2+/2−），生产代码与测试数不变，closure 已在最终 tip 复跑 14 passed。
 - 未执行：整个 `tests/` 树（既有收集失败 `test_zr1008` 缺 `test_zr709`、`test_ca204`）；真实 CWP/StockWiki 生产组合；网络/模型/预测/收费调用。
 
 ## 5. 独立审查
 
 - B2 三轮：agent-32545490（`940e05b4`）、agent-023442c1（`2ec16368`）、agent-deb118d7（`d368eff6`），均 PASS；修复提交 `2ec16368`、`d368eff6`。
-- 整卡审查：agent-8079d52d 在 `326149cd` 给出 CHANGES_REQUESTED（handoff 未更新、inventory 缺失、来源/安装证据偏弱、zero-IO 文案）；本轮已修复并提交 `ec2e2f2e`，整卡复核结果见 `review.md`。
+- 整卡第一轮：agent-8079d52d（`326149cd`）CHANGES_REQUESTED；已修 handoff/inventory/来源/安装/zero-IO 文案。
+- 整卡第二轮：agent-2310675d（`9404984d`）CHANGES_REQUESTED，唯一 blocker 为文档未提交/推送声明不实；已提交并推送 `d1b1ac4c`，`changed_paths` 与 diff 对齐。
+- 整卡第三轮：agent-bfcecaf8（`ec2e2f2e` / docs `d1b1ac4c`）**PASS**；确认工作树/远端一致、契约字段齐备、closure 14 passed、回归 561/2/3/31 自洽。
 - 详细发现、修复与复核见 `review.md`；代码审查绑定 `ec2e2f2e`，本 handoff 为之后的文档提交。
 
 ## 6. 隔离与恢复

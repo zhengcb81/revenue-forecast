@@ -40,19 +40,29 @@
 - 审查者：agent-8079d52d-ee06-433c-b534-bf8c97e5d99c（general-purpose，只读）
 - 结论：**CHANGES_REQUESTED**。代码层 canary/report-core/profile 基本通过；交付与证据层未闭合。
 - 发现与处置：
-  - Handoff blocker：handoff/card_audit/review 仍写 B2-only、commit 为 `d368eff6`、`MB-RF-CARD-REMAINING=NOT_DELIVERED`；已更新为整卡状态并绑定 `ec2e2f2e`。
+  - Handoff blocker：handoff/card_audit/review 仍写 B2-only、commit 为 `d368eff6`、`MB-RF-CARD-REMAINING=NOT_DELIVERED`；已在 `9404984d` 更新为整卡状态，最终代码 tip 为 `ec2e2f2e`。
   - 运行时清单 GAP：已新增 `runtime_inventory.md`，列入口/模块/公开面/状态 owner/依赖方向/兼容退休分类。
   - `revenue_forecast.py` pure/zero-IO 误称：已改为“引擎无隐藏 clock/network/disk 输入；formal 注册 publication，draft 不写”。
   - 来源边界证据偏弱：已改为 `-S` + 空 `PYTHONPATH`、目录式不可读 catalog handle、邻库哨兵 atime/size/mtime/hash 全部不变、reader 仅 1 次、成功断言完整 SourceRef、失败断言 `SourceVersionTransportError` 且不含邻库路径。
   - 安装证据偏弱：已断言 apply/check JSON、零 drift、安装树含全部入口与新 leaf、不含 canary、`-S` 导入安装后 runtime。
   - 历史 profile 默认路径：已补默认 `publication_version="v1"` 与 v1 相对路径断言。
-- 整卡回归（`ec2e2f2e`）：**561 passed、2 failed、3 skipped、31 subtests**；两项失败为基线已复现的 allowlist 与 B34 identity 用例。
+- 整卡回归（`9404984d`）：**561 passed、2 failed、3 skipped、31 subtests**；两项失败为基线已复现的 allowlist 与 B34 identity 用例。`ec2e2f2e` 仅改测试文件（2+/2−），不改变生产代码或测试数。
 
-## 整卡第二轮复核（绑定 ec2e2f2e）
+## 整卡第二轮复核（绑定 9404984d，docs tip 当时未提交）
 
-- 审查者：待本轮复核后补记；结果见下方追加。
+- 审查者：agent-2310675d-40c5-43d3-b134-fb4840b21936（general-purpose，只读）
+- 结论：**CHANGES_REQUESTED**，但唯一 blocker 是交付物未提交/`pushed: true` 与实际不符；代码层六项修复已确认成立。
+- 处置：提交并推送文档 `d1b1ac4c`；`handoff.json` 的 `changed_paths` 44 项与 `git diff 6341759b..HEAD` 集合完全一致；闭包测试在最终 tip 复跑 14 passed；测试文件去重提交 `ec2e2f2e`。
+
+## 整卡第三轮复核（绑定 ec2e2f2e / docs d1b1ac4c）
+
+- 审查者：agent-bfcecaf8-d90f-41f6-89f3-6a4660102c2a（general-purpose，只读）
+- 结论：**PASS**。确认工作树干净、local == remote、handoff commit/pushed/changed_paths 一致；`card_audit` 无 B2-only/NOT_DELIVERED 现行结论；契约字段齐备；closure 实跑 **14 passed**；回归日志 561/2/3/31 自洽；两项失败为基线已复现；`ec2e2f2e` 仅测试文件变化。
+- 低危文档项已修：`progress.md` 提交链补回 `9404984d`；closure 耗时统一为 9.32s；本复核记录与 handoff reviewer 字段补齐。
 
 ## 结论与残余风险
 
-- B2 三轮审查绑定 `d368eff6`，PASS；整卡改造与证据强化绑定 `ec2e2f2e`，第一轮 CHANGES_REQUESTED 的可行动项已修。
+- B2 三轮审查绑定 `d368eff6`，PASS；整卡改造/证据强化绑定 `ec2e2f2e`，第三轮复核 PASS。
+- 回归日志/junit 无内嵌 commit hash，是 `9404984d` 提交前工作树运行结果；其后 `ec2e2f2e` 仅测试文件去重，生产代码相同。
+- 范围外：单 owner 守卫 allowlist 缺口、B34 `identity_not_resolved`（基线已复现）、B34 并发/临时目录时序、全树 `pytest tests` 既有收集失败、真实 CWP/StockWiki 生产组合。均不冒充已通过，交 ROOT。
 - 范围外：单 owner 守卫 allowlist 缺口、B34 `identity_not_resolved`（基线已复现）、B34 并发/临时目录时序、全树 `pytest tests` 既有收集失败、真实 CWP/StockWiki 生产组合。均不冒充已通过，交 ROOT。

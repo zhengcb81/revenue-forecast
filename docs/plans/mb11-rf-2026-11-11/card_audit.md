@@ -41,7 +41,7 @@
 
 - 整卡回归：`full_card_regression_final.log` / `full_card_junit_final.xml`，**561 passed、2 failed、3 skipped、31 subtests passed、195.40s**。
 - 两项失败均为基线已复现：`test_single_owner_guard` 的 subprocess allowlist（4 个既有脚本）与 `tests/b34_publication/test_native_cli.py::test_two_management_processes_replay_then_current_stock_revocation_refuses`（`identity_not_resolved`，基线归档树同样失败）。
-- B2 三轮独立审查绑定 `d368eff6`；整卡第二轮独立审查绑定 `ec2e2f2e`，结果见 `review.md`。
+- B2 三轮独立审查绑定 `d368eff6`；整卡第一轮 `326149cd` CHANGES_REQUESTED、第二轮 `9404984d` 仅文档/推送 blocker、第三轮 `ec2e2f2e` **PASS**；详见 `review.md`。
 
 ## 4. 结论
 

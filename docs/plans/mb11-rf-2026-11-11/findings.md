@@ -49,7 +49,7 @@
 - `tests/test_module_boundary_closure.py` 不存在；`AGENTS.md` 不存在（只有 `agents/` 目录）；`tests/b37_scope_binding/` 在本工区不存在（候选依赖 SW 私有 fixture，未迁移）。
 - 结论：B2 完成；整卡未完成。逐条见 `card_audit.md`，handoff 已声明 `MB-RF-CARD-REMAINING = NOT_DELIVERED`。
 
-## 整卡补齐（2026-11-12，`326149cd` + `ec2e2f2e`）
+## 整卡补齐（2026-11-12，`326149cd` + `9404984d` + `ec2e2f2e`）
 
 - canary：加入 `RETIRED_RUNTIME_FILES`，`installable_files`/`manifest` 排除；源文件保留；closure 测试证明无 runtime 引用、安装树不含。旧安装中的副本不会被清理，manifest 注释已说明。
 - report/core：`revenue_report` 无 `revenue_core` 导入；`revenue_publication`/`schema_compatibility` 改 leaf；core 仅保留运行时 `validate_published_forecast` 回调与 re-export；`-S` 子进程 `core_loaded False`。`revenue_forecast` 的 pure/zero-IO 文案已改为“无隐藏 clock/network/disk 输入；formal 注册 publication，draft 不写”。
