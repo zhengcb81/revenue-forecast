@@ -39,3 +39,12 @@
 - 补齐“省略 accounting_basis/fiscal_year_end/segment_ids/covered_coordinates/source_witnesses/verified_at 即拒绝”、财年日历不匹配、锚点不匹配、截断行、伪造行哈希、锁占用、resolver 身份不匹配等负例；新增 FY 空日期正例并明确其为显式 FY 粒度（与 compare 的 `period_kind=FY` 空日期语义一致）。新增 state 路径回归，锁定 `artifacts/report_scope/verified_scope_bindings.jsonl`，不再回到 catalog owner 目录。
 - 仍未覆盖：`scope_comparison_shape_mismatch` 只在两次公开读返回不同形状时触发，现有假件不易稳定构造；真实 `ReportCatalog` 的 captured-markdown 快照未建模。均列为残余风险，不冒充已测。
 - 证据范围：最终组合回归是**选定 313 个受影响用例**（B2 套件 + 卡片点名回归 + 两个守卫），不是整个 `tests/` 树；本工区 `pytest tests` 有既有收集失败（`test_zr1008` 导入缺失的 `test_zr709`，`test_ca204` 亦报错），属既有问题，交 ROOT，不用“全绿”措辞。
+
+## 整卡对照审计（2026-11-12）
+
+- `processed_artifact_canary.py` 仍在 `installation_manifest.installable_files()` 中（135 个可安装文件之一），且 `import sqlite3`、读 `catalog.sqlite3`；除自身与 `tools/tests/test_complexity_ratchet.py` 的名称基线外无调用者。卡要求“未使用则移出交付/明确退休”，未做。
+- `revenue_report.py` 仍 `from revenue_core import (...)`；`revenue_core.py:442` 运行时 `from revenue_report import validate_published_forecast`；`revenue_publication.py`、`schema_compatibility.py` 也从 core 导入。R-03/report-core 解耦未做。
+- `test_decoupled_source_port.py` 通过，但 patch 了 `reader.subprocess.run`/`prepare._run_filing_fetch` 等私有 helper，不满足卡片“只通过 public fixture、不能 patch 上游私有 helper”的严格口径；无 CWP/FF 包 + 不可读 DB 的子进程公开入口验证缺失。
+- `tests/b34_publication` + `b35_lineage` + `test_model_registry_contract.py` 为 129 passed、1 failed、31 subtests；失败用例 `test_two_management_processes_replay_then_current_stock_revocation_refuses` 不导入 B2 模块，相关 identity resolver/cli 零 diff，归为既有/环境问题，不冒充通过。
+- `tests/test_module_boundary_closure.py` 不存在；`AGENTS.md` 不存在（只有 `agents/` 目录）；`tests/b37_scope_binding/` 在本工区不存在（候选依赖 SW 私有 fixture，未迁移）。
+- 结论：B2 完成；整卡未完成。逐条见 `card_audit.md`，handoff 已声明 `MB-RF-CARD-REMAINING = NOT_DELIVERED`。

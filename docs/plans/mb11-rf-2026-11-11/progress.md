@@ -53,3 +53,10 @@
 - 审查同时确认：最终组合日志只覆盖选定用例，不是整个 `tests/` 树；本工区 `pytest tests` 存在既有收集失败（`test_zr1008` 导入缺失的 `test_zr709`，`test_ca204` 亦报错），属既有问题，列给 ROOT，不在本卡扩围。
 - 组合回归历史：`2ec16368` 上为 307 passed/1 failed/3 skipped（`b2_combined_final_tip.log`）；补 N1/N2 两例后最终 `d368eff6` 上为 **309 passed、1 failed、3 skipped、91.31s**（`b2_combined_final_tip2.log` / `_tip2.xml`，共 313 例）。唯一失败仍是既有 subprocess allowlist 缺口。
 - 第三轮复核（agent-deb118d7，绑定 `d368eff6`）结论 **PASS**，确认 N1–N3 已修、无新增越界；仅提示本条用例数与未提交日志，已在本节与 handoff 中校正/纳入提交。
+
+## 整卡对照审计（2026-11-12）
+
+- 逐条对照 MB-RF 卡与 handoff_contract 后确认：**B2 切片完成**；**整卡 A/B/C 未全面完成**。详见 `card_audit.md`。
+- 整卡未交付项：canary 仍可安装且 `import sqlite3`；`revenue_report.py` 仍从 `revenue_core` 导入、core 运行时回调 report；严格“无 CWP/FF 包、不可读上游 DB、不 patch 私有 helper”的来源边界测试缺失；B34 历史 profile 默认路径无 CWP 布局的合同证据未单列；临时 destination 安装隔离未执行；`tests/test_module_boundary_closure.py` 不存在。
+- 参考测试补充：`tests/b34_publication` + `tests/b35_lineage` + `test_model_registry_contract.py` 运行 **129 passed、1 failed、31 subtests passed**；失败用例不导入 B2 模块，identity resolver/cli 零 diff，归为既有/环境问题。
+- handoff 已加范围声明与 `MB-RF-CARD-REMAINING = NOT_DELIVERED`，避免把 B2 切片误报为整卡交付。

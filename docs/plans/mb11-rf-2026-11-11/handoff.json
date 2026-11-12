@@ -24,6 +24,8 @@
     "docs/plans/mb11-rf-2026-11-11/findings.md",
     "docs/plans/mb11-rf-2026-11-11/progress.md",
     "docs/plans/mb11-rf-2026-11-11/review.md",
+    "docs/plans/mb11-rf-2026-11-11/card_audit.md",
+    "docs/plans/mb11-rf-2026-11-11/fixtures/subject-snapshot-example.json",
     "docs/plans/mb11-rf-2026-11-11/handoff.md",
     "docs/plans/mb11-rf-2026-11-11/handoff.json",
     "docs/plans/mb11-rf-2026-11-11/b2_scope_red.log",
@@ -66,6 +68,12 @@
       "result": "PASS",
       "red_evidence": "No independent review bound to a B2 source tip before this delivery.",
       "green_evidence": "Three read-only reviews; final review bound to d368eff6 returned PASS; focused 57 passed; selected combined 313 cases 309 passed/1 failed/3 skipped with the failure proven pre-existing on HEAD."
+    },
+    {
+      "id": "MB-RF-CARD-REMAINING",
+      "result": "NOT_DELIVERED",
+      "red_evidence": "The full card's A/B/C items are not covered by this B2 slice: processed_artifact_canary.py is still installable and imports sqlite3; revenue_report.py still imports revenue_core; no strict no-CWP/unreadable-DB public source-boundary test; historical B34 profile isolation evidence and install isolation are not recorded; tests/test_module_boundary_closure.py is absent.",
+      "green_evidence": "B2 only: see card_audit.md for the requirement-by-requirement status, evidence and suggested remaining order. Do not treat this handoff as a whole-card completion proof."
     }
   ],
   "public_contract_changes": [
@@ -124,6 +132,7 @@
   "network_calls": 0,
   "model_calls": 0,
   "out_of_scope_findings": [
+    "Full-card A/B/C remains open (see card_audit.md): canary retirement, report/core decoupling, strict public source-boundary evidence, historical B34 profile isolation evidence, install isolation and the module-boundary closure test.",
     "tests/test_single_owner_guard.py subprocess allowlist is stale on HEAD: report_catalog_identity_resolver.py, report_catalog_rf_job_import.py, report_catalog_source_alias.py and rf_job_facade.py import subprocess but are absent from the allowlist. Needs focused contract tests or a guard-ownership decision from ROOT; not fixed by expanding the allowlist.",
     "tests/test_module_boundary_closure.py named in the card does not exist in this worktree; recorded as a filename check, not a product failure.",
     "Whole-tree `pytest tests` collection has pre-existing failures (test_zr1008 imports missing test_zr709; test_ca204 also errors); the combined regression deliberately covers the selected 313 affected cases only.",

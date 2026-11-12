@@ -1,5 +1,7 @@
 # MB-RF B2 交付交接
 
+> **范围声明**：本交接只覆盖 B2 切片（scope/subject/verified-compare）。整卡 A/B/C 的 canary、report/core、严格来源边界、历史 profile 证据、安装隔离与整卡闭包测试**未交付**，逐条状态见 `card_audit.md`。不得把本文件当作整张 MB-RF 卡已完成证明。
+
 ## 1. 基线与交付
 
 - 代码基线：RF `main` / `origin/main` = `6341759b9cdfd13e8aa7d51d5c755e361046da0c`（B1 compare 与部署/来源回归已在主线）。
@@ -29,6 +31,8 @@
 | RF-B2-4 | 保留 `import-rf-job` 管理入口与 CLI 行为；完整结果、无任意行/字节截断 | 候选 CLI 会删除 `import-rf-job`；候选有 512 行/1MiB 等无预算依据门槛 | 未改 `report_catalog_identity_cli.py`；compare 保留已发布 64KiB 请求预算，append 证据用 owner 既有 `MAX_ARTIFACT_BYTES` | `test_cli.py`：help/源码断言 `import-rf-job`；600 期 append/回读；>1MiB 完整响应；`tests/test_report_catalog_rf_job_import.py` 在组合回归中通过 |
 | RF-B2-5 | 定向通过后跑受影响回归一次；独立审查绑定最终 tip | — | 三轮只读审查，最终绑定 `d368eff6` | 定向 57 passed；选定组合 313 例 309 passed/1 failed/3 skipped；审查 PASS（见 `review.md`） |
 
+整卡其他 A/B/C 项（canary 退休、report/core 解耦、严格来源边界、历史 profile 证据、安装隔离、整卡闭包测试）本轮**未交付**；逐条状态、证据与建议顺序见 `card_audit.md`。
+
 ## 3. 公开接口变化
 
 默认无既有协议变更；以下均为**新增可选项/新模块**，不影响现有 `rf-report-catalog/1`、`rf-report-comparison/1`、`import-rf-job`：
@@ -38,7 +42,7 @@
 - `report_catalog_verified_compare`：`compare_verified_scope`；schema `rf-verified-scope-comparison/1`；请求在既有 4 字段上增加 `left_binding_id`/`right_binding_id`。
 - `report_catalog_verified_compare_cli`：`get-bindings --report-id`、`compare`（stdin 请求）、`append-binding`（stdin 证据）；共享 `--data-root`、`--subject-fixture`，可选既有 `--owner-root`。
 
-ROOT 消费所需的本地 fixture 入口：`tests/rf_verified_scope/fixtures.py`（`subject_snapshot`/`write_subject_fixture`/`evidence` 均为公开 wire 形状）；真实 StockWiki 组合由 ROOT 用公开 subject fixture/CLI 绑定，RF 作者未改 SW。
+ROOT 消费所需的本地 fixture 入口：`tests/rf_verified_scope/fixtures.py`（`subject_snapshot`/`write_subject_fixture`/`evidence` 均为公开 wire 形状）；可直接使用的 JSON 样例为 `docs/plans/mb11-rf-2026-11-11/fixtures/subject-snapshot-example.json`。真实 StockWiki 组合由 ROOT 用公开 subject fixture/CLI 绑定，RF 作者未改 SW。
 
 ## 4. 实际测试
 
@@ -56,23 +60,24 @@ ROOT 消费所需的本地 fixture 入口：`tests/rf_verified_scope/fixtures.py
 
 ## 5. 独立审查
 
-- 第一轮：agent-32545490，绑定 `940e05b4`，PASS；F1–F4 本卡修复，F5 交 ROOT，F6/F7 记录。
-- 第二轮：agent-023442c1，绑定 `2ec16368`，PASS；N1–N3 修复，N4/N5 证据卫生处理。
+- 第一轮：agent-32545490，绑定 `940e05b4`，PASS；F1–F4 本卡修复（修复提交 `2ec16368`），F5 交 ROOT，F6/F7 记录。
+- 第二轮：agent-023442c1，绑定 `2ec16368`，PASS；N1–N3 修复（修复提交 `d368eff6`），N4/N5 证据卫生处理。
 - 第三轮复核：agent-deb118d7，绑定 `d368eff6`，PASS；确认 N1–N3、无新增越界。
-- 详细发现、修复与复核见 `review.md`；最终代码审查绑定 `d368eff6`，本 handoff 仅为之后的文档提交。
+- 详细发现、修复与复核见 `review.md`；最终代码审查绑定 `d368eff6`，本 handoff 仅为之后的文档提交。整卡其余 A/B/C 项未进入本轮审查，见 `card_audit.md`。
 
 ## 6. 隔离与恢复
 
-- 测试目录均为本次新建的 `C:/Temp/mb11b2*` 短根，结束后只删除自建目录；仓内未留 pytest 临时产物。
+- 测试目录初始状态：每次运行前新建空的 `C:/Temp/mb11b2*` 短根；结束状态：只删除本次自建目录，最终 `ls /c/Temp/mb11b2*` 无残留；仓内未留 pytest 临时产物。
 - 未改生产原件/配置/既有 WIP；`assurance/runs/{daily_alert.jsonl,monthly_manifest.json,weekly_alert.jsonl,weekly_manifest.json}` 未写入；未部署全局 skills；未改 CWP/StockWiki/Dashboard。
 - 业务网络调用 0、模型调用 0、费用 0/unknown；仅发生 Git fetch/push。
 - 工作树在代码提交后干净；handoff 文档提交后仍保持干净（日志随文档提交）。
 
 ## 7. 安装/部署/CI/合并状态
 
-- 安装/部署：未执行全局安装；未改部署根。
+- 安装/部署：未执行全局安装；未改部署根；**整卡的临时 destination 安装隔离尚未执行**（见 `card_audit.md` A/B/C-6）。
 - CI：未运行远端 CI；本地 Ruff/mypy/pre-commit/pre-push smoke 通过。
-- 合并：分支已推送，`main` 未合并；ROOT 接收后需在集成树重跑本卡受影响测试并绑定最终代码 tip。
+- 合并：分支已推送，`main` 未合并；ROOT 接收后需在集成树重跑本段受影响测试并绑定最终代码 tip。
+- 整卡剩余：canary 退休、report/core 解耦、严格来源边界、历史 profile 证据、安装隔离与 `test_module_boundary_closure.py` 未交付，不能按整卡 `MERGED` 处理。
 
 ROOT 下一步（一条可执行命令，先在独立集成工区核对 `origin/main` 与提交祖先关系）：
 
