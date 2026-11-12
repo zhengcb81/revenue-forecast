@@ -92,8 +92,8 @@ def test_core_imports_report_only_through_its_runtime_callback():
     callbacks = [node for node in ast.walk(tree)
                  if isinstance(node, ast.ImportFrom) and node.module == "revenue_report"]
     assert callbacks, "core must still orchestrate the report validator"
-    assert all(_function_ancestor(node, parents) for node in callbacks)
-    assert not any(_function_ancestor(node, parents) is None for node in callbacks)
+    assert all(_function_ancestor(node, parents) for node in callbacks), (
+        "the report import must stay inside a runtime function, not module import time")
 
 
 def test_core_reexports_the_moved_leaf_symbols_for_compatibility():
