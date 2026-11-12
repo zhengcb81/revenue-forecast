@@ -39,3 +39,13 @@
 - 受影响回归一次：`b2_combined_final.log` / `b2_combined_junit.xml` 为 **294 passed、1 failed、3 skipped、102.74s**。唯一失败是 `tests/test_single_owner_guard.py::test_subprocess_use_is_limited_to_contract_clients`；已用 HEAD 树证明该 allowlist 在 B2 前已缺 4 个既有 subprocess 脚本，新模块不含 subprocess，故为既有缺口、非本卡回归，列入 ROOT 范围外发现。
 - 3 个 skip 是既有环境/合同 skip：Dashboard 合同目录未配置（compare）、默认 catalog 拒绝跨 owner 链接（catalog）、模型族输出未固定（golden lock）。`tests/test_module_boundary_closure.py` 在本工区不存在，按卡片要求记为文件名核对结果，不当作产品失败。
 - 临时目录：回归使用 `/c/Temp/mb11b2-*` 新短根，结束后只删除本次创建的目录；未改生产原件/配置/既有 WIP，未跑预测、网络或收费调用。
+
+## B2 独立审查与修复（本轮）
+
+- 首轮独立只读审查（agent-32545490，绑定 `940e05b4`）结论 **PASS**，无阻断项；提出 4 项本卡可行动小问题，已全部修复：
+  - F1 `append-binding` 误用 compare 的 64KiB 请求预算，600 期合法证据（约 104KB）被拒。改为 append 路径使用 owner 既有 `MAX_ARTIFACT_BYTES`（64MiB）预算；`compare` 请求仍用已发布 64KiB 预算。新增 CLI 600 期证据入库与回读测试。
+  - F2 golden 对准则/分部主要是输入回显，缺“省略即拒绝”的负例。新增 6 个必需字段逐一缺失的 `scope_evidence_invalid` 负例。
+  - F3 若干可达错误分支无测试；FY 空日期语义未说明。新增 `scope_period_calendar_mismatch`、`scope_anchor_mismatch`、`scope_store_invalid`（断链）、`scope_store_busy`、resolver 与 report 身份不匹配负例；新增 FY 空日期=显式 FY 粒度正例（与既有 compare 合同一致，非默认）。
+  - F4 scope 状态原写在 catalog owner 的 `artifacts/report_catalog/` 下。改到独立的 `artifacts/report_scope/verified_scope_bindings.jsonl`，即使 `--data-root` 指向 owner 工作区也不占用 catalog owner 目录。
+- 审查确认的残余风险：B2 测试用手写公开 wire 假件，未做真实 `ReportCatalog` 往返；真实快照还要求 `original_format=="captured_markdown"`，假件未建模，契约漂移可能漏检。记录为残余风险，不声称已覆盖。
+- 修复后 B2 定向 **55 passed / 0 failed / 0 skipped / 5.71s**（`b2_scope_focused_final.log`）；Ruff/mypy 复核通过。最终组合回归与复核审查在最终 tip 上重跑。

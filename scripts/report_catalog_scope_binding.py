@@ -409,7 +409,10 @@ class ScopeBindingStore:
 
     def __init__(self, root: Path):
         self.root = root.resolve()
-        self.path = self.root / "artifacts" / "report_catalog" / "verified_scope_bindings.jsonl"
+        # RF-owned scope state lives outside the report-catalog owner's
+        # reserved managed-catalog directory, even when a deployment passes
+        # the owner workspace as the data root.
+        self.path = self.root / "artifacts" / "report_scope" / "verified_scope_bindings.jsonl"
 
     def read(self) -> tuple[list[dict[str, Any]], str | None]:
         if not self.path.exists():

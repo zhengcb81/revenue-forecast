@@ -12,6 +12,7 @@ from rf_verified_scope import fixtures as fx
 def _build_env(tmp_path: Path, *, accounting_basis: str = "IFRS",
               fiscal_year_end: str = "12-31", segment_ids: list[str] | None = None,
               years: tuple[int, ...] = (2025, 2026), period_kind: str = "FY",
+              explicit_dates: bool = True,
               scenario: str = "base", left_subject: str | None = "SUBJ-1",
               right_subject: str | None = "SUBJ-1", verified_subject: str = "SUBJ-1",
               left_revision: int = 3, right_revision: int = 3,
@@ -23,7 +24,9 @@ def _build_env(tmp_path: Path, *, accounting_basis: str = "IFRS",
     from report_catalog_scope_binding import ScopeBindingStore, build_scope_binding
     from report_catalog_subject_resolver import FrozenSubjectResolver, validate_subject_snapshot
 
-    def calendar(year: int) -> tuple[str, str]:
+    def calendar(year: int) -> tuple[str | None, str | None]:
+        if not explicit_dates:
+            return None, None
         start, end = fx.fy_dates(year, fiscal_year_end)
         if period_kind == "H1":
             return f"{year}-01-01", f"{year}-06-30"

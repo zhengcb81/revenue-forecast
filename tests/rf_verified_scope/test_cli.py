@@ -78,6 +78,35 @@ def test_cli_get_bindings_compare_and_append(build_env, tmp_path, monkeypatch, c
     assert code == 0 and json.loads(out)["status"] == "already_present"
 
 
+def test_cli_append_binding_accepts_full_owner_scale_evidence(build_env, tmp_path,
+                                                              monkeypatch, capsys):
+    """A 600-period evidence document is far above the compare request bound."""
+    from report_catalog_scope_binding import ScopeBindingStore
+
+    years = tuple(range(1900, 2500))
+    env = build_env(tmp_path, years=years)
+    fresh = ScopeBindingStore(tmp_path / "fresh-append")
+    env["store"] = fresh
+    fixture = tmp_path / "subjects.json"
+    fx.write_subject_fixture(fixture, fx.subject_snapshot())
+    payload = fx.evidence("R-OLD", coordinates=env["left"]["covered_coordinates"],
+                          source_witnesses=env["left"]["source_witnesses"])
+    body = json.dumps(payload).encode("utf-8")
+    assert len(body) > 64 * 1024
+    code, out, err = run_cli(monkeypatch, capsys, env,
+                             cli_args(env, fixture, "append-binding"), stdin=body)
+    assert code == 0 and err == "", err
+    result = json.loads(out)
+    assert result["status"] == "appended"
+    assert len(result["binding"]["covered_coordinates"]) == len(years)
+    code, out, err = run_cli(monkeypatch, capsys, env,
+                             cli_args(env, fixture, "get-bindings", "--report-id", "R-OLD"))
+    assert code == 0 and err == "", err
+    view = json.loads(out)
+    assert len(view["scope_view"]["bindings"]) == 1
+    assert len(view["scope_view"]["bindings"][0]["covered_coordinates"]) == len(years)
+
+
 def test_cli_emits_the_complete_result_without_a_byte_cap(build_env, tmp_path,
                                                           monkeypatch, capsys):
     long_text = "COMPLETE-SOURCE-EXCERPT-" * 60_000

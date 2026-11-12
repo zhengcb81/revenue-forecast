@@ -148,6 +148,99 @@ def test_unavailable_scope_view_creates_no_owner_state(tmp_path):
     assert catalog.calls == [("get_report", "R-OLD")]
 
 
+@pytest.mark.parametrize("field", [
+    "accounting_basis", "fiscal_year_end", "segment_ids", "covered_coordinates",
+    "source_witnesses", "verified_at",
+])
+def test_every_explicit_scope_field_is_required(build_env, tmp_path, field):
+    from report_catalog_scope_binding import ScopeContractError, build_scope_binding
+
+    env = build_env(tmp_path)
+    payload = fx.evidence("R-OLD", source_witnesses=env["left"]["source_witnesses"])
+    payload.pop(field)
+    with pytest.raises(ScopeContractError) as error:
+        build_scope_binding(catalog=env["catalog"], subject_resolver=env["resolver"],
+                            evidence=payload)
+    assert error.value.code == "scope_evidence_invalid", field
+
+
+def test_fy_period_end_must_match_the_declared_calendar(build_env, tmp_path):
+    from report_catalog_scope_binding import ScopeContractError, build_scope_binding
+
+    payload = fx.evidence(
+        "R-OLD", fiscal_year_end="06-30",
+        coordinates=[fx.coordinate(2025, period_start="2025-01-01",
+                                   period_end="2025-12-31")])
+    with pytest.raises(ScopeContractError) as error:
+        build_scope_binding(catalog=fx.PublicOnlyCatalog(fx.side("R-OLD")),
+                            subject_resolver=None, evidence=payload)
+    assert error.value.code == "scope_period_calendar_mismatch"
+
+
+def test_fy_coordinate_without_dates_is_explicit_fy_granularity(build_env, tmp_path):
+    env = build_env(tmp_path, explicit_dates=False)
+    assert all(row["period_start"] is None and row["period_end"] is None
+               for row in env["left"]["covered_coordinates"])
+    result = compare(env)
+    assert all(row["comparable"] for row in result["comparison"]["metrics"])
+    assert all(row["delta"] is not None for row in result["comparison"]["metrics"])
+
+
+def test_report_anchor_mismatch_is_refused_before_any_write(build_env, tmp_path):
+    from report_catalog_scope_binding import ScopeContractError, build_scope_binding
+
+    env = build_env(tmp_path)
+    payload = fx.evidence("R-OLD", source_witnesses=env["left"]["source_witnesses"])
+    payload["expected_input_sha256"] = fx.sha("a-different-input-artifact")
+    with pytest.raises(ScopeContractError) as error:
+        build_scope_binding(catalog=env["catalog"], subject_resolver=env["resolver"],
+                            evidence=payload)
+    assert error.value.code == "scope_anchor_mismatch"
+    assert len(env["store"].read()[0]) == 2
+
+
+def test_scope_store_chain_corruption_is_named(build_env, tmp_path):
+    from report_catalog_scope_binding import ScopeContractError
+
+    env = build_env(tmp_path)
+    raw = env["store"].path.read_bytes()
+    env["store"].path.write_bytes(raw[:-1])
+    with pytest.raises(ScopeContractError) as error:
+        env["store"].read()
+    assert error.value.code == "scope_store_invalid"
+
+
+def test_busy_scope_store_is_refused(build_env, tmp_path):
+    from owner_file_lock import OwnerFileLock
+    from report_catalog_scope_binding import ScopeContractError
+
+    env = build_env(tmp_path)
+    lock = OwnerFileLock(env["store"].path.with_name(env["store"].path.name + ".lock"))
+    assert lock.acquire()
+    try:
+        with pytest.raises(ScopeContractError) as error:
+            env["store"].append(env["left"])
+        assert error.value.code == "scope_store_busy"
+    finally:
+        lock.release()
+
+
+def test_resolver_snapshot_must_match_the_exact_report_identity(build_env, tmp_path):
+    from report_catalog_scope_binding import ScopeContractError, build_scope_binding
+    from report_catalog_subject_resolver import validate_subject_snapshot
+
+    class WrongResolver:
+        def resolve(self, query):
+            return validate_subject_snapshot(fx.subject_snapshot(entity_id="ENT-OTHER"))
+
+    env = build_env(tmp_path)
+    payload = fx.evidence("R-OLD", source_witnesses=env["left"]["source_witnesses"])
+    with pytest.raises(ScopeContractError) as error:
+        build_scope_binding(catalog=env["catalog"], subject_resolver=WrongResolver(),
+                            evidence=payload)
+    assert error.value.code == "scope_identity_mismatch"
+
+
 def test_invalid_accounting_basis_or_calendar_is_not_defaulted(build_env, tmp_path):
     from report_catalog_scope_binding import ScopeContractError, build_scope_binding
 

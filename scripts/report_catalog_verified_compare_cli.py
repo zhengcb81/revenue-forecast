@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 from typing import Any, NoReturn
 
-from report_catalog import CatalogError, ReportCatalog
+from report_catalog import CatalogError, MAX_ARTIFACT_BYTES, ReportCatalog
 from report_catalog_compare import CompareError
 from report_catalog_compare_cli import MAX_INPUT_BYTES
 from report_catalog_deployment import (DeploymentError, build_catalog, resolve_owner_root,
@@ -57,10 +57,11 @@ def _emit_error(code: str, schema: str) -> int:
     return 2
 
 
-def _read_request() -> dict[str, Any]:
-    raw = sys.stdin.buffer.read(MAX_INPUT_BYTES + 1)
-    if len(raw) > MAX_INPUT_BYTES:
-        raise ScopeContractError("input_too_large", "comparison request exceeds its input limit")
+def _read_request(limit: int = MAX_INPUT_BYTES) -> dict[str, Any]:
+    """Read one bounded request; the append path uses the owner artifact bound."""
+    raw = sys.stdin.buffer.read(limit + 1)
+    if len(raw) > limit:
+        raise ScopeContractError("input_too_large", "request exceeds its input limit")
     try:
         value = json.loads(raw.decode("utf-8", errors="strict"),
                            object_pairs_hook=_object_no_duplicates,
@@ -100,8 +101,11 @@ def main(argv: list[str] | None = None) -> int:
                                          subject_resolver=resolver,
                                          report_id=args.report_id)
         elif args.command == "append-binding":
+            # Full evidence is an owner management artifact, so it keeps the
+            # published owner artifact bound rather than the smaller compare
+            # request bound. No result is truncated.
             binding = build_scope_binding(catalog=catalog, subject_resolver=resolver,
-                                          evidence=_read_request())
+                                          evidence=_read_request(MAX_ARTIFACT_BYTES))
             output = store.append(binding)
         else:
             output = compare_verified_scope(_read_request(), catalog=catalog,
