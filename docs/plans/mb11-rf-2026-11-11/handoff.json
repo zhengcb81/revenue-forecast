@@ -1,0 +1,134 @@
+{
+  "schema_version": "module-boundary-handoff/1",
+  "lane": "MB-RF",
+  "status": "REVIEWED",
+  "repository_root": "C:/Users/郑曾波/Projects/mb11-rf",
+  "base_commit": "6341759b9cdfd13e8aa7d51d5c755e361046da0c",
+  "commit": "d368eff6f8ce",
+  "branch": "codex/mb11-rf",
+  "target_branch": "main",
+  "pushed": true,
+  "changed_paths": [
+    "scripts/report_catalog_subject_resolver.py",
+    "scripts/report_catalog_scope_binding.py",
+    "scripts/report_catalog_verified_compare.py",
+    "scripts/report_catalog_verified_compare_cli.py",
+    "tests/rf_verified_scope/__init__.py",
+    "tests/rf_verified_scope/conftest.py",
+    "tests/rf_verified_scope/fixtures.py",
+    "tests/rf_verified_scope/test_public_contract.py",
+    "tests/rf_verified_scope/test_golden_contract.py",
+    "tests/rf_verified_scope/test_negative_semantics.py",
+    "tests/rf_verified_scope/test_cli.py",
+    "docs/plans/mb11-rf-2026-11-11/task_plan.md",
+    "docs/plans/mb11-rf-2026-11-11/findings.md",
+    "docs/plans/mb11-rf-2026-11-11/progress.md",
+    "docs/plans/mb11-rf-2026-11-11/review.md",
+    "docs/plans/mb11-rf-2026-11-11/handoff.md",
+    "docs/plans/mb11-rf-2026-11-11/handoff.json",
+    "docs/plans/mb11-rf-2026-11-11/b2_scope_red.log",
+    "docs/plans/mb11-rf-2026-11-11/b2_scope_focused.log",
+    "docs/plans/mb11-rf-2026-11-11/b2_scope_focused_final.log",
+    "docs/plans/mb11-rf-2026-11-11/b2_combined_final.log",
+    "docs/plans/mb11-rf-2026-11-11/b2_combined_junit.xml",
+    "docs/plans/mb11-rf-2026-11-11/b2_combined_final_tip.log",
+    "docs/plans/mb11-rf-2026-11-11/b2_combined_final_tip.xml",
+    "docs/plans/mb11-rf-2026-11-11/b2_combined_final_tip2.log",
+    "docs/plans/mb11-rf-2026-11-11/b2_combined_final_tip2.xml"
+  ],
+  "requirements": [
+    {
+      "id": "RF-B2-1",
+      "result": "PASS",
+      "red_evidence": "b2_scope_red.log: the four public entrypoints are absent; the candidate implementation imports catalog private symbols and StockWiki private CLI/DB.",
+      "green_evidence": "PublicOnlyCatalog private access fails; AST scan finds no private catalog symbol or neighbour-store import; build/compare run through get_report/get_run/get_source_snapshot only."
+    },
+    {
+      "id": "RF-B2-2",
+      "result": "PASS",
+      "red_evidence": "Candidate fixed IFRS, 12-31, single segment and FY-only shapes; no public binding of period/subject/scope dimensions.",
+      "green_evidence": "8 golden combinations (IFRS/US GAAP x 06-30/12-31 x 1/3 segments), 24 segments, H1 and 600-period cases; missing-field negatives; FY calendar must match period_end."
+    },
+    {
+      "id": "RF-B2-3",
+      "result": "PASS",
+      "red_evidence": "Candidate error semantics depended on StockWiki private receipts and could not run without the neighbouring owner.",
+      "green_evidence": "Named codes for missing/duplicate/not-in-source witness, identity mismatch, uncovered period, conflicting scope, stale binding, wrong binding, calendar and anchor mismatch, store truncation/forged hash/busy."
+    },
+    {
+      "id": "RF-B2-4",
+      "result": "PASS",
+      "red_evidence": "Candidate CLI removes import-rf-job and adds unbudgeted 512-row/1MiB result caps.",
+      "green_evidence": "report_catalog_identity_cli.py unchanged; CLI help/source regression; 600-period append/read-back; >1MiB complete response; 64KiB compare request budget and owner MAX_ARTIFACT_BYTES only."
+    },
+    {
+      "id": "RF-B2-5",
+      "result": "PASS",
+      "red_evidence": "No independent review bound to a B2 source tip before this delivery.",
+      "green_evidence": "Three read-only reviews; final review bound to d368eff6 returned PASS; focused 57 passed; selected combined 313 cases 309 passed/1 failed/3 skipped with the failure proven pre-existing on HEAD."
+    }
+  ],
+  "public_contract_changes": [
+    {
+      "name": "report_catalog_subject_resolver",
+      "version": "rf-report-subject-snapshot/1 + rf-subject-snapshot-fixture/1",
+      "change": "new public subject DTO and read-only resolver port; frozen public fixture adapter",
+      "compatibility": "additive; no existing schema or CLI changed"
+    },
+    {
+      "name": "report_catalog_scope_binding",
+      "version": "rf-report-scope-binding/1 + rf-report-scope-bindings/1",
+      "change": "new public scope DTO/reader and owner-owned append-only state under artifacts/report_scope",
+      "compatibility": "additive; existing catalog reader and storage layout untouched"
+    },
+    {
+      "name": "report_catalog_verified_compare",
+      "version": "rf-verified-scope-comparison/1",
+      "change": "new verified-scope comparison consuming public compare_reports and public scope/subject readers",
+      "compatibility": "additive; rf-report-comparison/1 output unchanged"
+    },
+    {
+      "name": "report_catalog_verified_compare_cli",
+      "version": "get-bindings / compare / append-binding",
+      "change": "new thin CLI with --data-root and --subject-fixture; optional existing --owner-root",
+      "compatibility": "additive; import-rf-job remains in the existing identity CLI"
+    }
+  ],
+  "test_runs": [
+    {
+      "command": "C:/Miniconda/python -B -X utf8 -m pytest tests/rf_verified_scope -q -p no:cacheprovider",
+      "exit_code": 0,
+      "passed": 57,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 6.68,
+      "log": "docs/plans/mb11-rf-2026-11-11/b2_scope_focused_final.log"
+    },
+    {
+      "command": "C:/Miniconda/python -B -X utf8 -m pytest tests/rf_verified_scope tests/test_report_catalog_rf_job_import.py tests/test_rf_job_concurrency.py tests/test_rf_job_recovery.py tests/test_rf_job_boundary_regression.py tests/test_decoupled_source_port.py tests/test_d4_narrative_consumption_port.py tests/test_report_catalog_compare.py tests/test_report_catalog_deployment.py tests/test_report_catalog.py tests/test_report_catalog_identity_resolver.py tests/test_single_owner_guard.py tests/test_architecture_dependency_uses.py tests/test_golden_behavior_lock.py tests/b37_publication_sources -q -p no:cacheprovider",
+      "exit_code": 1,
+      "passed": 309,
+      "failed": 1,
+      "skipped": 3,
+      "seconds": 91.31,
+      "log": "docs/plans/mb11-rf-2026-11-11/b2_combined_final_tip2.log"
+    }
+  ],
+  "independent_review": {
+    "reviewer": "agent-32545490 (round 1, 940e05b4), agent-023442c1 (round 2, 2ec16368), agent-deb118d7 (round 3, d368eff6)",
+    "reviewed_code_commit": "d368eff6f8ce",
+    "report": "docs/plans/mb11-rf-2026-11-11/review.md",
+    "open_in_scope_findings": []
+  },
+  "environment_restored": true,
+  "network_calls": 0,
+  "model_calls": 0,
+  "out_of_scope_findings": [
+    "tests/test_single_owner_guard.py subprocess allowlist is stale on HEAD: report_catalog_identity_resolver.py, report_catalog_rf_job_import.py, report_catalog_source_alias.py and rf_job_facade.py import subprocess but are absent from the allowlist. Needs focused contract tests or a guard-ownership decision from ROOT; not fixed by expanding the allowlist.",
+    "tests/test_module_boundary_closure.py named in the card does not exist in this worktree; recorded as a filename check, not a product failure.",
+    "Whole-tree `pytest tests` collection has pre-existing failures (test_zr1008 imports missing test_zr709; test_ca204 also errors); the combined regression deliberately covers the selected 313 affected cases only.",
+    "B2 tests use a hand-written public wire double, not a real ReportCatalog round-trip; the real captured-markdown source constraint is not modelled. Residual contract-drift risk.",
+    "scope_comparison_shape_mismatch is only reachable when two public reads disagree in shape; not constructed by the current double. Residual coverage gap."
+  ],
+  "next_root_action": "In an independent integration worktree, verify origin/main ancestry and the card write set, run the selected affected regression once, then bind a real RF owner workspace plus ROOT-frozen public StockWiki subject fixture through report_catalog_verified_compare_cli.py before merging the branch tip."
+}

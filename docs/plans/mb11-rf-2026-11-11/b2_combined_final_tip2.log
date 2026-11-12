@@ -1,0 +1,36 @@
+........................................................................ [ 23%]
+........................................................................ [ 46%]
+............s........................................................... [ 69%]
+............s.......................................F.............s..... [ 92%]
+.........................                                                [100%]
+================================== FAILURES ===================================
+__ SingleOwnerGuardTests.test_subprocess_use_is_limited_to_contract_clients ___
+
+self = <test_single_owner_guard.SingleOwnerGuardTests testMethod=test_subprocess_use_is_limited_to_contract_clients>
+
+    def test_subprocess_use_is_limited_to_contract_clients(self) -> None:
+        observed: set[str] = set()
+        for path in _python_files():
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            imports_subprocess = False
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    imports_subprocess |= any(
+                        alias.name.split(".")[0] == "subprocess"
+                        for alias in node.names
+                    )
+                if isinstance(node, ast.ImportFrom):
+                    imports_subprocess |= node.module == "subprocess"
+            if imports_subprocess:
+                observed.add(path.name)
+>       self.assertEqual(observed, SUBPROCESS_CLIENTS)
+E       AssertionError: Items in the first set but not the second:
+E       'rf_job_facade.py'
+E       'report_catalog_rf_job_import.py'
+E       'report_catalog_source_alias.py'
+E       'report_catalog_identity_resolver.py'
+
+tests\test_single_owner_guard.py:58: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_single_owner_guard.py::SingleOwnerGuardTests::test_subprocess_use_is_limited_to_contract_clients
+1 failed, 309 passed, 3 skipped in 91.31s (0:01:31)
