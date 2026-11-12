@@ -36,13 +36,14 @@ def _atomic_write_text(path: Path, text: str) -> None:
 
 
 def prepare_forecast(data: dict, *, mode: str = "formal") -> dict:
-    """ZR-701: pure forecast preparation — compute and validate the result
-    with zero IO side effects.  Same input always yields the same result
-    (deterministic engine); the caller owns all filesystem effects.
+    """ZR-701: compute and strongly validate a forecast result.
 
-    *mode*: ``"formal"`` registers the publication (write side effect owned
-    by the caller's engine), ``"draft"`` validates strongly but builds only
-    a draft receipt and writes nothing — the zero-write validate-only path.
+    The deterministic engine has no hidden clock, network or disk input, so the
+    same input yields the same result. The caller owns output files.
+
+    *mode*: ``"formal"`` registers the publication in the owner's rebuildable
+    index (an explicit write side effect of the engine), while ``"draft"``
+    validates strongly and builds only a draft receipt, writing nothing.
     """
     result = run_forecast(data, mode=mode)
     return result

@@ -9,6 +9,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -121,6 +122,20 @@ def test_historical_publication_profile_paths_are_relative_and_versioned(version
         assert layout["closure"] == f"execution/publications/{version}/publication.json"
 
 
+def test_default_publication_profile_is_v1_and_relative():
+    import inspect
+
+    from report_catalog_research_publication import import_research_publication, publication_layout
+
+    default = inspect.signature(import_research_publication).parameters["publication_version"].default
+    assert default == "v1"
+    layout = publication_layout("v1")
+    assert layout["forecast"] == "forecast/forecast.json"
+    assert layout["closure"] == "execution/publication.json"
+    assert all(not str(value).startswith(("/", "\\")) for value in layout.values()
+               if isinstance(value, str))
+
+
 def test_historical_publication_owner_imports_no_cwp_or_database():
     source = (SCRIPTS / "report_catalog_research_publication.py").read_text(encoding="utf-8")
     tree = ast.parse(source)
@@ -166,15 +181,54 @@ def test_canonical_installer_runs_in_a_temporary_empty_cwd(tmp_path):
                "--canonical", str(ROOT), "--destination", str(destination), "--apply", "--json"]
     applied = subprocess.run(command, cwd=tmp_path, capture_output=True, text=True, timeout=300)
     assert applied.returncode == 0, applied.stdout + applied.stderr
-    install_root = destination / "revenue-forecast"
-    assert (install_root / "SKILL.md").is_file()
-    assert (install_root / "scripts" / "revenue_report.py").is_file()
+    result = json.loads(applied.stdout)
+    assert result["schema"] == "rf-install-result/1" and result["status"] == "completed"
+    target = result["targets"][0]
+    assert target["status"] == "completed"
+    assert target["failed"] == [] and target["conflicts"] == []
+    assert len(target["written"]) == len(result["selected"])
+    install_root = Path(target["target"])
+    assert install_root == destination / "revenue-forecast"
+    for relative in ("SKILL.md", "scripts/revenue_report.py", "scripts/source_preparation.py",
+                     "scripts/report_catalog.py", "scripts/rf_job_facade.py",
+                     "scripts/contracts/workflow_receipt.py",
+                     "scripts/report_catalog_verified_compare_cli.py"):
+        assert (install_root / relative).is_file(), relative
     assert not (install_root / CANARY).exists()
+
     checked = subprocess.run(
         [sys.executable, "-B", str(ROOT / "tools" / "sync_installations.py"),
          "--canonical", str(ROOT), "--destination", str(destination), "--json"],
         cwd=tmp_path, capture_output=True, text=True, timeout=300)
     assert checked.returncode == 0, checked.stdout + checked.stderr
+    check = json.loads(checked.stdout)
+    check_target = check["targets"][0]
+    assert check["status"] == "completed"
+    assert check_target["written"] == [] and check_target["drifted"] == []
+    assert check_target["remaining_selected_drift"] == 0
+
+    report_script = (
+        "import sys; "
+        f"sys.path.insert(0, {str(install_root / 'scripts')!r}); "
+        "import revenue_report; "
+        "print('core_loaded', 'revenue_core' in sys.modules)"
+    )
+    imported = subprocess.run([sys.executable, "-S", "-B", "-X", "utf8", "-c", report_script],
+                              cwd=tmp_path, capture_output=True, text=True, timeout=120,
+                              env={**os.environ, "PYTHONPATH": ""})
+    assert imported.returncode == 0, imported.stderr
+    assert "core_loaded False" in imported.stdout
+    entry_script = (
+        "import sys; "
+        f"sys.path.insert(0, {str(install_root / 'scripts')!r}); "
+        "import report_catalog, source_preparation, report_catalog_verified_compare_cli; "
+        "print('entries_ok')"
+    )
+    entries = subprocess.run([sys.executable, "-S", "-B", "-X", "utf8", "-c", entry_script],
+                             cwd=tmp_path, capture_output=True, text=True, timeout=120,
+                             env={**os.environ, "PYTHONPATH": ""})
+    assert entries.returncode == 0, entries.stderr
+    assert "entries_ok" in entries.stdout
 
 
 def _source_fixtures() -> tuple[dict, dict, str]:
@@ -213,53 +267,73 @@ def _run_public_source_entry(tmp_path: Path, *, fail: bool) -> dict:
     neighbor.mkdir()
     sentinel = neighbor / "catalog.sqlite3"
     sentinel.write_bytes(b"private upstream database must not be read")
-    before = hashlib.sha256(sentinel.read_bytes()).hexdigest()
+    before_hash = hashlib.sha256(sentinel.read_bytes()).hexdigest()
+    before = sentinel.stat()
+    # The configured catalog handle is a directory, so any code that tries to
+    # open it as a database file fails. The public external-reader path only
+    # requires an absolute handle and must not read it.
+    config = tmp_path / "unreadable-catalog.sqlite3"
+    config.mkdir()
+    (config / "marker").write_text("not a readable database", encoding="utf-8")
 
+    calls = tmp_path / "reader-calls.txt"
     reader = tmp_path / "opaque_public_reader.py"
     if fail:
-        reader.write_text("import sys\nsys.stderr.write('public reader refused\\n')\nsys.exit(2)\n",
-                          encoding="utf-8")
+        reader.write_text(
+            "import sys\n"
+            f"open({str(calls)!r}, 'a', encoding='utf-8').write('call\\n')\n"
+            "sys.stderr.write('public reader refused\\n')\nsys.exit(2)\n",
+            encoding="utf-8")
     else:
         reader.write_text(
             "import json, sys\n"
+            f"open({str(calls)!r}, 'a', encoding='utf-8').write('call\\n')\n"
             f"sys.stdout.buffer.write({body!r}.encode('utf-8'))\n"
             f"sys.stderr.write(json.dumps({receipt!r}) + '\\n')\n",
             encoding="utf-8")
     launcher = tmp_path / "public_source_entry.py"
     launcher.write_text(
-        "import json, sys\n"
+        "import importlib.util, json, sys\n"
         f"sys.path.insert(0, {str(SCRIPTS)!r})\n"
         "from pathlib import Path\n"
         "import source_preparation as prep\n"
         f"candidate = json.loads({json.dumps(candidate)!r})\n"
+        "spec = {'cwp_spec': importlib.util.find_spec('company_wiki') is None,\n"
+        "        'ff_spec': importlib.util.find_spec('filing_fetch') is None}\n"
         "try:\n"
         "    result = prep.prepare_registered_source_result(\n"
-        f"        candidate, as_of_date='2026-07-18', company_wiki_catalog_config=Path({str(tmp_path / 'absent.handle')!r}),\n"
+        f"        candidate, as_of_date='2026-07-18', company_wiki_catalog_config=Path({str(config)!r}),\n"
         f"        source_reader_command=(sys.executable, {str(reader)!r}))\n"
         "    print(json.dumps({'ok': True, 'source_ref': result['source']['company_wiki_trace']['source_ref'],\n"
-        "                      'cwp': 'company_wiki' in sys.modules, 'ff': 'filing_fetch' in sys.modules}))\n"
+        "                      **spec}))\n"
         "except Exception as exc:\n"
         "    print(json.dumps({'ok': False, 'type': type(exc).__name__, 'error': str(exc),\n"
-        "                      'cwp': 'company_wiki' in sys.modules, 'ff': 'filing_fetch' in sys.modules}))\n",
+        "                      **spec}))\n",
         encoding="utf-8")
     child = subprocess.run([sys.executable, "-S", "-B", "-X", "utf8", str(launcher)],
-                           cwd=tmp_path, capture_output=True, text=True, timeout=120)
+                           cwd=tmp_path, capture_output=True, text=True, timeout=120,
+                           env={**os.environ, "PYTHONPATH": ""})
     assert child.returncode == 0, child.stderr
     payload = json.loads(child.stdout.strip().splitlines()[-1])
-    assert payload["cwp"] is False and payload["ff"] is False
-    after = hashlib.sha256(sentinel.read_bytes()).hexdigest()
-    assert after == before, "the public entry must not scan or open the neighbouring database"
+    assert payload["cwp_spec"] is True and payload["ff_spec"] is True
+    after = sentinel.stat()
+    assert hashlib.sha256(sentinel.read_bytes()).hexdigest() == before_hash
+    assert (after.st_size, after.st_mtime_ns) == (before.st_size, before.st_mtime_ns)
+    assert after.st_atime_ns == before.st_atime_ns, (
+        "the public entry must not read the neighbouring database")
+    assert calls.read_text(encoding="utf-8").splitlines() == ["call"]
     return payload
 
 
 def test_public_source_entry_reads_without_cwp_or_ff_packages(tmp_path):
     payload = _run_public_source_entry(tmp_path, fail=False)
     assert payload["ok"] is True
-    assert payload["source_ref"]["source_id"] == _source_fixtures()[0]["source_id"]
+    assert payload["source_ref"] == _source_fixtures()[0]
 
 
 def test_public_source_entry_fails_closed_without_neighbour_fallback(tmp_path):
     payload = _run_public_source_entry(tmp_path, fail=True)
     assert payload["ok"] is False
-    assert payload["type"] in {"SourceVersionTransportError", "FilingSourcePreparationError",
-                               "RuntimeError"}
+    assert payload["type"] == "SourceVersionTransportError"
+    assert "catalog.sqlite3" not in payload["error"]
+    assert "neighbor-owner" not in payload["error"]
