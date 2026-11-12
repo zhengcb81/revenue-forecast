@@ -3,10 +3,11 @@
 ``--owner-root`` selects a trusted RF business workspace through the existing
 deployment seam. ``--data-root`` is the separate owner state root for scope
 bindings; ``--subject-fixture`` is a frozen public subject snapshot fixture.
-Neither deployment input is part of a business request. The request budget is
-inherited from the published compare CLI; responses are never truncated by a
-row or byte cap. StockWiki modules, private catalog helpers and neighbouring
-databases are never imported.
+Neither deployment input is part of a business request. The compare request
+keeps the published compare-CLI 64KiB budget; a full append evidence document
+uses the owner's existing artifact bound instead. Responses are never truncated
+by a row or byte cap. StockWiki modules, private catalog helpers and
+neighbouring databases are never imported.
 """
 from __future__ import annotations
 

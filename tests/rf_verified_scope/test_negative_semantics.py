@@ -1,6 +1,8 @@
 """Negative semantics: missing/duplicate sources, identity, period, conflict and staleness."""
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from rf_verified_scope import fixtures as fx
@@ -199,7 +201,7 @@ def test_report_anchor_mismatch_is_refused_before_any_write(build_env, tmp_path)
     assert len(env["store"].read()[0]) == 2
 
 
-def test_scope_store_chain_corruption_is_named(build_env, tmp_path):
+def test_scope_store_truncated_line_is_named(build_env, tmp_path):
     from report_catalog_scope_binding import ScopeContractError
 
     env = build_env(tmp_path)
@@ -208,6 +210,29 @@ def test_scope_store_chain_corruption_is_named(build_env, tmp_path):
     with pytest.raises(ScopeContractError) as error:
         env["store"].read()
     assert error.value.code == "scope_store_invalid"
+
+
+def test_scope_store_forged_line_hash_is_named(build_env, tmp_path):
+    from report_catalog_scope_binding import ScopeContractError
+
+    env = build_env(tmp_path)
+    lines = env["store"].path.read_text(encoding="utf-8").splitlines()
+    first = json.loads(lines[0])
+    first["line_sha256"] = "0" * 64
+    lines[0] = json.dumps(first, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    env["store"].path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    with pytest.raises(ScopeContractError) as error:
+        env["store"].read()
+    assert error.value.code == "scope_store_invalid"
+
+
+def test_scope_store_never_uses_the_catalog_owner_directory(tmp_path):
+    from report_catalog_scope_binding import ScopeBindingStore
+
+    store = ScopeBindingStore(tmp_path)
+    assert store.path.relative_to(tmp_path).as_posix() == (
+        "artifacts/report_scope/verified_scope_bindings.jsonl")
+    assert "artifacts/report_catalog" not in store.path.as_posix()
 
 
 def test_busy_scope_store_is_refused(build_env, tmp_path):

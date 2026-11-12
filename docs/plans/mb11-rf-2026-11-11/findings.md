@@ -36,5 +36,6 @@
 
 - 首轮审查（绑定 `940e05b4`）PASS，但指出 append 证据误用 64KiB compare 请求预算。owner 已有 `MAX_ARTIFACT_BYTES` 是管理产物的既有预算，append 路径改用该预算；`compare` 请求仍保持已发布的 64KiB 预算。两者都不是新造的任意截断。
 - scope 状态从 `artifacts/report_catalog/` 移到 `artifacts/report_scope/`：即使部署把 owner 工作区作为 data root，也不写 catalog owner 保留目录。
-- 补齐“省略 accounting_basis/fiscal_year_end/segment_ids/covered_coordinates/source_witnesses/verified_at 即拒绝”、财年日历不匹配、锚点不匹配、断链、锁占用、resolver 身份不匹配等负例；新增 FY 空日期正例并明确其为显式 FY 粒度（与 compare 的 `period_kind=FY` 空日期语义一致）。
+- 补齐“省略 accounting_basis/fiscal_year_end/segment_ids/covered_coordinates/source_witnesses/verified_at 即拒绝”、财年日历不匹配、锚点不匹配、截断行、伪造行哈希、锁占用、resolver 身份不匹配等负例；新增 FY 空日期正例并明确其为显式 FY 粒度（与 compare 的 `period_kind=FY` 空日期语义一致）。新增 state 路径回归，锁定 `artifacts/report_scope/verified_scope_bindings.jsonl`，不再回到 catalog owner 目录。
 - 仍未覆盖：`scope_comparison_shape_mismatch` 只在两次公开读返回不同形状时触发，现有假件不易稳定构造；真实 `ReportCatalog` 的 captured-markdown 快照未建模。均列为残余风险，不冒充已测。
+- 证据范围：组合回归是**选定 311 个受影响用例**（B2 套件 + 卡片点名回归 + 两个守卫），不是整个 `tests/` 树；本工区 `pytest tests` 有既有收集失败（`test_zr1008` 导入缺失的 `test_zr709`，`test_ca204` 亦报错），属既有问题，交 ROOT，不用“全绿”措辞。

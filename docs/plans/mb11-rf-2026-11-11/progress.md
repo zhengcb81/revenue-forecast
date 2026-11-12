@@ -48,4 +48,7 @@
   - F3 若干可达错误分支无测试；FY 空日期语义未说明。新增 `scope_period_calendar_mismatch`、`scope_anchor_mismatch`、`scope_store_invalid`（断链）、`scope_store_busy`、resolver 与 report 身份不匹配负例；新增 FY 空日期=显式 FY 粒度正例（与既有 compare 合同一致，非默认）。
   - F4 scope 状态原写在 catalog owner 的 `artifacts/report_catalog/` 下。改到独立的 `artifacts/report_scope/verified_scope_bindings.jsonl`，即使 `--data-root` 指向 owner 工作区也不占用 catalog owner 目录。
 - 审查确认的残余风险：B2 测试用手写公开 wire 假件，未做真实 `ReportCatalog` 往返；真实快照还要求 `original_format=="captured_markdown"`，假件未建模，契约漂移可能漏检。记录为残余风险，不声称已覆盖。
-- 修复后 B2 定向 **55 passed / 0 failed / 0 skipped / 5.71s**（`b2_scope_focused_final.log`）；Ruff/mypy 复核通过。最终组合回归与复核审查在最终 tip 上重跑。
+- 修复后 B2 定向 **55 passed / 0 failed / 0 skipped**（提交日志 `b2_scope_focused_final.log` 记录 6.38s；更早一次本地运行 5.71s 未覆盖日志，不混用）；Ruff/mypy 复核通过。
+- 第二轮独立审查（agent-023442c1，绑定 `2ec16368`）结论 **PASS**，提出 3 个本卡小项：N1 新 state 路径无回归锁、N2 只测了截断行未测伪造行哈希、N3 CLI docstring 仍写“请求预算继承 compare”。已补 N1/N2 测试、修正 N3 文案，并校正本条耗时记录。
+- 审查同时确认：最终组合日志只覆盖选定的 311 个用例，不是整个 `tests/` 树；本工区 `pytest tests` 存在既有收集失败（`test_zr1008` 导入缺失的 `test_zr709`，`test_ca204` 亦报错），属既有问题，列给 ROOT，不在本卡扩围。
+- 最终组合回归（绑定 `2ec16368`）：**307 passed、1 failed、3 skipped、109.83s**（`b2_combined_final_tip.log` / `_tip.xml`），唯一失败仍是既有 subprocess allowlist 缺口。
