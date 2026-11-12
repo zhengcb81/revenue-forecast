@@ -42,13 +42,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from contracts.evidence import ForecastInputError
-from revenue_core import (
-    ENGINE_VERSION,
-    PUBLICATION_RECEIPT_SCHEMA_VERSION,
-    canonical_sha256,
-    require,
-)
+from contracts.constants import ENGINE_VERSION, PUBLICATION_RECEIPT_SCHEMA_VERSION
+from contracts.evidence import ForecastInputError, canonical_sha256, require
 
 
 class PublicationReceiptOnlyWarning(UserWarning):

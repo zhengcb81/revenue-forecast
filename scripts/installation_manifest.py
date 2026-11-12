@@ -12,9 +12,15 @@ from pathlib import Path
 ROOT_FILES = (".gitignore", "CHANGELOG.md", "SKILL.md")
 ROOT_DIRECTORIES = ("agents", "config", "references", "scripts")
 IGNORED_PARTS = {"__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache"}
-# Historical engineering fixture now lives under tools/legacy/. Existing
-# installations may retain the old copy; it is neither owned nor imported.
-RETIRED_RUNTIME_FILES = {"scripts/processing_demand.py"}
+# Historical engineering fixtures retained in the repository but never shipped.
+# Existing installations may retain an old copy; they are neither owned nor
+# imported by the delivered runtime.
+RETIRED_RUNTIME_FILES = {
+    "scripts/processing_demand.py",
+    # WU-1304 canary reads a CWP SQLite catalog and is not a runtime entry.
+    # It stays in the repository as historical review material only.
+    "scripts/processed_artifact_canary.py",
+}
 
 
 def installable_files(root: Path) -> list[Path]:

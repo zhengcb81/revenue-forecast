@@ -20,6 +20,11 @@ SCENARIOS = ("low", "base", "high")
 # The 4.2.1 emit history stays pinned in schema_compatibility.py.
 SKILL_VERSION = "4.3.0"
 
+# Compatibility name retained in serialized forecasts and snapshots. The
+# engine version moves with the skill version, but report/leaf consumers read
+# this constant directly instead of importing the core aggregate.
+ENGINE_VERSION = SKILL_VERSION
+
 
 FORECAST_SCHEMA_VERSION = "3.7"
 

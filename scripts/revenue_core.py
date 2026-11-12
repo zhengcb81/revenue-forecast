@@ -44,9 +44,8 @@ from revenue_constraints import (  # noqa: E402  re-export
 )
 
 
-from contracts.constants import SKILL_VERSION
-# Compatibility name retained in serialized forecasts and snapshots.
-ENGINE_VERSION = SKILL_VERSION
+from contracts.constants import ENGINE_VERSION, SKILL_VERSION  # noqa: F401  re-export
+from contracts.workflow_receipt import build_workflow_compliance_receipt  # noqa: E402  re-export
 
 MODEL_SPECS = REGISTERED_MODEL_SPECS
 MODEL_RATIO_DRIVERS = REGISTERED_MODEL_RATIO_DRIVERS
@@ -479,53 +478,6 @@ def run_forecast(data: dict[str, Any], *, mode: str = "formal") -> dict[str, Any
     return result
 
 
-def build_workflow_compliance_receipt(
-    input_sha256: str,
-    sources: list[dict[str, Any]],
-    evidence_claims: list[dict[str, Any]],
-    parameters: list[dict[str, Any]],
-    data_gaps: list[str],
-) -> dict[str, Any]:
-    """Recompute the formal workflow receipt from validated revenue artifacts."""
-    capture_hashes = sorted(source["capture"]["receipt_sha256"] for source in sources)
-    receipt = {
-        "receipt_schema_version": WORKFLOW_RECEIPT_SCHEMA_VERSION,
-        "status": "pass",
-        "workflow": "revenue_forecast_nine_dimension_driver_model",
-        "execution_mode": "deterministic_runtime",
-        "gate_ids": [
-            "input_contract",
-            "source_capture",
-            "evidence_claims",
-            "research_coverage",
-            "management_targets",
-            "growth_driver_tree",
-            "revenue_model",
-        ],
-        "input_sha256": input_sha256,
-        "source_capture_receipt_sha256s": capture_hashes,
-        "source_capture_count": len(capture_hashes),
-        "checked_claim_count": len(evidence_claims),
-        "assumption_parameter_ids": sorted(
-            parameter["parameter_id"]
-            for parameter in parameters
-            if parameter["kind"] in {"analyst_assumption", "scenario_stress"}
-        ),
-        "data_gap_count": len(data_gaps),
-        "data_gaps_sha256": canonical_sha256(data_gaps),
-        "prompt_injection_flagged_source_ids": sorted(
-            source["source_id"]
-            for source in sources
-            if source["capture"]["prompt_injection_status"] == "detected_and_ignored"
-        ),
-        "untrusted_content_treatment": "data_only_never_instructions",
-        "formal_output_authority": "validated_runtime_renderer_only",
-        "freeform_formal_output_allowed": False,
-    }
-    receipt["receipt_sha256"] = canonical_sha256(receipt)
-    return receipt
-
-
 from forecast.calc import (  # noqa: E402  re-export
     MODEL_DRIVER_DIMENSIONS,
     evaluate_derived_formula,
@@ -584,7 +536,7 @@ from contracts.constants import (  # noqa: E402  re-export
     SOURCE_RANKS,
     SUPPORTED_FORECAST_SCHEMA_VERSIONS,
     TIME_BASES,
-    WORKFLOW_RECEIPT_SCHEMA_VERSION,
+    WORKFLOW_RECEIPT_SCHEMA_VERSION,  # noqa: F401  re-export
 )
 
 

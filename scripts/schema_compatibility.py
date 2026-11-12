@@ -21,9 +21,12 @@ from typing import Any
 
 from contracts.constants import (
     DATED_CONTRIBUTION_SCHEMA_VERSION,
+    ENGINE_VERSION,
+    FORECAST_SCHEMA_VERSION,
+    OPT_IN_SCHEMA_VERSION,
     PERIOD_EVIDENCE_SCHEMA_VERSION,
 )
-from revenue_core import ENGINE_VERSION, FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION, require
+from contracts.evidence import require
 
 # ---------------------------------------------------------------------------
 # Emit matrix (schema_version -> set of engine versions that emitted it)

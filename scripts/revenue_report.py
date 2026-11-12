@@ -6,32 +6,36 @@ import copy
 import math
 from typing import Any
 
-from revenue_core import (
-    ForecastInputError,
-    RESEARCH_COVERAGE_STATUSES,
-    RESEARCH_DIMENSIONS,
-    SCENARIOS,
+from analysis.sensitivity import calculate_sensitivities
+from contracts.constants import (
     ENGINE_VERSION,
-    SUPPORTED_FORECAST_SCHEMA_VERSIONS,
     MANAGEMENT_COMMUNICATION_CATEGORIES,
     MANAGEMENT_COMMUNICATION_STATUSES,
     MANAGEMENT_TARGET_MEASUREMENT_BASES,
     MANAGEMENT_TARGET_TREATMENTS,
-    calculate_model_path,
-    calculate_cagr,
-    calculate_confidence,
-    calculate_growth_driver_analysis,
-    calculate_sensitivities,
-    build_workflow_compliance_receipt,
+    RESEARCH_COVERAGE_STATUSES,
+    RESEARCH_DIMENSIONS,
+    SCENARIOS,
+    SUPPORTED_FORECAST_SCHEMA_VERSIONS,
+)
+from contracts.evidence import (
+    ForecastInputError,
     canonical_sha256,
     parse_iso_date,
     period_year,
     require,
-    validate_growth_driver_tree,
+    scenario_ordered,
     validate_source_capture,
 )
-from contracts.evidence import scenario_ordered
-from analysis.confidence import confidence_calculation_version, validate_confidence_recomputation
+from contracts.workflow_receipt import build_workflow_compliance_receipt
+from forecast.calc import calculate_cagr
+from forecast.segments import calculate_model_path
+from research.drivers import calculate_growth_driver_analysis, validate_growth_driver_tree
+from analysis.confidence import (
+    calculate_confidence,
+    confidence_calculation_version,
+    validate_confidence_recomputation,
+)
 from contracts.annual_consumption import validate_annual_consumption
 from forecast.calc import opening_base_bridge, scenario_forecast_parameter_ids
 from research.revenue_basis import (
