@@ -26,3 +26,16 @@
 - 首轮长 `--basetemp` 下出现4个RF-job用例路径创建失败；短临时根使用相同命令复验后，最终聚焦集合为171 passed、1 skipped、71.41s。最终日志为 `b37_combined_final.log`，首轮失败数与根因在findings.md留档；pytest basetemp均在命令结束后清除。
 - 独立只读审查 PASS，见 `review/deployment_source_regressions.md`。最终部署文件单测38 passed；Ruff通过。测试文件与PWF已由提交 `058be4fd6` 推送到 `codex/mb11-rf`，并快进进入 RF `main` / `origin/main`；两次push的固定smoke各12 passed。
 - scope/subject/verified-comparison测试中的3个缺口和候选实现跨模块私有调用/市场范围固定问题已归因并写入findings.md。对应候选代码留在源分支，不复制到本工区；scope功能后续先补公开边界和泛化测试，再判断并线。
+
+## B2 公开 scope/subject/verified-compare（本轮）
+
+- A（RED）：先建 `tests/rf_verified_scope/`，以 `test_b2_public_scope_entrypoints_are_available` 证明当前主线缺少4个公开入口，`b2_scope_red.log` 为 `1 failed`；失败原因是能力缺失，不是依赖/权限/fixture 错误。
+- B（实现）：新增 `scripts/report_catalog_subject_resolver.py`、`report_catalog_scope_binding.py`、`report_catalog_verified_compare.py`、`report_catalog_verified_compare_cli.py`。未改 `report_catalog.py`、`report_catalog_compare*.py`、`report_catalog_identity_cli.py` 等既有公开实现；`import-rf-job` 入口保持原样。
+- 公开面：`SubjectQuery`/`SubjectSnapshot`/`FrozenSubjectResolver`；scope 坐标/证据/绑定 DTO、`build_scope_binding`、`validate_scope_binding`、`ScopeBindingStore`、`list_scope_bindings`、`exact_scope_pair`；`compare_verified_scope` 只消费公开 `compare_reports` 与公开 reader，原始 left/right 行不被改写。
+- 依赖隔离：静态 AST 检查四模块不引用 `_index/_exact_report/_public_report/_compare_pair` 等 catalog 私有符号，不 import sqlite3/stockwiki/CWP；运行时用 `PublicOnlyCatalog`（私有属性访问即断言失败）跑通全部构建/比较用例。
+- 泛化合同：8组 golden（IFRS/US GAAP × 06-30/12-31 × 1/3 分部）、24 分部、H1 期次、600 期完整结果、>1MiB CLI 响应；无 IFRS/12-31/单分部/FY-only 默认。
+- 负例：缺源 `scope_source_missing`、重复源 `scope_duplicate_source`、见证不在精确捕获源 `scope_evidence_invalid`、身份不匹配 `scope_identity_mismatch`、期次不覆盖 `*_scope_coordinate_not_covered`、scope 冲突 `scope_binding_conflict`、绑定陈旧 `scope_binding_stale`、错绑定 `scope_binding_not_found`；空 scope 视图不创建数据根。
+- 定向结果：`b2_scope_focused.log` 为 **42 passed / 0 failed / 0 skipped / 4.15s**；Ruff 与 mypy（4 个新模块）通过。
+- 受影响回归一次：`b2_combined_final.log` / `b2_combined_junit.xml` 为 **294 passed、1 failed、3 skipped、102.74s**。唯一失败是 `tests/test_single_owner_guard.py::test_subprocess_use_is_limited_to_contract_clients`；已用 HEAD 树证明该 allowlist 在 B2 前已缺 4 个既有 subprocess 脚本，新模块不含 subprocess，故为既有缺口、非本卡回归，列入 ROOT 范围外发现。
+- 3 个 skip 是既有环境/合同 skip：Dashboard 合同目录未配置（compare）、默认 catalog 拒绝跨 owner 链接（catalog）、模型族输出未固定（golden lock）。`tests/test_module_boundary_closure.py` 在本工区不存在，按卡片要求记为文件名核对结果，不当作产品失败。
+- 临时目录：回归使用 `/c/Temp/mb11b2-*` 新短根，结束后只删除本次创建的目录；未改生产原件/配置/既有 WIP，未跑预测、网络或收费调用。

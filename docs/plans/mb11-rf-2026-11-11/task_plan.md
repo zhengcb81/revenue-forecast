@@ -13,6 +13,7 @@
 - compare owner模块与CLI已由 `e060a8607` 提交并进入RF `main`；main上的PWF进度记录为 `33d880826`。其52项聚焦测试、Ruff/mypy和独立审查已通过。
 - 新增的部署/来源测试已独立复核通过，修正锁文件断言后MB-RF相关组合为171 passed、1 skipped；提交 `058be4fd6` 已推送并进入 RF `main` / `origin/main`。
 - scope/subject/verified-compare仍未接入。候选实现有跨模块私有调用、固定IFRS/12-31/单分部支持形状和未配置的表示上限；不能按候选原样并线。详细差额和后续入口见findings.md。
+- B2已按公开DTO/reader重做：新增 subject/scope/verified-compare 四模块与薄CLI，未改既有公开实现；定向42 passed，受影响回归294 passed/1 failed（唯一失败是HEAD基线已有的subprocess allowlist缺口）/3 skipped。下一步是独立审查绑定源码tip、修复复核、推送分支与handoff。
 
 ## 步骤
 

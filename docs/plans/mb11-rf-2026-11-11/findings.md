@@ -21,3 +21,13 @@
 - Windows长 `--basetemp` 导致4个既有RF-job测试创建深层临时文件失败；相同测试换用短临时根后通过。这是测试临时路径过长，不是RF-job缺陷。
 - scope/subject/verified-comparison候选不能原样并入：它导入或调用 `_clean_id`、`_json`、`_assert_pathless`、`_compare_pair`、`_identity_reasons` 等私有符号，直接访问catalog私有索引/读取器，并绕过ReportCatalog公开reader；还固定IFRS、12月31日财年和单分部结构，设置无预算依据的证据/台账/输出行数与字节上限；候选CLI差异会删除已发布的 `import-rf-job` 命令和root支持。后续需先定义增量公开合同，并覆盖多会计准则、财年、多分部，同时保留全部job能力。
 - 首轮scope/publication候选测试为122 passed、1 skipped、5 failed：3项因scope命令或wire合同缺失，2项是锁载体断言错误。后两项已在保留的部署测试中修好；scope部分仍延期，不能记为通过。
+
+## B2 公开 scope/subject/verified-compare 设计与发现（2026-11-12）
+
+- 候选的 `scope_binding`/`subject_resolver` 直接导入 `_clean_id`、`_json`、`_index`、`_exact_report`、`_public_report`、`_read_json`、`_compare_pair`、`_identity_reasons` 等私有符号，并依赖 StockWiki 私有 CLI/DB。B2 不复制该实现：RF 侧只定义公开 DTO/reader，StockWiki 通过可注入的公开 subject port 消费；本地用冻结公开 fixture 推进，真实组合留给 ROOT。
+- scope 绑定沿公开字段显式携带 `accounting_basis`、`fiscal_year_end`、`segment_ids`、`covered_coordinates`（含 period_start/period_end/scenario/basis）、`analysis_subject_id/revision`、`currency/unit/scale/basis`、来源见证。FY 坐标的 `period_end` 月日必须等于声明的财年结束日；不再默认 IFRS、12-31、单分部或 FY-only。
+- 来源见证经 `ReportCatalog.get_source_snapshot` 公开 reader 逐条核对 source_id/content_sha256/字节 SHA/excerpt 包含关系；缺快照、缺必需角色、重复见证、摘录不在精确捕获源分别给出稳定错误码。
+- verified-compare 不导入 compare 私有 helper，也不复制 Decimal 差值算法：先取公开 `compare_reports` 原始结果，再用仅公开 reader 的 effective-subject adapter 取一次生效视图；响应中的 left/right 仍是原始规范行，只有 delta/comparable/reasons 受当前 scope 影响。
+- 输出不设行数/字节上限；CLI 只继承既有 compare CLI 的 64KiB 请求输入预算。长摘录 >1MiB 的完整响应和 600 期结果均有回归。
+- 既有缺口（非本卡）：`tests/test_single_owner_guard.py` 的 subprocess allowlist 在 HEAD 基线就缺 `report_catalog_identity_resolver.py`、`report_catalog_rf_job_import.py`、`report_catalog_source_alias.py`、`rf_job_facade.py` 四项；新模块不含 subprocess。修复需要为这4个既有客户端补各自合同测试或调整该守卫的归属，交 ROOT 处理，不在 B2 里扩 allowlist 换绿。
+- `tests/test_module_boundary_closure.py` 在本工区不存在（卡片证明库提到的文件名），已按“开工核对后记入 PWF”处理；不当作产品失败，也不新建同名占位测试。

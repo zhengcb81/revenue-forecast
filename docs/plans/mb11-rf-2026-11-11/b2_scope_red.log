@@ -1,0 +1,19 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+_______________ test_b2_public_scope_entrypoints_are_available ________________
+
+    def test_b2_public_scope_entrypoints_are_available():
+        """Capability RED: current main has no public scope/subject/verified-compare owner."""
+        for name in OWNER_MODULES:
+>           assert importlib.util.find_spec(name) is not None, (
+                f"public B2 owner entrypoint {name} is missing from the delivered runtime")
+E           AssertionError: public B2 owner entrypoint report_catalog_subject_resolver is missing from the delivered runtime
+E           assert None is not None
+E            +  where None = <function find_spec at 0x0000020E87E32B60>('report_catalog_subject_resolver')
+E            +    where <function find_spec at 0x0000020E87E32B60> = <module 'importlib.util' (frozen)>.find_spec
+E            +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests\rf_verified_scope\test_public_contract.py:29: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/rf_verified_scope/test_public_contract.py::test_b2_public_scope_entrypoints_are_available
+1 failed in 1.93s
