@@ -4,7 +4,7 @@
 
 - 代码基线：RF `main` / `origin/main` = `6341759b9cdfd13e8aa7d51d5c755e361046da0c`（B1 compare 与部署/来源回归已在主线）。
 - 最终代码 tip：`d368eff6f8ce`（父 `2ec16368f9d1`，其上 `940e05b4cd82`）。
-- 分支：`codex/mb11-rf`；已推送 `origin/codex/mb11-rf`（`6341759b..d368eff6`），pre-push 固定 smoke **12 passed**；未合并主线。
+- 分支：`codex/mb11-rf`；已推送 `origin/codex/mb11-rf`。远端当前 tip 为后续交接文档提交 `d17be476`（仅 PWF/日志/本文件，不含产品改动）；代码审查仍绑定 `d368eff6`。pre-push 固定 smoke **12 passed**；未合并主线。
 - 目标主线：RF `main`。ROOT 尚未接收/合并，本交接不声称 `MERGED`。
 - 实际产品 diff（仅新增，未改任何既有生产模块）：
 
