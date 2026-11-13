@@ -80,3 +80,9 @@
 - 独立审查 PASS；整卡 561 passed / 2 failed / 3 skipped / 31 subtests。两个失败均在 6341759b9 基线复现，不因本包引入。
 - assurance/runs/daily_alert.jsonl 与原有 .planning/delivery/output 等资料保留，不纳入本次提交。
 - 更新 handoff 与 task_plan 标注并线/推送已完成。
+
+
+## ROOT 临时工区收尾（2026-11-13）
+
+- 已移除 MB-RF delivery/integration 两个 clean 专用 worktree，保留分支引用和原工作区所有已登记业务状态。
+- daily_alert.jsonl 仍是唯一 tracked dirty 文件；未暂存、未恢复、未删除。未跟踪 planning/delivery/output 等保持原样。

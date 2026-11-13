@@ -108,3 +108,10 @@ C:/Miniconda/python -B -X utf8 -m pytest tests/test_module_boundary_closure.py t
 - 两个失败已在施工包基线 6341759b9 复现：既有 subprocess allowlist 缺项和 B34 identity fixture 未解析。断言保留，不能声称整卡全绿。
 - 主工区 assurance/runs/daily_alert.jsonl 的既有修改以及 .mimosa、.planning、delivery、output 未跟踪资料均原样保留。
 - 本卡已并入 RF main 并推送；本次 PWF closeout 会作为后续文档提交，不包含业务状态文件。
+
+
+## 10. ROOT 临时工区收尾（2026-11-13）
+
+- MB-RF 专用交付 worktree 与隔离集成 worktree 均在确认 clean、主线已推送后移除；交付分支保留。
+- 原 RF 主工作区的 assurance/runs/daily_alert.jsonl 修改及 .mimosa、.planning、delivery、output 目录仍保留。
+- 无额外 scratch 清理；业务生成物未删除。本卡无剩余 ROOT 操作。
