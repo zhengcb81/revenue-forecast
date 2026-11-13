@@ -89,3 +89,13 @@ ROOT 可直接用 `docs/plans/mb11-rf-2026-11-11/fixtures/subject-snapshot-examp
 ```powershell
 C:/Miniconda/python -B -X utf8 -m pytest tests/test_module_boundary_closure.py tests/rf_verified_scope tests/test_single_owner_guard.py tests/test_architecture_dependency_uses.py tests/test_decoupled_source_port.py tests/test_golden_behavior_lock.py tests/test_model_registry_contract.py tests/test_rf_job_boundary_regression.py tests/test_rf_job_recovery.py tests/test_rf_job_concurrency.py tests/test_report_catalog_rf_job_import.py tests/test_d4_narrative_consumption_port.py tests/test_report_catalog_compare.py tests/test_report_catalog_deployment.py tests/test_report_catalog.py tests/test_report_catalog_identity_resolver.py tests/b37_publication_sources tests/test_output_report.py tests/test_schema_compatibility.py tests/test_zr702_schema_source_of_truth.py tests/test_zr703_schema_drift_cleanup.py tests/test_publication_pipeline.py tests/test_publication_registry.py tests/b34_publication tests/b35_lineage tests/test_company_wiki_source_reader_v2.py tests/test_r1_source_boundary.py -q -p no:cacheprovider
 ```
+
+
+## 8. ROOT 隔离集成验收（2026-11-13）
+
+- 集成分支从 origin/main 的 6341759b9cdfd13e8aa7d51d5c755e361046da0c 建立，完整前移到交付 tip bf314bfb8168df7fa23eabfa824be3255ffd5ce2（含代码 tip ec2e2f2e、交付 PWF 文档）；没有触碰 RF 原主工作区的 assurance/runs/daily_alert.jsonl、.planning、delivery 或 output。
+- 按原交接命令在隔离集成树运行整卡测试：561 passed / 2 failed / 3 skipped / 31 subtests passed，132.14 秒。两个失败均由独立交付审查在基线 33d8808 复现：test_single_owner_guard 的 subprocess allowlist 漏列 4 个既有脚本；B34 真实身份夹具返回 identity_not_resolved。它们不是本包代码引入；本轮保留失败原样，不为通过而放宽/删除断言。
+- 真实跨仓验收：调用 StockWiki dashboard_analysis_subject_cli.py resolve 的公开接口，得到 schema stockwiki.dashboard_analysis_subject/1、主体 ASJ_68007d83-4dea-4665-9c20-fa356a06ce09 rev 1、实体 ENT_2a41e04d-8679-4be5-9e30-3aaf89bdd00e、挂牌 LST_f26e4cea-69f3-4525-885f-c13885c731f8，lookup receipt SHA f4c17a420cbbf500dcd92518cab603ae8db750a06ece9937f7f425512d5411d1。由公开 DTO 生成的最小 RF fixture 为 fixtures/stockwiki-wuxi-subject-20261113.json，RF 规范快照 SHA 3d8b18ab6a1323afc462a1b1abbeae194e3931c5201a5ac28d1ce4e801fba240。
+- RF 对已有报告 rf-4ac6ad7ee26886285fd81a2f21217dd231c2525856b477b250a8199c0f23c0d9 调用 get-bindings，响应 state=unavailable / missing_reason=comparison_scope_binding_absent / bindings=[]，退出码 0；空隔离 data-root 未创建 canonical verified_scope_bindings.jsonl。验证了 RF 正确报告缺少显式范围绑定，不会自行生成或伪造 binding。测试结束后唯一新建的 TEMP/mb11-rf-live-* 已删除。未重跑收入预测，未调用模型或付费 API。
+
+独立审查者 /root/audit_rf_sid_delivery 最终结论 PASS。审查绑定的生产代码 tip 是 ec2e2f2e；其后的提交仅有 PWF 文档。集成树没有新增代码缺陷；两项 suite failure 作为已证实基线问题登记，不阻止接收本包。
