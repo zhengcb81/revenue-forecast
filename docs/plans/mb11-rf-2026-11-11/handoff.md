@@ -94,7 +94,7 @@ C:/Miniconda/python -B -X utf8 -m pytest tests/test_module_boundary_closure.py t
 ## 8. ROOT 隔离集成验收（2026-11-13）
 
 - 集成分支从 origin/main 的 6341759b9cdfd13e8aa7d51d5c755e361046da0c 建立，完整前移到交付 tip bf314bfb8168df7fa23eabfa824be3255ffd5ce2（含代码 tip ec2e2f2e、交付 PWF 文档）；没有触碰 RF 原主工作区的 assurance/runs/daily_alert.jsonl、.planning、delivery 或 output。
-- 按原交接命令在隔离集成树运行整卡测试：561 passed / 2 failed / 3 skipped / 31 subtests passed，132.14 秒。两个失败均由独立交付审查在基线 33d8808 复现：test_single_owner_guard 的 subprocess allowlist 漏列 4 个既有脚本；B34 真实身份夹具返回 identity_not_resolved。它们不是本包代码引入；本轮保留失败原样，不为通过而放宽/删除断言。
+- 按原交接命令在隔离集成树运行整卡测试：561 passed / 2 failed / 3 skipped / 31 subtests passed，125.74 秒（原始日志 root-integration-full-card-20261113.log，绑定 HEAD 6e99eab7）。两个失败在交付基线 6341759b9 上复现：test_single_owner_guard 的 subprocess allowlist 漏列 4 个既有脚本；B34 真实身份夹具返回 identity_not_resolved。它们不是本包代码引入；本轮保留失败原样，不为通过而放宽/删除断言。
 - 真实跨仓验收：调用 StockWiki dashboard_analysis_subject_cli.py resolve 的公开接口，得到 schema stockwiki.dashboard_analysis_subject/1、主体 ASJ_68007d83-4dea-4665-9c20-fa356a06ce09 rev 1、实体 ENT_2a41e04d-8679-4be5-9e30-3aaf89bdd00e、挂牌 LST_f26e4cea-69f3-4525-885f-c13885c731f8，lookup receipt SHA f4c17a420cbbf500dcd92518cab603ae8db750a06ece9937f7f425512d5411d1。由公开 DTO 生成的最小 RF fixture 为 fixtures/stockwiki-wuxi-subject-20261113.json，RF 规范快照 SHA 3d8b18ab6a1323afc462a1b1abbeae194e3931c5201a5ac28d1ce4e801fba240。
 - RF 对已有报告 rf-4ac6ad7ee26886285fd81a2f21217dd231c2525856b477b250a8199c0f23c0d9 调用 get-bindings，响应 state=unavailable / missing_reason=comparison_scope_binding_absent / bindings=[]，退出码 0；空隔离 data-root 未创建 canonical verified_scope_bindings.jsonl。验证了 RF 正确报告缺少显式范围绑定，不会自行生成或伪造 binding。测试结束后唯一新建的 TEMP/mb11-rf-live-* 已删除。未重跑收入预测，未调用模型或付费 API。
 
