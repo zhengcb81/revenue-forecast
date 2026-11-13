@@ -99,3 +99,12 @@ C:/Miniconda/python -B -X utf8 -m pytest tests/test_module_boundary_closure.py t
 - RF 对已有报告 rf-4ac6ad7ee26886285fd81a2f21217dd231c2525856b477b250a8199c0f23c0d9 调用 get-bindings，响应 state=unavailable / missing_reason=comparison_scope_binding_absent / bindings=[]，退出码 0；空隔离 data-root 未创建 canonical verified_scope_bindings.jsonl。验证了 RF 正确报告缺少显式范围绑定，不会自行生成或伪造 binding。测试结束后唯一新建的 TEMP/mb11-rf-live-* 已删除。未重跑收入预测，未调用模型或付费 API。
 
 独立审查者 /root/audit_rf_sid_delivery 最终结论 PASS。审查绑定的生产代码 tip 是 ec2e2f2e；其后的提交仅有 PWF 文档。集成树没有新增代码缺陷；两项 suite failure 作为已证实基线问题登记，不阻止接收本包。
+
+
+## 9. ROOT 主线并入与推送收尾（2026-11-13）
+
+- ROOT 已将隔离集成树快进到 RF main，代码与集成收据推送后的 origin/main ref 核实为 6b045b76f2ae4e96184c6c1521b8e1f58ee5441b。
+- 对应产品代码 tip 为 ec2e2f2e79c44ec6075e3a5bdb172b5f0c54b70a；独立审查 PASS。集成整卡运行绑定 6e99eab7f，561 passed、2 failed、3 skipped、31 subtests passed。
+- 两个失败已在施工包基线 6341759b9 复现：既有 subprocess allowlist 缺项和 B34 identity fixture 未解析。断言保留，不能声称整卡全绿。
+- 主工区 assurance/runs/daily_alert.jsonl 的既有修改以及 .mimosa、.planning、delivery、output 未跟踪资料均原样保留。
+- 本卡已并入 RF main 并推送；本次 PWF closeout 会作为后续文档提交，不包含业务状态文件。

@@ -72,3 +72,11 @@
 - 整卡回归：`full_card_regression_final.log` / `full_card_junit_final.xml`，**561 passed、2 failed、3 skipped、31 subtests passed、195.40s**；两项失败为基线已复现（allowlist、B34 identity）。
 - 整卡闭包：`full_card_closure.log`，**14 passed、9.32s**。
 - 文档：`card_audit.md` 全量状态、`runtime_inventory.md` 入口/模块/owner/依赖清单、`handoff.md/json` 绑定 `ec2e2f2e`。
+
+
+## ROOT 主线并入收尾（2026-11-13）
+
+- RF main 已包含集成树提交，代码并线与远端 origin/main 核验 ref 为 6b045b76f2ae4e96184c6c1521b8e1f58ee5441b。
+- 独立审查 PASS；整卡 561 passed / 2 failed / 3 skipped / 31 subtests。两个失败均在 6341759b9 基线复现，不因本包引入。
+- assurance/runs/daily_alert.jsonl 与原有 .planning/delivery/output 等资料保留，不纳入本次提交。
+- 更新 handoff 与 task_plan 标注并线/推送已完成。

@@ -12,8 +12,8 @@
 - 已确认全候选会触及 628 个文件；本次范围严格限制到卡片指定 19 个产品路径与当前合同测试。B37 的 19 个产品路径中 4 个已同 blob、9 个有差异、6 个主线缺失。
 - compare owner模块与CLI已由 `e060a8607` 提交并进入RF `main`；main上的PWF进度记录为 `33d880826`。其52项聚焦测试、Ruff/mypy和独立审查已通过。
 - 新增的部署/来源测试已独立复核通过，修正锁文件断言后MB-RF相关组合为171 passed、1 skipped；提交 `058be4fd6` 已推送并进入 RF `main` / `origin/main`。
-- scope/subject/verified-compare仍未接入。候选实现有跨模块私有调用、固定IFRS/12-31/单分部支持形状和未配置的表示上限；不能按候选原样并线。详细差额和后续入口见findings.md。
-- B2已按公开DTO/reader重做：新增 subject/scope/verified-compare 四模块与薄CLI，未改既有公开实现；定向42 passed，受影响回归294 passed/1 failed（唯一失败是HEAD基线已有的subprocess allowlist缺口）/3 skipped。下一步是独立审查绑定源码tip、修复复核、推送分支与handoff。
+- scope/subject/verified-compare 已通过公开 DTO / reader 实现并接入；整卡复核的两项历史基线失败另行记录，不影响产品提交是否入线。
+- B2 已完成公开 DTO/reader 重做、独审、集成测试、主线快进与远端推送；最终状态见本文件末尾 ROOT 并线收尾。
 
 ## 步骤
 
@@ -26,3 +26,16 @@
 ## 不在范围内
 
 候选其余 609 条路径、118 个研究材料、旧 job facade 全树、重新跑公司预测、收费调用、修改 CWP/StockWiki/Dashboard。
+
+
+## ROOT 并线收尾（2026-11-13）
+
+- [x] RF B2 scope/subject/verified-compare 按公开接口实现并通过独立审查。
+- [x] 在隔离集成树运行整卡组合回归；两个失败均在原基线复现并留证。
+- [x] 快进 RF main 并验证远端推送。
+- [x] 保留原工作区 daily_alert 变更、delivery/output 与历史 PWF。
+- [x] 更新最终交接与并线 SHA。
+
+## Next Step
+
+无；MB-RF 卡已完成并入主线。整项目组合验收由 company-wiki 总控计划负责。
