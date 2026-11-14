@@ -190,6 +190,7 @@ def test_canonical_installer_runs_in_a_temporary_empty_cwd(tmp_path):
     install_root = Path(target["target"])
     assert install_root == destination / "revenue-forecast"
     for relative in ("SKILL.md", "scripts/revenue_report.py", "scripts/source_preparation.py",
+                     "scripts/financial_statement_source.py",
                      "scripts/report_catalog.py", "scripts/rf_job_facade.py",
                      "scripts/contracts/workflow_receipt.py",
                      "scripts/report_catalog_verified_compare_cli.py"):
@@ -221,7 +222,8 @@ def test_canonical_installer_runs_in_a_temporary_empty_cwd(tmp_path):
     entry_script = (
         "import sys; "
         f"sys.path.insert(0, {str(install_root / 'scripts')!r}); "
-        "import report_catalog, source_preparation, report_catalog_verified_compare_cli; "
+        "import financial_statement_source, report_catalog, source_preparation; "
+        "import report_catalog_verified_compare_cli; "
         "print('entries_ok')"
     )
     entries = subprocess.run([sys.executable, "-S", "-B", "-X", "utf8", "-c", entry_script],

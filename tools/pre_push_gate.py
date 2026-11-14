@@ -94,6 +94,7 @@ CI_TESTS = (
     "tests/test_company_wiki_source_ref_v2.py",
     "tests/test_company_wiki_source_v2.py",
     "tests/test_source_preparation.py",
+    "tests/test_financial_statement_source.py",
     "tests/test_decoupled_source_port.py",
     "tests/test_company_wiki_source_reader_v2.py",
     "tests/test_data_contract.py",

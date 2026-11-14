@@ -20,13 +20,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from company_wiki_narrative_contracts import NarrativeTransportError, canonical_bytes, decode_object
+from company_wiki_narrative_process import run_bounded
 from filing_upstream_cause import FAILURE_STATUSES, failure_detail, failure_observation, safe_failure_message, validated_failure_candidates
 
 
@@ -96,12 +100,12 @@ _DEFAULT_FILING_FETCH_CONFIG = _SKILL_ROOT / "config" / "filing_fetch.json"
 
 
 def load_filing_fetch_root(*, config_path: Path | None = None) -> Path:
-    """Load and validate the explicit filing-fetch root configuration.
+    """Locate the public filing reader, preserving the existing configuration API."""
+    return _public_entry("fetch_filing.py", config_path=config_path).parent.parent
 
-    Fail closed: a missing config, an extra field (e.g. a smuggled-back
-    allowlist), a relative root, or a root without ``scripts/fetch_filing.py``
-    raises ``_ClientError(error_code="config_error")``.
-    """
+
+def _configured_root(config_path: Path | None) -> Path:
+    """Resolve the caller's configured tool root independently of its operations."""
     if config_path is not None and not isinstance(config_path, Path):
         raise TypeError("config_path must be pathlib.Path or None")
     selected = config_path or _DEFAULT_FILING_FETCH_CONFIG
@@ -194,14 +198,100 @@ def load_filing_fetch_root(*, config_path: Path | None = None) -> Path:
             error_code="config_error",
             retryable=False,
         )
-    if not (resolved / "scripts" / "fetch_filing.py").is_file():
+    return resolved
+
+
+_FILING_FETCH_EXIT_GRACE_SECONDS = 10.0
+_STATEMENTS_REQUEST = "financial-statements-request/1"
+STATEMENTS_RESPONSE = "financial-statements-response/1"
+_STATEMENTS_SUCCESS = ("complete", "partial", "not_found", "unavailable")
+
+
+def _public_entry(
+    script_name: str, *, root: Path | None = None, config_path: Path | None = None,
+) -> Path:
+    selected_root = root.resolve() if root is not None else _configured_root(config_path)
+    entry = selected_root / "scripts" / script_name
+    if not entry.is_file():
         raise _ClientError(
-            f"configured filing_fetch_root lacks scripts/fetch_filing.py: "
-            f"{resolved}",
+            f"configured filing_fetch_root lacks scripts/{script_name}: {selected_root}",
             error_code="config_error",
             retryable=False,
         )
-    return resolved
+    return entry
+
+
+@dataclass(frozen=True)
+class StatementSourceResult:
+    """The FF public result with its producer exit status and full diagnostics."""
+
+    exit_code: int
+    envelope: dict[str, Any]
+    diagnostics: bytes = b""
+
+
+def _statement_error(status: str, reason: str) -> StatementSourceResult:
+    return StatementSourceResult(2, {
+        "schema_version": STATEMENTS_RESPONSE,
+        "status": status,
+        "reason": reason,
+        # A timed-out request may have started acquisition. No automatic retry.
+        "retryable": False,
+    })
+
+
+def _statement_result(exit_code: int, stdout: bytes, stderr: bytes) -> StatementSourceResult:
+    try:
+        envelope = decode_object(stdout)
+    except NarrativeTransportError as exc:
+        return _statement_error("upstream_error", exc.reason)
+    if envelope.get("schema_version") != STATEMENTS_RESPONSE:
+        return _statement_error("upstream_error", "invalid_statement_response_schema")
+    status = envelope.get("status")
+    if exit_code == 0 and status in _STATEMENTS_SUCCESS and isinstance(envelope.get("statements"), list):
+        return StatementSourceResult(0, envelope, stderr)
+    if exit_code == 1 and status == "fatal":
+        return StatementSourceResult(1, envelope, stderr)
+    if exit_code == 2 and status in ("request_error", "config_error", "upstream_error"):
+        return StatementSourceResult(2, envelope, stderr)
+    return _statement_error("upstream_error", "invalid_statement_response")
+
+
+def request_financial_statements(
+    request: dict[str, Any],
+    *,
+    timeout_seconds: float = 300.0,
+    filing_fetch_root: Path | None = None,
+    filing_fetch_root_config: Path | None = None,
+    company_wiki_config: Path | None = None,
+) -> StatementSourceResult:
+    """Read the FF-owned wire value without interpreting statement rows or periods."""
+    if request.get("schema_version") != _STATEMENTS_REQUEST:
+        return _statement_error("request_error", "invalid_statement_request_schema")
+    if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+        return _statement_error("request_error", "invalid_statement_timeout")
+    try:
+        script = _public_entry(
+            "fetch_statements.py", root=filing_fetch_root, config_path=filing_fetch_root_config,
+        )
+    except _ClientError:
+        return _statement_error("config_error", "filing_fetch_statements_unavailable")
+    payload = {"intent": "reuse_only", **request}
+    try:
+        body = canonical_bytes(payload)
+    except (TypeError, ValueError, UnicodeError, RecursionError):
+        return _statement_error("request_error", "invalid_statement_request")
+    command = [sys.executable, "-B", str(script), "--timeout-seconds", str(timeout_seconds)]
+    if company_wiki_config is not None:
+        command.extend(["--config", str(company_wiki_config.resolve())])
+    try:
+        completed = run_bounded(
+            command, body, stdout_limit=None, stderr_limit=None,
+            timeout_seconds=timeout_seconds + _FILING_FETCH_EXIT_GRACE_SECONDS,
+        )
+    except NarrativeTransportError as exc:
+        return _statement_error("upstream_error", exc.reason)
+    return _statement_result(completed.returncode, completed.stdout, completed.stderr)
 
 
 def _try_loads(text: str) -> Any:
@@ -255,7 +345,7 @@ def resolve_filing_result(
             encoding="utf-8",
             errors="strict",
             capture_output=True,
-            timeout=timeout_seconds + 10,  # small grace beyond the deadline
+            timeout=timeout_seconds + _FILING_FETCH_EXIT_GRACE_SECONDS,
             cwd=root,
             env=environment,
             check=False,
