@@ -162,8 +162,8 @@
       "kind": "branch",
       "path": "refs/heads/codex/rf-job-facade-01",
       "status": "ACTIVE_KEEP",
-      "reason": "release HEAD e4b38459, OPEN P1=0/P2=0; code re-landed in main at ff1c69e0; branch residue is .planning evidence (referenced by main test comment); merge gated on D4-06 per handoff section 8-3",
-      "evidence": "handoff.json in branch .planning/rf-job-facade-01/; main ff1c69e0 blob identical for rf_job_facade.py",
+      "reason": "release HEAD e4b38459, OPEN P1=0/P2=0; code re-landed in main at ff1c69e0 (branch version strictly contained in the ff1c69e0 version: 1451 lines minus a 9-line source_reader_command block; blob c83ca89b vs dba52967); main further evolved at cd24976a; branch residue is .planning evidence (referenced by main test comment); merge gated on D4-06 per handoff section 8-3",
+      "evidence": "handoff.json in branch .planning/rf-job-facade-01/; branch blob is strict subset of main ff1c69e0 blob (verified by independent review R-1 correction; sha1 d518cd06 vs a53490b4)",
       "tip": "d347c4ab"
     },
     {
@@ -1104,7 +1104,7 @@
     },
     {
       "command": "git worktree list / prune --dry-run after removals",
-      "result": "PASS (22 registered after removals; equals main + 20 retained keep-set worktrees; prune dry-run clean)"
+      "result": "PASS (22 registered after removals; equals main + 21 retained keep-set worktrees; prune dry-run clean)"
     },
     {
       "command": "19 non-ancestor ref SHAs compared against pre-clean snapshot",
@@ -1112,15 +1112,16 @@
     }
   ],
   "independent_review": {
-    "reviewer_agent": "independent reviewer agent (not involved in implementation; dispatched after candidate commit)",
-    "reviewed_head": "SELF - this commit is the review candidate; exact SHA recorded in rf-closeout-review.md after review",
-    "result": "PENDING",
+    "reviewer_agent": "independent reviewer agent (general-purpose, agent_cf3539b9; not involved in implementation)",
+    "reviewed_head": "a7a1818a12f5226fe6eb1190cf373fbdf02ddc0d full review PASS; fix-commit single-point re-check (R-1/R-2/R-3/R-5) bound in rf-closeout-review.md section 6",
+    "result": "PASS",
     "report_path": "docs/plans/module-pwf-reconciliation-2026-11-14/review/rf-closeout-review.md"
   },
   "remaining_items": [
     "D4-06 ROOT acceptance open; facade/input-prep merge and 15 dashboard-family branch receptions are cross-owner waiting items (registered in PLANNING_STATUS canon section)",
-    "18 retained worktrees (EVIDENCE/ACTIVE) and their dirty attachments kept in place for their lanes' future closure",
-    "two Temp shells holding artifacts/registry/publications.jsonl run ledgers kept; deletable later only if ROOT rules the ledgers audited-superseded"
+    "retained worktrees (EVIDENCE/ACTIVE) and their dirty attachments kept in place for their lanes' future closure",
+    "two Temp shells holding artifacts/registry/publications.jsonl run ledgers kept; deletable later only if ROOT rules the ledgers audited-superseded",
+    "orphan Temp dir rf-merge-review-20260927: worktree deregistered but directory retained - .pytest_cache ACL denial (takeown also denied, elevation required); delete in an elevated session"
   ],
   "next_step": "After D4-06 closes, RF owner decides 'git merge codex/rf-job-facade-01' per facade handoff section 8-3, then regression 'pytest tests/ -q -k rf_job'; rf-input-prep-01 adaptation follows."
 }

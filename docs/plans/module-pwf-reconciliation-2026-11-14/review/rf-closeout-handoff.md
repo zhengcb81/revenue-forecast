@@ -48,10 +48,10 @@
 
 ## 6. 清理收据
 
-- 候删 39 个：**38 个完整删除**（`git worktree remove` 34 + `--force` 4 + 其余经主流程），1 个部分完成。
+- 候删 39 个：**38 个完整删除**（`git worktree remove` 35 + `--force` 3），1 个部分完成。
 - 部分完成：`AppData/Local/Temp/rf-merge-review-20260927` — `--force` 已清除注册但目录删除被 `.pytest_cache` 的 Windows ACL 拒绝（`takeown` 亦拒绝，需提权会话）；孤儿目录（33MB，残壳）留在 Temp，登记为保留例外。逐路径结果见 JSON `cleanup.paths`。
-- 空间收据：39 路径预删实测合计 **9779.6 MB / 571,331 文件**；实际释放 **≈9746.6 MB（约 9.52 GB）/ 569,766 文件**（扣除保留孤儿目录）。逐路径 MB/文件数见 JSON `cleanup.paths`。
-- worktree 注册数：**61 → 22**（= 主仓 + 20 个保留集合成员，逐项与处置表一致）；19 个分支引用全部未删、SHA 与开工快照逐一相同。
+- 空间收据：39 路径预删实测合计 **9779.6 MB / 571,331 文件**；实际释放 **10218934272 bytes ≈ 9745.5 MiB（约 9.52 GB）/ 569,766 文件**（扣除保留孤儿目录）。逐路径 MB/文件数见 JSON `cleanup.paths`。
+- worktree 注册数：**61 → 22**（= 主仓 + 21 个保留集合成员，逐项与处置表一致）；19 个分支引用全部未删、SHA 与开工快照逐一相同。
 
 ## 7. 测试与检查
 
@@ -69,16 +69,17 @@
 
 ## 8. 独立审查
 
-- reviewer agent：PENDING — 独立 reviewer（未参与实施）将在本候选提交后派发
-- 审查绑定 HEAD：PENDING — 将绑定本候选提交（精确 SHA 记入 rf-closeout-review.md）
-- 结论：PENDING
+- reviewer agent：独立 reviewer agent（general-purpose，未参与实施）
+- 审查绑定 HEAD：`a7a1818a12f5226fe6eb1190cf373fbdf02ddc0d` 全量审查 PASS（V-1~V-8）；修正提交按报告 §3 对 R-1/R-2/R-3/R-5 单点复核，记录于报告 §6
+- 结论：PASS（无必须修复项；R-1..R-5 建议已在本修正提交落实）
 - 报告：`docs/plans/module-pwf-reconciliation-2026-11-14/review/rf-closeout-review.md`
-- 流程：作者提交候选 HEAD → 独立 reviewer（未参与实施）审查完整变更与交接并绑定该 HEAD → 若有问题：作者修复、复测、提交新 HEAD、reviewer 复核新 HEAD → 通过后推送并确认远端 = 已审 HEAD。
+- 流程：作者提交候选 HEAD `a7a1818a` → 独立 reviewer 全量审查（PASS，5 项非阻断建议）→ 作者修正提交（本提交）→ reviewer 单点复核 → 推送并确认远端含已审树（修正提交与 bookkeeping 提交仅含审查记录与建议修正，遵循 MB-RF handoff §5 先例：审查绑定内容提交，文档提交随后）。
 
 ## 9. 剩余项与唯一下一步
 
 - 剩余项：
   1. D4-06（ROOT 组合验收）未关闭 → facade/input-prep 并线与 Dashboard 系 15 分支的"ROOT 接收"均为跨 owner 等待项，已登记于 PLANNING_STATUS canon 区。
-  2. 18 个保留 worktree（EVIDENCE/ACTIVE）与其 dirty 附件原样保留，待各自 lane 结案后由后续卡处置。
+  2. 21 个保留 worktree（EVIDENCE/ACTIVE）与其 dirty 附件原样保留，待各自 lane 结案后由后续卡处置。
   3. Temp 两个含 publications.jsonl 的残损壳（rf-period-evidence、rf-source-ref-v2）保留运行登记；若 ROOT 认可登记无审计价值可另行删除。
+  4. Temp 孤儿目录 `rf-merge-review-20260927`：worktree 注册已清，目录因 `.pytest_cache` ACL 拒绝（takeown 亦拒，需提权会话）保留，待提权会话删除。
 - 唯一下一步：等待 D4-06 关闭后由 RF owner 按 facade handoff §8-3 决策 `git merge codex/rf-job-facade-01`（并线后回归 `pytest tests/ -q -k rf_job`）。
