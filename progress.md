@@ -1,5 +1,7 @@
 # Revenue Forecast 技能审查进度
 
+> **历史文件**：canonical 状态入口是根 [PLANNING_STATUS.md](PLANNING_STATUS.md)；本文件为历史进度记录，不再驱动执行。
+
 ## 2026-08-18 — ZR-408 收尾 / 用户要求停止
 
 - 状态：ZR-407 已 accepted 且 closure→ZR-408；收尾时已释放 ZR-408 lease（`active_owner=null`、`lease=null`），尚未提交 implementer receipt、独立 review 或 closure，机器游标仍为 `current_next=ZR-408`。

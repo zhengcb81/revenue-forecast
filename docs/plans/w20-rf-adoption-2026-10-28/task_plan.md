@@ -1,5 +1,7 @@
 # W20-RF-ADOPTION 独立施工计划
 
+> **状态对齐（RF-PLAN-WORKTREE-CLOSEOUT，2026-11-14）**：canonical 状态入口是根 [PLANNING_STATUS.md](../../../PLANNING_STATUS.md)。本卡 **MERGED**：`codex/w20-rf-adoption-20261028`（3e8fbc55）已是 main 祖先；下方「待ROOT接收」状态被并入事实取代。收据见 `delivery/w20-rf-adoption/handoff.json`。
+
 状态：COMPLETE，待ROOT接收。A（c71b79e2）、B（65af44b9）、C（5f88ac3f 启动，8b221153 修复）全部完成；独立初审14项OPEN全部修复，全新独立复审 verdict PASS、OPEN_findings=[]。交付：`delivery/w20-rf-adoption/{handoff.md,handoff.json,review/{initial,final}.{md,json}}`。
 
 ## 大节点

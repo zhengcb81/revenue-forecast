@@ -1,5 +1,7 @@
 # RF B37 差额接收与边界改造
 
+> **状态对齐（RF-PLAN-WORKTREE-CLOSEOUT，2026-11-14）**：canonical 状态入口是根 [PLANNING_STATUS.md](../../../PLANNING_STATUS.md)。本卡 **MERGED**：`codex/mb11-rf`（bf314bfb）是 main 祖先；handoff.md §9（ROOT 并线推送 origin/main=6b045b76）为最终状态，其 §7「main 未合并」为过时段落。
+
 ## 目标
 
 在 RF 自己的 codex/mb11-rf 工区，把 B37 compare/scope/publication 的最小 19 路径合同差额接到当前 main，保留现有 durable job、concurrency/recovery、D4 source port 与报告入册行为。严禁把旧 release 整树覆盖到 main。

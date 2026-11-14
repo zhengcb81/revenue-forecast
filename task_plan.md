@@ -1,5 +1,7 @@
 # Revenue Forecast 技能改进实施计划
 
+> **历史文件（2026-07~08 实施范围）**：canonical 状态入口是根 [PLANNING_STATUS.md](PLANNING_STATUS.md)；本文件不再驱动执行，仅作历史实施记录。
+
 ## 2026-08-18 — 当前停止点：ZR-408（company-wiki close-gap）
 
 本根计划仍是 revenue-forecast 历史范围的归档/审查底稿；跨仓当前执行游标以

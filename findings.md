@@ -1,5 +1,7 @@
 # Revenue Forecast 技能审查发现
 
+> **历史文件**：canonical 状态入口是根 [PLANNING_STATUS.md](PLANNING_STATUS.md)；本文件为历史发现记录，不再驱动执行。
+
 ## 2026-08-18 — ZR-408 收尾发现（company-wiki，未 closure）
 
 - 已复跑的 FC-801/FC-804 与 canonical-writer 合同表明，现有实现已经对受控 staging 做 hash/size/identity 验证，canonical writer 的路径落在 `companies/`，提交后 re-resolve，且同 binding 的重复执行为 zero-fetch reuse。不能把“已有测试”本身当作 ZR-408 closure；本轮逐项以 fetch/import/path/resolution/journal oracle 复核。
