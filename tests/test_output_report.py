@@ -87,6 +87,45 @@ class OutputReportTests(unittest.TestCase):
         self.assertIn("## 参数—证据claim映射", markdown)
         self.assertIn("## 参数来源", markdown)
 
+    def test_empty_global_indicators_point_to_existing_driver_falsifiers(self) -> None:
+        data = forecast_document()
+        driver_falsifier = data["growth_driver_tree"]["drivers"][0]["falsifiers"][0]
+
+        markdown = render_markdown(run_forecast(data))
+
+        self.assertIn("### 全局反证指标", markdown)
+        self.assertIn(
+            "未单独提供；分部驱动可证伪条件见“收入增长驱动树”。",
+            markdown,
+        )
+        self.assertIn(f"- 可证伪条件：{driver_falsifier}", markdown)
+
+    def test_empty_global_indicators_without_driver_falsifiers(self) -> None:
+        data = forecast_document()
+        data["growth_driver_tree"] = {
+            "status": "data_gap",
+            "drivers": [],
+            "rationale": "No modeled driver tree is available in this fixture.",
+        }
+
+        markdown = render_markdown(run_forecast(data))
+
+        self.assertIn("### 全局反证指标", markdown)
+        self.assertIn("- 未单独提供。", markdown)
+        self.assertNotIn("分部驱动可证伪条件见", markdown)
+
+    def test_global_indicators_and_driver_falsifiers_remain_separate(self) -> None:
+        data = forecast_document()
+        global_indicator = "Company-wide cancellations exceed the modeled path"
+        driver_falsifier = data["growth_driver_tree"]["drivers"][0]["falsifiers"][0]
+        data["disconfirming_indicators"] = [global_indicator]
+
+        markdown = render_markdown(run_forecast(data))
+
+        self.assertIn("### 全局反证指标", markdown)
+        self.assertIn(f"- {global_indicator}", markdown)
+        self.assertIn(f"- 可证伪条件：{driver_falsifier}", markdown)
+
     def test_tampered_research_coverage_counts_are_rejected(self) -> None:
         result = run_forecast(forecast_document())
         result["research_coverage"]["counts"]["modeled_driver"] += 1

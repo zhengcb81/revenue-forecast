@@ -2002,8 +2002,19 @@ def render_markdown(result: dict[str, Any]) -> str:
     lines.extend(["", "## 反证指标与数据缺口", ""])
     indicators = result.get("disconfirming_indicators", [])
     gaps = result.get("data_gaps", [])
-    lines.append("### 反证指标")
-    lines.extend([f"- {_escape(item)}" for item in indicators] or ["- 未提供。"])
+    lines.append("### 全局反证指标（独立于分部驱动条件）")
+    has_driver_falsifiers = any(
+        driver.get("falsifiers")
+        for driver in (driver_analysis or {}).get("drivers", [])
+    )
+    if indicators:
+        lines.extend(f"- {_escape(item)}" for item in indicators)
+    elif has_driver_falsifiers:
+        lines.append(
+            "- 未单独提供；分部驱动可证伪条件见“收入增长驱动树”。"
+        )
+    else:
+        lines.append("- 未单独提供。")
     lines.extend(["", "### 数据缺口"])
     lines.extend([f"- {_escape(item)}" for item in gaps] or ["- 未记录数据缺口。"])
 

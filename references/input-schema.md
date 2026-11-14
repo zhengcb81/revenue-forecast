@@ -11,6 +11,12 @@ schemas are legacy read-only within their documented compatibility pairs.
 Engine 4.1.0 changes calculations and validation without changing the canonical
 schema number; use the pinned emitting runtime for old snapshots when required,
 and create a new input/forecast version for the upgraded methodology.
+The optional top-level `disconfirming_indicators` list contains overall or
+company-level watch items. It is independent of each
+`growth_driver_tree.drivers[].falsifiers` list, which records conditions that
+would contradict that specific driver. The engine does not derive one list from
+the other: an empty top-level list does not mean modeled drivers lack
+falsifiers. `data_gaps` separately records missing or uncertain inputs.
 
 Use `pre_revenue=true` only when reported and segment base revenue are zero.
 A genuinely pre-revenue company may use an empty history.
