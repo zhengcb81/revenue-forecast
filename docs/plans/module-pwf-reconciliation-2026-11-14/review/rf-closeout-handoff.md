@@ -15,9 +15,9 @@
 |---|---|
 | base | `main` @ `ec5ba0044b3252d2fc58c4a50c2fe9bc234cf5ad` = `origin/main`（开工实测，与卡快照一致） |
 | final branch | `main` |
-| final HEAD | 本文件所在候选提交（工作树变更全部为文档；精确 SHA 由独立 review 报告绑定记录；base `ec5ba004` 无代码改动） |
+| final content HEAD | `b88818da0270dc217e8b8e4b04d26363676984a1`（C4 closeout checkpoint；纯文档；独立复核收据见 review 报告 §7–§8） |
 | remote | https://github.com/zhengcb81/revenue-forecast.git |
-| remote_head | `ec5ba004`（开工基线，即 base；候选通过审查后推送，届时远端 = base + 本候选链） |
+| remote_head at final-content review | `b88818da0270dc217e8b8e4b04d26363676984a1`（2026-11-14 live `git ls-remote origin refs/heads/main` 实测；后续 receipt-only carrier 由 ROOT PWF 记录） |
 
 ## 3. 状态冲突对齐
 
@@ -83,3 +83,10 @@
   3. Temp 两个含 publications.jsonl 的残损壳（rf-period-evidence、rf-source-ref-v2）保留运行登记；若 ROOT 认可登记无审计价值可另行删除。
   4. Temp 孤儿目录 `rf-merge-review-20260927`：worktree 注册已清，目录因 `.pytest_cache` ACL 拒绝（takeown 亦拒，需提权会话）保留，待提权会话删除。
 - 唯一下一步：等待 D4-06 关闭后由 RF owner 按 facade handoff §8-3 决策 `git merge codex/rf-job-facade-01`（并线后回归 `pytest tests/ -q -k rf_job`）。
+
+
+## 10. 最终收据对齐（2026-11-14）
+
+- 实际 `main` 与 live `origin/main` 均为 `b88818da0270dc217e8b8e4b04d26363676984a1`。它是 C4 收尾状态提交；`rf-closeout-review.md` §7 记录 C4 两文件差异已逐项核对，ROOT 独立验收又检查了该精确提交的完整差异与 `git diff --check`，结论 PASS。
+- 本交接原 §2 的 final HEAD 文字及 JSON `final.head/final.remote_head` 仍停在 base `ec5ba004`，且独立审查报告 §7.4 仍把已提交的 C4 写成 pending；这些是收据滞后，现修正为已审内容 HEAD `b88818da`。
+- 本次修正只改 handoff/review 收据，不改 RF 产品源码。JSON `final` 固定表示最终已审内容提交 `b88818da`；本次收据修正的 carrier SHA 不自指，由 ROOT 总控 PWF 在本次修正被独审、提交并推送后记录。
