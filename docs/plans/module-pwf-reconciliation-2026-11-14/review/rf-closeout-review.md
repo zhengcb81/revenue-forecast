@@ -198,3 +198,23 @@ handoff.md §4 仍写 "18 个 EVIDENCE_KEEP"（应为 19，39+19+2+1=61 才自�
 - 因此 §7.4 的 “C4（待提交）” 是写报告时的历史安排，已被本节取代；它不是当前未提交项。原 handoff §2 与 JSON `final.head/final.remote_head` 错停在 base `ec5ba004`，是收据未随 C4 回写。
 - ROOT 修正候选 `b082a129` 将最终内容 SHA 对齐到 `b88818da`，并说明后续 receipt-only carrier 的自指约定；独立复核指出该候选仍需把本节写入报告并明确标记 §7.4 的历史状态。本节完成该文档一致性修复。
 - 本轮只涉及 PWF/handoff/review 文档，不改 RF 产品源码；具体最终收据修订提交的独审绑定及推送 tip 由本报告后续 carrier 记录和 company-wiki 总控 PWF 共同记载。
+
+
+<a id="selective-reconciliation-3ca619283411cf2a48afa57a449c44e2aa907768"></a>
+
+## 2026-11-14 selective reconciliation review — 3ca619283411cf2a48afa57a449c44e2aa907768
+
+This section records the independent, read-only review performed by the company-wiki closeout reviewer. The authoritative review is `company-wiki/docs/plans/module-pwf-reconciliation-2026-11-14/review/rf-closeout-review.md`; its verdict is **PASS**, bound to RF `main` HEAD `3ca619283411cf2a48afa57a449c44e2aa907768` with base `1ea5008290ab302bcfe6d935f3703244139c774f`. The reviewer verified local `main`, `origin/main`, and the live remote `refs/heads/main` all matched that reviewed HEAD at review time.
+
+### Reviewed scope and findings
+
+- `HEAD^..HEAD` contains exactly 152 paths: 146 under `.planning/`, 5 under `assurance/`, and `PLANNING_STATUS.md`. No product source/module or product test files were accepted; the reconciliation carried planning and evidence only.
+- The reconciliation distinguishes original delivery receipts from current main, retains the original branch tips for traceability, and does not overlay stale product implementations. Input-prep is explicitly partial: one MongoDB FY2025 job; Alibaba/catalog remain `NOT_RUN`.
+- Excluded MongoDB extracted text remains on `codex/rf-input-prep-01` as blob `dc6bc5d7aa355060d2991dc84e206cfbd92fd8aa` (470,806 bytes) and is absent from reviewed main. The real `daily_alert.jsonl` result (`not-ok`, `bound=0 events=473`) is recorded as preserved.
+- The external `rf-merge-review-20260927/.pytest_cache` remains because Windows returned `Access Denied`; no deletion or permission change is claimed.
+- Existing closeout evidence reports focused suites of 37 and 45 passing tests, while the broader collection failure is disclosed and not counted as a pass. The reviewer parsed four cited handoff/job JSON files; product tests were not rerun during this read-only review.
+- The reviewer found no material mismatch between the closeout commit, reconciliation notes, and recorded dispositions.
+
+### Binding and carrier limitation
+
+The PASS above applies to content commit `3ca619283411cf2a48afa57a449c44e2aa907768` only. This RF-side section is an append-only receipt carrier that transcribes the company-wiki review facts; it was appended after `3ca619283411cf2a48afa57a449c44e2aa907768` and the company-wiki reviewer did **not** review this appended carrier or the later handoff-pointer amendment. Do not represent the carrier commit as independently reviewed. The ROOT may perform a short receipt-only check of the final carrier.

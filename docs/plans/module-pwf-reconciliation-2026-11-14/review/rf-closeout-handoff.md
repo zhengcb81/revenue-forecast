@@ -15,9 +15,9 @@
 |---|---|
 | base | `main` @ `ec5ba0044b3252d2fc58c4a50c2fe9bc234cf5ad` = `origin/main`（开工实测，与卡快照一致） |
 | final branch | `main` |
-| final content HEAD | `b88818da0270dc217e8b8e4b04d26363676984a1`（C4 closeout checkpoint；纯文档；独立复核收据见 review 报告 §7–§8） |
+| final content HEAD | `3ca619283411cf2a48afa57a449c44e2aa907768`（PWF/证据选择性 reconciliation 内容提交；独立审查 PASS 绑定此 SHA；见第11节） |
 | remote | https://github.com/zhengcb81/revenue-forecast.git |
-| remote_head at final-content review | `b88818da0270dc217e8b8e4b04d26363676984a1`（2026-11-14 live `git ls-remote origin refs/heads/main` 实测；后续 receipt-only carrier 由 ROOT PWF 记录） |
+| remote_head at final-content review | `3ca619283411cf2a48afa57a449c44e2aa907768`（独立审查时 live `origin/main` 与本地 main 一致；精确审查绑定及范围见第11节） |
 
 ## 3. 状态冲突对齐
 
@@ -90,3 +90,11 @@
 - 实际 `main` 与 live `origin/main` 均为 `b88818da0270dc217e8b8e4b04d26363676984a1`。它是 C4 收尾状态提交；`rf-closeout-review.md` §7 记录 C4 两文件差异已逐项核对，ROOT 独立验收又检查了该精确提交的完整差异与 `git diff --check`，结论 PASS。
 - 本交接原 §2 的 final HEAD 文字及 JSON `final.head/final.remote_head` 仍停在 base `ec5ba004`，且独立审查报告 §7.4 仍把已提交的 C4 写成 pending；这些是收据滞后，现修正为已审内容 HEAD `b88818da`。
 - 本次修正只改 handoff/review 收据，不改 RF 产品源码。JSON `final` 固定表示最终已审内容提交 `b88818da`；本次收据修正的 carrier SHA 不自指，由 ROOT 总控 PWF 在本次修正被独审、提交并推送后记录。
+
+
+## 11. 当前选择性并线独审收据（2026-11-14）
+
+- 当前已独立审查的 RF 内容 HEAD：`3ca619283411cf2a48afa57a449c44e2aa907768`；审查基线：`1ea5008290ab302bcfe6d935f3703244139c774f`；结果：**PASS**。本节 §2 中的 final HEAD / remote HEAD 现以该精确 SHA 为准。
+- 独立审查报告：[`rf-closeout-review.md#selective-reconciliation-3ca619283411cf2a48afa57a449c44e2aa907768`](rf-closeout-review.md#selective-reconciliation-3ca619283411cf2a48afa57a449c44e2aa907768)；权威审查原文：company-wiki `docs/plans/module-pwf-reconciliation-2026-11-14/review/rf-closeout-review.md`。审查范围与结果以该权威报告为准。
+- 本节取代 §§8–10 对当前选择性 reconciliation 审查状态、最终内容 HEAD 和远端状态的描述；这些旧章节保留为其当时的历史收据。
+- 本次追加的 RF 审查摘要、handoff 指针及 JSON 更新构成 `3ca619283411cf2a48afa57a449c44e2aa907768` 之后的 receipt-only carrier；它们没有改变已审查产品内容，但**不在该 PASS 的审查范围内**，不得声称该 carrier 已被独立审查。其最终 carrier SHA 由 ROOT 在推送后记录；如需对 carrier 本身出具独立意见，应另做只读收据核对。
