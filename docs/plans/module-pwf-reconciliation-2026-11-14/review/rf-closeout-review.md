@@ -182,11 +182,19 @@ handoff.md §4 仍写 "18 个 EVIDENCE_KEEP"（应为 19，39+19+2+1=61 才自�
 | A-附 | O-2 修正与 §6.7 建议一致；入库 §6 为内容级忠实转录 | PASS |
 | B | 工作树 diff 恰为 PLANNING_STATUS.md 两处回写，无其他改动 | PASS |
 
-### 7.4 提交链安排
+### 7.4 提交链安排（历史快照；最终状态见 §8）
 
 - **审查绑定 C3 精确 SHA：`ef146344dfbd46fb9ccdb1e295f67669e5c6ef7a`**——经独立审查的最终内容状态（C1 全量 PASS + C2 单点 PASS + C3 本节 A 项确认），已推送。
-- **C4（待提交）**：内容 = PLANNING_STATUS.md canon 回写（§7.2 两处）+ 本 §7 原文追加至 rf-closeout-review.md；纯文档。reviewer 已对 C4 工作树 diff 做**内容级确认**；C4 精确 SHA 由提交产生，提交后推送。C4 除上述内容外不得包含任何其他改动——若超出 §7.2 所列，本确认失效需重核。
+- **C4（当时待提交，后已完成）**：当时计划的内容为 PLANNING_STATUS.md canon 回写（§7.2 两处）+ 本 §7 原文追加至 rf-closeout-review.md；它随后以 `b88818da` 提交并推送。下文 §8 记录实际提交与复核。
 
-### 7.5 最终结论（一行）
+### 7.5 当时结论（一行；最终状态见 §8）
 
 **PASS** —— C3 与状态回写均通过最终确认；交付链 ec5ba004 → a7a1818a → 0c54e648 → ef146344（→C4 bookkeeping）全程纯文档、审查绑定完整，RF-PLAN-WORKTREE-CLOSEOUT 卡可 CLOSED。
+
+
+## 8. C4最终提交与收据对齐复核（2026-11-14）
+
+- C4 实际提交为 `b88818da0270dc217e8b8e4b04d26363676984a1`，`main` 与 live `origin/main` 均已到该 SHA。`git show --stat b88818da` 恰为 `PLANNING_STATUS.md` 与本 review report 两个文件；内容与 §7.2/§7.4 预先列出的两处 PWF 回写及审查记录相符，`git diff --check ef146344..b88818da` PASS。ROOT 独立验收 reviewer 又只读复核了该精确提交的完整差异，结论 PASS。
+- 因此 §7.4 的 “C4（待提交）” 是写报告时的历史安排，已被本节取代；它不是当前未提交项。原 handoff §2 与 JSON `final.head/final.remote_head` 错停在 base `ec5ba004`，是收据未随 C4 回写。
+- ROOT 修正候选 `b082a129` 将最终内容 SHA 对齐到 `b88818da`，并说明后续 receipt-only carrier 的自指约定；独立复核指出该候选仍需把本节写入报告并明确标记 §7.4 的历史状态。本节完成该文档一致性修复。
+- 本轮只涉及 PWF/handoff/review 文档，不改 RF 产品源码；具体最终收据修订提交的独审绑定及推送 tip 由本报告后续 carrier 记录和 company-wiki 总控 PWF 共同记载。
