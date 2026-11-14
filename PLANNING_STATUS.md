@@ -7,8 +7,8 @@
 
 ## 快照（2026-11-14 实测）
 
-- 主线 `main` @ `ec5ba0044b3252d2fc58c4a50c2fe9bc234cf5ad` = `origin/main`（https://github.com/zhengcb81/revenue-forecast.git）；tracked clean，untracked 6 组证据资料原样保留（见 dirty exceptions）。
-- 注册 worktree 61（含主仓）、本地分支 84（其中 19 个非 main 祖先）、`revenue-forecast-audit*` 目录 9 个（RFAudit owner 所有，本卡不清理）。
+- 主线 `main` @ `ec5ba0044b3252d2fc58c4a50c2fe9bc234cf5ad` + 收尾卡交付链（a7a1818a → 0c54e648 → ef146344，全部纯文档）= `origin/main`（https://github.com/zhengcb81/revenue-forecast.git）；tracked clean，untracked 6 组证据资料原样保留（见 dirty exceptions）。
+- 注册 worktree **22**（含主仓；收尾卡执行前为 61）、本地分支 84（其中 19 个非 main 祖先，全部保留未删）、`revenue-forecast-audit*` 目录 9 个（RFAudit owner 所有，本卡未清理）。
 
 ## 关闭收据（历史状态冲突已对齐）
 
@@ -28,8 +28,8 @@
 
 | # | 计划 | 状态 | 入口 |
 |---|---|---|---|
-| 1 | RF-PLAN-WORKTREE-CLOSEOUT | IN_PROGRESS | 卡：company-wiki `docs/plans/module-pwf-reconciliation-2026-11-14/owner_cards/rf_closeout.md`；交付：同仓 `review/rf-closeout-handoff.md`、`rf-closeout-handoff.json`、`rf-closeout-review.md` |
-| 2 | RF 未来主线职责 | PLANNED | 见下方「未来主线计划」 |
+| 1 | RF-PLAN-WORKTREE-CLOSEOUT | CLOSED（2026-11-14 审查通过并推送至 `ef146344`） | 卡：company-wiki `docs/plans/module-pwf-reconciliation-2026-11-14/owner_cards/rf_closeout.md`；交付：同仓 `review/rf-closeout-handoff.md`、`rf-closeout-handoff.json`、`rf-closeout-review.md` |
+| 2 | RF 未来主线职责 | PLANNED | 见下方「未来主线计划」（第 1 项已完成；第 2 项起为当前待办） |
 
 ## 依赖其他 owner 的公开接口等待项
 

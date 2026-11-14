@@ -149,3 +149,44 @@ handoff.md §4 仍写 "18 个 EVIDENCE_KEEP"（应为 19，39+19+2+1=61 才自�
 ### 6.8 单点复核结论（一行）
 
 **PASS** —— C2 = `0c54e648` 六个复核点全部 PASS；残留 1 项范围外计数笔误（O-2）。已审树 = `a7a1818a` + `0c54e648`，可按既定流程推送。
+
+## 7. 最终推送链确认（C3 = ef146344 与状态回写）
+
+- 复核日期：2026-11-14
+- Reviewer：同一独立 reviewer agent（全程只读，零写入仓库）
+- **审查绑定 SHA：`ef146344dfbd46fb9ccdb1e295f67669e5c6ef7a`**（C3，已推送；实测 `origin/main` = `ef146344`，且 `git merge-base --is-ancestor ef146344 origin/main` 通过）
+- 完整交付链：`ec5ba004`（base）→ `a7a1818a`（C1，全量审查 PASS，报告 §5）→ `0c54e648`（C2，单点复核 PASS，报告 §6）→ `ef146344`（C3，本节）；工作树中尚有一处 PLANNING_STATUS.md 回写（B 项，将作为 C4 提交，见 §7.4 提交链安排）。
+
+### 7.1 A 项：C3 提交范围与内容 — PASS
+
+- `git show --stat ef146344`：**恰为 2 文件、+53/−1**——`review/rf-closeout-handoff.md` 1 行（O-2 计数修正）、`review/rf-closeout-review.md` +52 行（追加 §6 复核章节）。无其他文件。
+- `git diff --check ef146344^..ef146344`：无输出（exit 0）。
+- **O-2 修正与 §6.7 预先建议一致**：handoff.md §4 "18 个 EVIDENCE_KEEP" → "**19 个 EVIDENCE_KEEP**"并加自检 "39+19+2+1=61"（复算正确）。
+- **入库 §6 与 reviewer 文本保真度**：章节结构、绑定 SHA、六个复核点逐点结论、全部 SHA/行数/字节数字、O-2 记录与最终 PASS 结论**逐项相同**；差异仅为排版压缩，无一处改变事实或结论。如实记录：**内容级忠实转录，非逐字节原文**。
+- 推送状态：`origin/main` 实测 = `ef146344`（remote = 已审 HEAD ✓）。
+
+### 7.2 B 项：工作树未提交变更（将作为 C4 提交）— PASS（内容级确认）
+
+`git diff` **恰为 2 个 hunk（两处回写）**：
+
+1. **快照行回写**：主线行补交付链 SHA（a7a1818a → 0c54e648 → ef146344，全部纯文档）；注册 worktree 行 61 → **22**（含主仓，注明收尾卡执行前为 61；19 非祖先分支全部保留未删；RFAudit 9 目录未清理）——与实测一致。
+2. **活动计划表回写**：本卡状态 IN_PROGRESS → **CLOSED（2026-11-14 审查通过并推送至 `ef146344`）**；第 2 行加注"第 1 项已完成；第 2 项起为当前待办"。
+
+- 无其他 tracked 改动；6 组 untracked 原样；与 canon 区其余内容无冲突；`git diff --check` 干净。
+
+### 7.3 逐点结论汇总
+
+| 点 | 内容 | 结论 |
+|---|---|---|
+| A | C3 恰 2 文件，diff --check 干净，已推送 origin/main | PASS |
+| A-附 | O-2 修正与 §6.7 建议一致；入库 §6 为内容级忠实转录 | PASS |
+| B | 工作树 diff 恰为 PLANNING_STATUS.md 两处回写，无其他改动 | PASS |
+
+### 7.4 提交链安排
+
+- **审查绑定 C3 精确 SHA：`ef146344dfbd46fb9ccdb1e295f67669e5c6ef7a`**——经独立审查的最终内容状态（C1 全量 PASS + C2 单点 PASS + C3 本节 A 项确认），已推送。
+- **C4（待提交）**：内容 = PLANNING_STATUS.md canon 回写（§7.2 两处）+ 本 §7 原文追加至 rf-closeout-review.md；纯文档。reviewer 已对 C4 工作树 diff 做**内容级确认**；C4 精确 SHA 由提交产生，提交后推送。C4 除上述内容外不得包含任何其他改动——若超出 §7.2 所列，本确认失效需重核。
+
+### 7.5 最终结论（一行）
+
+**PASS** —— C3 与状态回写均通过最终确认；交付链 ec5ba004 → a7a1818a → 0c54e648 → ef146344（→C4 bookkeeping）全程纯文档、审查绑定完整，RF-PLAN-WORKTREE-CLOSEOUT 卡可 CLOSED。
