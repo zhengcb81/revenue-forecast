@@ -1,0 +1,38 @@
+{
+  "schema_version": "rf-job-facade-handoff/1",
+  "package_id": "OWNERPKG-REVENUE-FORECAST-01",
+  "branch": "codex/rf-job-facade-01",
+  "base_commit": "28d646d306e8f0b5f90d402e204676cf97d2b5a1",
+  "head_commit": "e4b38459f54db16e0de8e436690c2eb8c7cd13a1",
+  "changed_paths": [
+    "scripts/rf_job_facade.py",
+    "scripts/rf_job_cli.py",
+    "config/rf_job_deployment.example.json",
+    "tests/test_rf_job_facade.py",
+    "tests/test_rf_job_status_contract.py",
+    "tests/test_rf_job_cost.py",
+    "tests/test_rf_job_recovery.py",
+    "tests/test_rf_job_boundary_regression.py",
+    "tests/test_rf_job_facade_cli.py",
+    ".planning/rf-job-facade-01/task_plan.md",
+    ".planning/rf-job-facade-01/progress.md",
+    ".planning/rf-job-facade-01/findings.md",
+    ".planning/rf-job-facade-01/design.md",
+    ".planning/rf-job-facade-01/evidence/ (README + drill.py + drill_summary.json/md + help-*.txt + cost/natural-failure/budget samples + review-report.md + review-part1..4-*.md)"
+  ],
+  "delivered": ["G-m8-RF-01", "G-m8-RF-02", "G-m8-RF-03", "G-m8-RF-04", "G-m8-RF-05", "COMMON-01", "COMMON-02", "COMMON-03"],
+  "not_delivered": [],
+  "evidence": [
+    {"command": "C:/Miniconda/python.exe .planning/rf-job-facade-01/evidence/drill.py", "exit_code": 0, "artifact": ".planning/rf-job-facade-01/evidence/drill_summary.json"},
+    {"command": "C:/Miniconda/python.exe -m pytest tests/ -q -k rf_job", "exit_code": 0, "artifact": ".planning/rf-job-facade-01/evidence/review-part2-accuracy.md (36→37 passed)"},
+    {"command": "C:/Miniconda/python.exe -m pytest tests/test_rf_job_boundary_regression.py tests/test_report_catalog_deployment.py -q", "exit_code": 0, "artifact": ".planning/rf-job-facade-01/evidence/review-part3-redlines.md (45 passed)"},
+    {"command": "C:/Miniconda/python.exe -m mypy scripts/rf_job_facade.py scripts/rf_job_cli.py", "exit_code": 0, "artifact": ".planning/rf-job-facade-01/evidence/review-part2-accuracy.md"},
+    {"command": "git diff 28d646d3..HEAD -- scripts/ tools/ e2e/ (engine zero-diff proof)", "exit_code": 0, "artifact": ".planning/rf-job-facade-01/evidence/review-part3-redlines.md"}
+  ],
+  "budget_spent": {
+    "drill_runs": 5,
+    "notes": "全部离线 IsolatedLake fixture 演练：0 新下载/0 付费调用/0 网络出站（budget_observation.json），预算边界 2026-11-07 上报、操作者确认后执行；drill_runs=5 含重审分片2 两次复核与 FND-A1 修复后复跑"
+  },
+  "release_tag_or_commit_for_dashboard": "e4b38459f54db16e0de8e436690c2eb8c7cd13a1",
+  "next_action": "通知 dashboard 操作者接包：按 release_tag_or_commit_for_dashboard 固定 commit 接 MODULE-m8-RF-executor 新卡（rf-job/1 四路由 + --owner-root/--deployment-config 部署参数），E12 三类真实隔离命令验收由 Dashboard 侧执行；并线条件与触发方式见 .planning/rf-job-facade-01/task_plan.md 的 §8-3 交接任务段"
+}

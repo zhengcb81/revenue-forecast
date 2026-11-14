@@ -1,0 +1,162 @@
+{
+  "schema_version": "rf-input-prep-blocker/1",
+  "package_id": "OWNERPKG-RF-INPUT-PREP-01",
+  "company": "Alibaba Group Holding Limited",
+  "entity_id": "ENT_e4d964f0-ed84-43b5-a9c7-c9b4b38d8101",
+  "listing_id": "LST_591474dd-2778-46ce-8b42-ad5fc483d64d",
+  "status": "NOT_RUN",
+  "blocked_at": "source acquisition (filing-fetch -> company-wiki metadata projection)",
+  "observed_at": "2026-11-08T08:20Z (first attempts), 2026-11-08T09:0xZ (routes 1-3), 2026-11-08T09:2xZ (all six replayed with per-route evidence)",
+  "route_evidence": "evidence/alibaba-routes.json holds the replayed exit code and the per-route stderr artifact for all six routes; each was driven through source_preparation.py -> filing-fetch -> company-wiki, and each performed zero downloads and zero paid calls.",
+  "acquisition_routes_attempted": [
+    {
+      "route": "HK 09988 FY2026 annual_report, reuse_only (exact)",
+      "request_file": ".planning\\rf-input-prep-01\\requests\\route1-hk-fy2026-reuse.json",
+      "exit_code": 3,
+      "machine_cause": {
+        "status": "upstream_error",
+        "reason": "company-wiki source query market mismatch",
+        "calls": 2,
+        "downloads": 0,
+        "upstream_cause": null
+      },
+      "artifacts": [
+        ".planning\\rf-input-prep-01\\evidence\\route1-hk-fy2026-reuse.stderr.json",
+        ".planning\\rf-input-prep-01\\requests\\route1-hk-fy2026-reuse.json"
+      ]
+    },
+    {
+      "route": "HK 09988 FY2026 annual_report, fetch_if_missing (exact, reuse-first ensure)",
+      "request_file": ".planning\\rf-input-prep-01\\requests\\route2-hk-fy2026-fetch-if-missing.json",
+      "exit_code": 3,
+      "machine_cause": {
+        "status": "upstream_error",
+        "reason": "company-wiki operation market mismatch",
+        "calls": 2,
+        "downloads": 0,
+        "upstream_cause": null
+      },
+      "artifacts": [
+        ".planning\\rf-input-prep-01\\evidence\\route2-hk-fy2026-fetch-if-missing.stderr.json",
+        ".planning\\rf-input-prep-01\\requests\\route2-hk-fy2026-fetch-if-missing.json"
+      ]
+    },
+    {
+      "route": "HK 09988 FY2025 annual_report, reuse_only (exact, local metadata reconciliation)",
+      "request_file": ".planning\\rf-input-prep-01\\requests\\route3-hk-fy2025-reuse.json",
+      "exit_code": 3,
+      "machine_cause": {
+        "status": "source_blocked",
+        "reason": "local source preparation blocked: local_metadata_gap",
+        "calls": 3,
+        "downloads": 0,
+        "upstream_cause": {
+          "schema_version": "filing-upstream-cause/1",
+          "operation": "local_prepare",
+          "code": "local_metadata_gap",
+          "provider_started": false,
+          "usage_complete": true,
+          "retry_scope": "none"
+        }
+      },
+      "artifacts": [
+        ".planning\\rf-input-prep-01\\evidence\\route3-hk-fy2025-reuse.stderr.json",
+        ".planning\\rf-input-prep-01\\requests\\route3-hk-fy2025-reuse.json"
+      ]
+    },
+    {
+      "route": "HK 09988 latest_as_of, reuse_only",
+      "request_file": ".planning\\rf-input-prep-01\\requests\\route5-hk-latest-as-of-reuse.json",
+      "exit_code": 3,
+      "machine_cause": {
+        "status": "source_blocked",
+        "reason": "company-wiki ensure blocked",
+        "calls": 2,
+        "downloads": 0,
+        "upstream_cause": {
+          "schema_version": "filing-upstream-cause/1",
+          "operation": "ensure",
+          "code": "local_metadata_incomplete",
+          "provider_started": false,
+          "usage_complete": true,
+          "retry_scope": "none"
+        }
+      },
+      "artifacts": [
+        ".planning\\rf-input-prep-01\\evidence\\route5-hk-latest-as-of-reuse.stderr.json",
+        ".planning\\rf-input-prep-01\\requests\\route5-hk-latest-as-of-reuse.json"
+      ]
+    },
+    {
+      "route": "HK 09988 latest_as_of, fetch_if_missing (reuse-first ensure)",
+      "request_file": ".planning\\rf-input-prep-01\\requests\\route6-hk-latest-as-of-fetch-if-missing.json",
+      "exit_code": 3,
+      "machine_cause": {
+        "status": "source_blocked",
+        "reason": "company-wiki ensure blocked",
+        "calls": 2,
+        "downloads": 0,
+        "upstream_cause": {
+          "schema_version": "filing-upstream-cause/1",
+          "operation": "ensure",
+          "code": "local_metadata_incomplete",
+          "provider_started": false,
+          "usage_complete": true,
+          "retry_scope": "none"
+        }
+      },
+      "artifacts": [
+        ".planning\\rf-input-prep-01\\evidence\\route6-hk-latest-as-of-fetch-if-missing.stderr.json",
+        ".planning\\rf-input-prep-01\\requests\\route6-hk-latest-as-of-fetch-if-missing.json"
+      ]
+    },
+    {
+      "route": "US BABA FY2026 annual_report (20-F), fetch_if_missing",
+      "request_file": ".planning\\rf-input-prep-01\\requests\\route4-us-fy2026-fetch-if-missing.json",
+      "exit_code": 3,
+      "machine_cause": {
+        "status": "fatal",
+        "reason": "company-wiki ensure exited 1",
+        "calls": 2,
+        "downloads": 0,
+        "upstream_cause": {
+          "schema_version": "filing-upstream-cause/1",
+          "operation": "ensure",
+          "code": "provider_failed",
+          "provider_started": true,
+          "usage_complete": true,
+          "retry_scope": "none"
+        }
+      },
+      "artifacts": [
+        ".planning\\rf-input-prep-01\\evidence\\route4-us-fy2026-fetch-if-missing.stderr.json",
+        ".planning\\rf-input-prep-01\\requests\\route4-us-fy2026-fetch-if-missing.json"
+      ]
+    }
+  ],
+  "catalog_observations": {
+    "alibaba_w_originals": [
+      "阿里巴巴－Ｗ/raw/financial_reports/annual/2026-06-18_hkexnews_12207997_2026財務年度報告.pdf (FY2026, sha256 e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350, 4172424 bytes)"
+    ],
+    "source_query_candidate_market": null,
+    "company_wiki_ensure_same_document": {
+      "status": "completed",
+      "outcome": "reused_existing",
+      "download_events": 0,
+      "evidence": "requests/alibaba-envelope.json (the earlier envelope of the CWP-side ensure probe was empty; the finding is recorded from the in-session CWP CLI response and is reproducible with the command in diagnosis)",
+      "note": "company-wiki itself treats the original as reusable; the null market projection is enforced only by filing-fetch's identity binding."
+    },
+    "legacy_alibaba_pdfs": "companies/阿里巴巴/raw/financial_reports/*.pdf are indexed as annual_report documents with null market/fiscal_year metadata and are not matched by any exact query."
+  },
+  "remediation_options_for_operator": [
+    "CWP owner repairs the document's projected market/identity binding for document e39fbf9c…, then rerun this package's route 1 request unchanged.",
+    "CWP owner registers a capture-ready FY2025 or FY2026 audited annual original for Alibaba with complete market/security/published_date metadata.",
+    "RF owner relaxes filing-fetch's candidate-market binding for a null projected market (a filing-fetch change, out of this package's scope).",
+    "Restore the US acquisition adapter (dayu-us-sdk discover) so a 20-F can be acquired."
+  ],
+  "not_done": [
+    "Alibaba forecast_input document (not built: every numeric claim requires a capture-verified source record)",
+    "Alibaba rf-job/1 submission",
+    "Alibaba catalog registration"
+  ]
+}

@@ -1,0 +1,315 @@
+{
+  "drill_root": "C:\\Users\\郑曾波\\Projects\\rf-facade-drill",
+  "failures": [],
+  "schema_version": "rf-job-drill/1",
+  "steps": [
+    {
+      "detail": [
+        "help-root.txt",
+        "help-submit.txt",
+        "help-get-status.txt",
+        "help-act.txt",
+        "help-list-jobs.txt"
+      ],
+      "ok": true,
+      "step": "5.1 help outputs"
+    },
+    {
+      "detail": {
+        "at_kill": {
+          "compute_attempts": 1,
+          "compute_status": "running",
+          "source_status": "completed",
+          "status": "running"
+        },
+        "idempotency_key": "drill-key-1-r1",
+        "owner_job_id": "rfjob-20261108-e4075018ca72",
+        "retry": 1,
+        "source_attempts_at_kill": [
+          {
+            "attempt_no": 1,
+            "elapsed_seconds": 5.407178,
+            "exit_code": 0,
+            "observations": {
+              "download_events": 0,
+              "model_calls": 0,
+              "source_outcome": "reused_existing"
+            },
+            "status": "completed"
+          }
+        ],
+        "submit_returncode": 1,
+        "submit_stderr_tail": "",
+        "submit_stdout_tail": ""
+      },
+      "ok": true,
+      "step": "5.3 kill mid-run (process tree terminated)"
+    },
+    {
+      "detail": {
+        "allowed_actions": [
+          "resume",
+          "reconcile"
+        ],
+        "cost": null,
+        "cost_state": "unknown",
+        "returncode": 0,
+        "stages": [
+          {
+            "attempt_count": 1,
+            "stage": "source",
+            "status": "completed"
+          },
+          {
+            "attempt_count": 1,
+            "stage": "compute",
+            "status": "completed"
+          },
+          {
+            "attempt_count": 1,
+            "stage": "publication",
+            "status": "interrupted"
+          }
+        ],
+        "status": "interrupted",
+        "status_known": true
+      },
+      "ok": true,
+      "step": "5.3 restart get-status"
+    },
+    {
+      "detail": {
+        "returncode": 0,
+        "stages": [
+          {
+            "stage": "source",
+            "status": "completed"
+          },
+          {
+            "stage": "compute",
+            "status": "completed"
+          },
+          {
+            "stage": "publication",
+            "status": "interrupted"
+          }
+        ],
+        "status": "interrupted"
+      },
+      "ok": true,
+      "step": "5.3 reconcile after restart"
+    },
+    {
+      "detail": {
+        "allowed_actions": [],
+        "final_status": "succeeded",
+        "publication_registered_lines": 1,
+        "resume_wall_seconds": 0.362,
+        "returncode": 0,
+        "source_attempt_count": 1,
+        "stage_attempts": {
+          "compute": [
+            {
+              "attempt_no": 1,
+              "elapsed_seconds": 0.285391,
+              "exit_code": 0,
+              "observations": {
+                "basis": "engine_is_pure_calculator",
+                "download_events": 0,
+                "model_calls": 0
+              },
+              "status": "completed"
+            }
+          ],
+          "publication": [
+            {
+              "attempt_no": 1,
+              "elapsed_seconds": null,
+              "exit_code": null,
+              "observations": null,
+              "status": "interrupted"
+            },
+            {
+              "attempt_no": 2,
+              "elapsed_seconds": 0.148239,
+              "exit_code": 0,
+              "observations": {
+                "basis": "read_only_audit",
+                "download_events": 0,
+                "model_calls": 0
+              },
+              "status": "completed"
+            }
+          ],
+          "source": [
+            {
+              "attempt_no": 1,
+              "elapsed_seconds": 5.407178,
+              "exit_code": 0,
+              "observations": {
+                "download_events": 0,
+                "model_calls": 0,
+                "source_outcome": "reused_existing"
+              },
+              "status": "completed"
+            }
+          ]
+        }
+      },
+      "ok": true,
+      "step": "5.3 resume to completion without re-running source"
+    },
+    {
+      "detail": {
+        "idempotent_replay": true,
+        "returncode": 0,
+        "same_owner_job_id": true,
+        "second_submit_wall_seconds": 0.218,
+        "stage_attempts_after": {
+          "compute": [
+            {
+              "attempt_no": 1,
+              "elapsed_seconds": 0.285391,
+              "exit_code": 0,
+              "observations": {
+                "basis": "engine_is_pure_calculator",
+                "download_events": 0,
+                "model_calls": 0
+              },
+              "status": "completed"
+            }
+          ],
+          "publication": [
+            {
+              "attempt_no": 1,
+              "elapsed_seconds": null,
+              "exit_code": null,
+              "observations": null,
+              "status": "interrupted"
+            },
+            {
+              "attempt_no": 2,
+              "elapsed_seconds": 0.148239,
+              "exit_code": 0,
+              "observations": {
+                "basis": "read_only_audit",
+                "download_events": 0,
+                "model_calls": 0
+              },
+              "status": "completed"
+            }
+          ],
+          "source": [
+            {
+              "attempt_no": 1,
+              "elapsed_seconds": 5.407178,
+              "exit_code": 0,
+              "observations": {
+                "download_events": 0,
+                "model_calls": 0,
+                "source_outcome": "reused_existing"
+              },
+              "status": "completed"
+            }
+          ]
+        },
+        "stage_attempts_before": {
+          "compute": [
+            {
+              "attempt_no": 1,
+              "elapsed_seconds": 0.285391,
+              "exit_code": 0,
+              "observations": {
+                "basis": "engine_is_pure_calculator",
+                "download_events": 0,
+                "model_calls": 0
+              },
+              "status": "completed"
+            }
+          ],
+          "publication": [
+            {
+              "attempt_no": 1,
+              "elapsed_seconds": null,
+              "exit_code": null,
+              "observations": null,
+              "status": "interrupted"
+            },
+            {
+              "attempt_no": 2,
+              "elapsed_seconds": 0.148239,
+              "exit_code": 0,
+              "observations": {
+                "basis": "read_only_audit",
+                "download_events": 0,
+                "model_calls": 0
+              },
+              "status": "completed"
+            }
+          ],
+          "source": [
+            {
+              "attempt_no": 1,
+              "elapsed_seconds": 5.407178,
+              "exit_code": 0,
+              "observations": {
+                "download_events": 0,
+                "model_calls": 0,
+                "source_outcome": "reused_existing"
+              },
+              "status": "completed"
+            }
+          ]
+        },
+        "status": "succeeded",
+        "stderr_tail": ""
+      },
+      "ok": true,
+      "step": "5.2 idempotent resubmit (no re-orchestration)"
+    },
+    {
+      "detail": {
+        "allowed_actions": [
+          "resume",
+          "reconcile"
+        ],
+        "attempt": {
+          "attempt_no": 1,
+          "elapsed_seconds": 2.053754,
+          "exit_code": 3,
+          "observations": {
+            "acquisition_calls": 1,
+            "download_events": 0
+          },
+          "status": "failed"
+        },
+        "owner_job_id": "rfjob-20261108-69c4ed4b719e",
+        "returncode": 0,
+        "source_stage_status": "failed",
+        "status": "failed",
+        "stderr_tail": ""
+      },
+      "ok": true,
+      "step": "5.4 natural source failure JobView"
+    },
+    {
+      "detail": {
+        "known": {
+          "cost": {
+            "currency": "USD",
+            "value": "0.00"
+          },
+          "cost_state": "known",
+          "status": "failed"
+        },
+        "unknown": {
+          "cost": null,
+          "cost_state": "unknown",
+          "status": "interrupted"
+        }
+      },
+      "ok": true,
+      "step": "5.5 cost known + unknown samples"
+    }
+  ]
+}

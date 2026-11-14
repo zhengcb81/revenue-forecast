@@ -1,0 +1,34 @@
+{
+  "schema_version": "rf-job-deployment/1",
+  "python": "C:/Miniconda/python.exe",
+  "stages": {
+    "source": {
+      "filing_fetch_root": "C:/Users/郑曾波/Projects/filing-fetch",
+      "company_wiki_config": "C:/Users/郑曾波/Projects/filing-fetch/config/company_wiki.json",
+      "company_wiki_catalog_config": "C:/Users/郑曾波/Projects/company-wiki/config/source_catalog.yaml",
+      "source_reader_receipt_version": "2.2",
+      "timeout_seconds": 300.0,
+      "request_template": {
+        "schema_version": "2.0",
+        "market": "US",
+        "document_kind": "annual_report",
+        "mode": "exact",
+        "fiscal_year": 2025,
+        "filing_intent": "reuse_only"
+      }
+    },
+    "compute": {"timeout_seconds": 600.0},
+    "publication": {"timeout_seconds": 120.0}
+  },
+  "limits": {
+    "refs": {
+      "owner-approved-1usd": {
+        "max_cost_usd": "1.00",
+        "max_wall_seconds": 900,
+        "max_new_downloads": 0,
+        "max_attempts_per_stage": 3
+      }
+    },
+    "default_ref": "owner-approved-1usd"
+  }
+}

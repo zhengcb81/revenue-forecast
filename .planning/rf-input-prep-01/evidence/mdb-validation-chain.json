@@ -1,0 +1,40 @@
+{
+  "schema_version": "rf-input-validation-chain/1",
+  "input_document": ".planning/rf-input-prep-01/inputs/mongodb-fy2025-input.json",
+  "input_sha256": "d82f9b45cefddfba5d52e2abf1e35dba553a1722b1d181818dda78ba0236a993",
+  "input_byte_size": 146551,
+  "steps": [
+    {
+      "step": "lint",
+      "argv": [
+        "scripts/lint_input.py",
+        ".planning/rf-input-prep-01/inputs/mongodb-fy2025-input.json"
+      ],
+      "exit_code": 0,
+      "stdout": "ok: no findings",
+      "stderr": ""
+    },
+    {
+      "step": "fix-hashes",
+      "argv": [
+        "scripts/fix_hashes.py",
+        ".planning/rf-input-prep-01/inputs/mongodb-fy2025-input.json"
+      ],
+      "exit_code": 0,
+      "stdout": "ok: no hash drift",
+      "stderr": ""
+    },
+    {
+      "step": "validate-only",
+      "argv": [
+        "scripts/revenue_forecast.py",
+        ".planning/rf-input-prep-01/inputs/mongodb-fy2025-input.json",
+        "--validate-only"
+      ],
+      "exit_code": 0,
+      "stdout": "valid",
+      "stderr": ""
+    }
+  ],
+  "all_passed": true
+}

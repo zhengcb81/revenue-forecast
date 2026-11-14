@@ -5,10 +5,10 @@
 > 等一律视为历史或子计划；状态冲突按本节登记的提交与 handoff 绑定 ref 对齐。
 > 状态词统一使用：PLANNED / IN_PROGRESS / BLOCKED / REVIEWED / MERGED / CLOSED。
 
-## 快照（2026-11-14 实测）
+## 快照（2026-11-14 实测；本节为当前状态）
 
-- 主线 `main` @ `ec5ba0044b3252d2fc58c4a50c2fe9bc234cf5ad` + 收尾卡交付链（a7a1818a → 0c54e648 → ef146344，全部纯文档）= `origin/main`（https://github.com/zhengcb81/revenue-forecast.git）；tracked clean，untracked 6 组证据资料原样保留（见 dirty exceptions）。
-- 注册 worktree **22**（含主仓；收尾卡执行前为 61）、本地分支 84（其中 19 个非 main 祖先，全部保留未删）、`revenue-forecast-audit*` 目录 9 个（RFAudit owner 所有，本卡未清理）。
+- 收尾起点：`main` @ `1ea5008290ab302bcfe6d935f3703244139c774f` = 当时观察到的 `origin/main`（https://github.com/zhengcb81/revenue-forecast.git）。本轮将 PWF/分支证据收尾和一条真实 2026-11-14 `not-ok` 日运行记录纳入主线；产品代码未改。另有 6 组未跟踪证据/用户资料按 EVIDENCE_KEEP 保留（见 dirty exceptions）；当前远端同步状态以收尾后的正常 push 核对为准。
+- 注册 worktree **20**（含主仓；本轮仅移除 2 个已归档、其 HEAD 均为 main 祖先的 Temp worktree）；本地分支 82，其中 **19 个分支 tip 仍非 main 祖先**，逐项归属和状态仍待各 owner 收口；`revenue-forecast-audit*` 目录 9 个属 RFAudit owner，本卡未清理。
 
 ## 关闭收据（历史状态冲突已对齐）
 
@@ -19,8 +19,8 @@
 | DU11 root reception | CLOSED | d578da58 是 main 祖先；task_plan 第 4 点「IN PROGRESS」是当时 push 收尾，已被后续 main 推进取代 |
 | du6/du8/du67/du11/r1-targets/r1-availability/r1-local/r1-w09/w14/w16 | MERGED | 各分支 tip 均为 main 祖先（逐项 merge-base 复核） |
 | du5 | MERGED（内容吸收） | 唯一残差 e2f6afd0 为 docs 收尾；handoff.json 与 registry 收据同 main 字节等价，main 的 progress/root-acceptance 记录更超前 |
-| rf-job-facade-01 | IN_PROGRESS（等待项） | 分支 0 OPEN P1/P2，release HEAD e4b38459；代码已被 main ff1c69e0 重落地；分支余量主要是 `.planning/rf-job-facade-01` 证据；并线按其 handoff §8-3 等 D4-06 |
-| rf-input-prep-01 | IN_PROGRESS（等待项） | 部分交付（round4 PASS，P1=0/P2=0/P3=4），Alibaba/catalog NOT_RUN；并线与 facade 捆绑 |
+| rf-job-facade-01 | REVIEWED（能力已重落地；原分支未整支并线） | 原分支 `e4b38459` 的 job façade 能力由 main `ff1c69e0` 重落地、`cd24976a` 增补并发恢复；旧支线实现与当前 main 有实质差异，未整支合并，原分支保留。旧 handoff/review 证据在 `.planning/rf-job-facade-01/` 且绑定旧版本，见 `MAINLINE_RECONCILIATION.md` |
+| rf-input-prep-01 | REVIEWED（部分交付；PWF/主要证据纳入 main） | MongoDB FY2025 一份输入/作业/报告已交付；Alibaba 与 catalog 均 `NOT_RUN`，不能称完整；旧支线 `main...branch`=73/83、827 路径有差异，未整支合并。重复提取全文未复制进 RF（归 CWP 来源层）；完整原档与原文留在该分支，见 `MAINLINE_RECONCILIATION.md` |
 | dashboard-rf-* 等 13 本地分支 | REVIEWED→待外部接收 | 本地分支无 origin；lane 收据在分支树内 `docs/handoffs/dashboard-*/`，状态均为「D00/ROOT 接收未执行」；涉及 Dashboard 合同的接收由双方协调，RF 不跨仓结案 |
 | revenue-source-reader | ABSORBED | 3b00b938 为 2026-09 原型，已被并入 main 的 P5-RF source-v2 取代（w14 收据 pin 其失败行为） |
 
@@ -35,7 +35,7 @@
 
 | 等待项 | Owner | RF 侧动作 |
 |---|---|---|
-| D4-06 ROOT 组合验收 | ROOT/D4 | 关闭后由 RF owner 决定 `git merge codex/rf-job-facade-01`（吸收分支树内 `.planning` 证据）；rf-input-prep-01 并线随之适配 |
+| D4-06 ROOT 组合验收 | CLOSED | CWP D4 receipt 2026-11-04 记录 27/27、0 skip、独审 PASS；已不再阻塞 RF。由于 RF 两支线基线与 main 分叉且源码快照过时，本次按路径选择性接收 PWF/证据，不覆盖主线代码 |
 | 生产 owner 根受管 catalog 登记 | ROOT | owner-root 部署接缝与 catalog CLI 沿 b37 线（codex/dashboard-rf-b37-release 28d646d3 为施工包基线）；登记前按名拒绝，零行≠生产无数据 |
 | Dashboard 系分支「ROOT 接收」 | ROOT + Dashboard owner | RF 侧分支与收据保持原样；Wuxi 交付收据包 pin 28cdf12e / 9cbc32c9 / c1e27877 |
 
@@ -43,15 +43,24 @@
 
 1. **收尾卡交付**：handoff 三件套 + 独立 review + 推送（本卡唯一大节点）。
 2. **main 已知基线失败修复**（不属任何在途卡）：`tests/test_single_owner_guard.py` subprocess allowlist 缺 4 个既有脚本；`tests/b34_publication/test_native_cli.py` 真实身份夹具 identity_not_resolved。先红后修，绑定收据。
-3. **D4-06 后的 facade 并线**：按 facade handoff §8-3，owner 决定 merge `codex/rf-job-facade-01`；rf-input-prep-01 随后按当前公开接口适配。
+3. **RF 分支收口**：facade 能力已由主线后续提交重落地，旧实现不再覆盖；input-prep 保留为部分完成证据，下一步由 owner 先解决 Alibaba 的 CWP/FF 来源问题和 managed catalog 接口，再决定是否重跑。原支线留作审计档案，不作为当前工作树。
 4. **owner-root 接缝生产登记核对**：ROOT 登记受管 catalog 后做一次端到端公开接口核对。
-5. **模型/报告/来源职责续项**：新施工包基线必选 b37 分支线；D4-02 narrative 端口已独立复核通过，随 D4-06 组合验收关闭。
+5. **模型/报告/来源职责续项**：以当前 main 的公开接口和 D4/D5 验收为基线；D4-02 narrative 端口已随 D4-06 组合验收关闭，不再要求以旧 b37 分支作为新包基线。
 6. **未跟踪证据资料**：`.mimosa/`、`.planning/m8-native-adoption-20261031/`、`.planning/source-quote-adoption-20261030/`、`delivery/dashboard-b34-wuxi-20261101/`、`delivery/dashboard-b37-wuxi-20261102/`、`output/` 保持原样，不并入主线，不删除。
 
 ## dirty exceptions（主工作区，EVIDENCE_KEEP）
 
 - `.mimosa/`（安全扫描历史）、`.planning/m8-native-adoption-20261031/`、`.planning/source-quote-adoption-20261030/`（执行证据）、`delivery/dashboard-b34-wuxi-20261101/`、`delivery/dashboard-b37-wuxi-20261102/`（交付收据包）、`output/`（用户资料）。
-- MB-RF handoff §9/§10 与本卡一致确认原样保留；先前所报 `revenue_report.py`、`test_output_report.py`、`input-schema.md` dirty 已被 `ec5ba004` 吸收，不再登记。
+- `.planning/rf-job-facade-01/` 与 `.planning/rf-input-prep-01/` 的包交接/审查记录已由原支线选择性纳入 main；input-prep 的 470806-byte 提取全文按来源层边界不复制，完整原件仍由原支线留档。历史 `revenue_report.py`、`test_output_report.py`、`input-schema.md` dirty 已由此前 main 收尾提交吸收。
+
+## 2026-11-14 本轮清理/并线收据
+
+- 两个 registered Temp worktree `rf-period-evidence-20261010` 与 `rf-source-ref-v2-integration-20261003` 已确认对应 HEAD 都是 main 祖先；各自唯一 untracked publication ledger 已按原字节归档在 [`assurance/runs/repo-closeout-2026-11-14/temp-worktree-ledgers/`](assurance/runs/repo-closeout-2026-11-14/temp-worktree-ledgers/)，SHA/字节清单见其 README。随后精确移除了两目录及对应两个已合入 main 的本地分支，worktree 数 22→20、branch refs 84→82；没有删业务分支。
+- RF facade 与 input-prep 的分支交付文件已按选择范围纳入 main（facade 24 个 PWF/审查文件、input-prep 120 个 PWF/证据文件；共约 2.15 MB，不含重复 CWP 提取全文）；源码按当前 main `ff1c69e0`/`cd24976a` 验收，不将旧分支源码覆盖主线。
+- 遗留 Temp `C:\Users\郑曾波\AppData\Local\Temp\rf-merge-review-20260927` 只剩 `.pytest_cache` 子目录；此前测量约 33 MB。本轮枚举该子目录时 Windows 返回 Access Denied，无法确认当前内容/精确体积；未改 ACL、接管权限或绕过拒绝，保留并记录为阻塞。
+- RF 当前主线代码验收：6 个 job façade/并发模块 **37 passed / 16.54s**；boundary regression + report catalog deployment **45 passed / 15.24s**。曾运行 `pytest tests/ -q -k rf_job`，收集阶段被两个无关用例阻断（`test_ca204_monthly_generalization.py` 和 `test_zr1008_new_chain_cutover.py` 均无法导入 `test_zr709_zijin_journey`）；该次未计为通过，改用明确文件列表后两组责任测试均绿。没有运行全量CI。
+- 只读 credential-pattern scan 未发现匹配；导入包中 `.gitignore` 的尾空格与 `findings.md` / `progress.md` 的多余末尾空行已清理，当前 `git diff --check` 通过。
+- 当前 19 个非 main 祖先分支仍包括 Dashboard owner 待 ROOT 接收线、`rf-job-facade-01`、`rf-input-prep-01` 等；不强行整支合并。6 组 EVIDENCE_KEEP 未跟踪资料保持原样。
 
 ## 历史区（以下内容不再驱动执行）
 
