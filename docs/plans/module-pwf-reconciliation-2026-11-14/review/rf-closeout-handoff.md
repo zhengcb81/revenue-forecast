@@ -31,7 +31,7 @@
 完整逐项处置见本仓 review 包同目录 `rf-closeout-handoff.json`（`dispositions` 数组，schema_version=1）；此处摘要：
 
 - **19 个非 main 祖先分支**：ACTIVE_KEEP 2（rf-job-facade-01、rf-input-prep-01——D4-06 后并线）、ABSORBED 2（du5、revenue-source-reader）、ACTIVE_KEEP 1（dashboard-rf-b37-release——施工包基线）、EVIDENCE_KEEP 14（dashboard 系 lane 收据在分支树内、ROOT 接收未执行，不跨仓结案）。
-- **61 个注册 worktree**：主仓 ACTIVE_KEEP；39 个 DELETE_AFTER_OWNER_CONFIRMATION（lane 收据在 main + clean 或 dirty 已证吸收 + 无唯一内容/运行状态/配置引用）；18 个 EVIDENCE_KEEP（运行登记/未结案 lane/草稿不确定/位于 Dashboard 树内待协调）；2 个 ACTIVE_KEEP（facade、input-prep）。
+- **61 个注册 worktree**：主仓 ACTIVE_KEEP；39 个 DELETE_AFTER_OWNER_CONFIRMATION（lane 收据在 main + clean 或 dirty 已证吸收 + 无唯一内容/运行状态/配置引用）；**19 个 EVIDENCE_KEEP**（运行登记/未结案 lane/草稿不确定/位于 Dashboard 树内待协调）；2 个 ACTIVE_KEEP（facade、input-prep）。39+19+2+1=61。
 - **14 个 Projects RF core 候选目录**：主仓保留；12 个随 worktree 删除；r1-targets EVIDENCE_KEEP（.planning/r1w05 中间运行日志）；其余 6 个 RF 顶层目录与 3 个 dashboard-owner-rf-* 目录随 worktree 处置。9 个 `revenue-forecast-audit*` 目录（约 773MB）属 RFAudit owner，原样保留。
 
 ### 4.1 关键吸收证据（删除项抽样）

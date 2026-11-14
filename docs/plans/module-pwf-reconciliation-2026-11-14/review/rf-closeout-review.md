@@ -97,3 +97,55 @@
 **PASS** —— 候选提交 `a7a1818a12f5226fe6eb1190cf373fbdf02ddc0d`（base `ec5ba0044b3252d2fc58c4a50c2fe9bc234cf5ad`）通过独立审查：改动纯文档、交接物 schema 完整、94 项处置与实时状态精确一致、清理边界安全（RF 仓与 RFAudit 零触碰）、对齐注记与吸收证据可核实。R-1（facade "blob identical" 表述）建议作者在推送前以后续 docs-only 提交修正表述，reviewer 将对该单点复核；R-2/R-3/R-5 为可合并入同一修正提交的低危建议；均不阻断推送流程。
 
 （审查绑定：本报告绑定 HEAD a7a1818a；若作者按 §8 流程修正后产生新候选 HEAD，需对本报告 R-1/R-2/R-3/R-5 单点复核后重出结论。）
+
+## 6. 修正提交单点复核（C2 = 0c54e648）
+
+- 复核日期：2026-11-14
+- Reviewer：同一独立 reviewer agent（全程只读）
+- 复核对象：修正提交 **`0c54e648ae879bf9aaf343c83b97cbfa3bd21839`**（父提交 = 已审候选 `a7a1818a`，当前 HEAD = `0c54e648`，origin/main 仍 = `ec5ba004`，候选链未推送）
+- 复核方式：git show / git show rev:path + python -I 只读 JSON 解析；零写入仓库。
+
+### 6.1 提交范围 — PASS
+
+`git show --stat 0c54e648`：恰为 3 文件、+117/−16：
+
+| 文件 | 变更 |
+|---|---|
+| `docs/plans/module-pwf-reconciliation-2026-11-14/review/rf-closeout-handoff.json` | 17 行（R-1/R-2/R-5 修正 + independent_review 闭环更新） |
+| `docs/plans/module-pwf-reconciliation-2026-11-14/review/rf-closeout-handoff.md` | 17 行（R-2/R-3/R-4/R-5 修正 + §8 审查闭环更新） |
+| `docs/plans/module-pwf-reconciliation-2026-11-14/review/rf-closeout-review.md` | +99 新增（审查报告入库） |
+
+`git diff --check 0c54e648^..0c54e648` 无输出（exit 0）。diff 逐 hunk 核对：除 R-1/R-2/R-3/R-4/R-5 对应修正与报告新增外，仅有两处审查流程既定闭环更新（JSON `independent_review` 与 handoff.md §8 由 PENDING 更新为"绑定 a7a1818a 全量审查 PASS + 修正提交单点复核"——即 C1 版 JSON `reviewed_head` 字段自述的预定动作），无其他改动；tracked 工作树 clean，6 组 untracked 原样。
+
+入库报告保真度：`rf-closeout-review.md` 与 reviewer draft（`C:/Temp/rf-closeout-20261114/rf-closeout-review-draft.md`，绑定 a7a1818a、结论 PASS）**逐字节 diff 相同**。
+
+### 6.2 R-1 — PASS
+
+C2 版 handoff.json 中 `refs/heads/codex/rf-job-facade-01` 条目：
+
+- 已无 "blob identical" 字样（全文件 grep 确认）。
+- reason/evidence 改为 strict contained/strict subset 表述，写明 1451−9 行、blob c83ca89b vs dba52967、sha1 d518cd06 vs a53490b4——与 reviewer 实测逐项一致；disposition 仍为 ACTIVE_KEEP、D4-06 门控未变。
+
+### 6.3 R-2 — PASS
+
+handoff.md §6 与 JSON tests wt_check 均改 "main + 21"，与实测一致；同提交顺带更正 §9/remaining_items 旧 "18" 计数。
+
+### 6.4 R-3 — PASS
+
+handoff.md §6 改 "35 + --force 3 + 1 部分"，与 JSON cleanup.paths（35 remove + 3 remove-force + 1 PARTIAL = 39）一致。
+
+### 6.5 R-5 — PASS
+
+JSON remaining_items 4 项，第 4 项含孤儿目录 rf-merge-review-20260927 与提权删除注记；handoff.md §9 同步。
+
+### 6.6 R-4 — PASS
+
+空间收据对齐 "10218934272 bytes ≈ 9745.5 MiB（约 9.52 GB）"，旧推导值已移除。
+
+### 6.7 范围外残留观察 O-2（非阻断）
+
+handoff.md §4 仍写 "18 个 EVIDENCE_KEEP"（应为 19，39+19+2+1=61 才自洽；JSON 处置表权威正确）。不在原 R-2 范围；建议下次 docs 提交顺手更正。
+
+### 6.8 单点复核结论（一行）
+
+**PASS** —— C2 = `0c54e648` 六个复核点全部 PASS；残留 1 项范围外计数笔误（O-2）。已审树 = `a7a1818a` + `0c54e648`，可按既定流程推送。
