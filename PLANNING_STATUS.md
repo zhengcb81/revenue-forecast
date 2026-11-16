@@ -5,6 +5,12 @@
 > 等一律视为历史或子计划；状态冲突按本节登记的提交与 handoff 绑定 ref 对齐。
 > 状态词统一使用：PLANNED / IN_PROGRESS / BLOCKED / REVIEWED / MERGED / CLOSED。
 
+## 2026-11-15 跨仓周跑收据
+
+- `20261115T084227Z` 为 `not-ok`，`ok=false`，退出码 1，告警时间 2026-11-15 08:43:15 UTC。T3 的 CN、HK、US 年报初次下载和损坏件重试共 4 项失败，用时 31.63 秒。下载失败返回 `company-wiki ensure exited 1`、`downloads=0`。损坏件重试返回 `fatal`，用例预期 `upstream_error`。
+- 该次执行的版本为 filing-fetch `1dfd81836794ec3bf73b41014a98714e97299ae8`、revenue-forecast `f2215959d33abc76778342a95d39a8e38191da75`、company-wiki `0e741063f510d5bc1c5921aa192b90fab94b6064`。绑定本机 `assurance/runs/weekly_manifest.json` 的观察快照（SHA-256 `253121c9f53de2136ded496461b743c426d83ad6dfaa56e0d7f788dc0bc7f362`）及原始日志 `assurance/runs/weekly-run-20261115T084227Z.log`（SHA-256 `5f1a2872243502b78985c464c21598c3b724e2758c672322aaa5b812add477f2`）。周跑运行文件由 assurance 维护，PWF 记录本次观察与版本。
+- 该版本的 FF 下载型测试请求漏传 `acquisition_limits`，CWP 在启动 provider 前拒绝缺少字节、时间和费用上限的请求。FF 在本仓补齐四个用例和重复调用辅助路径的有限请求预算，以当前主线复跑真实 T3；复验采用独立结果和版本。RF 保留该次历史失败。 [根因与可复现证据](https://github.com/zhengcb81/company-wiki/blob/f5d41d9f471a5ea9ed8dd6dc72abf477da743f7a/docs/plans/module-boundaries-2026-11-11/review/ff-weekly-budget-root-cause-20261115.md)
+
 ## 快照（2026-11-14 实测；本节为当前状态）
 
 - 收尾起点：`main` @ `1ea5008290ab302bcfe6d935f3703244139c774f` = 当时观察到的 `origin/main`（https://github.com/zhengcb81/revenue-forecast.git）。本轮将 PWF/分支证据收尾和一条真实 2026-11-14 `not-ok` 日运行记录纳入主线；产品代码未改。另有 6 组未跟踪证据/用户资料按 EVIDENCE_KEEP 保留（见 dirty exceptions）；当前远端同步状态以收尾后的正常 push 核对为准。
