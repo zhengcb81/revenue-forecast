@@ -154,3 +154,8 @@
 明确排除：`assurance/fc` 16份与`unified_completion/receipts` 194份是执行/审查证据，不是planning-with-files计划正文；由state/manifest/receipt链解释。13个拒绝访问的`.tmp-*`目录属于临时review/fixture范围，其内部是否另有Markdown保持UNKNOWN；因此结论是canonical范围完整，不扩张为整个文件系统绝对无遗漏。`.review-zr407-20260818`不含revenue自身planning克隆。
 
 本轮仅做本地只读证据核对及planning文档建议；没有重跑生产审核、外部provider/LLM、任务注册或legacy删除。下一步修复/部署核验必须另按活动计划的允许范围与独立review要求进行。
+
+
+## 2026-11-17 模块自反馈接入
+
+[FB-RF 预测输入、来源采用与模型质量反馈](docs/plans/mb11-rf-2026-11-11/feedback-20261117.md) 进入规划，由 ROOT 负责调度和组合复验，本仓 owner 负责公开接口、定向回归及本地问题处置。
