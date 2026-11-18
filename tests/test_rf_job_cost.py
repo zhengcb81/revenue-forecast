@@ -249,3 +249,33 @@ def test_latest_reuse_does_not_prove_zero_cost(tmp_path):
     assert view["status"] == "succeeded"
     assert view["cost_state"] == "unknown"
     assert view["cost"] is None
+
+
+@pytest.mark.parametrize(("provider_started", "bytes_read", "cost", "expected"), [
+    (False, 0, "0.00", "known"),
+    (True, 1, None, "unknown"),
+    (False, 1, "0.01", "unknown"),
+])
+def test_reuse_cost_follows_actual_producer_evidence(tmp_path, monkeypatch, provider_started, bytes_read, cost, expected):
+    original = facade.FakeStageRunner._success_stdout
+
+    def stdout(self, stage):
+        text = original(self, stage)
+        if stage != "source":
+            return text
+        value = json.loads(text)
+        value["filing_fetch"] = {"acquisition_observation": {
+            "schema_version": "acquisition-observation/1", "usage_scope": "operation", "outcome": "reused_before_download",
+            "provider_started": provider_started, "usage_complete": True, "cost_usd": cost,
+            "wire_body_bytes": bytes_read, "wire_usage_complete": True, "entity_body_bytes": bytes_read,
+            "http_exchanges": int(bytes_read > 0), "http_exchanges_complete": True, "http_observation": None,
+        }}
+        return json.dumps(value)
+
+    monkeypatch.setattr(facade.FakeStageRunner, "_success_stdout", stdout)
+    job, _ = _facade(tmp_path)
+    job.deployment.source_request_template["filing_intent"] = "fetch_if_missing"
+    view = job.submit(_request())["job_view"]
+    assert view["status"] == "succeeded"
+    assert view["cost_state"] == expected
+    assert view["cost"] == ({"currency": "USD", "value": "0.00"} if expected == "known" else None)
