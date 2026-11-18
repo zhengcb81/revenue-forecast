@@ -49,9 +49,10 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any, Callable, cast
 
-from filing_upstream_cause import failure_observation
+from filing_upstream_cause import failure_observation, validated_acquisition_observation
 from owner_atomic_io import replace_file_bytes
 from owner_file_lock import OwnerFileLock
+from rf_job_feedback import publish_attempt
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -803,6 +804,19 @@ def _companion_read_only(request: dict[str, Any]) -> bool:
     return companion is None or isinstance(companion, dict) and companion.get("intent") == "reuse_only"
 
 
+def _local_source_route(request: dict[str, Any]) -> bool:
+    mode = str(request.get("mode") or "exact").strip().lower()
+    return (request.get("schema_version") == "2.0" and mode == "exact"
+            and request.get("filing_intent") == "reuse_only" and _companion_read_only(request))
+
+
+def _confirms_no_provider_effect(observation: dict[str, Any]) -> bool:
+    return (observation["provider_started"] is False and observation["usage_complete"] is True
+            and observation["http_exchanges"] == observation["wire_body_bytes"] == observation["entity_body_bytes"] == 0
+            and observation["http_observation"] is None and observation["cost_usd"] is not None
+            and Decimal(observation["cost_usd"]) == 0)
+
+
 def _source_failure_observations(stderr_path: Path, *, companion_read_only: bool) -> dict[str, Any] | None:
     """Real resource observations from a failed source attempt's stderr doc.
 
@@ -828,12 +842,20 @@ def _source_failure_observations(stderr_path: Path, *, companion_read_only: bool
     cause = observed.get("upstream_cause")
     companion = observed.get("companion_observation")
     acquisition = observed.get("acquisition_observation")
+    failure = observed.get("acquisition_failure")
+    usage = failure["acquisition_usage"] if failure is not None else None
+    failure_unconfirmed = (failure is not None and (failure["provider_started"] is not False
+                            or failure["usage_complete"] is not True
+                            or (usage is not None and (usage["response_bytes"] != 0
+                                or Decimal(usage["cost_usd"]) != 0))))
+    source_may_have_effect = failure_unconfirmed or (acquisition is not None
+                                                     and not _confirms_no_provider_effect(acquisition))
+    if source_may_have_effect:
+        observations["source_effect_unconfirmed"] = True
     if (observations.get("download_events") == 0 and cause is not None
             and cause.get("provider_started") is False and cause.get("usage_complete") is True
             and (companion_read_only or companion is not None)
-            and (acquisition is None or (acquisition["provider_started"] is False
-                and acquisition["usage_complete"] is True and acquisition["cost_usd"] is not None
-                and Decimal(acquisition["cost_usd"]) == 0))):
+            and not source_may_have_effect):
         observations["source_no_external_effect"] = True
         observations["model_calls"] = 0
     return observations or None
@@ -897,13 +919,14 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
     }
     companion_read_only = _companion_read_only(deployment.source_request_template)
     if stage == "source":
-        record["source_read_only"] = (
-            deployment.source_request_template.get("filing_intent") == "reuse_only" and companion_read_only
+        record["source_route"] = (
+            "local_catalog" if _local_source_route(deployment.source_request_template) else "provider_possible"
         )
     attempts.append(record)
     job["stages"][stage]["status"] = "running"
     job["status"] = STATUS_RUNNING
     store.save_job(job)
+    publish_attempt(owner_job_id, record, started=True)
     outcome = runner.run(stage=stage, command=command, timeout_seconds=timeout, env=env)
     record["ended_at"] = _utc_now()
     record["elapsed_seconds"] = round(outcome.elapsed_seconds, 6)
@@ -955,7 +978,12 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
             _mark_stage_failed(job, store, stage)
             raise JobFacadeError("stage_failed",
                                  "the source result envelope does not carry a usable reuse receipt")
-        if (companion_read_only and observations["source_outcome"] == "reused_existing"
+        filing = envelope.get("filing_fetch")
+        has_usage = isinstance(filing, dict) and "acquisition_observation" in filing
+        usage = validated_acquisition_observation(filing["acquisition_observation"]) if has_usage else None
+        no_effect = (_confirms_no_provider_effect(usage) if usage is not None
+                     else not has_usage and record["source_route"] == "local_catalog")
+        if (no_effect and companion_read_only and observations["source_outcome"] == "reused_existing"
                 and observations["download_events"] == 0 and observations["model_calls"] == 0):
             observations["source_no_external_effect"] = True
     else:
@@ -1000,6 +1028,7 @@ def _orchestrate(job: dict[str, Any], *, store: JobStore, deployment: Deployment
     for stage in STAGES:
         if job["stages"][stage]["status"] == "completed":
             continue
+        previous = len(job["stages"][stage]["attempts"])
         try:
             _run_stage(job, stage=stage, store=store, deployment=deployment, runner=runner)
         except JobFacadeError as exc:
@@ -1011,6 +1040,17 @@ def _orchestrate(job: dict[str, Any], *, store: JobStore, deployment: Deployment
                 job["status"] = STATUS_FAILED
             store.save_job(job)
             raise
+        finally:
+            attempts = job["stages"][stage]["attempts"]
+            if len(attempts) > previous and attempts[-1]["status"] != "running":
+                # Optional projection. Check the durable terminal write rather
+                # than publishing a result from an interrupted in-memory write.
+                try:
+                    persisted = store.load_job(job["owner_job_id"]) if os.environ.get("RESEARCH_FEEDBACK_OUT") else None
+                except (OSError, JobFacadeError):
+                    persisted = None
+                if persisted and persisted["stages"][stage]["attempts"][-1] == attempts[-1]:
+                    publish_attempt(job["owner_job_id"], attempts[-1], started=False)
     _finalize_succeeded(job, store)
 
 
@@ -1141,9 +1181,18 @@ def _source_attempt_is_safe(attempt: Any) -> bool:
     if not isinstance(attempt, dict):
         return False
     observations = attempt.get("observations")
-    return attempt.get("source_read_only") is True or (
-        isinstance(observations, dict) and observations.get("source_no_external_effect") is True
-    )
+    route = attempt.get("source_route")
+    # The previous version recorded reuse intent, which said nothing about
+    # metadata calls. It also inferred zero usage from the reuse outcome.
+    if route not in ("local_catalog", "provider_possible"):
+        return False
+    if isinstance(observations, dict):
+        downloads = observations.get("download_events")
+        if (type(downloads) is int and downloads > 0) or observations.get("source_effect_unconfirmed") is True:
+            return False
+        if observations.get("source_no_external_effect") is True:
+            return True
+    return attempt.get("status") != "completed" and route == "local_catalog"
 
 
 def _cost_projection(job: dict[str, Any], status: str) -> tuple[dict[str, Any] | None, str]:
@@ -1381,7 +1430,13 @@ class JobFacade:
                 _orchestrate(job, store=self.store, deployment=deployment, runner=runner)
             except JobFacadeError:
                 pass  # phase failures are recorded durably
-            return {"owner_job_id": owner_job_id,
-                    "job_view": job_view(self.store.load_job(owner_job_id), self.store, lock_alive=False)}
+            persisted = self.store.load_job(owner_job_id)
+            view = job_view(persisted, self.store, lock_alive=False)
+            if os.environ.get("RESEARCH_FEEDBACK_OUT") and view["status_known"]:
+                last = next((_last_attempt(persisted["stages"][stage]) for stage in reversed(STAGES)
+                             if persisted["stages"][stage]["attempts"]), None)
+                if last is not None:
+                    publish_attempt(owner_job_id, last, cost_state=view["cost_state"])
+            return {"owner_job_id": owner_job_id, "job_view": view}
         finally:
             lock.release()

@@ -234,10 +234,18 @@ def test_confirmed_pre_provider_failure_can_resume_under_the_same_contract(tmp_p
 @pytest.mark.parametrize("companion_can_fetch", [False, True])
 def test_primary_reuse_does_not_supply_companion_cost(tmp_path, companion_can_fetch):
     running, _ = _facade(tmp_path)
-    running.deployment.source_request_template["filing_intent"] = "fetch_if_missing"
     if companion_can_fetch:
         running.deployment.source_request_template["companion_transcript"] = {"intent": "fetch_if_missing"}
     view = running.submit(_request())["job_view"]
     assert view["status"] == "succeeded"
     assert view["cost_state"] == ("unknown" if companion_can_fetch else "known")
     assert view["cost"] == (None if companion_can_fetch else {"currency": "USD", "value": "0.00"})
+
+
+def test_latest_reuse_does_not_prove_zero_cost(tmp_path):
+    job, _ = _facade(tmp_path)
+    job.deployment.source_request_template.update(mode="latest_as_of", fiscal_year=None)
+    view = job.submit(_request())["job_view"]
+    assert view["status"] == "succeeded"
+    assert view["cost_state"] == "unknown"
+    assert view["cost"] is None

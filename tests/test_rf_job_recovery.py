@@ -165,3 +165,36 @@ def test_illegal_attempt_status_keeps_unknown_status_known_false_pairing(tmp_pat
     assert reconciled["status"] == "unknown"
     assert reconciled["status_known"] is False
     assert reconciled["allowed_actions"] == ["reconcile"]
+
+
+def test_latest_reuse_has_no_retry_proof_after_source_interruption(tmp_path):
+    calls = []
+    first, _ = _facade(tmp_path, calls=calls, die_on_stage="source")
+    first.deployment.source_request_template.update(mode="latest_as_of", fiscal_year=None)
+    with pytest.raises(SimulatedProcessDeath):
+        first.submit(_request())
+
+    restarted, _ = _facade(tmp_path, calls=calls)
+    job_id = restarted.store.list_job_ids()[0]
+    view = restarted.get_status(job_id)["job_view"]
+    assert view["status"] == "interrupted"
+    assert view["cost_state"] == "unknown"
+    assert view["allowed_actions"] == ["reconcile"]
+    with pytest.raises(JobFacadeError):
+        restarted.act(job_id, "resume")
+    assert restarted.act(job_id, "reconcile")["job_view"]["status"] == "interrupted"
+    assert len(calls) == 1
+
+
+def test_legacy_interruption_is_not_proof_of_local_source_execution(tmp_path):
+    first, _ = _facade(tmp_path, die_on_stage="source")
+    with pytest.raises(SimulatedProcessDeath):
+        first.submit(_request())
+    job_id = first.store.list_job_ids()[0]
+    record = first.store.load_job(job_id)
+    attempt = record["stages"]["source"]["attempts"][0]
+    attempt.pop("source_route")
+    attempt["source_read_only"] = True
+    first.store.save_job(record)
+
+    assert first.get_status(job_id)["job_view"]["allowed_actions"] == ["reconcile"]
