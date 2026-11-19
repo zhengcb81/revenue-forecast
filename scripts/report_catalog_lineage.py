@@ -11,7 +11,7 @@ import copy
 from decimal import Decimal, InvalidOperation
 from pathlib import Path, PurePosixPath
 import hashlib
-import json
+from math import isfinite
 import re
 from typing import Any
 from urllib.parse import urlsplit
@@ -25,7 +25,6 @@ SNAPSHOT_SCHEMA = "rf-source-snapshot/1"
 SHA = re.compile(r"^[a-f0-9]{64}$")
 TOKEN = re.compile(r"^rfsnap1-[a-f0-9]{64}$")
 MAX_BODY = 262144
-MAX_TRACE_BYTES = 240000
 MAX_DEPTH = 32
 LIMITS = {
     "nodes": 128,
@@ -506,6 +505,8 @@ def public_pathless(value: Any) -> None:
     }
 
     def mask(item: Any) -> Any:
+        if isinstance(item, float):
+            need(isfinite(item), "lineage contains a nonfinite number")
         if isinstance(item, list):
             return [mask(child) for child in item]
         if not isinstance(item, dict):
@@ -942,10 +943,4 @@ def get_calculation_trace(
         "sources": list(source_rows.values()),
     }
     public_pathless(value)
-    need(
-        len(json.dumps(value, ensure_ascii=False, allow_nan=False).encode("utf-8"))
-        <= MAX_TRACE_BYTES,
-        "calculation trace exceeds its serialized byte bound",
-        "lineage_limit_exceeded",
-    )
     return value

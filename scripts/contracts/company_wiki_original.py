@@ -48,7 +48,6 @@ _RECEIPT_FIELDS = {
     "policy_sha256",
     "source_read_policy_sha256",
     "read_at",
-    "review",
 }
 _MANIFEST_FIELDS = {
     "document_id",
@@ -165,17 +164,16 @@ def validate_ref(source_ref: Any) -> dict[str, Any]:
     return ref
 
 
-def validate_receipt(receipt_value: Any, ref: dict[str, Any]) -> dict[str, Any]:
+def validate_receipt(
+    receipt_value: Any, ref: dict[str, Any], *, expected_version: str | None = None,
+) -> dict[str, Any]:
     receipt = _object(receipt_value, "read_receipt")
-    expected = (
-        _RECEIPT_FIELDS
-        if receipt.get("schema_version") == "2.1"
-        else _RECEIPT_FIELDS | {"availability_evidence"}
-    )
-    if receipt.get("schema_version") not in {"2.1", "2.2"} or set(receipt) - {"extensions"} != expected:
-        raise OriginalProvenanceError("source read receipt fields/schema are invalid")
-    if "extensions" in receipt and not isinstance(receipt["extensions"], dict):
-        raise OriginalProvenanceError("source receipt extensions must be an object")
+    version = receipt.get("schema_version")
+    if version not in ("2.1", "2.2") or (expected_version is not None and version != expected_version):
+        raise OriginalProvenanceError("source read receipt version is unsupported")
+    expected = _RECEIPT_FIELDS if version == "2.1" else _RECEIPT_FIELDS | {"availability_evidence"}
+    if set(receipt) - {"review", "extensions"} != expected:
+        raise OriginalProvenanceError("source read receipt fields are invalid")
     if receipt.get("status") != "ok":
         raise OriginalProvenanceError("source read receipt is not successful")
     for field in ("document_id", "source_id", "content_sha256", "byte_size"):
@@ -191,15 +189,10 @@ def validate_receipt(receipt_value: Any, ref: dict[str, Any]) -> dict[str, Any]:
         )
     except SourceClockError as exc:
         raise OriginalProvenanceError(str(exc)) from exc
+    if "extensions" in receipt and not isinstance(receipt["extensions"], dict):
+        # Unknown diagnostics do not change the verified read.
+        return {key: value for key, value in receipt.items() if key != "extensions"}
     return receipt
-
-
-
-
-
-
-
-
 
 
 def _validate_manifest_identity(
@@ -344,9 +337,10 @@ class VerifiedOriginalRead:
 
 def verify_original_read(*, body: bytes, source_ref: dict, receipt: dict,
                          manifest: dict, as_of: date,
-                         expected_fiscal_year: Any = _UNSPECIFIED_YEAR) -> VerifiedOriginalRead:
+                         expected_fiscal_year: Any = _UNSPECIFIED_YEAR,
+                         expected_receipt_version: str | None = None) -> VerifiedOriginalRead:
     ref = validate_ref(source_ref)
-    read = validate_receipt(receipt, ref)
+    read = validate_receipt(receipt, ref, expected_version=expected_receipt_version)
     observed, information = validate_manifest(manifest, ref, as_of,
         availability_evidence=read.get("availability_evidence"), current_read_at=read["read_at"])
     if expected_fiscal_year is not _UNSPECIFIED_YEAR:

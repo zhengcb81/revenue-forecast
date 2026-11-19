@@ -113,10 +113,14 @@ def main(argv: list[str] | None = None) -> int:
             output = import_w09(catalog, entity_id=args.entity_id,
                                 analysis_subject_id=args.analysis_subject_id,
                                 listing_id=args.listing_id, identity_evidence=identity_evidence)
-        encoded = json.dumps(output, ensure_ascii=False, sort_keys=True, allow_nan=False)
-        if args.command in {"get-calculation-trace", "get-source-snapshot"} and len(encoded.encode("utf-8")) > 2_000_000:
-            raise CatalogError("lineage_limit_exceeded", "public lineage output exceeds its byte bound")
-        print(encoded)
+        encoder = json.JSONEncoder(ensure_ascii=False, sort_keys=True, allow_nan=False)
+        if args.command == "get-calculation-trace":
+            # The native projection validates the complete graph before output.
+            for chunk in encoder.iterencode(output):
+                sys.stdout.write(chunk)
+            sys.stdout.write("\n")
+        else:
+            print(encoder.encode(output))
         return 0
     except DeploymentError as exc:
         return _emit_error(exc.code, exc.message)

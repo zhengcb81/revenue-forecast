@@ -83,6 +83,48 @@ def test_unreviewed_receipt_with_verified_raw_bytes_is_consumable(monkeypatch, t
     assert "canonical_path" not in str((read_receipt, manifest))
 
 
+@pytest.mark.parametrize("diagnostics", [{}, {"extensions": None}, {"review": "legacy-label", "extensions": []}])
+def test_verified_open_and_forecast_accept_optional_diagnostics(tmp_path, diagnostics):
+    from datetime import date
+
+    from company_wiki_source_v2 import build_revenue_source_record_from_original
+    from revenue_core import validate_sources
+
+    receipt = _receipt()
+    receipt.pop("review")
+    receipt.update(diagnostics)
+    (tmp_path / "body").write_bytes(BODY)
+    (tmp_path / "receipt.json").write_text(json.dumps(receipt), encoding="utf-8")
+    reader = tmp_path / "owner_wire.py"
+    reader.write_text(
+        "from pathlib import Path\nimport sys\n"
+        "root = Path(__file__).parent\n"
+        "sys.stdout.buffer.write((root / 'body').read_bytes())\n"
+        "sys.stderr.buffer.write((root / 'receipt.json').read_bytes())\n",
+        encoding="utf-8",
+    )
+    verified = _open(tmp_path, reader_command=(sys.executable, "-B", str(reader)))
+    assert verified.body == BODY
+    assert verified.source_ref == _ref()
+    assert "extensions" not in verified.read_receipt
+    record = build_revenue_source_record_from_original(
+        original=verified,
+        source_candidate={
+            "status": "source_candidate", "source_ref": _ref(),
+            "byte_verification": "pending_verified_open", "document_kind": "annual_report",
+            "fiscal_year": 2025, "fiscal_period": None,
+            "resolution_outcome": "reused_existing", "download_events": 0,
+        },
+        source_type="regulatory_filing", publisher="SEC", page_or_section="Revenue",
+    )
+    trace = record["company_wiki_trace"]
+    assert trace["review_observation"]["status"] == ("unavailable" if "review" in diagnostics else "absent")
+    assert record["capture"]["prompt_injection_status"] == "not_reviewed"
+    saved = json.loads(json.dumps({"sources": [record]}))
+    validated = validate_sources(saved, date(2026, 7, 18), require_capture=True)
+    assert validated[_ref()["source_id"]] == {**record, "source_rank": 1}
+
+
 def test_same_size_tampered_bytes_are_rejected(monkeypatch, tmp_path):
     receipt = _receipt()
 

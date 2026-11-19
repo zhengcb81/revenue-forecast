@@ -9,6 +9,7 @@ data: the frozen artifact is produced by the owner engine inside the test.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import io
 import json
@@ -33,6 +34,7 @@ from report_catalog_deployment import (DeploymentError, MANAGED_CATALOG_DIRECTOR
                                        build_catalog, managed_catalog_directory,
                                        resolve_owner_root, split_owner_root)
 from revenue_core import run_forecast  # noqa: E402
+from test_data_contract import finalize_contract  # noqa: E402
 from test_recognition_bridge import forecast_document  # noqa: E402
 
 ENTITY_ID = "ENT-deploy"
@@ -55,14 +57,14 @@ def _write(path: Path, data: dict) -> None:
                     encoding="utf-8")
 
 
-def _owner_workspace(root: Path) -> dict[str, Any]:
+def _owner_workspace(root: Path, *, data: dict | None = None) -> dict[str, Any]:
     """Register one real owner run/attempt/two reports inside ``root``.
 
     The catalog is written to the managed location of ``root`` so the public
     deployment seam finds it without any injected catalog file.
     """
     catalog = ReportCatalog(root=root)
-    data = forecast_document()
+    data = forecast_document() if data is None else data
     data["forecast_version"] = "deploy-root-test-v1"
     result = run_forecast(data)
     _write(root / "input.json", data)
@@ -115,6 +117,74 @@ def _file_set(root: Path) -> dict[str, tuple[str, int]]:
 
 def _stderr_payload(capsys) -> dict[str, Any]:
     return json.loads(capsys.readouterr().err)
+
+
+def test_long_calculation_trace_streams_every_registered_parameter(tmp_path):
+    data = forecast_document()
+    driver_id = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"]["revenue"][0]
+    driver = next(row for row in data["parameters"] if row["parameter_id"] == driver_id)
+    leaves = []
+    for index in range(110):
+        leaf = copy.deepcopy(driver)
+        leaf.update(
+            parameter_id=f"long-lineage-{index}",
+            definition=f"Computable source component {index}. " + "ABC" * 2500,
+            rationale="Independently bounded synthetic estimate. " + "ABC" * 5000,
+            value=1,
+        )
+        leaves.append(leaf)
+    leaf_ids = [leaf["parameter_id"] for leaf in leaves]
+    driver.update(kind="derived_fact", input_parameter_ids=leaf_ids,
+                  formula="+".join(f"x{i}" for i in range(len(leaves))), value=len(leaves))
+    data["parameters"].extend(leaves)
+    workspace = tmp_path / "owner"
+    registered = _owner_workspace(workspace, data=finalize_contract(data))
+    before = _file_set(workspace)
+    completed = subprocess.run(
+        [sys.executable, "-B", "-X", "utf8", str(ROOT / "scripts/report_catalog_cli.py"),
+         "--owner-root", str(workspace), "get-calculation-trace", "--report-id", LEFT_REPORT_ID,
+         "--node-id", "segment:0:base:2026"],
+        cwd=tmp_path, capture_output=True, check=False, timeout=30,
+    )
+    assert completed.returncode == 0, completed.stderr.decode("utf-8", "replace")
+    assert len(completed.stdout) > 2_000_000
+    trace = json.loads(completed.stdout)["trace"]
+    parameters = {row["parameter_id"]: row for row in trace["parameters"]}
+    assert set(parameters) == {driver_id, *leaf_ids}
+    assert parameters[driver_id]["input_parameter_ids"] == leaf_ids
+    assert trace["nodes"][0]["output"]["number"]["value"] == "110.0"
+    assert trace["result_sha256"] == registered["report"]["result_sha256"]
+    assert trace["input_sha256"] == registered["report"]["input_sha256"]
+    assert _file_set(workspace) == before
+
+
+def test_invalid_lineage_is_refused_before_streaming(tmp_path, monkeypatch):
+    data = forecast_document()
+    driver_id = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"]["revenue"][0]
+    driver = next(row for row in data["parameters"] if row["parameter_id"] == driver_id)
+    component = {**driver, "parameter_id": "base-driver-component"}
+    data["parameters"].append(component)
+    driver.update(kind="derived_fact", input_parameter_ids=[component["parameter_id"]],
+                  formula="x0", rationale=float("nan"))
+    workspace = tmp_path / "owner"
+
+    def write_old_json(path, value):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(value, ensure_ascii=False, sort_keys=True), encoding="utf-8")
+
+    # Reproduce a historical owner artifact with a malformed advisory value.
+    with monkeypatch.context() as prep:
+        prep.setattr(sys.modules[__name__], "_write", write_old_json)
+        _owner_workspace(workspace, data=finalize_contract(data))
+    completed = subprocess.run(
+        [sys.executable, "-B", "-X", "utf8", str(ROOT / "scripts/report_catalog_cli.py"),
+         "--owner-root", str(workspace), "get-calculation-trace", "--report-id", LEFT_REPORT_ID,
+         "--node-id", "segment:0:base:2026"],
+        cwd=tmp_path, capture_output=True, check=False, timeout=30,
+    )
+    assert completed.returncode == 2
+    assert completed.stdout == b""
+    assert json.loads(completed.stderr)["error"]["code"] == "lineage_evidence_mismatch"
 
 
 # -- the trusted deployment argument -----------------------------------------

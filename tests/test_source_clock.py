@@ -237,6 +237,10 @@ def test_T15_receipt_22_requires_explicit_capability_and_exact_fields(monkeypatc
     assert body == TRANSPORT_BODY and bare["availability_evidence"] is None
     with pytest.raises(reader.SourceVersionTransportError, match="receipt"):
         open_transport(monkeypatch, tmp_path, receipt)
+    del receipt["availability_evidence"]
+    with pytest.raises(reader.SourceVersionTransportError, match="receipt"):
+        open_transport(monkeypatch, tmp_path, receipt, version="2.2")
+    receipt["availability_evidence"] = None
     receipt["surprise"] = True
     with pytest.raises(reader.SourceVersionTransportError, match="receipt"):
         open_transport(monkeypatch, tmp_path, receipt, version="2.2")

@@ -29,24 +29,6 @@ _REF_FIELDS = frozenset({
     "schema_version", "document_id", "source_id", "content_sha256",
     "byte_size", "mime_type",
 })
-_RECEIPT_FIELDS = frozenset({
-    "schema_version", "status", "document_id", "source_id",
-    "content_sha256", "byte_size", "policy_sha256",
-    "source_read_policy_sha256", "read_at", "manifest", "review",
-})
-_MANIFEST_FIELDS = frozenset({
-    "document_id", "source_id", "content_sha256", "byte_size", "mime_type",
-    "title", "document_kind", "published_date", "source_url", "retrieved_at",
-    "collector_name", "collector_version", "canonical_entity_id", "display_name",
-    "market", "security_id", "fiscal_year", "fiscal_period", "period_end",
-    "form_type", "provider", "provider_document_id", "language",
-})
-_REVIEW_FIELDS = frozenset({
-    "status", "source_sha256", "evidence_sha256", "policy_hash", "reviewed_at",
-})
-_REVIEW_STATUSES = frozenset({
-    "not_detected", "detected_and_ignored", "not_reviewed",
-})
 _REFUSAL_STATUSES = frozenset({
     "not_found", "not_indexed", "unavailable", "blocked", "ambiguous",
 })
@@ -231,22 +213,6 @@ def validate_source_reader_receipt_version(value: Any) -> str:
     return value
 
 
-def _validate_receipt_shape(receipt: dict[str, Any], *, source_reader_receipt_version: str = "2.1") -> None:
-    expected = _RECEIPT_FIELDS if source_reader_receipt_version == "2.1" else _RECEIPT_FIELDS | {"availability_evidence"}
-    if (set(receipt) - {"extensions"} != expected
-            or ("extensions" in receipt and not isinstance(receipt["extensions"], dict))
-            or receipt.get("schema_version") != source_reader_receipt_version or receipt.get("status") != "ok"):
-        raise SourceVersionTransportError("source receipt fields/status invalid")
-
-
-
-
-
-
-
-
-
-
 def open_source_version_v2(
     *, source_ref: dict[str, Any], catalog_config: Path,
     as_of_date: str, expected_fiscal_year: int | None,
@@ -265,11 +231,11 @@ def open_source_version_v2(
     if opened.returncode != 0:
         _raise_reader_refusal(opened)
     receipt = _one_json_line(opened.stderr)
-    _validate_receipt_shape(receipt, source_reader_receipt_version=version)
     bare_receipt = {key: value for key, value in receipt.items() if key != "manifest"}
     try:
         return verify_original_read(body=opened.stdout, source_ref=source_ref, receipt=bare_receipt,
-            manifest=receipt["manifest"], as_of=as_of, expected_fiscal_year=expected_fiscal_year)
+            manifest=receipt.get("manifest"), as_of=as_of, expected_fiscal_year=expected_fiscal_year,
+            expected_receipt_version=version)
     except OriginalProvenanceError as exc:
         raise SourceVersionTransportError(str(exc),
             source_failure_reason=validated_source_failure_reason(str(exc).partition(":")[0])) from exc
