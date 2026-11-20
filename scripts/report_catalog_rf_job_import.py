@@ -202,6 +202,23 @@ def _source_from_input(input_document: dict[str, Any], source_envelope: dict[str
     return ref, manifest
 
 
+def _one_listing(rows: Any, listing_id: str) -> dict[str, Any] | None:
+    matches = [row for row in rows if isinstance(row, dict) and row.get("listing_id") == listing_id] \
+        if isinstance(rows, list) else []
+    return matches[0] if len(matches) == 1 else None
+
+
+def _listing_coordinates(listing: dict[str, Any]) -> tuple[Any, ...]:
+    ticker = listing.get("ticker")
+    return (listing.get("market"), listing.get("security_id"), listing.get("exchange_mic"),
+            ticker.casefold() if isinstance(ticker, str) else None, listing.get("listing_status"))
+
+
+def _ticker_codes(listing: dict[str, Any]) -> set[str]:
+    return {code.casefold() for code in (listing.get("ticker"), listing.get("ticker_raw"))
+            if isinstance(code, str) and code}
+
+
 def _validate_issuer_proof(
     identity: dict[str, Any], proof: dict[str, Any], *,
     entity_id: str, listing_id: str, query: dict[str, str],
@@ -227,18 +244,16 @@ def _validate_issuer_proof(
     _need(_normalized_name(canonical_name) == _normalized_name(company_name)
           and manifest.get("canonical_entity_id") in (None, entity_id),
           "source_identity_mismatch", "RF input and CWP source do not match the verified issuer")
-    listings = identity_entity.get("listings")
-    selected = [item for item in listings if isinstance(item, dict)
-                and item.get("listing_id") == listing_id] if isinstance(listings, list) else []
-    _need(len(selected) == 1 and selected[0].get("entity_id") == entity_id
-          and selected[0].get("listing_status") == "active",
+    listing = _one_listing(identity_entity.get("listings"), listing_id)
+    _need(listing is not None and listing.get("entity_id") == entity_id
+          and listing.get("listing_status") == "active",
           "identity_unverified", "requested StockWiki listing is not uniquely active")
-    listing = selected[0]
-    _need(all(isinstance(listing.get(field), str) and bool(listing[field])
-              for field in ("market", "security_id", "exchange_mic")),
-          "identity_unverified", "selected StockWiki listing lacks market, security, or exchange identity")
-    _need(identity_entity.get("identity_revision") == identity.get("entity", {}).get("identity_revision"),
-          "identity_unverified", "StockWiki identity revision is inconsistent")
+    coordinates = _listing_coordinates(listing)
+    _need(all(isinstance(value, str) and bool(value.strip()) for value in coordinates),
+          "identity_unverified", "selected StockWiki listing lacks canonical market coordinates")
+    revision = identity_entity.get("identity_revision")
+    _need(type(revision) is int and revision > 0,
+          "identity_unverified", "StockWiki identity revision is invalid")
 
     _need(proof.get("schema_version") == "stockwiki.dashboard_issuer_proof/1"
           and proof.get("authority") == "stockwiki"
@@ -253,23 +268,20 @@ def _validate_issuer_proof(
               {key: value for key, value in proof.items() if key != "receipt_sha256"}
           ), "issuer_proof_invalid", "StockWiki issuer proof receipt hash does not verify")
     package = proof.get("owner_package")
-    _need(isinstance(package, dict) and package.get("object_type") == "entity"
-          and package.get("schema_version") == "2.2.0",
+    _need(isinstance(package, dict) and package.get("object_type") == "entity",
           "issuer_proof_invalid", "StockWiki issuer proof package is incompatible")
     payload = package.get("payload")
     context = package.get("trusted_context")
     _need(isinstance(payload, dict) and isinstance(context, dict)
-          and payload.get("identity_schema_version") == "2.1.0"
           and payload.get("identity_state") == "verified"
           and payload.get("entity_id") == entity_id
-          and payload.get("canonical_name") == canonical_name
-          and payload.get("identity_revision") == identity_entity.get("identity_revision")
-          and proof.get("identity_revision") == identity_entity.get("identity_revision"),
+          and type(payload.get("identity_revision")) is int and payload["identity_revision"] == revision
+          and type(proof.get("identity_revision")) is int and proof["identity_revision"] == revision,
           "issuer_proof_invalid", "StockWiki issuer proof identity differs from fresh resolution")
     proof_listings = payload.get("listings")
-    proof_listing = [item for item in proof_listings if isinstance(item, dict)
-                     and item.get("listing_id") == listing_id] if isinstance(proof_listings, list) else []
-    _need(len(proof_listing) == 1 and proof_listing[0] == listing,
+    proof_listing = _one_listing(proof_listings, listing_id)
+    _need(proof_listing is not None and proof_listing.get("entity_id") == entity_id
+          and _listing_coordinates(proof_listing) == coordinates,
           "issuer_proof_invalid", "StockWiki issuer proof listing differs from fresh resolution")
     receipt_id = _text(payload.get("verified_issuer_receipt_id"), "issuer_proof_invalid")
     receipts = context.get("identity_receipts")
@@ -281,18 +293,12 @@ def _validate_issuer_proof(
           and receipt.get("effective_status") == "active"
           and receipt.get("same_legal_issuer") is True
           and receipt.get("entity_id") == entity_id
-          and receipt.get("identity_revision") == identity_entity.get("identity_revision")
-          and listing_id in receipt.get("listing_ids", []),
+          and type(receipt.get("identity_revision")) is int and receipt["identity_revision"] == revision
+          and isinstance(receipt.get("listing_ids"), list) and listing_id in receipt["listing_ids"],
           "source_identity_mismatch", "the issuer receipt does not cover the requested listing")
     listing_attributes = receipt.get("listing_attributes")
     receipt_listing = listing_attributes.get(listing_id) if isinstance(listing_attributes, dict) else None
-    _need(isinstance(receipt_listing, dict)
-          and all(receipt_listing.get(field) == listing.get(field)
-                  for field in (
-                      "market", "security_id", "exchange_mic", "exchange_raw", "ticker",
-                      "ticker_raw", "listing_status", "currency", "valid_from", "valid_to",
-                      "source_binding_ref",
-                  ) if field in listing),
+    _need(isinstance(receipt_listing, dict) and _listing_coordinates(receipt_listing) == coordinates,
           "issuer_proof_invalid", "verified issuer receipt listing identity differs")
     # The issuer proof may cite an older filing than the selected FF source.
     # CWP proves the exact original; the owner identity proves its coordinate.
@@ -301,13 +307,17 @@ def _validate_issuer_proof(
     same_listing = False
     if isinstance(source_security, str) and source_security and source_market:
         for owner_listing in proof_listings:
-            if (not isinstance(owner_listing, dict)
-                    or owner_listing.get("entity_id") != entity_id
-                    or owner_listing.get("market") != source_market
-                    or owner_listing.get("listing_id") not in receipt["listing_ids"]):
+            if not isinstance(owner_listing, dict):
                 continue
-            codes = (owner_listing.get("ticker"), owner_listing.get("ticker_raw"))
-            if any(isinstance(code, str) and code.casefold() == source_security.casefold() for code in codes):
+            candidate_id = owner_listing.get("listing_id")
+            if (not isinstance(candidate_id, str) or candidate_id not in receipt["listing_ids"]
+                    or owner_listing.get("entity_id") != entity_id or owner_listing.get("market") != source_market):
+                continue
+            attested = listing_attributes.get(candidate_id)
+            if (isinstance(attested, dict)
+                    and owner_listing.get("listing_status") == "active"
+                    and _listing_coordinates(owner_listing) == _listing_coordinates(attested)
+                    and source_security.casefold() in _ticker_codes(owner_listing) & _ticker_codes(attested)):
                 same_listing = True
                 break
     source_url = manifest.get("source_url")
@@ -326,7 +336,7 @@ def _validate_issuer_proof(
         "entity_id": entity_id,
         "listing_id": listing_id,
         "canonical_name": canonical_name,
-        "identity_revision": identity_entity["identity_revision"],
+        "identity_revision": revision,
         "identity_lookup_receipt_sha256": identity_receipt,
         "issuer_receipt_id": receipt_id,
         "issuer_proof_receipt_sha256": receipt_sha,
@@ -343,6 +353,16 @@ def _validate_issuer_proof(
         "source_fiscal_period": manifest["fiscal_period"],
         "binding": binding,
     }
+
+
+def _identity_binding_scope(proof: Any) -> tuple[Any, ...] | None:
+    if not isinstance(proof, dict):
+        return None
+    return tuple(proof.get(field) for field in (
+        "entity_id", "listing_id", "identity_revision", "issuer_proof_query",
+        "source_ref", "source_url", "source_market", "source_security_id",
+        "source_document_kind", "source_fiscal_year", "source_fiscal_period",
+    ))
 
 
 def _job_files(job_root: Path, job_id: str) -> tuple[Path, dict[str, Path]]:
@@ -681,8 +701,12 @@ def _register_import_records(
         if job_id in existing_runs:
             existing_attempt = existing_attempts.get((job_id, attempt_id))
             existing_report = existing_reports.get(report_id)
-            _need(existing_runs[job_id] == run and existing_attempt == attempt
-                  and existing_report == report,
+            stored_run = existing_runs[job_id]
+            evidence_key = "source_bound_identity_evidence"
+            original_proof = stored_run.get(evidence_key)
+            _need(_identity_binding_scope(original_proof) == _identity_binding_scope(run[evidence_key])
+                  and stored_run == {**run, evidence_key: original_proof}
+                  and existing_attempt == attempt and existing_report == report,
                   "rf_job_import_conflict", "this immutable job ID is already bound to different evidence")
             verify_current()
             catalog._validate_attempt_source(existing_attempt)
@@ -770,12 +794,13 @@ def import_rf_job(
     manifest = validate_source_export(source_bundle, ref)
     _validate_source_period(manifest, input_document=input_document, source_result=source_result)
     input_manifest = parsed["source_manifest"]
-    for field in (
+    source_scope_fields = (
         "document_kind", "fiscal_year", "fiscal_period", "form_type",
         "market", "security_id", "published_date", "period_end", "provider",
         "provider_document_id", "source_url",
-    ):
-        mismatch_code = "source_identity_mismatch" if field in {"display_name", "market", "security_id"} else "source_export_mismatch"
+    )
+    for field in source_scope_fields:
+        mismatch_code = "source_identity_mismatch" if field in {"market", "security_id"} else "source_export_mismatch"
         _need(input_manifest.get(field) == manifest.get(field), mismatch_code,
               "fresh CWP SourceExport differs from the forecast's captured source scope")
     _need(input_manifest.get("source_id") == ref["source_id"],
@@ -845,9 +870,11 @@ def import_rf_job(
             current_identity, current_proof, entity_id=entity_id, listing_id=listing_id,
             query=query, manifest=current_manifest, company_name=result.get("company_name"),
         )
-        current["source_export_id"] = current_bundle["export_id"]
-        current["source_export_sha256"] = current_bundle["bundle_sha256"]
-        _need(current_manifest == manifest and current == composite,
+        initial_listing = _one_listing(identity["entity"]["listings"], listing_id)
+        current_listing = _one_listing(current_identity["entity"]["listings"], listing_id)
+        _need(all(current_manifest.get(field) == manifest.get(field) for field in source_scope_fields)
+              and _identity_binding_scope(current) == _identity_binding_scope(composite)
+              and _listing_coordinates(current_listing) == _listing_coordinates(initial_listing),
               "source_identity_changed", "owner source or issuer proof changed before admission")
 
     # The same job-ID lock covers staging, admission, replay and cleanup; the

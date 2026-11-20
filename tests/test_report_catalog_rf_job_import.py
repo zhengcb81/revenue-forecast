@@ -445,11 +445,12 @@ def _import_interim_job(catalog, root, metadata, **kwargs):
         "source_export",
         lambda ref: _source_bundle(ref, manifest_changes=sources[ref["source_id"]]),
     )
+    proof = kwargs.pop("issuer_proof", _proof)
     return import_rf_job(
         catalog, job_root=root, job_id=JOB_ID, entity_id=ENTITY_ID, listing_id=LISTING_ID,
         expected_job_sha256=metadata["job_sha256"],
         expected_report_sha256=metadata["report_sha256"],
-        source_export=source_export, identity_resolver=identity, issuer_proof=_proof, **kwargs,
+        source_export=source_export, identity_resolver=identity, issuer_proof=proof, **kwargs,
     )
 
 
@@ -515,6 +516,113 @@ def test_interim_registrations_with_conflicting_validation_receipts_are_refused(
         _import_interim_job(catalog, root, metadata)
     assert error.value.code == "rf_job_publication_invalid"
     assert catalog.list_reports(ENTITY_ID)["items"] == []
+
+
+@pytest.mark.parametrize("variant", ("owner_versions", "listing_display", "receipt_display", "name_display"))
+def test_issuer_proof_accepts_additive_owner_metadata(tmp_path, variant):
+    root, metadata = _job_fixture(tmp_path, with_interim=True)
+    catalog = ReportCatalog(root=tmp_path / "catalog")
+
+    def proof(query):
+        response = _proof(query)
+        package = response["owner_package"]
+        payload = package["payload"]
+        if variant == "owner_versions":
+            package["schema_version"] = "2.2.1"
+            payload["identity_schema_version"] = "2.1.1"
+        elif variant == "listing_display":
+            payload["listings"][0]["exchange_display_name"] = "Fixture Exchange Display"
+        elif variant == "receipt_display":
+            issuer = package["trusted_context"]["identity_receipts"][payload["verified_issuer_receipt_id"]]
+            issuer["listing_attributes"][LISTING_ID].update(currency="EUR", exchange_raw="Optional Label")
+        else:
+            payload["canonical_name"] = "Test Company Ltd. (presentation)"
+        response["receipt_sha256"] = canonical_sha256({
+            key: value for key, value in response.items() if key != "receipt_sha256"
+        })
+        return response
+
+    first = _import_interim_job(catalog, root, metadata, issuer_proof=proof)
+    second = _import_interim_job(catalog, root, metadata)
+    assert first["status"] == "registered"
+    assert second["status"] == "already_registered"
+    assert first["report_id"] == second["report_id"]
+    assert catalog.get_run(JOB_ID)["run"]["attempts"][0]["report_ids"] == [first["report_id"]]
+    assert catalog.get_report(first["report_id"])["view"]["report"]["result_sha256"] == metadata["result"]["result_sha256"]
+
+
+@pytest.mark.parametrize(("field", "value"), (
+    ("retrieved_at", "2026-07-03T12:00:00Z"), ("published_date", "2026-07-13"),
+))
+def test_final_source_check_uses_stable_source_scope(tmp_path, field, value):
+    root, metadata = _job_fixture(tmp_path, with_interim=True)
+    catalog = ReportCatalog(root=tmp_path / "catalog")
+    expected = next(source["company_wiki_trace"]["source_manifest"] for source in metadata["input"]["sources"]
+                    if source["source_id"] == metadata["ref"]["source_id"])
+    reads = []
+
+    def export(ref):
+        reads.append(ref)
+        changed = {field: value} if len(reads) > 1 else {}
+        return _source_bundle(ref, manifest_changes={**expected, **changed})
+
+    if field == "published_date":
+        with pytest.raises(CatalogError, match="owner source or issuer proof changed") as error:
+            _import_interim_job(catalog, root, metadata, source_export=export)
+        assert error.value.code == "source_identity_changed"
+        assert catalog.list_reports(ENTITY_ID)["items"] == []
+    else:
+        first = _import_interim_job(catalog, root, metadata, source_export=export)
+        assert first["status"] == "registered"
+        assert catalog.get_report(first["report_id"])["view"]["report"]["result_sha256"] == metadata["result"]["result_sha256"]
+    assert len(reads) == 2
+
+
+@pytest.mark.parametrize(("variant", "expected_code"), (
+    ("market", "issuer_proof_invalid"),
+    ("security_id", "issuer_proof_invalid"),
+    ("exchange_mic", "issuer_proof_invalid"),
+    ("ticker", "issuer_proof_invalid"),
+    ("receipt_ticker", "issuer_proof_invalid"),
+    ("revision", "issuer_proof_invalid"),
+    ("receipt_sha", "issuer_proof_invalid"),
+    ("subject", "source_identity_mismatch"),
+    ("as_of", "issuer_proof_unavailable"),
+    ("unknown_package_shape", "issuer_proof_invalid"),
+))
+def test_issuer_proof_core_scope_and_receipt_must_still_match(variant, expected_code):
+    from report_catalog_rf_job_import import _validate_issuer_proof
+
+    query = {"entity_id": ENTITY_ID, "listing_id": LISTING_ID, "as_of": "2026-07-12T23:59:59Z"}
+    proof = _proof(query)
+    package = proof["owner_package"]
+    payload = package["payload"]
+    company_name = "Test Co"
+    if variant in ("market", "security_id", "exchange_mic", "ticker"):
+        payload["listings"][0][variant] = "OTHER"
+    elif variant == "receipt_ticker":
+        issuer = package["trusted_context"]["identity_receipts"][payload["verified_issuer_receipt_id"]]
+        issuer["listing_attributes"][LISTING_ID]["ticker"] = "OTHER"
+    elif variant == "revision":
+        payload["identity_revision"] = 2
+    elif variant == "subject":
+        company_name = "Other issuer"
+    elif variant == "as_of":
+        proof["query"] = {**query, "as_of": "2026-07-22T23:59:59Z"}
+    elif variant == "unknown_package_shape":
+        package["payload"] = {"subject": ENTITY_ID}
+    if variant != "receipt_sha":
+        proof["receipt_sha256"] = canonical_sha256({
+            key: value for key, value in proof.items() if key != "receipt_sha256"
+        })
+    else:
+        proof["receipt_sha256"] = "0" * 64
+    with pytest.raises(CatalogError) as error:
+        _validate_issuer_proof(
+            _identity(), proof, entity_id=ENTITY_ID, listing_id=LISTING_ID, query=query,
+            manifest=_manifest(_source_ref()), company_name=company_name,
+        )
+    assert error.value.code == expected_code
 
 
 def test_interim_filing_must_still_identify_the_forecast_issuer(tmp_path):
