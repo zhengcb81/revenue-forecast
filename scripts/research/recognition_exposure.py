@@ -9,10 +9,27 @@ from contracts.evidence import ForecastInputError, parse_iso_date, require
 from contracts.period_flow import dated_flow_origins, validate_period_flow_fields
 
 
+def _literal_unit_multiplier(node):
+    return isinstance(node, ast.Constant) and type(node.value) in (int, float) and node.value == 1
+
+
+def _without_unit_multipliers(expression):
+    """Normalize literal multiplication by one in the proof's local AST."""
+    while isinstance(expression, ast.BinOp) and isinstance(expression.op, ast.Mult):
+        if _literal_unit_multiplier(expression.left):
+            expression = expression.right
+        elif _literal_unit_multiplier(expression.right):
+            expression = expression.left
+        else:
+            break
+    return expression
+
+
 def _signed_addends(expression):
     pending = [(expression, 1)]
     while pending:
         node, sign = pending.pop()
+        node = _without_unit_multipliers(node)
         if isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Sub)):
             pending.extend(((node.right, -sign if isinstance(node.op, ast.Sub) else sign),
                             (node.left, sign)))
@@ -70,7 +87,7 @@ def _native_opening(expression, names, path):
     factors = []
     pending = [expression]
     while pending:
-        node = pending.pop()
+        node = _without_unit_multipliers(pending.pop())
         if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mult):
             pending.extend((node.left, node.right))
         else:
@@ -83,8 +100,7 @@ def _native_opening(expression, names, path):
         terms = list(_signed_addends(factor))
         if len(terms) != 2:
             return False
-        ones = [term for term, sign in terms if sign == 1 and isinstance(term, ast.Constant)
-                and type(term.value) in (int, float) and term.value == 1]
+        ones = [term for term, sign in terms if sign == 1 and _literal_unit_multiplier(term)]
         rates = [names.get(term.id) for term, sign in terms if sign == 1 and isinstance(term, ast.Name)]
         if len(ones) != 1 or len(rates) != 1:
             return False
@@ -119,8 +135,10 @@ def _recognized_amounts(index, path):
             if isinstance(term, ast.Constant) and type(term.value) in (int, float):
                 opening_weight += sign * term.value
                 continue
-            if not (isinstance(term, ast.BinOp) and isinstance(term.op, ast.Div)
-                    and isinstance(term.right, ast.Name) and is_opening(names.get(term.right.id))):
+            if not isinstance(term, ast.BinOp) or not isinstance(term.op, ast.Div):
+                break
+            denominator = _without_unit_multipliers(term.right)
+            if not isinstance(denominator, ast.Name) or not is_opening(names.get(denominator.id)):
                 break
             dividend = _named_amounts(term.left, names, index)
             if dividend is None:

@@ -320,3 +320,44 @@ def test_zero_stress_rates_preserve_the_path_and_native_sensitivities():
     assert before["sensitivities"] == after["sensitivities"]
     assert all(not item["growth_parameter_ids"] for business in receipt["exposures"].values()
                for item in business.values())
+
+
+@pytest.mark.parametrize("location, formula", [
+    ("amount", "x0 + 1 * x1"),
+    ("amount", "x0 + x1 * 1.0"),
+    ("growth", "(x0 / x1 - 1) * 1"),
+    ("growth", "1.0 * (x0 / (1 * x1) - 1)"),
+])
+def test_unit_multiplier_preserves_the_same_proven_booked_flow(location, formula):
+    data, request = _model_and_request()
+    for scenario in SCENARIOS:
+        pid = f"annual_0_{scenario}" if location == "amount" else f"growth_0_{scenario}_2026"
+        parameter(data, pid)["formula"] = formula
+    original = deepcopy(data)
+    native_result = run_forecast(deepcopy(data))
+    stressed, receipt = timing_bridge.build_shared_recognition_stress(data, **request)
+    assert data == original
+    forecast = run_forecast(stressed)
+    validate_published_forecast(forecast, stressed)
+    scope = receipt["exposures"][data["segments"][0]["name"]]["base"]["recognized_addend"]
+    assert scope["pending_origin_ids"] == ["h2_0_base"]
+    assert scope["recognized_coefficient"] == 1
+    before = native_result["consolidated_forecast"]["base"]["annual_revenue"]
+    after = forecast["consolidated_forecast"]["base"]["annual_revenue"]
+    assert before["2026"] == pytest.approx(165)
+    assert after["2026"] == pytest.approx(150.935)
+    assert after["2027"] == pytest.approx(before["2027"] + 9.7)
+    assert after["2028"] == pytest.approx(before["2028"])
+
+
+def test_model_input_equal_to_one_is_not_a_literal_identity():
+    data, request = _model_and_request()
+    scale = _ratio(data, "conditional_exposure_scale", 1.0, 2026, "all")
+    for scenario in SCENARIOS:
+        growth = parameter(data, f"growth_0_{scenario}_2026")
+        growth["input_parameter_ids"].append(scale)
+        growth["formula"] = "(x0 / x1 - 1) * x2"
+    original = run_forecast(deepcopy(data))
+    assert original["consolidated_forecast"]["base"]["annual_revenue"]["2026"] == pytest.approx(165)
+    with pytest.raises(ForecastInputError, match="forecast path"):
+        timing_bridge.build_shared_recognition_stress(data, **request)
