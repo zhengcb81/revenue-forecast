@@ -1,11 +1,8 @@
-"""OWNERPKG-REVENUE-FORECAST-01 §5.6 write/read boundary regression pin.
+"""Keep the owner-root catalog boundary independent of the job facade.
 
-The job facade must not relax the existing ``--owner-root`` discipline of the
-public catalog CLIs: exactly nine read-only commands may take the trusted
-root, ``import-w09`` stays the only catalog WRITE_COMMANDS, and
-``assert_read_only_command`` keeps refusing to hand the trusted root to a
-write command.  These pins live next to the facade so a future facade change
-that touches the seam fails here first.
+The catalog deployment suite owns the public command inventory. These checks
+exercise how the trusted workspace is handled for those commands and keep
+job actions outside the catalog boundary.
 """
 
 from __future__ import annotations
@@ -28,25 +25,16 @@ from report_catalog_deployment import (  # noqa: E402
 )
 
 
-def test_read_only_commands_are_exactly_the_nine_public_reads():
-    assert READ_ONLY_COMMANDS == frozenset({
-        "list-runs", "list-reports", "get-run", "get-report", "get-model",
-        "get-attempt", "get-calculation", "get-calculation-trace", "get-source-snapshot",
-    })
-
-
-def test_write_commands_stay_exactly_import_w09():
-    assert WRITE_COMMANDS == frozenset({"import-w09"})
-
-
 def test_assert_read_only_command_still_refuses_write_commands(tmp_path):
-    with pytest.raises(DeploymentError) as excinfo:
-        assert_read_only_command("import-w09", str(tmp_path))
-    assert excinfo.value.code == "owner_root_write_forbidden"
+    for command in WRITE_COMMANDS:
+        with pytest.raises(DeploymentError) as excinfo:
+            assert_read_only_command(command, str(tmp_path))
+        assert excinfo.value.code == "owner_root_write_forbidden"
 
 
 def test_assert_read_only_command_allows_reads_with_the_trusted_root():
-    assert assert_read_only_command("list-runs", "<trusted-owner-root>") is None
+    for command in READ_ONLY_COMMANDS:
+        assert assert_read_only_command(command, "<trusted-owner-root>") is None
     assert assert_read_only_command("get-report", None) is None
 
 

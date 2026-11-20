@@ -5,6 +5,10 @@
 > 等一律视为历史或子计划；状态冲突按本节登记的提交与 handoff 绑定 ref 对齐。
 > 状态词统一使用：PLANNED / IN_PROGRESS / BLOCKED / REVIEWED / MERGED / CLOSED。
 
+## 2026-11-20 F4 发布入口复验
+
+RF 原作业查询、版本回告和按原动作读回使用已发布 70165f99，实际宿主端口已配。现有 RF 作业索引为空，缺事件时维持 unknown。独立复验含原阶段范围、失联费用和版本回告，准备条件与边界见 [F4 已发布入口](docs/plans/mb11-rf-2026-11-11/feedback-20261117.md#2026-11-20-f4-已发布入口独立复验)。
+
 ## 2026-11-15 跨仓周跑收据
 
 - `20261115T084227Z` 为 `not-ok`，`ok=false`，退出码 1，告警时间 2026-11-15 08:43:15 UTC。T3 的 CN、HK、US 年报初次下载和损坏件重试共 4 项失败，用时 31.63 秒。下载失败返回 `company-wiki ensure exited 1`、`downloads=0`。损坏件重试返回 `fatal`，用例预期 `upstream_error`。
