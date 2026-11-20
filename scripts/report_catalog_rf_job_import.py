@@ -2,13 +2,14 @@
 
 The importer never runs source preparation or forecast computation. It reads
 one immutable job, verifies the job's own stage artifacts and publication
-record, refreshes the source through company-wiki SourceExport v2, and binds
-that exact source URL to StockWiki's public verified-issuer receipt.
+record, refreshes the selected filing through company-wiki SourceExport v2,
+and binds the original to StockWiki's public verified issuer.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 import hashlib
 import json
 import os
@@ -20,11 +21,12 @@ import unicodedata
 from typing import Any, Callable
 
 from owner_file_lock import OwnerFileLock
-from publication_registry import canonical_sha256, validate_registry_text
+from publication_registry import RegistryError, canonical_sha256, validate_registry_text
 from report_catalog import (
     CatalogError,
     ReportCatalog,
     _frozen_reporting_scale,
+    _validate_bound_forecast_snapshot,
     _sha,
 )
 
@@ -171,37 +173,29 @@ _SOURCE_SCOPE_FIELDS = (
 
 
 def _source_from_input(input_document: dict[str, Any], source_envelope: dict[str, Any]) -> tuple[dict, dict]:
-    ref = None
-    sources = input_document.get("sources")
-    _need(isinstance(sources, list), "source_identity_mismatch", "forecast input sources are missing")
-    traced: list[tuple[dict, dict]] = []
-    for source in sources:
-        if not isinstance(source, dict):
-            continue
-        trace = source.get("company_wiki_trace")
-        if isinstance(trace, dict) and isinstance(trace.get("source_ref"), dict):
-            traced.append((source, trace))
-    _need(len(traced) == 1, "source_identity_mismatch",
-          "forecast input must carry exactly one primary CWP SourceRef")
-    source, trace = traced[0]
-    ref = _source_ref(trace.get("source_ref"))
-    manifest = trace.get("source_manifest")
-    _need(isinstance(manifest, dict), "source_identity_mismatch", "input source manifest is missing")
-    _need(source.get("source_id") == ref["source_id"], "source_identity_mismatch",
-          "forecast source ID differs from CWP SourceRef")
     envelope_source = source_envelope.get("source")
     _need(isinstance(envelope_source, dict), "source_identity_mismatch",
           "source preparation result lacks its source")
     envelope_trace = envelope_source.get("company_wiki_trace")
-    _need(isinstance(envelope_trace, dict)
-          and envelope_trace.get("source_ref") == ref,
+    _need(isinstance(envelope_trace, dict), "source_identity_mismatch",
+          "source preparation result lacks its CWP lineage")
+    ref = _source_ref(envelope_trace.get("source_ref"))
+    sources = input_document.get("sources")
+    _need(isinstance(sources, list), "source_identity_mismatch", "forecast input sources are missing")
+    matches = [source for source in sources
+               if isinstance(source, dict) and source.get("source_id") == ref["source_id"]]
+    _need(len(matches) == 1, "source_identity_mismatch",
+          "the selected FF filing must identify one source in the frozen forecast input")
+    source = matches[0]
+    trace = source.get("company_wiki_trace")
+    _need(isinstance(trace, dict) and trace.get("source_ref") == ref,
           "source_identity_mismatch", "source preparation SourceRef differs from forecast input")
+    manifest = trace.get("source_manifest")
     envelope_manifest = envelope_trace.get("source_manifest")
-    _need(isinstance(envelope_manifest, dict), "source_identity_mismatch",
-          "source preparation manifest is missing")
-    _need(envelope_source.get("source_id") == source.get("source_id") == ref["source_id"]
-          and envelope_source.get("url") == source.get("url")
-          and envelope_source.get("url") == manifest.get("source_url"),
+    _need(isinstance(manifest, dict) and isinstance(envelope_manifest, dict),
+          "source_identity_mismatch", "the frozen source manifest is missing")
+    _need(envelope_source.get("source_id") == ref["source_id"]
+          and envelope_source.get("url") == source.get("url") == manifest.get("source_url"),
           "source_identity_mismatch", "source preparation locator differs from the forecast source")
     _need(all(manifest.get(field) == envelope_manifest.get(field) for field in _SOURCE_SCOPE_FIELDS),
           "source_identity_mismatch", "source preparation scope differs from the forecast source")
@@ -213,7 +207,7 @@ def _validate_issuer_proof(
     entity_id: str, listing_id: str, query: dict[str, str],
     manifest: dict[str, Any], company_name: str,
 ) -> dict[str, Any]:
-    """Validate current StockWiki identity and its exact source-URL issuer proof."""
+    """Bind the CWP source to current public StockWiki issuer evidence."""
     _need(identity.get("schema_version") == "stockwiki.dashboard_identity/1"
           and identity.get("authority") == "stockwiki"
           and identity.get("resolution_status") == "resolved"
@@ -231,8 +225,8 @@ def _validate_issuer_proof(
           "identity_unverified", "StockWiki entity is not verified")
     canonical_name = _text(identity_entity.get("canonical_name"), "identity_unverified")
     _need(_normalized_name(canonical_name) == _normalized_name(company_name)
-          and _normalized_name(canonical_name) == _normalized_name(manifest.get("display_name")),
-          "source_identity_mismatch", "CWP source, RF input and StockWiki names do not identify one issuer")
+          and manifest.get("canonical_entity_id") in (None, entity_id),
+          "source_identity_mismatch", "RF input and CWP source do not match the verified issuer")
     listings = identity_entity.get("listings")
     selected = [item for item in listings if isinstance(item, dict)
                 and item.get("listing_id") == listing_id] if isinstance(listings, list) else []
@@ -288,9 +282,8 @@ def _validate_issuer_proof(
           and receipt.get("same_legal_issuer") is True
           and receipt.get("entity_id") == entity_id
           and receipt.get("identity_revision") == identity_entity.get("identity_revision")
-          and listing_id in receipt.get("listing_ids", [])
-          and receipt.get("evidence_ref") == manifest.get("source_url"),
-          "source_identity_mismatch", "verified issuer receipt does not bind the exact CWP source URL")
+          and listing_id in receipt.get("listing_ids", []),
+          "source_identity_mismatch", "the issuer receipt does not cover the requested listing")
     listing_attributes = receipt.get("listing_attributes")
     receipt_listing = listing_attributes.get(listing_id) if isinstance(listing_attributes, dict) else None
     _need(isinstance(receipt_listing, dict)
@@ -301,6 +294,32 @@ def _validate_issuer_proof(
                       "source_binding_ref",
                   ) if field in listing),
           "issuer_proof_invalid", "verified issuer receipt listing identity differs")
+    # The issuer proof may cite an older filing than the selected FF source.
+    # CWP proves the exact original; the owner identity proves its coordinate.
+    source_market = manifest.get("market")
+    source_security = manifest.get("security_id")
+    same_listing = False
+    if isinstance(source_security, str) and source_security and source_market:
+        for owner_listing in proof_listings:
+            if (not isinstance(owner_listing, dict)
+                    or owner_listing.get("entity_id") != entity_id
+                    or owner_listing.get("market") != source_market
+                    or owner_listing.get("listing_id") not in receipt["listing_ids"]):
+                continue
+            codes = (owner_listing.get("ticker"), owner_listing.get("ticker_raw"))
+            if any(isinstance(code, str) and code.casefold() == source_security.casefold() for code in codes):
+                same_listing = True
+                break
+    source_url = manifest.get("source_url")
+    exact_url = isinstance(source_url, str) and bool(source_url) and receipt.get("evidence_ref") == source_url
+    display_name = manifest.get("display_name")
+    if (exact_url and isinstance(display_name, str) and display_name.strip()
+            and _normalized_name(canonical_name) == _normalized_name(display_name)):
+        binding = {"kind": "issuer_receipt_exact_source_url", "evidence_ref": source_url}
+    else:
+        _need(same_listing, "source_identity_mismatch",
+              "CWP source is not bound to a verified listing of the issuer")
+        binding = {"kind": "verified_issuer_listing_coordinate", "evidence_ref": manifest["source_id"]}
     return {
         "schema_version": "rf-composite-source-identity-proof/1",
         "authority": "company-wiki+stockwiki-public-owners",
@@ -322,7 +341,7 @@ def _validate_issuer_proof(
         "source_document_kind": manifest["document_kind"],
         "source_fiscal_year": manifest["fiscal_year"],
         "source_fiscal_period": manifest["fiscal_period"],
-        "binding": {"kind": "issuer_receipt_exact_source_url", "evidence_ref": manifest["source_url"]},
+        "binding": binding,
     }
 
 
@@ -400,11 +419,7 @@ def _read_job(
     _need(isinstance(ff, dict) and ff.get("status") == "source_candidate"
           and ff.get("downloads") == 0,
           "source_evidence_invalid", "source stage did not retain a reusable filing candidate")
-    period = ff.get("request_period")
-    _need(isinstance(period, dict)
-          and period.get("fiscal_year") == input_document.get("base_year")
-          and period.get("as_of_date") == input_document.get("as_of_date"),
-          "source_evidence_invalid", "source stage request period differs from forecast base")
+
     filing = ff.get("filing")
     _need(isinstance(filing, dict) and filing.get("status") == "source_candidate"
           and filing.get("resolution_outcome") == "reused_existing"
@@ -422,36 +437,63 @@ def _read_job(
         report_bytes.decode("utf-8")
     except UnicodeError as exc:
         raise CatalogError("rf_job_artifact_invalid", "retained Markdown is not UTF-8") from exc
-    registry = validate_registry_text(raw["publication_registry"].decode("utf-8"))
-    matches = [item for item in registry if item.get("artifact_type") == "forecast"
-               and item.get("input_sha256") == result.get("input_sha256")
-               and item.get("result_sha256") == result.get("result_sha256")
-               and item.get("validation_status") == "validated"]
-    _need(len(matches) == 1, "rf_job_publication_invalid",
-          "job publication registry lacks one matching validated forecast")
+    publication = _forecast_publication(raw["publication_registry"], result)
     return job, raw, {
         "input": input_document,
         "result": result,
         "source_result": source_result,
         "source_ref": ref,
         "source_manifest": input_manifest,
-        "publication": matches[0],
+        "publication": publication,
     }
+
+
+def _publication_identity(row: dict[str, Any]) -> str:
+    # Index bookkeeping and annotations can change on re-indexing a result.
+    bookkeeping = {"registered_at", "line_sha256", "prev_line_sha256", "index_schema_version", "note"}
+    return canonical_sha256({key: value for key, value in row.items() if key not in bookkeeping})
+
+
+def _forecast_publication(raw: bytes, result: dict[str, Any]) -> dict[str, Any]:
+    try:
+        registry = validate_registry_text(raw.decode("utf-8"))
+    except (RegistryError, AttributeError, TypeError, ValueError) as exc:
+        raise CatalogError("rf_job_publication_invalid", "job publication registry did not verify") from exc
+    matches = [row for row in registry if row.get("artifact_type") == "forecast"
+               and row.get("input_sha256") == result.get("input_sha256")
+               and row.get("result_sha256") == result.get("result_sha256")
+               and row.get("validation_status") == "validated"]
+    _need(bool(matches), "rf_job_publication_invalid",
+          "job publication registry lacks a matching validated forecast")
+    _need(len({_publication_identity(row) for row in matches}) == 1,
+          "rf_job_publication_invalid", "job publication registry has conflicting validation records")
+    return matches[0]
 
 
 def _validate_source_period(
     manifest: dict[str, Any], *, input_document: dict[str, Any], source_result: dict[str, Any]
 ) -> None:
-    _need(manifest.get("document_kind") == "annual_report"
-          and manifest.get("fiscal_year") == input_document.get("base_year")
-          and manifest.get("fiscal_period") == "FY",
-          "source_period_mismatch", "CWP source is not the forecast's matching annual fiscal period")
+    # The selected filing can be the latest interim evidence. Annual base
+    # coverage and amount reconciliation are owned by formal forecast validation.
     ff = source_result["filing_fetch"]
     filing = ff["filing"]
+    period = ff.get("request_period")
+    as_of = input_document.get("as_of_date")
+    _need(isinstance(period, dict) and period.get("as_of_date") == as_of,
+          "source_period_mismatch", "FF request information cutoff differs from the forecast")
+    for field in ("fiscal_year", "fiscal_period"):
+        requested = period.get(field)
+        _need(requested is None or requested == manifest.get(field),
+              "source_period_mismatch", "CWP source differs from the requested FF filing period")
     for field in ("document_kind", "fiscal_year", "fiscal_period"):
-        _need(filing.get(field) == manifest.get(field), "source_period_mismatch",
-              "CWP manifest period differs from the FF source candidate")
-    _need(manifest.get("published_date") <= input_document.get("as_of_date"),
+        _need(filing.get(field) == manifest.get(field),
+              "source_period_mismatch", "CWP manifest period differs from the FF source candidate")
+    try:
+        published = date.fromisoformat(manifest["published_date"])
+        information_cutoff = date.fromisoformat(as_of)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise CatalogError("source_period_mismatch", "source or forecast information date is invalid") from exc
+    _need(published <= information_cutoff,
           "source_period_mismatch", "source was published after the forecast information date")
 
 
@@ -511,8 +553,9 @@ def _validate_job_attempt(catalog: ReportCatalog, attempt: dict[str, Any]) -> No
 
 
 def _catalog_artifacts(
-    catalog: ReportCatalog, job_id: str, raw: dict[str, bytes]
-) -> tuple[dict[str, dict[str, Any]], list[Path]]:
+    catalog: ReportCatalog, job_id: str, raw: dict[str, bytes],
+    result: dict[str, Any], publication: dict[str, Any],
+) -> tuple[dict[str, dict[str, Any]], list[Path], dict[str, Any]]:
     import_root = (catalog.root / "artifacts" / "report_catalog" / "rf_job_imports").resolve()
     _need(import_root.is_relative_to(catalog.root), "catalog_path_forbidden",
           "import artifact root escapes the RF owner root")
@@ -523,19 +566,27 @@ def _catalog_artifacts(
     refs: dict[str, dict[str, Any]] = {}
     created: list[Path] = []
     try:
-        for key, relative in SOURCE_FILES.items():
-            filename = relative.replace("/", "__")
+        filenames = {**SOURCE_FILES, "forecast_snapshot": "forecast-snapshot.json"}
+        for key, expected in raw.items():
+            filename = filenames[key].replace("/", "__")
             path = directory / filename
-            expected = raw[key]
             if path.exists():
-                _need(path.is_file() and path.read_bytes() == expected,
-                      "rf_job_import_conflict", "an imported job artifact already exists with different bytes")
+                _need(path.is_file(), "rf_job_import_conflict", "an imported job artifact is not a file")
+                retained = path.read_bytes()
+                if key == "publication_registry" and retained != expected:
+                    original = _forecast_publication(retained, result)
+                    _need(_publication_identity(original) == _publication_identity(publication),
+                          "rf_job_import_conflict", "the retained publication differs from replay")
+                    publication = original
+                else:
+                    _need(retained == expected, "rf_job_import_conflict",
+                          "an imported job artifact already exists with different bytes")
             else:
                 from owner_atomic_io import replace_file_bytes
                 replace_file_bytes(path, expected)
                 created.append(path)
             refs[key] = catalog.artifact_ref(path)
-        return refs, created
+        return refs, created, publication
     except Exception:
         _remove_created_files(created, directory, import_root)
         raise
@@ -578,11 +629,11 @@ def _job_import_lock(catalog: ReportCatalog, job_id: str) -> OwnerFileLock:
 def _register_import_records(
     catalog: ReportCatalog, *, job_id: str, source_raw: dict[str, bytes],
     run: dict[str, Any], result: dict[str, Any], ref: dict[str, Any],
-    job: dict[str, Any], publication: dict[str, Any], report_id: str,
+    job: dict[str, Any], publication: dict[str, Any], report_id: str, snapshot_id: str | None,
     verify_current: Callable[[], None],
 ) -> dict[str, Any]:
     """Stage and register one job while its job-ID lock is held."""
-    refs, created_files = _catalog_artifacts(catalog, job_id, source_raw)
+    refs, created_files, publication = _catalog_artifacts(catalog, job_id, source_raw, result, publication)
     attempt_id = job_id + ".succeeded"
     company = run["company"]
     attempt = {
@@ -594,7 +645,8 @@ def _register_import_records(
         "report_ids": [report_id],
         "error_code": None,
         "source_evidence": {
-            "kind": "rf_job_record", "job_id": job_id, "artifacts": refs,
+            "kind": "rf_job_record", "job_id": job_id,
+            "artifacts": {key: refs[key] for key in SOURCE_FILES},
             "report_sha256": _sha(source_raw["report_markdown"]),
         },
     }
@@ -621,8 +673,8 @@ def _register_import_records(
         "forecast_artifact": refs["compute_result"],
         "input_artifact": refs["compute_input"],
         "markdown_artifact": refs["report_markdown"],
-        "snapshot_artifact": None,
-        "snapshot_id": None,
+        "snapshot_artifact": refs.get("forecast_snapshot"),
+        "snapshot_id": snapshot_id,
     }
     try:
         existing_runs, existing_attempts, existing_reports, _ = catalog._index()
@@ -645,6 +697,7 @@ def _register_import_records(
                 "input_sha256": result["input_sha256"],
                 "result_sha256": result["result_sha256"],
                 "source_ref": ref,
+                **({"snapshot_id": snapshot_id} if snapshot_id is not None else {}),
                 "forecast_executions": 0,
             }
         receipt = catalog.add_records(
@@ -668,6 +721,7 @@ def _register_import_records(
         "input_sha256": result["input_sha256"],
         "result_sha256": result["result_sha256"],
         "source_ref": ref,
+        **({"snapshot_id": snapshot_id} if snapshot_id is not None else {}),
         "forecast_executions": 0,
     }
 
@@ -684,6 +738,7 @@ def import_rf_job(
     source_export: Callable[[dict[str, Any]], dict[str, Any]],
     identity_resolver: Callable[[str, str], dict[str, Any]],
     issuer_proof: Callable[[dict[str, str]], dict[str, Any]],
+    snapshot_file: Path | None = None,
 ) -> dict[str, Any]:
     """Admit one already-succeeded RF job, or return exact idempotent replay."""
     _need(isinstance(entity_id, str) and _ENTITY_ID.fullmatch(entity_id) is not None
@@ -699,6 +754,16 @@ def import_rf_job(
     )
     input_document = parsed["input"]
     result = parsed["result"]
+    snapshot_id = None
+    if snapshot_file is not None:
+        try:
+            snapshot_raw = snapshot_file.read_bytes()
+        except OSError as exc:
+            raise CatalogError("artifact_unavailable", "retained forecast snapshot is unavailable") from exc
+        snapshot = _read_json_bytes(snapshot_raw, "snapshot_validation_failed")
+        _validate_bound_forecast_snapshot(snapshot, result)
+        snapshot_id = snapshot["snapshot_id"]
+        source_raw["forecast_snapshot"] = snapshot_raw
     source_result = parsed["source_result"]
     ref = parsed["source_ref"]
     source_bundle = source_export(ref)
@@ -706,7 +771,7 @@ def import_rf_job(
     _validate_source_period(manifest, input_document=input_document, source_result=source_result)
     input_manifest = parsed["source_manifest"]
     for field in (
-        "display_name", "document_kind", "fiscal_year", "fiscal_period", "form_type",
+        "document_kind", "fiscal_year", "fiscal_period", "form_type",
         "market", "security_id", "published_date", "period_end", "provider",
         "provider_document_id", "source_url",
     ):
@@ -767,7 +832,7 @@ def import_rf_job(
         "model_metadata": {"schema_version": result["schema_version"],
                            "engine_version": result["engine_version"]},
         "artifact_revision": result["forecast_version"],
-        "source_snapshot_refs": [ref],
+        "source_snapshot_refs": catalog._source_refs(result),
         "source_bound_identity_evidence": composite,
     }
     # Re-read both public owners immediately before first admission.
@@ -793,7 +858,7 @@ def import_rf_job(
     try:
         return _register_import_records(
             catalog, job_id=job_id, source_raw=source_raw, run=run, result=result,
-            ref=ref, job=job, publication=parsed["publication"], report_id=report_id,
+            ref=ref, job=job, publication=parsed["publication"], report_id=report_id, snapshot_id=snapshot_id,
             verify_current=verify_current,
         )
     finally:

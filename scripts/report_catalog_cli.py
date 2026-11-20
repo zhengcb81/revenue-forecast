@@ -95,7 +95,7 @@ def main(argv: list[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     _query_filters(commands.add_parser("list-runs"))
     _query_filters(commands.add_parser("list-reports"))
-    for name in ("get-run", "get-report", "get-model"):
+    for name in ("get-run", "get-report", "get-model", "get-forecast-snapshot"):
         command = commands.add_parser(name)
         command.add_argument("--run-id" if name == "get-run" else "--report-id", required=True)
     attempt = commands.add_parser("get-attempt")
@@ -144,6 +144,8 @@ def main(argv: list[str] | None = None) -> int:
             output["calculation_trace_page_protocol"] = TRACE_PAGE_PROTOCOL
         elif args.command == "get-model":
             output = catalog.get_model(args.report_id)
+        elif args.command == "get-forecast-snapshot":
+            output = catalog.get_forecast_snapshot(args.report_id)
         elif args.command == "get-calculation":
             output = catalog.get_calculation(args.report_id, args.node_id)
         elif args.command == "get-calculation-trace":

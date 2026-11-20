@@ -203,6 +203,7 @@ def _proof(query: dict) -> dict:
 
 def _job_fixture(
     tmp_path: Path, *, source_envelope_changes: dict | None = None,
+    with_interim: bool = False, interim_security_id: str = "TST",
 ) -> tuple[Path, dict]:
     ref = _source_ref()
     data = forecast_document()
@@ -232,16 +233,50 @@ def _job_fixture(
                 bind_source_aliases(child)
 
     bind_source_aliases(data)
+    source_refs = [ref]
+    if with_interim:
+        digest = _sha(b"the interim report")
+        interim_ref = {
+            **ref,
+            "content_sha256": digest,
+            "document_id": f"urn:company-wiki:document:sha256:{digest}",
+            "source_id": f"urn:company-wiki:source:sha256:{digest}",
+            "byte_size": len(b"the interim report"),
+        }
+        interim_manifest = {
+            **_manifest(interim_ref),
+            "document_kind": "semi_annual_report",
+            "fiscal_year": 2026,
+            "fiscal_period": "H1",
+            "period_end": "2026-06-30",
+            "published_date": "2026-07-01",
+            "source_url": "https://www.sec.gov/Archives/test/issuer-one-10q.htm",
+            "display_name": "Test Short Name",
+            "security_id": interim_security_id,
+        }
+        interim_source = {
+            **data["sources"][0],
+            "source_id": interim_ref["source_id"],
+            "url": interim_manifest["source_url"],
+            "published_date": interim_manifest["published_date"],
+            "company_wiki_trace": {"source_ref": interim_ref, "source_manifest": interim_manifest},
+        }
+        data["sources"].append(interim_source)
+        source_refs.append(interim_ref)
+        ref = interim_ref
+        source_id = ref["source_id"]
+    else:
+        interim_manifest = None
     result = run_forecast(data)
     input_bytes = _json_bytes(data)
     result_bytes = _json_bytes(result)
     report_bytes = render_markdown(result).encode("utf-8")
-    manifest = _manifest(ref)
+    manifest = interim_manifest or _manifest(ref)
     source_envelope = {
         "schema_version": "source-preparation-result/1",
         "source": {
             "source_id": source_id,
-            "url": SOURCE_URL,
+            "url": manifest["source_url"],
             "company_wiki_trace": {"source_ref": ref, "source_manifest": manifest},
         },
         "filing_fetch": {
@@ -250,13 +285,15 @@ def _job_fixture(
             "calls": 2,
             "downloads": 0,
             "request_period": {
-                "mode": "exact", "fiscal_year": 2025, "fiscal_period": None,
+                "mode": "exact", "fiscal_year": manifest["fiscal_year"],
+                "fiscal_period": manifest["fiscal_period"] if with_interim else None,
                 "as_of_date": data["as_of_date"],
             },
             "filing": {
                 "status": "source_candidate", "resolution_outcome": "reused_existing",
-                "download_events": 0, "document_kind": "annual_report",
-                "fiscal_year": 2025, "fiscal_period": "FY", "source_ref": ref,
+                "download_events": 0, "document_kind": manifest["document_kind"],
+                "fiscal_year": manifest["fiscal_year"], "fiscal_period": manifest["fiscal_period"],
+                "source_ref": ref,
             },
         },
     }
@@ -309,7 +346,8 @@ def _job_fixture(
         "forecast_input": data,
         "scope": {
             "company_query": "Test Co", "information_as_of": data["as_of_date"],
-            "source_snapshot_ids": [source_id], "scenario_set": ["low", "base", "high"],
+            "source_snapshot_ids": [item["content_sha256"] for item in source_refs],
+            "scenario_set": ["low", "base", "high"],
             "horizon_end_year": max(data["forecast_years"]),
         },
         "budget": {"new_downloads": 0, "paid_model_calls": 0, "wall_seconds_used": 1.0},
@@ -341,17 +379,14 @@ def _job_fixture(
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
     return job_dir.parents[3], {
-        "job": job, "result": result, "input": data, "ref": ref,
+        "job": job, "result": result, "input": data, "ref": ref, "job_dir": job_dir,
         "job_sha256": _sha(files["job.json"]),
         "report_sha256": _sha(report_bytes),
     }
 
 
-def _adapters(metadata: dict, *, proof_url: str | None = None, market: str = "US") -> tuple:
-    manifest = _manifest(metadata["ref"])
-    manifest["market"] = market
+def _adapters(metadata: dict, *, market: str = "US") -> tuple:
     bundle = _source_bundle(metadata["ref"], manifest_changes={"market": market})
-    query_holder: dict = {}
 
     def export(source_ref: dict) -> dict:
         assert source_ref == metadata["ref"]
@@ -361,18 +396,7 @@ def _adapters(metadata: dict, *, proof_url: str | None = None, market: str = "US
         assert (entity_id, listing_id) == (ENTITY_ID, LISTING_ID)
         return _identity()
 
-    def proof(query: dict) -> dict:
-        query_holder.update(query)
-        response = _proof(query)
-        if proof_url is not None:
-            receipt = response["owner_package"]["trusted_context"]["identity_receipts"]["IVR_test-receipt"]
-            receipt["evidence_ref"] = proof_url
-            response["receipt_sha256"] = canonical_sha256({
-                key: value for key, value in response.items() if key != "receipt_sha256"
-            })
-        return response
-
-    return export, identity, proof
+    return export, identity, _proof
 
 
 def test_public_import_registers_completed_job_and_replays_without_duplication(tmp_path: Path) -> None:
@@ -408,19 +432,138 @@ def test_public_import_registers_completed_job_and_replays_without_duplication(t
     assert run["source_bound_identity_evidence"]["binding"]["kind"] == "issuer_receipt_exact_source_url"
 
 
-@pytest.mark.parametrize(
-    ("proof_url", "manifest_market", "expected_code"),
-    [
-        ("https://example.com/unrelated", "US", "source_identity_mismatch"),
-        (None, "HK", "source_identity_mismatch"),
-    ],
-)
-def test_source_identity_mismatch_is_refused_before_catalog_admission(
-    tmp_path: Path, proof_url: str | None, manifest_market: str, expected_code: str,
-) -> None:
+def _import_interim_job(catalog, root, metadata, **kwargs):
+    sources = {
+        item["source_id"]: item["company_wiki_trace"]["source_manifest"]
+        for item in metadata["input"]["sources"]
+    }
+    def identity(entity_id, listing_id):
+        assert (entity_id, listing_id) == (ENTITY_ID, LISTING_ID)
+        return _identity()
+
+    source_export = kwargs.pop(
+        "source_export",
+        lambda ref: _source_bundle(ref, manifest_changes=sources[ref["source_id"]]),
+    )
+    return import_rf_job(
+        catalog, job_root=root, job_id=JOB_ID, entity_id=ENTITY_ID, listing_id=LISTING_ID,
+        expected_job_sha256=metadata["job_sha256"],
+        expected_report_sha256=metadata["report_sha256"],
+        source_export=source_export, identity_resolver=identity, issuer_proof=_proof, **kwargs,
+    )
+
+
+def _append_publication(metadata, **changes):
+    path = metadata["job_dir"] / "registry/publications.jsonl"
+    entries = path.read_bytes().splitlines()
+    payload = json.loads(entries[0])
+    payload.pop("line_sha256")
+    payload.update(
+        registered_at="2026-07-12T12:02:00Z",
+        prev_line_sha256=json.loads(entries[-1])["line_sha256"],
+    )
+    payload.update(changes)
+    path.write_bytes(path.read_bytes() + _json_bytes({**payload, "line_sha256": canonical_sha256(payload)}) + b"\n")
+
+
+def test_interim_source_can_supplement_annual_base_and_publish_frozen_snapshot(tmp_path):
+    from revenue_backtest import create_snapshot
+
+    root, metadata = _job_fixture(tmp_path, with_interim=True)
+    _append_publication(metadata)
+    snapshot_file = tmp_path / "retained-snapshot.json"
+    snapshot = create_snapshot(metadata["input"], metadata["input"]["forecast_version"])
+    assert snapshot["forecast_result"]["result_sha256"] == metadata["result"]["result_sha256"]
+    snapshot_bytes = json.dumps(snapshot, ensure_ascii=False, indent=2).encode("utf-8")
+    snapshot_file.write_bytes(snapshot_bytes)
+    catalog = ReportCatalog(root=tmp_path / "catalog")
+
+    first = _import_interim_job(catalog, root, metadata, snapshot_file=snapshot_file)
+    assert first["status"] == "registered"
+    assert first["snapshot_id"] == snapshot["snapshot_id"]
+    assert first["forecast_executions"] == 0
+    assert first["source_ref"] == metadata["ref"]
+    run = catalog.get_run(JOB_ID)["run"]
+    assert run["status"] == "complete"
+    assert len(run["source_snapshot_refs"]) == 2
+    assert run["attempts"][0]["status"] == "succeeded"
+    frozen = catalog.get_forecast_snapshot(first["report_id"])["forecast_snapshot"]
+    assert frozen["snapshot_id"] == snapshot["snapshot_id"]
+    assert frozen["result_sha256"] == metadata["result"]["result_sha256"]
+    assert frozen["bytes_sha256"] == _sha(snapshot_bytes)
+    assert "input_document" not in frozen
+    row = catalog._index()[2][first["report_id"]]
+    assert row["snapshot_artifact"]["bytes_sha256"] == _sha(snapshot_bytes)
+
+    _append_publication(metadata, registered_at="2026-07-12T12:03:00Z")
+    again = _import_interim_job(catalog, root, metadata, snapshot_file=snapshot_file)
+    assert again["status"] == "already_registered"
+    assert again["catalog_revision"] == first["catalog_revision"]
+
+    retained_path = catalog.root / row["snapshot_artifact"]["relative_path"]
+    retained_path.write_bytes(snapshot_bytes + b"\n")
+    with pytest.raises(CatalogError) as error:
+        catalog.get_forecast_snapshot(first["report_id"])
+    assert error.value.code == "artifact_sha_mismatch"
+
+
+def test_interim_registrations_with_conflicting_validation_receipts_are_refused(tmp_path):
+    root, metadata = _job_fixture(tmp_path, with_interim=True)
+    _append_publication(metadata, receipt_sha256="c" * 64)
+    catalog = ReportCatalog(root=tmp_path / "catalog")
+    with pytest.raises(CatalogError) as error:
+        _import_interim_job(catalog, root, metadata)
+    assert error.value.code == "rf_job_publication_invalid"
+    assert catalog.list_reports(ENTITY_ID)["items"] == []
+
+
+def test_interim_filing_must_still_identify_the_forecast_issuer(tmp_path):
+    root, metadata = _job_fixture(tmp_path, with_interim=True, interim_security_id="PEER")
+    catalog = ReportCatalog(root=tmp_path / "catalog")
+    with pytest.raises(CatalogError) as error:
+        _import_interim_job(catalog, root, metadata)
+    assert error.value.code == "source_identity_mismatch"
+    assert catalog.list_reports(ENTITY_ID)["items"] == []
+
+
+def test_interim_filing_must_still_match_the_requested_period(tmp_path):
+    root, metadata = _job_fixture(tmp_path, with_interim=True)
+    path = metadata["job_dir"] / "stages/source/result-envelope.json"
+    envelope = json.loads(path.read_bytes())
+    envelope["filing_fetch"]["request_period"]["fiscal_period"] = "Q1"
+    data = _json_bytes(envelope)
+    path.write_bytes(data)
+    job = metadata["job"]
+    job["result"]["stage_artifacts"]["source"]["sha256"] = _sha(data)
+    job["stages"]["source"]["attempts"][0]["result_sha256"] = _sha(data)
+    raw_job = _json_bytes(job)
+    (metadata["job_dir"] / "job.json").write_bytes(raw_job)
+    metadata["job_sha256"] = _sha(raw_job)
+    catalog = ReportCatalog(root=tmp_path / "catalog")
+    with pytest.raises(CatalogError) as error:
+        _import_interim_job(catalog, root, metadata)
+    assert error.value.code == "source_period_mismatch"
+    assert catalog.list_reports(ENTITY_ID)["items"] == []
+
+
+def test_other_forecast_snapshot_cannot_bind_to_successful_job(tmp_path):
+    from revenue_backtest import create_snapshot
+
+    root, metadata = _job_fixture(tmp_path, with_interim=True)
+    other = create_snapshot(metadata["input"], "another-snapshot-version")
+    path = tmp_path / "other-snapshot.json"
+    path.write_bytes(_json_bytes(other))
+    catalog = ReportCatalog(root=tmp_path / "catalog")
+    with pytest.raises(CatalogError) as error:
+        _import_interim_job(catalog, root, metadata, snapshot_file=path)
+    assert error.value.code == "artifact_identity_mismatch"
+    assert catalog.list_reports(ENTITY_ID)["items"] == []
+
+
+def test_source_identity_mismatch_is_refused_before_catalog_admission(tmp_path: Path) -> None:
     job_root, metadata = _job_fixture(tmp_path)
     catalog = ReportCatalog(root=tmp_path / "catalog")
-    export, identity, proof = _adapters(metadata, proof_url=proof_url, market=manifest_market)
+    export, identity, proof = _adapters(metadata, market="HK")
     with pytest.raises(CatalogError) as error:
         import_rf_job(
             catalog, job_root=job_root, job_id=JOB_ID, entity_id=ENTITY_ID,
@@ -429,7 +572,7 @@ def test_source_identity_mismatch_is_refused_before_catalog_admission(
             source_export=export,
             identity_resolver=identity, issuer_proof=proof,
         )
-    assert error.value.code == expected_code
+    assert error.value.code == "source_identity_mismatch"
     assert catalog.list_reports(ENTITY_ID)["items"] == []
 
 

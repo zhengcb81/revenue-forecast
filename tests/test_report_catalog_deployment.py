@@ -358,7 +358,8 @@ def test_every_command_is_classified_as_read_only_or_write():
     assert WRITE_COMMANDS == {"import-w09"}
     assert READ_ONLY_COMMANDS == {"list-runs", "list-reports", "get-run", "get-report",
                                    "get-model", "get-attempt", "get-calculation",
-                                   "get-calculation-trace", "get-calculation-trace-page", "get-source-snapshot"}
+                                   "get-calculation-trace", "get-calculation-trace-page",
+                                   "get-source-snapshot", "get-forecast-snapshot"}
     assert not READ_ONLY_COMMANDS & WRITE_COMMANDS
 
 

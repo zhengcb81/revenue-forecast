@@ -103,6 +103,17 @@ def _date(value: Any, name: str) -> str:
     return value
 
 
+def _validate_bound_forecast_snapshot(snapshot: dict, forecast: dict) -> None:
+    result = snapshot.get("forecast_result")
+    _require(isinstance(result, dict) and snapshot.get("input_sha256") == forecast.get("input_sha256")
+             and result.get("result_sha256") == forecast.get("result_sha256"),
+             "artifact_identity_mismatch", "snapshot does not bind this report's input and result")
+    try:
+        validate_snapshot(snapshot)
+    except (ValueError, KeyError, TypeError, ArithmeticError) as exc:
+        raise CatalogError("snapshot_validation_failed", "frozen snapshot validation failed") from exc
+
+
 class ReportCatalog:
     def __init__(self, *, root: Path | None = None, catalog_file: Path | None = None):
         self.root = (root or Path(__file__).resolve().parents[1]).resolve()
@@ -281,24 +292,18 @@ class ReportCatalog:
                 validate_published_forecast(result, source_input)
             except Exception as exc:
                 raise CatalogError("report_validation_failed", "strong forecast validation failed") from exc
-        for name in ("markdown_artifact", "snapshot_artifact"):
-            ref = record.get(name)
-            if ref is not None:
-                if name == "snapshot_artifact":
-                    snapshot = self._read_json(ref)
-                    _require(snapshot.get("snapshot_id") == record.get("snapshot_id"),
-                             "artifact_identity_mismatch", "snapshot ID changed")
-                    _require(snapshot.get("input_sha256") == record.get("input_sha256") and
-                             snapshot.get("forecast_result", {}).get("result_sha256") ==
-                             record.get("result_sha256"), "artifact_identity_mismatch",
-                             "snapshot is not a representation of this report")
-                    try:
-                        validate_snapshot(snapshot)
-                    except Exception as exc:
-                        raise CatalogError("snapshot_validation_failed", "frozen snapshot validation failed") from exc
-                else:
-                    self._read_artifact(ref)
+        if record.get("markdown_artifact") is not None:
+            self._read_artifact(record["markdown_artifact"])
+        if record.get("snapshot_artifact") is not None:
+            self._read_forecast_snapshot(record)
         return result
+
+    def _read_forecast_snapshot(self, record: dict) -> dict:
+        snapshot = self._read_json(record["snapshot_artifact"])
+        _require(snapshot.get("snapshot_id") == record.get("snapshot_id"),
+                 "artifact_identity_mismatch", "snapshot ID changed")
+        _validate_bound_forecast_snapshot(snapshot, record)
+        return snapshot
 
     def _validate_attempt_source(self, attempt: dict[str, Any]) -> None:
         evidence = attempt.get("source_evidence")
@@ -554,13 +559,34 @@ class ReportCatalog:
         _assert_pathless(output)
         return output
 
-    def _exact_report(self, report_id: str) -> tuple[dict, dict, str]:
+    def _report_record(self, report_id: str) -> tuple[dict, str]:
         _, _, reports, revision = self._index()
         key = _clean_id(report_id, "report_id")
         _require(key in reports, "not_found", "report ID is not registered")
-        record = reports[key]
+        return reports[key], revision
+
+    def _exact_report(self, report_id: str) -> tuple[dict, dict, str]:
+        record, revision = self._report_record(report_id)
         result = self._validate_report_artifact(record)
         return record, result, revision
+
+    def get_forecast_snapshot(self, report_id: str) -> dict:
+        """Return verified frozen model anchors without its owner-local input."""
+        record, revision = self._report_record(report_id)
+        _require(record.get("snapshot_artifact") is not None,
+                 "not_found", "forecast snapshot is not registered for this report")
+        snapshot = self._read_forecast_snapshot(record)
+        view = {field: snapshot[field] for field in (
+            "snapshot_id", "snapshot_schema_version", "input_sha256", "forecast_result_sha256",
+            "as_of_date", "forecast_version",
+        )}
+        output = {"schema_version": SCHEMA_VERSION, "catalog_revision": revision,
+                  "forecast_snapshot": {
+                      **view, "report_id": report_id, "result_sha256": record["result_sha256"],
+                      "bytes_sha256": record["snapshot_artifact"]["bytes_sha256"],
+                  }}
+        _assert_pathless(output)
+        return output
 
     @staticmethod
     def _source_refs(result: dict) -> list[dict]:

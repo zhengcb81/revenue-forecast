@@ -98,3 +98,33 @@ def test_allowed_actions_matrix():
     assert _allowed_actions("failed") == ["resume", "reconcile"]
     assert _allowed_actions("interrupted") == ["resume", "reconcile"]
     assert _allowed_actions("unknown") == ["reconcile"]
+
+
+def test_terminal_status_and_list_use_no_activity_lock(tmp_path, monkeypatch):
+    service, _ = _facade(tmp_path)
+    original = service.submit(_request())["job_view"]
+
+    def denied(_):
+        raise PermissionError("a read-only status caller cannot open the activity lock")
+
+    monkeypatch.setattr(facade.OwnerFileLock, "is_locked", denied)
+    assert service.get_status(original["owner_job_id"])["job_view"] == original
+    assert service.list_jobs()["jobs"] == [original]
+
+
+def test_unobservable_active_lock_does_not_allow_resume(tmp_path, monkeypatch):
+    service, _ = _facade(tmp_path)
+    original = service.submit(_request())["job_view"]
+    job_id = original["owner_job_id"]
+    durable = service.store.load_job(job_id)
+    durable["stages"]["publication"]["attempts"][-1]["status"] = "running"
+    service.store.save_job(durable)
+
+    def denied(_):
+        raise PermissionError("no permission to inspect this lock")
+
+    monkeypatch.setattr(facade.OwnerFileLock, "is_locked", denied)
+    view = service.get_status(job_id)["job_view"]
+    assert view["status"] == "unknown"
+    assert view["status_known"] is False
+    assert view["allowed_actions"] == ["reconcile"]

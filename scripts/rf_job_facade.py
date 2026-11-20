@@ -1218,7 +1218,20 @@ def _cost_projection(job: dict[str, Any], status: str) -> tuple[dict[str, Any] |
 
 def job_view(job: dict[str, Any], store: JobStore, *, lock_alive: bool | None = None) -> dict[str, Any]:
     if lock_alive is None:
-        lock_alive = store.lock(str(job.get("owner_job_id", ""))).is_locked()
+        # A lock only distinguishes a recorded running attempt from a dead
+        # one. Terminal records and their artifacts are readable without it.
+        stages = job.get("stages")
+        lock_alive = False
+        if isinstance(stages, dict) and set(stages) == set(STAGES) and any(
+            (_last_attempt(stage) or {}).get("status") == "running"
+            for stage in stages.values() if isinstance(stage, dict)
+        ):
+            try:
+                lock_alive = store.lock(job["owner_job_id"]).is_locked()
+            except OSError:
+                # Inaccessible is not the same as abandoned. Do not offer a
+                # retry when the owner may still be performing paid work.
+                return _unknown_view(job["owner_job_id"])
     status = derive_live_status(job, store, lock_alive=lock_alive)
     if status == STATUS_UNKNOWN:
         # an unparsable attempt record means the state is NOT known: keep the

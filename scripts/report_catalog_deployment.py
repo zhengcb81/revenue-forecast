@@ -48,7 +48,7 @@ MANAGED_CATALOG_DIRECTORY = ("artifacts", "report_catalog")
 READ_ONLY_COMMANDS = frozenset({
     "list-runs", "list-reports", "get-run", "get-report", "get-model",
     "get-attempt", "get-calculation", "get-calculation-trace", "get-calculation-trace-page",
-    "get-source-snapshot",
+    "get-source-snapshot", "get-forecast-snapshot",
 })
 WRITE_COMMANDS = frozenset({"import-w09"})
 

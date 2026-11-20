@@ -180,6 +180,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="independently recorded SHA-256 of the retained report Markdown")
     rf_job.add_argument("--entity-id", required=True)
     rf_job.add_argument("--listing-id", required=True)
+    rf_job.add_argument("--snapshot-file", type=Path,
+                        help="optional existing RF model snapshot bound to this report")
     args = parser.parse_args(raw)
     try:
         owner_root = _admin_owner_root(
@@ -205,6 +207,7 @@ def main(argv: list[str] | None = None) -> int:
                 source_export=make_source_export_runner(deployment.company_wiki),
                 identity_resolver=identity_resolver,
                 issuer_proof=issuer_proof,
+                snapshot_file=args.snapshot_file,
             )
             print(json.dumps(output, ensure_ascii=False, sort_keys=True, allow_nan=False))
             return 0
