@@ -1,0 +1,389 @@
+{
+  "schema_version": "w12-w02-scope-guidance-replay/1",
+  "frozen_execution_manifest_sha256": "648466cea7b0accf8bcbf81c621982e3bb57589738841422c3b8ff897d1076f2",
+  "reviewed_parent": "c03b9e470ad6053d1de00dfaf9db0e0380904a5a",
+  "status": "candidate_owner_verified",
+  "original_observations": [
+    {
+      "owner_gate": "parameters",
+      "capture": "audit-capture/1/w12-20261120-cn-603259/executor/08f746878e5b426e8f7411e0db9e8080",
+      "decision": "narrow",
+      "protection": "Preserve contradictions within the same measure. Split only across separately proved native segment consumers."
+    },
+    {
+      "owner_gate": "management_targets",
+      "capture": "audit-capture/1/w12-w01-rf-peer-filing-coverage/executor/650cefc1ffbe4033abf8928dc94175a8",
+      "event": "124896ac8f83490984d26b726d8a3c39",
+      "decision": "narrow",
+      "protection": "The subject's own validated filing opens its communication window. A later start or unrelated evidence cannot certify completeness."
+    }
+  ],
+  "exact_validate_only_runs": [
+    {
+      "source_file": "native-input-v1.json",
+      "input_sha256": "8ebe643b845c31d2f07fdd7197cab59b1624406b70349f1359f92604f8e8c90e",
+      "baseline_exit": 2,
+      "baseline_stderr": "error: 1 validation problem(s) found:\n[parameters]\n  - gate could not complete: ForecastInputError: unresolved conflicting parameters for ('actual january–june plus conditional july–december recognized revenue. exactly disjoint spans.', 'FY2026', 'CNY million', 'low', 'annual', '', ''): small_molecule_dm_low_fy2026, tides_low_fy2026, other_chemistry_low_fy2026, testing_low_fy2026, biology_low_fy2026, other_low_fy2026, discontinued_low_fy2026",
+      "changed_exit": 2,
+      "changed_gates": [
+        "evidence_claims",
+        "management_targets"
+      ],
+      "changed_frozen_result": "generic scope now valid; 27 other original provenance/quantity issues remain"
+    },
+    {
+      "source_file": "native-input-v4.json",
+      "input_sha256": "4659da600627cf0e9b56bd771d60abab3f0865cf9b9a7fbe467ab7b95be59b10",
+      "baseline_exit": 0,
+      "baseline_stderr": "",
+      "changed_exit": 0,
+      "changed_gates": [],
+      "changed_frozen_result": "valid"
+    },
+    {
+      "source_file": "input-0001-fa4b8a7c4174.json",
+      "input_sha256": "fa4b8a7c4174e6697c5a8eaf250c9a32a1e007680a6342fa3096fae86f4ea691",
+      "baseline_exit": 2,
+      "baseline_stderr": "error: 1 validation problem(s) found:\n[management_targets]\n  - post-filing checked_scope must start at the latest available filing",
+      "changed_exit": 0,
+      "changed_gates": [],
+      "changed_frozen_result": "valid"
+    }
+  ],
+  "focused_pytest": {
+    "exit_code": 0,
+    "passed": 221,
+    "subtests_passed": 242,
+    "skipped": 1,
+    "shell_invocation": "-X utf8 -B -m pytest -q --tb=short -p no:cacheprovider tests/test_zr604_conflict_resolution.py tests/test_target_measurement_comparison.py tests/test_du6_target_measurement_boundaries.py tests/test_w04_financial_communication_window.py tests/test_du8_target_comparison_owner.py tests/test_model_economic_guardrails.py tests/test_management_targets.py tests/test_independent_targets.py tests/test_w05_dated_contribution_contract.py tests/test_data_contract.py tests/test_golden_behavior_lock.py tests/test_shared_recognition_stress.py"
+  },
+  "formal_command_template": "python -B -X utf8 tools/run_target_measurement_e2e.py --input <frozen input or isolated overlay> --output-root <absent owned directory>",
+  "formal_passes": 15,
+  "cases": [
+    {
+      "case": "frozen-current",
+      "input_sha256": "4659da600627cf0e9b56bd771d60abab3f0865cf9b9a7fbe467ab7b95be59b10",
+      "output_hashes": {
+        "commands.json": "697fac5ae0db2205d48546d52c50a97c5e92cbafda4eb686e81db55e28116321",
+        "forecast.json": "36563cdff35b5c64a13427fa20629ac86cb0b327465a00212b6a4bd7ae051437",
+        "forecast.md": "7d3bc59cc3d93adafea9d59a0442b9dc6b1d7fe8ef95d9ef8bdfc0111d964bb5",
+        "snapshot.json": "aef97a78c700722e868dabc6c2ec57a8f5474bcd99a6b304b2b58a4779bfbe65"
+      },
+      "steps": [
+        {
+          "entry": "revenue_forecast.py",
+          "exit": 0
+        },
+        {
+          "entry": "revenue_forecast.py",
+          "exit": 0
+        },
+        {
+          "entry": "revenue_backtest.py",
+          "exit": 0
+        }
+      ],
+      "original_source_count": 7,
+      "qualification": {
+        "category": "material_announcements_since_last_filing",
+        "status": "incomplete",
+        "coverage_complete": false,
+        "start_date": "2026-08-04",
+        "end_date": "2026-10-21",
+        "discovered_item_refs": [
+          "w12-a01:court-opinion"
+        ],
+        "read_source_ids": [
+          "urn:company-wiki:source:sha256:aff766cc9c43c031006532830bf8d1a04ae645c53f0115ac5a3fc8c35196b3ed"
+        ],
+        "unresolved_item_refs": [],
+        "reason": "scope_or_selected_content_incomplete"
+      },
+      "guidance": {
+        "low": {
+          "modeled_cny_million": "55445.34396",
+          "relative_to_management_range": "below",
+          "signed_distance_cny_million": "-3054.65604",
+          "continuing_distance_percentage_points": "-7.3070194543545800",
+          "tides_point_difference_percentage_points": "-15.362342480211073"
+        },
+        "base": {
+          "modeled_cny_million": "60051.26699999999",
+          "relative_to_management_range": "within",
+          "signed_distance_cny_million": "0",
+          "continuing_distance_percentage_points": "0",
+          "tides_point_difference_percentage_points": "-3.0972650835532187"
+        },
+        "high": {
+          "modeled_cny_million": "63478.06553",
+          "relative_to_management_range": "above",
+          "signed_distance_cny_million": "2978.06553",
+          "continuing_distance_percentage_points": "7.1926792742994400",
+          "tides_point_difference_percentage_points": "7.49530167106422"
+        }
+      }
+    },
+    {
+      "case": "same-issuer-plus-peer",
+      "input_sha256": "fa4b8a7c4174e6697c5a8eaf250c9a32a1e007680a6342fa3096fae86f4ea691",
+      "output_hashes": {
+        "commands.json": "c3d7bc1fa1f94932628830a6118fa33c65740a1046fb3d4fc999859988a4715f",
+        "forecast.json": "c1d696eac524b3f54e137d4e1be0dad7370dbb2a9ed9888567b9c5edde631294",
+        "forecast.md": "e658205841133b4893fa03709d747edd41e6fe24b06a0748b2bdccb85dd9653d",
+        "snapshot.json": "195ccd5c21c9efd1a838cce1e5be20579cfebd3776cc27688b604c97234020dd"
+      },
+      "steps": [
+        {
+          "entry": "revenue_forecast.py",
+          "exit": 0
+        },
+        {
+          "entry": "revenue_forecast.py",
+          "exit": 0
+        },
+        {
+          "entry": "revenue_backtest.py",
+          "exit": 0
+        }
+      ],
+      "original_source_count": 8,
+      "qualification": {
+        "category": "material_announcements_since_last_filing",
+        "status": "incomplete",
+        "coverage_complete": false,
+        "start_date": "2026-08-04",
+        "end_date": "2026-10-21",
+        "discovered_item_refs": [
+          "w12-a01:court-opinion"
+        ],
+        "read_source_ids": [
+          "urn:company-wiki:source:sha256:aff766cc9c43c031006532830bf8d1a04ae645c53f0115ac5a3fc8c35196b3ed"
+        ],
+        "unresolved_item_refs": [],
+        "reason": "scope_or_selected_content_incomplete"
+      },
+      "guidance": {
+        "low": {
+          "modeled_cny_million": "55445.34396",
+          "relative_to_management_range": "below",
+          "signed_distance_cny_million": "-3054.65604",
+          "continuing_distance_percentage_points": "-7.3070194543545800",
+          "tides_point_difference_percentage_points": "-15.362342480211073"
+        },
+        "base": {
+          "modeled_cny_million": "60051.26699999999",
+          "relative_to_management_range": "within",
+          "signed_distance_cny_million": "0",
+          "continuing_distance_percentage_points": "0",
+          "tides_point_difference_percentage_points": "-3.0972650835532187"
+        },
+        "high": {
+          "modeled_cny_million": "63478.06553",
+          "relative_to_management_range": "above",
+          "signed_distance_cny_million": "2978.06553",
+          "continuing_distance_percentage_points": "7.1926792742994400",
+          "tides_point_difference_percentage_points": "7.49530167106422"
+        }
+      }
+    },
+    {
+      "case": "frozen-generic-definitions",
+      "input_sha256": "dedb6b8ffd9c7529b671598efc68435bd12905a50bc880d01fa6e5a7c66ec0c3",
+      "output_hashes": {
+        "commands.json": "2ffc38423c6977c1393ed936bf4fc971be6c920c3d065ddff748bd1ade6b3930",
+        "forecast.json": "518470002770e4f4f5db92e7e31ac8dd77e476a6a397d32def6125ff6823dd94",
+        "forecast.md": "7d3bc59cc3d93adafea9d59a0442b9dc6b1d7fe8ef95d9ef8bdfc0111d964bb5",
+        "snapshot.json": "8e50a0c478768ac4132d142e5e1bd8e3cc4f91775543cf9c8427195b1c29875c"
+      },
+      "steps": [
+        {
+          "entry": "revenue_forecast.py",
+          "exit": 0
+        },
+        {
+          "entry": "revenue_forecast.py",
+          "exit": 0
+        },
+        {
+          "entry": "revenue_backtest.py",
+          "exit": 0
+        }
+      ],
+      "original_source_count": 7,
+      "qualification": {
+        "category": "material_announcements_since_last_filing",
+        "status": "incomplete",
+        "coverage_complete": false,
+        "start_date": "2026-08-04",
+        "end_date": "2026-10-21",
+        "discovered_item_refs": [
+          "w12-a01:court-opinion"
+        ],
+        "read_source_ids": [
+          "urn:company-wiki:source:sha256:aff766cc9c43c031006532830bf8d1a04ae645c53f0115ac5a3fc8c35196b3ed"
+        ],
+        "unresolved_item_refs": [],
+        "reason": "scope_or_selected_content_incomplete"
+      },
+      "guidance": {
+        "low": {
+          "modeled_cny_million": "55445.34396",
+          "relative_to_management_range": "below",
+          "signed_distance_cny_million": "-3054.65604",
+          "continuing_distance_percentage_points": "-7.3070194543545800",
+          "tides_point_difference_percentage_points": "-15.362342480211073"
+        },
+        "base": {
+          "modeled_cny_million": "60051.26699999999",
+          "relative_to_management_range": "within",
+          "signed_distance_cny_million": "0",
+          "continuing_distance_percentage_points": "0",
+          "tides_point_difference_percentage_points": "-3.0972650835532187"
+        },
+        "high": {
+          "modeled_cny_million": "63478.06553",
+          "relative_to_management_range": "above",
+          "signed_distance_cny_million": "2978.06553",
+          "continuing_distance_percentage_points": "7.1926792742994400",
+          "tides_point_difference_percentage_points": "7.49530167106422"
+        }
+      }
+    },
+    {
+      "case": "earlier-coverage-superset",
+      "input_sha256": "ae9b2269e4cc85906ab11a82d3d046266892bff3c61290c5903ecd3fcc181923",
+      "output_hashes": {
+        "commands.json": "8081fbf6e940054917bad744ff5fea01c0b130ea900d1dd8bd38f504e3083067",
+        "forecast.json": "7140494a3d34dbb04e518876d123ce82dd1fb62e9bca07dfb4288b93cdbed47d",
+        "forecast.md": "2fdbcbfa7fdbad9ab0e98cafa75f6893cc2170309038c20ae8388d415cd1f525",
+        "snapshot.json": "532487e6ddab4a772aa7d9a52b5e34adcbfed729652e3011dc126a53c1556284"
+      },
+      "steps": [
+        {
+          "entry": "revenue_forecast.py",
+          "exit": 0
+        },
+        {
+          "entry": "revenue_forecast.py",
+          "exit": 0
+        },
+        {
+          "entry": "revenue_backtest.py",
+          "exit": 0
+        }
+      ],
+      "original_source_count": 7,
+      "qualification": {
+        "category": "material_announcements_since_last_filing",
+        "status": "incomplete",
+        "coverage_complete": false,
+        "start_date": "2026-08-03",
+        "end_date": "2026-10-21",
+        "discovered_item_refs": [
+          "w12-a01:court-opinion"
+        ],
+        "read_source_ids": [
+          "urn:company-wiki:source:sha256:aff766cc9c43c031006532830bf8d1a04ae645c53f0115ac5a3fc8c35196b3ed"
+        ],
+        "unresolved_item_refs": [],
+        "reason": "scope_or_selected_content_incomplete"
+      },
+      "guidance": {
+        "low": {
+          "modeled_cny_million": "55445.34396",
+          "relative_to_management_range": "below",
+          "signed_distance_cny_million": "-3054.65604",
+          "continuing_distance_percentage_points": "-7.3070194543545800",
+          "tides_point_difference_percentage_points": "-15.362342480211073"
+        },
+        "base": {
+          "modeled_cny_million": "60051.26699999999",
+          "relative_to_management_range": "within",
+          "signed_distance_cny_million": "0",
+          "continuing_distance_percentage_points": "0",
+          "tides_point_difference_percentage_points": "-3.0972650835532187"
+        },
+        "high": {
+          "modeled_cny_million": "63478.06553",
+          "relative_to_management_range": "above",
+          "signed_distance_cny_million": "2978.06553",
+          "continuing_distance_percentage_points": "7.1926792742994400",
+          "tides_point_difference_percentage_points": "7.49530167106422"
+        }
+      }
+    },
+    {
+      "case": "late-coverage-incomplete",
+      "input_sha256": "29154e162bb8cf3b28048675691a1631c97cad6257b9b3f9e64f6a55b3363b45",
+      "output_hashes": {
+        "commands.json": "53145fe80aa3ff8ddfde964e8af5c198aede5c2926cfd0afff08081dcb58e12f",
+        "forecast.json": "91595a420f4c7e146b735e9c40631393cb214cc649d666545c2507ce46ed6753",
+        "forecast.md": "11bd04870ffb55173e4e6f954409bf23106cf337748640f597c7b50218529e4b",
+        "snapshot.json": "81ca4f2edb58e7d0d959e65d134265ce53b87e58d5881d88be4af06197805fb3"
+      },
+      "steps": [
+        {
+          "entry": "revenue_forecast.py",
+          "exit": 0
+        },
+        {
+          "entry": "revenue_forecast.py",
+          "exit": 0
+        },
+        {
+          "entry": "revenue_backtest.py",
+          "exit": 0
+        }
+      ],
+      "original_source_count": 7,
+      "qualification": {
+        "category": "material_announcements_since_last_filing",
+        "status": "incomplete",
+        "coverage_complete": false,
+        "start_date": "2026-08-06",
+        "end_date": "2026-10-21",
+        "discovered_item_refs": [
+          "w12-a01:court-opinion"
+        ],
+        "read_source_ids": [
+          "urn:company-wiki:source:sha256:aff766cc9c43c031006532830bf8d1a04ae645c53f0115ac5a3fc8c35196b3ed"
+        ],
+        "unresolved_item_refs": [],
+        "reason": "starts_after_financial_filing_anchor"
+      },
+      "guidance": {
+        "low": {
+          "modeled_cny_million": "55445.34396",
+          "relative_to_management_range": "below",
+          "signed_distance_cny_million": "-3054.65604",
+          "continuing_distance_percentage_points": "-7.3070194543545800",
+          "tides_point_difference_percentage_points": "-15.362342480211073"
+        },
+        "base": {
+          "modeled_cny_million": "60051.26699999999",
+          "relative_to_management_range": "within",
+          "signed_distance_cny_million": "0",
+          "continuing_distance_percentage_points": "0",
+          "tides_point_difference_percentage_points": "-3.0972650835532187"
+        },
+        "high": {
+          "modeled_cny_million": "63478.06553",
+          "relative_to_management_range": "above",
+          "signed_distance_cny_million": "2978.06553",
+          "continuing_distance_percentage_points": "7.1926792742994400",
+          "tides_point_difference_percentage_points": "7.49530167106422"
+        }
+      }
+    }
+  ],
+  "immutable_input_and_artifact_count": 11,
+  "same_definition_legacy_overlay_parameters": 42,
+  "original_reported_parameters_preserved": 17,
+  "native_sensitivities_preserved": 3,
+  "owned_temporary_root_cleaned": true,
+  "external_downloads": 0,
+  "provider_calls": 0,
+  "model_calls": 0,
+  "additional_cost_usd": "0.00",
+  "economic_calibration": "outstanding"
+}

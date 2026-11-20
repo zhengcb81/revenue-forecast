@@ -6,6 +6,8 @@ scenarios, guesses a stock is revenue, or creates another computation engine.
 """
 from __future__ import annotations
 
+import ast
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Iterable, Iterator
 
@@ -79,7 +81,10 @@ def series_parameter_ids(mapping: Any, scenario: str, year: int, years: list[int
 def segment_parameter_uses(data: dict[str, Any], segment: dict[str, Any], scenario: str) -> Iterator[ParameterUse]:
     """Direct native input uses with separate input and recognized clocks."""
     years = data.get("forecast_years", [])
-    config = segment.get("scenarios", {}).get(scenario, {})
+    scenarios = segment.get("scenarios")
+    config = scenarios.get(scenario, {}) if isinstance(scenarios, dict) else {}
+    if not isinstance(config, dict):
+        return
     name, model = segment.get("name", ""), config.get("model", "")
     recognition = segment.get("recognition", {})
     lag = recognition.get("lag_years", 0) if isinstance(recognition, dict) and recognition.get("mode") == "lagged_activity" else 0
@@ -156,6 +161,70 @@ def parameter_uses(data: dict[str, Any], scenario: str | None = None) -> Iterato
         for constraint in data.get("revenue_constraints", []):
             if isinstance(constraint, dict):
                 yield from _constraint_uses(data, constraint, selected)
+
+
+
+def exclusive_parameter_segment_scopes(
+    data: dict[str, Any],
+    parameters: dict[str, dict[str, Any]],
+    candidates: set[str],
+) -> dict[str, str]:
+    """Prove a single native business consumer for parameters under comparison.
+
+    The caller has validated the indexed formulae. Only actual operand
+    references are followed here: merely listing an unused formula operand
+    cannot assign a business scope. Consolidated and shared uses remain
+    unscoped for conflict resolution.
+    """
+    ancestry: dict[str, set[str]] = {}
+    inputs_by_id: dict[str, list[str]] = {}
+
+    def used_inputs(parameter_id: str) -> set[str]:
+        if parameter_id not in ancestry:
+            seen = set()
+            pending = [parameter_id]
+            while pending:
+                current = pending.pop()
+                if current in seen:
+                    continue
+                seen.add(current)
+                parameter = parameters.get(current)
+                if parameter and parameter["kind"] == "derived_fact":
+                    if current not in inputs_by_id:
+                        formula = ast.parse(parameter["formula"], mode="eval")
+                        operands = {f"x{i}": ref for i, ref in enumerate(parameter["input_parameter_ids"])}
+                        inputs_by_id[current] = [
+                            operands[node.id] for node in ast.walk(formula) if isinstance(node, ast.Name)
+                        ]
+                    pending.extend(inputs_by_id[current])
+            ancestry[parameter_id] = seen & candidates
+        return ancestry[parameter_id]
+
+    scopes: dict[str, set[str | None]] = defaultdict(set)
+    for use in parameter_uses(data):
+        spec = MODEL_REGISTRY.get(use.model) if isinstance(use.model, str) else None
+        root = parameters.get(use.parameter_id, {})
+        local_model = (
+            use.kind == "model_driver"
+            and spec is not None
+            and use.driver in spec.dimensions
+            and root.get("dimension") == spec.dimensions[use.driver]
+            and isinstance(use.segment, str)
+            and use.segment.strip()
+            and use.input_year is not None
+        )
+        for parameter_id in used_inputs(use.parameter_id):
+            scopes[parameter_id].add(use.segment if local_model else None)
+
+    company_roots = data.get("base_adjustment_parameter_ids", [])
+    if not isinstance(company_roots, list):
+        company_roots = []
+    for root in [data.get("reported_total_revenue_parameter_id"), *company_roots]:
+        if isinstance(root, str):
+            for parameter_id in used_inputs(root):
+                scopes[parameter_id].add(None)
+    return {parameter_id: next(iter(owners)) for parameter_id, owners in scopes.items()
+            if len(owners) == 1 and None not in owners}
 
 
 def parameter_formula_refs(data: dict[str, Any], parameter_id: str,

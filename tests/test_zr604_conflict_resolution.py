@@ -162,5 +162,65 @@ def test_c2_missing_status_keys_unchanged():
     validate_document(finalize_contract(valid_document()))
 
 
+
+def _scope_document() -> dict:
+    from test_recognition_bridge import forecast_document
+
+    data = forecast_document()
+    colliding = {"0_low_2026", "1_low_2026"}
+    for parameter in data["parameters"]:
+        if parameter["parameter_id"] in colliding:
+            parameter["definition"] = "Expected revenue for the business"
+    return finalize_contract(data)
+
+
+def test_identical_definition_in_distinct_native_segments_is_not_a_conflict():
+    from revenue_core import run_forecast
+    from revenue_report import validate_published_forecast
+
+    data = _scope_document()
+    result = run_forecast(data)
+    validate_published_forecast(result, data)
+    assert result["consolidated_forecast"]["low"]["annual_revenue"]["2026"] == 150.0
+
+
+def _use_as_derived(data: dict, segment: int, inputs: list[str], formula: str, value: float) -> None:
+    from test_recognition_bridge import add_parameter
+
+    derived_id = add_parameter(data, f"scoped_derived_{segment}", value, 2026, "low")
+    parameter = next(p for p in data["parameters"] if p["parameter_id"] == derived_id)
+    parameter.update(kind="derived_fact", formula=formula, input_parameter_ids=inputs)
+    data["segments"][segment]["scenarios"]["low"]["driver_parameter_ids"]["revenue"][0] = derived_id
+
+
+@pytest.mark.parametrize("statuses, error", [
+    ((None, None), "unresolved conflicting"),
+    (("accepted", "accepted"), "multiple accepted"),
+])
+def test_same_business_conflicting_measure_cannot_use_segment_partition(statuses, error):
+    data = _scope_document()
+    for parameter, status in zip((p for p in data["parameters"] if p["parameter_id"] in
+                                  {"0_low_2026", "1_low_2026"}), statuses, strict=True):
+        if status is not None:
+            parameter["resolution_status"] = status
+    _use_as_derived(data, 0, ["0_low_2026", "1_low_2026"], "2 * (x0 - x1)", 100.0)
+    # Segment B uses an independent value, keeping the two incompatible
+    # assumptions solely in A even though both have model ancestry.
+    _use_as_derived(data, 1, ["1_low_2027"], "x0", 50.0)
+    with pytest.raises(ForecastInputError, match=error):
+        validate_document(finalize_contract(data))
+
+
+@pytest.mark.parametrize("shared", [True, False], ids=["shared", "declared-unused"])
+def test_shared_or_unused_conflict_is_not_proven_independent(shared):
+    data = _scope_document()
+    inputs = ["1_low_2026", "0_low_2026"] if shared else ["1_low_2026", "1_low_2027"]
+    formula = "x0 + 0.01 * x1" if shared else "x1"
+    value = 51.0 if shared else 50.0
+    _use_as_derived(data, 1, inputs, formula, value)
+    with pytest.raises(ForecastInputError, match="unresolved conflicting"):
+        validate_document(finalize_contract(data))
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-q"])

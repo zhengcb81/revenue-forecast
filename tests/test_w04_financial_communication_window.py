@@ -33,11 +33,12 @@ class FinancialCommunicationWindowTests(unittest.TestCase):
                 self.assertTrue(result["coverage_complete"])
                 self.assertEqual(result["start_date"], "2026-08-29")
 
-    def test_false_shortened_boundary_still_rejected(self) -> None:
-        with self.assertRaises(ForecastInputError):
-            analyze_communication_scope(record("2026-09-30"), {
-                "h1": source("semi_annual_report", "2026-08-29"),
-                "offering": source("prospectus", "2026-09-30")}, "2026-10-08")
+    def test_shortened_coverage_cannot_claim_completeness(self) -> None:
+        result = analyze_communication_scope(record("2026-09-30"), {
+            "h1": source("semi_annual_report", "2026-08-29"),
+            "offering": source("prospectus", "2026-09-30")}, "2026-10-08")
+        self.assertFalse(result["coverage_complete"])
+        self.assertEqual(result["reason"], "starts_after_financial_filing_anchor")
 
     def test_annual_and_quarterly_are_valid_financial_boundaries(self) -> None:
         for kind in ("annual_report", "quarterly_report"):
@@ -81,6 +82,81 @@ class FinancialCommunicationWindowTests(unittest.TestCase):
     def test_legacy_source_without_typed_manifest_retains_contract(self) -> None:
         legacy = {"source_type": "exchange_filing", "published_date": "2026-08-29"}
         self.assertTrue(analyze_communication_scope(record(), {"legacy": legacy}, "2026-10-08")["coverage_complete"])
+
+
+    def test_linked_dual_listing_uses_issuer_identity_and_ignores_later_peer(self) -> None:
+        def filing(published, entity, market, security):
+            result = source("semi_annual_report", published)
+            result["company_wiki_trace"]["source_manifest"].update(
+                canonical_entity_id=entity, market=market, security_id=security
+            )
+            return result
+
+        sources = {
+            "issuer_a": filing("2026-08-28", "issuer-a", "CN", "100001"),
+            "issuer_a_hk": filing("2026-08-29", "issuer-a", "HK", "01089"),
+            "peer": filing("2026-09-30", "issuer-b", "CN", "100002"),
+        }
+        with self.subTest("native anchor"):
+            result = analyze_communication_scope(record(), sources, "2026-10-08",
+                                                 issuer_source_ids=["issuer_a"])
+            self.assertTrue(result["coverage_complete"])
+        with self.subTest("coverage superset"):
+            result = analyze_communication_scope(record("2026-08-25"), sources, "2026-10-08",
+                                                 issuer_source_ids=["issuer_a"])
+            self.assertTrue(result["coverage_complete"])
+        with self.subTest("shortened coverage"):
+            result = analyze_communication_scope(record("2026-08-30"), sources, "2026-10-08",
+                                                 issuer_source_ids=["issuer_a"])
+            self.assertEqual(result["reason"], "starts_after_financial_filing_anchor")
+
+
+    def test_same_code_on_different_market_without_entity_link_is_not_an_issuer_match(self) -> None:
+        sources = {
+            "owned": source("semi_annual_report", "2026-08-29"),
+            "unbound": source("quarterly_report", "2026-09-30"),
+        }
+        for sid, market in (("owned", "CN"), ("unbound", "HK")):
+            sources[sid]["company_wiki_trace"]["source_manifest"].update(
+                market=market, security_id="10001"
+            )
+        result = analyze_communication_scope(record(), sources, "2026-10-08",
+                                             issuer_source_ids=["owned"])
+        self.assertTrue(result["coverage_complete"])
+        result = analyze_communication_scope(record(), sources, "2026-10-08",
+                                             issuer_source_ids=[])
+        self.assertFalse(result["coverage_complete"])
+        self.assertEqual(result["reason"], "financial_filing_anchor_unavailable")
+
+
+    def test_later_peer_read_does_not_fill_subjects_communication_coverage(self) -> None:
+        holder = record()
+        holder["source_ids"] = ["peer"]
+        holder["checked_scope"]["items"] = [
+            {"item_ref": "peer-later", "source_id": "peer", "content_role": "business_original",
+             "selected": True, "read": True}
+        ]
+        sources = {"issuer": source("semi_annual_report", "2026-08-29"),
+                   "peer": source("quarterly_report", "2026-09-24")}
+        for subject, entity in (("issuer", "company-a"), ("peer", "company-b")):
+            sources[subject]["company_wiki_trace"]["source_manifest"]["canonical_entity_id"] = entity
+        diagnostic = analyze_communication_scope(holder, sources, "2026-10-08",
+                                                 issuer_source_ids=["issuer"])
+        self.assertFalse(diagnostic["coverage_complete"])
+        self.assertEqual(diagnostic["reason"], "source_issuer_not_bound")
+        self.assertEqual(diagnostic["read_source_ids"], ["peer"])
+
+    def test_earlier_scope_with_only_boundary_filing_still_incomplete(self) -> None:
+        r = record("2026-08-25")
+        r["source_ids"] = ["issuer"]
+        r["checked_scope"]["items"] = [
+            {"item_ref": "boundary", "source_id": "issuer", "content_role": "business_original",
+             "selected": True, "read": True}
+        ]
+        result = analyze_communication_scope(
+            r, {"issuer": source("semi_annual_report", "2026-08-29")}, "2026-10-08")
+        self.assertFalse(result["coverage_complete"])
+        self.assertEqual(result["reason"], "boundary_filing_does_not_cover_later_interval")
 
 
 class NullablePublicationScopeTests(unittest.TestCase):

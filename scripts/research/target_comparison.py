@@ -39,9 +39,11 @@ is the single predicate, and both the producer and the report call
 from __future__ import annotations
 
 import math
+from collections import defaultdict
 from typing import Any
 
 from contracts.evidence import finite_number, require
+from research.input_quantities import money_currency
 from research.target_measurement import (
     compare_target_measurement as _compare_typed_target_measurement,
     is_typed_target,
@@ -53,6 +55,8 @@ __all__ = [
     "compare_legacy_target_measurement",
     "compare_target_measurement",
     "is_typed_target",
+    "guidance_disclosures",
+    "target_band_position",
     "legacy_acceptance_bound",
     "legacy_meets_target",
     "legacy_target_ratio",
@@ -259,3 +263,70 @@ def compare_target_measurement(
         )
         return _compare_typed_target_measurement(target, result, parameters)
     return compare_legacy_target_measurement(target, result, periods=periods)
+
+
+def target_band_position(row: dict[str, Any]) -> tuple[str, float | None] | None:
+    """Read the signed distance from the stated interval, in its native unit.
+
+    Point/threshold semantics and the published attainment verdict stay with
+    the existing comparison. Tolerance or a threshold does not create a
+    second stated endpoint.
+    """
+    low, high = row["target_low"], row["target_high"]
+    if low == high:
+        return None
+    observed = row["modeled_value"]
+    if observed is None:
+        return "unknown", None
+    if observed < low:
+        return "below", observed - low
+    if observed > high:
+        return "above", observed - high
+    return "within", 0.0
+
+
+def guidance_disclosures(
+    result: dict[str, Any], targets: list[dict[str, Any]],
+) -> tuple[dict[str, str | None], set[str]]:
+    """Order like-for-like statements using only directly bound disclosure dates.
+
+    A rationale citation or a later republication does not set the date of a
+    statement. Same-day or undated statements keep their individual records.
+    """
+    cutoff = result["as_of_date"]
+    sources = {source["source_id"]: source for source in result.get("sources", [])}
+    claims = {claim["claim_id"]: claim for claim in result.get("evidence_claims", [])}
+    dates: dict[str, str | None] = {}
+    group_dates: dict[tuple, dict[str, str | None]] = defaultdict(dict)
+    for target in targets:
+        if not is_typed_target(target) or target["commitment_strength"] != "guidance":
+            continue
+        source_dates = [
+            sources.get(claims.get(cid, {}).get("source_id"), {}).get("published_date")
+            for cid in target.get("claim_ids", [])
+        ]
+        stated_on = min(source_dates) if source_dates and all(
+            isinstance(published, str) and published <= cutoff for published in source_dates
+        ) else None
+        target_id = target["target_id"]
+        dates[target_id] = stated_on
+        if not target["scenario_comparison"]:
+            continue
+        spec, scope = target["comparison_basis"], target["scope"]
+        if scope["type"] == "segment_group":
+            members = tuple(sorted(scope["segment_names"]))
+        elif scope["type"] == "segment":
+            members = (scope["name"],)
+        else:
+            members = ()
+        key = (scope["type"], members, spec["metric_kind"], spec["period"],
+               spec.get("base_period"), money_currency(target["raw_currency"]),
+               target.get("currency_basis"), target.get("presentation_basis"),
+               target["perimeter_status"], target["measurement_basis"])
+        group_dates[key][target_id] = stated_on
+    historical = set()
+    for group in group_dates.values():
+        if all(group.values()):
+            latest = max(group.values())
+            historical.update(target_id for target_id, published in group.items() if published < latest)
+    return dates, historical

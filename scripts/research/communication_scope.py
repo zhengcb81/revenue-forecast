@@ -1,10 +1,14 @@
 """Read-only coverage diagnostics over source dates and discovery/read receipts."""
 from __future__ import annotations
 
+from collections.abc import Iterable
+from datetime import date
+
 from contracts.evidence import parse_iso_date, require
 
 
 _FINANCIAL_KINDS = frozenset({"annual_report", "semi_annual_report", "quarterly_report"})
+_IssuerKey = tuple[str | None, tuple[str, str] | None]
 
 
 def _source_manifest(source: dict) -> dict | None:
@@ -14,14 +18,39 @@ def _source_manifest(source: dict) -> dict | None:
     return manifest if isinstance(manifest, dict) else None
 
 
-def _financial_filing_dates(sources: dict, cutoff) -> tuple[list, bool]:
+def _issuer_key(source: dict) -> _IssuerKey:
+    manifest = _source_manifest(source) or {}
+    market, security = manifest.get("market"), manifest.get("security_id")
+    return manifest.get("canonical_entity_id"), (market, security) if market and security else None
+
+
+def _same_issuer(left: _IssuerKey, right: _IssuerKey) -> bool:
+    left_entity, left_listing = left
+    right_entity, right_listing = right
+    if left_entity and right_entity:
+        return left_entity == right_entity
+    return left_listing is not None and left_listing == right_listing
+
+
+def _issuer_documents(sources: dict, issuer_source_ids: Iterable[str] | None) -> set[str]:
+    # Legacy single-issuer archives did not record listing identity.
+    if issuer_source_ids is None or not any(_source_manifest(s) is not None for s in sources.values()):
+        return set(sources)
+    issuer_sources = set(issuer_source_ids)
+    issuer_keys = [_issuer_key(sources[sid]) for sid in issuer_sources if sid in sources]
+    return issuer_sources | {
+        sid for sid, source in sources.items()
+        if any(_same_issuer(_issuer_key(source), key) for key in issuer_keys)
+    }
+
+
+def _financial_filing_dates(sources: dict, cutoff: date) -> tuple[list[date], bool]:
     dates = []
     unknown_publication = False
     for source in sources.values():
         if source.get("source_type") not in {"regulatory_filing", "exchange_filing"}:
             continue
         manifest = _source_manifest(source)
-        # Archived untyped sources retain their original source-type contract.
         if manifest is not None and manifest.get("document_kind") not in _FINANCIAL_KINDS:
             continue
         if source.get("published_date") is None:
@@ -33,7 +62,9 @@ def _financial_filing_dates(sources: dict, cutoff) -> tuple[list, bool]:
     return dates, unknown_publication
 
 
-def analyze_communication_scope(record: dict, sources: dict, as_of_date: str) -> dict:
+def analyze_communication_scope(
+    record: dict, sources: dict, as_of_date: str, *, issuer_source_ids: Iterable[str] | None = None,
+) -> dict:
     scope = record.get("checked_scope")
     if scope is None:
         return {"category": record["category"], "coverage_complete": False,
@@ -45,14 +76,14 @@ def analyze_communication_scope(record: dict, sources: dict, as_of_date: str) ->
     cutoff = parse_iso_date(as_of_date, "as_of_date")
     require(start <= end <= cutoff, "communication checked_scope interval is invalid")
     require(type(scope["coverage_complete"]) is bool and isinstance(scope["items"], list), "communication checked_scope completeness/items invalid")
-    missing_financial_anchor = False
+    financial_anchor = None
     unknown_financial_publication = False
-    if record["category"] == "material_announcements_since_last_filing":
-        dates, unknown_financial_publication = _financial_filing_dates(sources, cutoff)
-        if dates and not unknown_financial_publication:
-            require(start == max(dates), "post-filing checked_scope must start at the latest available filing")
-        elif not dates:
-            missing_financial_anchor = True
+    post_filing = record["category"] == "material_announcements_since_last_filing"
+    issuer_documents = _issuer_documents(sources, issuer_source_ids) if post_filing else set(sources)
+    if post_filing:
+        issuer_filings = {sid: source for sid, source in sources.items() if sid in issuer_documents}
+        dates, unknown_financial_publication = _financial_filing_dates(issuer_filings, cutoff)
+        financial_anchor = max(dates, default=None)
         require(end == cutoff, "post-filing checked_scope must extend through as_of_date")
     item_refs = set()
     read_sources = set()
@@ -99,17 +130,23 @@ def analyze_communication_scope(record: dict, sources: dict, as_of_date: str) ->
         elif not item["selected"]:
             require(isinstance(item.get("skip_reason"), str) and bool(item["skip_reason"].strip()), "unselected communication requires materiality/skip reason")
     require(read_sources == set(record.get("source_ids", [])), "communication source_ids must match actual read originals")
-    boundary_only = (record["category"] == "material_announcements_since_last_filing" and
-                     start < end and bool(read_sources) and not unknown_read_publication
-                     and all(published <= start for published in read_dates))
+    missed_start = financial_anchor is not None and start > financial_anchor
+    boundary_only = (financial_anchor is not None and financial_anchor < end
+                     and bool(read_sources) and not unknown_read_publication
+                     and all(published <= financial_anchor for published in read_dates))
+    missing_financial_anchor = post_filing and financial_anchor is None
+    unbound_reads = read_sources - issuer_documents
     complete = (scope["coverage_complete"] and not unresolved and not boundary_only
-                and not category_mismatches and not missing_financial_anchor
+                and not missed_start and not category_mismatches and not missing_financial_anchor
+                and not unbound_reads
                 and not unknown_financial_publication and not unknown_read_publication)
-    reason = ("boundary_filing_does_not_cover_later_interval" if boundary_only else
+    reason = ("source_issuer_not_bound" if unbound_reads else
               "source_category_not_supported" if category_mismatches else
               "financial_filing_anchor_publication_unknown" if unknown_financial_publication else
               "source_publication_unknown" if unknown_read_publication else
               "financial_filing_anchor_unavailable" if missing_financial_anchor else
+              "starts_after_financial_filing_anchor" if missed_start else
+              "boundary_filing_does_not_cover_later_interval" if boundary_only else
               "scope_or_selected_content_incomplete" if not complete else None)
     return {"category": record["category"], "status": "verified_scope" if complete else "incomplete",
             "coverage_complete": complete, "start_date": scope["start_date"], "end_date": scope["end_date"],

@@ -47,7 +47,9 @@ from research.target_comparison import (
     LEGACY_COMPARISON_ROW_KEYS,
     LEGACY_COMPARISON_ROW_KEYS_31,
     compare_target_measurement,
+    guidance_disclosures,
     is_typed_target,
+    target_band_position,
 )
 from research.targets import validate_management_target_coverage, add_management_target_analysis
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
@@ -1616,6 +1618,97 @@ def _base_adoption_lines(
     return lines
 
 
+def _append_management_targets(
+    lines: list[str], targets: list[dict[str, Any]], disclosures: dict[str, str | None],
+) -> None:
+    lines.extend(
+        [
+            "",
+            "| 目标 | 强度 | 原始目标 | 来源期间 | 测量口径/模型期间 | 业务口径 | 处理 | 映射情景 | 模型兑现度 |",
+            "|---|---|---:|---|---|---|---|---|---|",
+        ]
+    )
+    for target in targets:
+        attainment = (
+            ", ".join(
+                f"{scenario}:{_pct(values['attainment_ratio'])}"
+                for scenario, values in target["scenario_comparison"].items()
+            )
+            or "—"
+        )
+        raw_value = target.get("raw_target_value")
+        if raw_value is None and target.get("raw_target_value_low") is not None:
+            raw_value = target["raw_target_value_low"]
+        raw_cell = (
+            _escape(target["raw_label"])
+            if target.get("raw_label")
+            else _num(raw_value)
+        )
+        if target.get("raw_target_value_high") is not None:
+            raw_cell = f"{raw_cell}–{_num(target['raw_target_value_high'])}"
+        target_id = target["target_id"]
+        disclosure = (
+            f"<br>指引原始披露 {_escape(disclosures[target_id] or '日期未知')}"
+            if target_id in disclosures else ""
+        )
+        basis_cell = _escape(target.get("measurement_basis", "legacy_unspecified"))
+        basis_tags = [
+            tag for tag in (
+                target.get("target_quarter"),
+                target.get("currency_basis"),
+                target.get("presentation_basis"),
+            ) if tag
+        ]
+        if basis_tags:
+            basis_cell = f"{basis_cell} [{_escape(', '.join(basis_tags))}]"
+        basis_cell = (
+            f"{basis_cell}: {_escape(', '.join(target.get('measurement_periods', [])) or '—')}"
+        )
+        lines.append(
+            f"| {_escape(target['target_id'])} | {_escape(target['commitment_strength'])} | "
+            f"{raw_cell} {_escape(target['raw_unit'])}{disclosure} | {_escape(target['target_period'])} | "
+            f"{basis_cell} | "
+            f"{_escape(target['perimeter_status'])}: {_escape(target['perimeter_notes'])} | {_escape(target['treatment'])} | "
+            f"{_escape(', '.join(target['mapped_scenarios']) or '—')} | {_escape(attainment)} |"
+        )
+    for target in targets:
+        if is_typed_target(target):
+            if target["scope"]["type"] == "segment_group":
+                lines.extend(["", f"- {_escape(target['target_id'])} scope: {_escape(target['scope']['name'])} = {_escape(', '.join(target['scope']['segment_names']))}; base and forecast use the same native members, excluding company adjustments."])
+            dates = ", ".join(f"{sid}:{published}" for sid, published in target.get("source_publication_dates", {}).items())
+            lines.extend(["", f"- {_escape(target['target_id'])} 原文：{_escape(target['statement'])}；来源日期：{_escape(dates)}。",
+                          "", "| Scenario | Metric / period | Modeled / unit | Target / range | Base / period | Difference / distance to band | Status / reason |",
+                          "|---|---|---:|---:|---|---|---|"])
+            if not target["scenario_comparison"]:
+                lines.append(f"- {_escape(target['treatment'])}: {_escape(target['rationale'])}; {_escape(target.get('comparison_reason') or 'comparison dependencies unavailable')}.")
+            for scenario, row in target["scenario_comparison"].items():
+                difference = row.get("difference_percentage_points", row.get("difference"))
+                difference_unit = "percentage_points" if row["metric_kind"] == "year_over_year_growth" else row["unit"]
+                position = target_band_position(row)
+                difference_display = f"{_num(difference)} {_escape(difference_unit)}"
+                if position is not None:
+                    relation, distance = position
+                    if distance is not None and row["metric_kind"] == "year_over_year_growth":
+                        distance *= 100
+                    sign = "+" if distance is not None and distance > 0 else ""
+                    difference_display = f"{relation} / {sign}{_num(distance)} {_escape(difference_unit)}"
+                status = f"{_escape(row['comparison_status'])} / {_escape(row.get('reason') or '—')}"
+                lines.append(
+                    f"| {_escape(scenario)} | {_escape(row['metric_kind'])} / {_escape(row['period'])} | "
+                    f"{_num(row['modeled_value'])} {_escape(row['unit'])} | "
+                    f"{_num(row['target_low'])}–{_num(row['target_high'])} ({_escape(row['comparison'])}) | "
+                    f"{_num(row.get('base_value'))} / {_escape(row.get('base_period') or '—')} | "
+                    f"{difference_display} | {status} |"
+                )
+                derived = row.get("derived_revenue_benchmark")
+                if derived is not None:
+                    lines.append(f"- {_escape(scenario)} analyst_derived revenue benchmark: {_num(derived['value'])} {_escape(derived['unit'])}; difference {_num(derived['difference'])}. Formula: {_escape(derived['formula'])}.")
+        if target["treatment"] == "independent_benchmark":
+            lines.extend(["", f"- {_escape(target['target_id'])} 独立判断：{_escape(target['benchmark_rationale'])}；证据：{_escape(', '.join(target['benchmark_claim_ids']))}。"])
+        if target.get("normalization_formula"):
+            lines.extend(["", f"- {_escape(target['target_id'])} 年化运行率转换：{_escape(target['normalization_formula'])}；x0 为原始目标，其余输入依次为 {_escape(', '.join(target['normalization_parameter_ids']))}；比较收入 {_num(target['comparison_value'])}；{_escape(target['normalization_rationale'])}。"])
+
+
 def render_markdown(result: dict[str, Any]) -> str:
     # REV-06 (ZR-705): a draft result may be rendered without publishing.
     # Draft receipts skip the formal-only strong validation (which requires
@@ -1752,72 +1845,19 @@ def render_markdown(result: dict[str, Any]) -> str:
             diagnostic = record.get("coverage_diagnostic")
             if diagnostic is not None:
                 lines.extend(["", f"- {_escape(record['category'])} coverage: {_escape(diagnostic['status'])}; {_escape(diagnostic.get('start_date') or 'unknown')}–{_escape(diagnostic.get('end_date') or 'unknown')}; {_escape(diagnostic.get('reason') or 'complete')}."])
-        lines.extend(
-            [
-                "",
-                "| 目标 | 强度 | 原始目标 | 来源期间 | 测量口径/模型期间 | 业务口径 | 处理 | 映射情景 | 模型兑现度 |",
-                "|---|---|---:|---|---|---|---|---|---|",
-            ]
-        )
-        for target in target_coverage["targets"]:
-            attainment = (
-                ", ".join(
-                    f"{scenario}:{_pct(values['attainment_ratio'])}"
-                    for scenario, values in target["scenario_comparison"].items()
-                )
-                or "—"
-            )
-            raw_value = target.get("raw_target_value")
-            if raw_value is None and target.get("raw_target_value_low") is not None:
-                raw_value = target["raw_target_value_low"]
-            raw_cell = (
-                _escape(target["raw_label"])
-                if target.get("raw_label")
-                else _num(raw_value)
-            )
-            if target.get("raw_target_value_high") is not None:
-                raw_cell = f"{raw_cell}–{_num(target['raw_target_value_high'])}"
-            basis_cell = _escape(target.get("measurement_basis", "legacy_unspecified"))
-            basis_tags = [
-                tag for tag in (
-                    target.get("target_quarter"),
-                    target.get("currency_basis"),
-                    target.get("presentation_basis"),
-                ) if tag
-            ]
-            if basis_tags:
-                basis_cell = f"{basis_cell} [{_escape(', '.join(basis_tags))}]"
-            basis_cell = (
-                f"{basis_cell}: {_escape(', '.join(target.get('measurement_periods', [])) or '—')}"
-            )
-            lines.append(
-                f"| {_escape(target['target_id'])} | {_escape(target['commitment_strength'])} | "
-                f"{raw_cell} {_escape(target['raw_unit'])} | {_escape(target['target_period'])} | "
-                f"{basis_cell} | "
-                f"{_escape(target['perimeter_status'])}: {_escape(target['perimeter_notes'])} | {_escape(target['treatment'])} | "
-                f"{_escape(', '.join(target['mapped_scenarios']) or '—')} | {_escape(attainment)} |"
-            )
-        for target in target_coverage["targets"]:
-            if is_typed_target(target):
-                if target["scope"]["type"] == "segment_group":
-                    lines.extend(["", f"- {_escape(target['target_id'])} scope: {_escape(target['scope']['name'])} = {_escape(', '.join(target['scope']['segment_names']))}; base and forecast use the same native members, excluding company adjustments."])
-                dates = ", ".join(f"{sid}:{published}" for sid, published in target.get("source_publication_dates", {}).items())
-                lines.extend(["", f"- {_escape(target['target_id'])} 原文：{_escape(target['statement'])}；来源日期：{_escape(dates)}。",
-                              "", "| Scenario | Metric / period | Modeled / unit | Target / range | Base / period | Difference | Status / reason |",
-                              "|---|---|---:|---:|---|---|---|"])
-                if not target["scenario_comparison"]:
-                    lines.append(f"- {_escape(target['treatment'])}: {_escape(target['rationale'])}; {_escape(target.get('comparison_reason') or 'comparison dependencies unavailable')}.")
-                for scenario, row in target["scenario_comparison"].items():
-                    difference = row.get("difference_percentage_points", row.get("difference"))
-                    difference_unit = "percentage_points" if row["metric_kind"] == "year_over_year_growth" else row["unit"]
-                    lines.append(f"| {_escape(scenario)} | {_escape(row['metric_kind'])} / {_escape(row['period'])} | {_num(row['modeled_value'])} {_escape(row['unit'])} | {_num(row['target_low'])}–{_num(row['target_high'])} ({_escape(row['comparison'])}) | {_num(row.get('base_value'))} / {_escape(row.get('base_period') or '—')} | {_num(difference)} {_escape(difference_unit)} | {_escape(row['comparison_status'])} / {_escape(row.get('reason') or '—')} |")
-                    derived = row.get("derived_revenue_benchmark")
-                    if derived is not None:
-                        lines.append(f"- {_escape(scenario)} analyst_derived revenue benchmark: {_num(derived['value'])} {_escape(derived['unit'])}; difference {_num(derived['difference'])}. Formula: {_escape(derived['formula'])}.")
-            if target["treatment"] == "independent_benchmark":
-                lines.extend(["", f"- {_escape(target['target_id'])} 独立判断：{_escape(target['benchmark_rationale'])}；证据：{_escape(', '.join(target['benchmark_claim_ids']))}。"])
-            if target.get("normalization_formula"):
-                lines.extend(["", f"- {_escape(target['target_id'])} 年化运行率转换：{_escape(target['normalization_formula'])}；x0 为原始目标，其余输入依次为 {_escape(', '.join(target['normalization_parameter_ids']))}；比较收入 {_num(target['comparison_value'])}；{_escape(target['normalization_rationale'])}。"])
+        targets = target_coverage["targets"]
+        disclosures, historical_ids = guidance_disclosures(result, targets)
+        if disclosures:
+            lines.extend(["", "市场一致预期未知。"])
+        if historical_ids:
+            lines.extend(["", "### 最新可比披露及其他目标"])
+        current = [target for target in targets if target["target_id"] not in historical_ids]
+        _append_management_targets(lines, current, disclosures)
+        if historical_ids:
+            lines.extend(["", "### 历史可比披露"])
+            historical = [target for target in targets if target["target_id"] in historical_ids]
+            historical.sort(key=lambda target: disclosures[target["target_id"]], reverse=True)
+            _append_management_targets(lines, historical, disclosures)
 
     lines.extend(
         [

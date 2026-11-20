@@ -233,3 +233,61 @@ def test_annual_filing_does_not_prove_a_checked_earnings_call():
     record={"category":category,"source_ids":["annual"],"checked_scope":scope}
     diagnostic=analyze_communication_scope(record,{"annual":{"source_type":"regulatory_filing","published_date":"2026-02-20"}},"2026-10-09")
     assert not diagnostic["coverage_complete"] and diagnostic["reason"]=="source_category_not_supported"
+
+
+def test_forecast_markdown_shows_signed_distance_from_quarter_band():
+    data = quarter_document()
+    data["management_targets"][0].update(raw_target_value_low=106, raw_target_value_high=110,
+                                          commitment_strength="guidance")
+    result = run_forecast(data)
+    validate_published_forecast(result, data)
+    row = result["management_target_coverage"]["targets"][0]["scenario_comparison"]
+    assert [row[scenario]["meets_target"] for scenario in ("low", "base", "high")] == [False, True, False]
+    assert row["low"]["difference"] is None  # stable published JSON
+    markdown = render_markdown(result)
+    assert "below / -160.00 USD million" in markdown
+    assert "within / 0.00 USD million" in markdown
+    assert "above / +160.00 USD million" in markdown
+    assert "市场一致预期未知" in markdown
+
+
+def test_range_endpoints_render_as_within_and_keep_published_attainment():
+    result = run_forecast(quarter_document())
+    comparisons = result["management_target_coverage"]["targets"][0]["scenario_comparison"]
+    assert all(row["meets_target"] for row in comparisons.values())
+    assert render_markdown(result).count("within / 0.00 USD million") == 3
+
+
+def test_guidance_order_uses_statement_publication_and_keeps_different_basis():
+    data = quarter_document()
+    latest = data["management_targets"][0]
+    latest["commitment_strength"] = "guidance"
+    old = deepcopy(latest)
+    old.update(target_id="earlier_disclosure", claim_ids=["earlier_statement"],
+               benchmark_claim_ids=["earlier_benchmark"])
+    other_basis = deepcopy(latest)
+    other_basis.update(target_id="other_basis", presentation_basis="net",
+                       claim_ids=["other_statement"], benchmark_claim_ids=["other_benchmark"])
+    source = deepcopy(data["sources"][0])
+    source.update(source_id="earlier_original", published_date="2026-02-01")
+    data["sources"].append(source)
+
+    statement = next(c for c in data["evidence_claims"] if c["claim_id"] in latest["claim_ids"])
+    benchmark = next(c for c in data["evidence_claims"] if c["claim_id"] in latest["benchmark_claim_ids"])
+    data["evidence_claims"].extend([
+        dict(statement, claim_id="earlier_statement", target_id="earlier_disclosure", source_id=source["source_id"]),
+        dict(benchmark, claim_id="earlier_benchmark", target_id="earlier_disclosure"),
+        dict(statement, claim_id="other_statement", target_id="other_basis"),
+        dict(benchmark, claim_id="other_benchmark", target_id="other_basis"),
+    ])
+    data["management_targets"] = [old, other_basis, latest]
+    category = next(c for c in data["management_communication_coverage"] if latest["target_id"] in c["material_revenue_target_ids"])
+    category["material_revenue_target_ids"] += [old["target_id"], other_basis["target_id"]]
+    result = run_forecast(data)
+    validate_published_forecast(result, data)
+    current, historical = render_markdown(result).split("### 历史可比披露", 1)
+    assert latest["target_id"] in current and other_basis["target_id"] in current
+    assert "| earlier_disclosure |" not in current
+    assert "| earlier_disclosure |" in historical
+    assert "2026-02-01" in historical
+    assert "2026-03-01" in current

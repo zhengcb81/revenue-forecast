@@ -55,6 +55,7 @@ from forecast.calc import (
     parameter_values,
     sensitivity_domain_bounds,
 )
+from forecast.dependencies import exclusive_parameter_segment_scopes
 from contracts.source_clock import SourceClockError, source_information_eligibility, validate_source_events
 from contracts.source_provenance import validate_source_provenance
 from research.coverage import validate_research_coverage
@@ -580,12 +581,24 @@ def validate_parameters(
     for parameter_id in index:
         resolve_value(parameter_id, set())
 
-    for key, group in semantic_groups.items():
-        if len(group) <= 1:
-            continue
-        values = {item["value"] for item in group}
-        if len(values) > 1:
-            _validate_conflict_resolution(group, key)
+    conflicting_groups = {
+        key: group for key, group in semantic_groups.items()
+        if len({item["value"] for item in group}) > 1
+    }
+    if conflicting_groups:
+        scope = exclusive_parameter_segment_scopes(
+            data, index, {item["parameter_id"] for group in conflicting_groups.values() for item in group}
+        )
+        for key, group in conflicting_groups.items():
+            if any(item["parameter_id"] not in scope for item in group):
+                _validate_conflict_resolution(group, key)
+                continue
+            scoped_groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
+            for item in group:
+                scoped_groups[scope[item["parameter_id"]]].append(item)
+            for segment, members in scoped_groups.items():
+                if len({item["value"] for item in members}) > 1:
+                    _validate_conflict_resolution(members, (*key, segment))
     return index
 
 

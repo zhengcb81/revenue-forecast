@@ -47,6 +47,19 @@ def validate_management_target_coverage(
     as_of: date,
 ) -> dict[str, Any]:
     """Validate official communication coverage and every material forward revenue target."""
+    total_id = data.get("reported_total_revenue_parameter_id")
+    total = parameter_index.get(total_id, {})
+    # Bind listing identity to the model's exact consolidated-base evidence.
+    # Other citations for the base and independently researched issuers have
+    # a different role and cannot set the subject's communication window.
+    bound_claim_ids = set(total.get("claim_ids", []))
+    for observation in data.get("historical_revenue", []):
+        if observation["year"] == data["base_year"]:
+            bound_claim_ids.update(observation.get("claim_ids", []))
+    issuer_sources = {
+        claim_index[cid]["source_id"] for cid in bound_claim_ids
+        if cid in claim_index and claim_index[cid]["support_type"] == "exact_value"
+    }
     coverage = data.get("management_communication_coverage")
     require(
         isinstance(coverage, list), "management_communication_coverage must be a list"
@@ -193,7 +206,9 @@ def validate_management_target_coverage(
             if isinstance(record.get(optional), str) and record[optional].strip():
                 normalized[optional] = record[optional].strip()
         if record.get("checked_scope") is not None or data.get("audit_communication_coverage"):
-            diagnostic = analyze_communication_scope(record, source_index, as_of.isoformat())
+            diagnostic = analyze_communication_scope(
+                record, source_index, as_of.isoformat(), issuer_source_ids=issuer_sources,
+            )
             normalized["coverage_diagnostic"] = diagnostic
             if record.get("checked_scope") is not None:
                 normalized["checked_scope"] = copy.deepcopy(record["checked_scope"])
