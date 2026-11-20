@@ -1,0 +1,387 @@
+{
+  "schema_version": "w12-w01-verified-pending-exposure-replay/1",
+  "source_input_sha256": "4659da600627cf0e9b56bd771d60abab3f0865cf9b9a7fbe467ab7b95be59b10",
+  "frozen_manifest_sha256": "648466cea7b0accf8bcbf81c621982e3bb57589738841422c3b8ff897d1076f2",
+  "commands": [
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\timing_bridge_probe.py",
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.worktrees\\w12"
+      ],
+      "exit": 0,
+      "stdout": "{\"probe\": \"mixed_reported_h1_and_pending_h2_period_flow\", \"outcome\": \"rejected\", \"reason\": \"mixed_reported_and_forecast_low: already reported revenue is outside the stress exposure\"}\r\n{\"probe\": \"foreign_business_dollars_are_only_a_ratio_covariate\", \"outcome\": \"rejected\", \"reason\": \"h2_1_low: forecast path does not book this pending amount as a separate addend\"}\r\n{\"probe\": \"second_forecast_year\", \"original\": {\"2026\": 110.00000000000001, \"2027\": 121.00000000000003, \"2028\": 133.10000000000005}, \"stressed\": {\"2026\": 110.00000000000001, \"2027\": 115.73650000000004, \"2028\": 136.73000000000008}, \"known_h1\": 45.0, \"outcome\": \"verified\"}\r\n{\"zero_rates_path_and_sensitivity\": true, \"extra_parameter_count\": 1}\r\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.worktrees\\w12\\tools\\build_auditable_case.py",
+        "--input",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\author-input.json",
+        "--research",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\research.json",
+        "--preparation",
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\w12-20261120-cn-603259\\roles\\executor\\commands\\ba237e67addf49249f011b22e8254131\\stdout.txt",
+        "--discovery",
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\w12-20261120-cn-603259\\roles\\executor\\commands\\d6942e8637c345a987bb15726c6ee221\\stdout.txt",
+        "--as-of",
+        "2026-10-21",
+        "--output-root",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\assembly",
+        "--delay-request",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\stress-request.json"
+      ],
+      "exit": 0,
+      "stdout": "{\"status\": \"assembled\", \"input_sha256\": \"16c79f1e3b065aae563d76dfdb2cc189d9b8cc4c4a56fa165b6925185d5d1076\", \"narrative_status\": \"not_consumed\", \"economic_review\": \"not_inferred\"}\r\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "-X",
+        "utf8",
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.worktrees\\w12\\tools\\run_target_measurement_e2e.py",
+        "--input",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\assembly\\stress-input.json",
+        "--output-root",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\native"
+      ],
+      "exit": 0,
+      "stdout": "{\"status\": \"completed\", \"commands\": 3}\r\n",
+      "stderr": ""
+    }
+  ],
+  "native_events": [
+    {
+      "command": [
+        "C:\\Miniconda\\python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.worktrees\\w12\\scripts\\revenue_forecast.py",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\assembly\\stress-input.json",
+        "--validate-only",
+        "--verbose"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8059731000030297,
+      "stdout": "valid\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "C:\\Miniconda\\python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.worktrees\\w12\\scripts\\revenue_forecast.py",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\assembly\\stress-input.json",
+        "--output",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\native\\forecast.json",
+        "--markdown",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\native\\forecast.md"
+      ],
+      "exit_code": 0,
+      "seconds": 0.9364586000010604,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "C:\\Miniconda\\python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.worktrees\\w12\\scripts\\revenue_backtest.py",
+        "create",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\assembly\\stress-input.json",
+        "--version",
+        "2026-10-21-w12-a01-current-narrative-v1-illustrative-stress",
+        "--output",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w1-rf-ep_nxfo7\\native\\snapshot.json"
+      ],
+      "exit_code": 0,
+      "seconds": 1.0288517000008142,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "immutable_checked": 7,
+  "reported_parameters_preserved": 17,
+  "native_sensitivities_preserved": 3,
+  "scenarios_cny_million": {
+    "low": {
+      "baseline": {
+        "2026": 55445.34396,
+        "2027": 57523.37818869999,
+        "2028": 60153.92190818601
+      },
+      "stress": {
+        "2026": 52535.36286615,
+        "2027": 59530.2617017,
+        "2028": 60153.92190818601
+      },
+      "pending_revenue": 20068.83513
+    },
+    "base": {
+      "baseline": {
+        "2026": 60051.26699999999,
+        "2027": 70948.99535489999,
+        "2028": 81720.489475518
+      },
+      "stress": {
+        "2026": 56564.21675635,
+        "2027": 73353.8575919,
+        "2028": 81720.489475518
+      },
+      "pending_revenue": 24048.622369999997
+    },
+    "high": {
+      "baseline": {
+        "2026": 63478.06553,
+        "2027": 82449.54387780001,
+        "2028": 103574.223358912
+      },
+      "stress": {
+        "2026": 59571.906400399996,
+        "2027": 85143.44672580001,
+        "2028": 103574.223358912
+      },
+      "pending_revenue": 26939.02848
+    }
+  },
+  "binding_receipt": {
+    "小分子 D&M": {
+      "low": {
+        "exposure_parameter_id": "small_molecule_dm_low_h2_2026",
+        "growth_parameter_ids": [
+          "w01_shared_h2_0_low_2026",
+          "w01_shared_h2_0_low_2027",
+          "w01_shared_h2_0_low_2028"
+        ],
+        "recognized_addend": {
+          "growth_parameter_id": "small_molecule_dm_low_growth_2026",
+          "annual_amount_terms": {
+            "small_molecule_dm_low_fy2026": 1
+          },
+          "pending_origin_ids": [
+            "small_molecule_dm_low_h2_2026"
+          ],
+          "pending_window": {
+            "period_start": "2026-07-01",
+            "period_end": "2026-12-31"
+          },
+          "recognized_coefficient": 1
+        }
+      },
+      "base": {
+        "exposure_parameter_id": "small_molecule_dm_base_h2_2026",
+        "growth_parameter_ids": [
+          "w01_shared_h2_0_base_2026",
+          "w01_shared_h2_0_base_2027",
+          "w01_shared_h2_0_base_2028"
+        ],
+        "recognized_addend": {
+          "growth_parameter_id": "small_molecule_dm_base_growth_2026",
+          "annual_amount_terms": {
+            "small_molecule_dm_base_fy2026": 1
+          },
+          "pending_origin_ids": [
+            "small_molecule_dm_base_h2_2026"
+          ],
+          "pending_window": {
+            "period_start": "2026-07-01",
+            "period_end": "2026-12-31"
+          },
+          "recognized_coefficient": 1
+        }
+      },
+      "high": {
+        "exposure_parameter_id": "small_molecule_dm_high_h2_2026",
+        "growth_parameter_ids": [
+          "w01_shared_h2_0_high_2026",
+          "w01_shared_h2_0_high_2027",
+          "w01_shared_h2_0_high_2028"
+        ],
+        "recognized_addend": {
+          "growth_parameter_id": "small_molecule_dm_high_growth_2026",
+          "annual_amount_terms": {
+            "small_molecule_dm_high_fy2026": 1
+          },
+          "pending_origin_ids": [
+            "small_molecule_dm_high_h2_2026"
+          ],
+          "pending_window": {
+            "period_start": "2026-07-01",
+            "period_end": "2026-12-31"
+          },
+          "recognized_coefficient": 1
+        }
+      }
+    },
+    "TIDES": {
+      "low": {
+        "exposure_parameter_id": "tides_low_h2_2026",
+        "growth_parameter_ids": [
+          "w01_shared_h2_1_low_2026",
+          "w01_shared_h2_1_low_2027",
+          "w01_shared_h2_1_low_2028"
+        ],
+        "recognized_addend": {
+          "growth_parameter_id": "tides_low_growth_2026",
+          "annual_amount_terms": {
+            "tides_low_fy2026": 1
+          },
+          "pending_origin_ids": [
+            "tides_low_h2_2026"
+          ],
+          "pending_window": {
+            "period_start": "2026-07-01",
+            "period_end": "2026-12-31"
+          },
+          "recognized_coefficient": 1
+        }
+      },
+      "base": {
+        "exposure_parameter_id": "tides_base_h2_2026",
+        "growth_parameter_ids": [
+          "w01_shared_h2_1_base_2026",
+          "w01_shared_h2_1_base_2027",
+          "w01_shared_h2_1_base_2028"
+        ],
+        "recognized_addend": {
+          "growth_parameter_id": "tides_base_growth_2026",
+          "annual_amount_terms": {
+            "tides_base_fy2026": 1
+          },
+          "pending_origin_ids": [
+            "tides_base_h2_2026"
+          ],
+          "pending_window": {
+            "period_start": "2026-07-01",
+            "period_end": "2026-12-31"
+          },
+          "recognized_coefficient": 1
+        }
+      },
+      "high": {
+        "exposure_parameter_id": "tides_high_h2_2026",
+        "growth_parameter_ids": [
+          "w01_shared_h2_1_high_2026",
+          "w01_shared_h2_1_high_2027",
+          "w01_shared_h2_1_high_2028"
+        ],
+        "recognized_addend": {
+          "growth_parameter_id": "tides_high_growth_2026",
+          "annual_amount_terms": {
+            "tides_high_fy2026": 1
+          },
+          "pending_origin_ids": [
+            "tides_high_h2_2026"
+          ],
+          "pending_window": {
+            "period_start": "2026-07-01",
+            "period_end": "2026-12-31"
+          },
+          "recognized_coefficient": 1
+        }
+      }
+    }
+  },
+  "output_hashes": {
+    "assembly/stress-input.json": {
+      "sha256": "1d5ecbce126cbaf15b280f13b3863796f84f0a54472d57370404f48da45b864f",
+      "size": 432053
+    },
+    "assembly/stress-receipt.json": {
+      "sha256": "b6d7033d8f37018c9d5af468a8b7a4bd556df01283d9fac21c51fc1a191a3608",
+      "size": 4768
+    },
+    "native/forecast.json": {
+      "sha256": "c64608207b2444472cf58573ba6994b78666f383f329c3c41d69a0b9d502a68f",
+      "size": 946619
+    },
+    "native/forecast.md": {
+      "sha256": "5521b993b4b6b3e0a27c4881a41bbd80c9dd076a696ab28518915e9743ce05ad",
+      "size": 98131
+    },
+    "native/snapshot.json": {
+      "sha256": "694d2011b3fcd3dba47cd68d18815b03e3f5f0ad00ba1d1c9d4981c9b2ec7e9e",
+      "size": 1122651
+    },
+    "native/commands.json": {
+      "sha256": "d3fee0d81bbf1abf6ebed27b8da5b945edd103a1c394f6b07bca5ddb09c2abc4",
+      "size": 2011
+    }
+  },
+  "supplier_calls": 0,
+  "provider_posts": 0,
+  "model_calls": 0,
+  "incremental_cost_usd": "0.00",
+  "economic_calibration": "not_inferred",
+  "owned_temporary_outputs_cleaned": true,
+  "worktree_branch": "codex/w12-rf-operating-bridge",
+  "candidate_parent": "b0461a02635649e4903c5734ffbd48149f87bb9d",
+  "independent_probe_archive_sha256": "c06d1a6628c610da84cec90e21629ec9070f83298c0e65b6ec2eadcdcd67404d",
+  "test_results": {
+    "before": {
+      "counterexamples_failing": 2,
+      "product_commit": "b0461a02635649e4903c5734ffbd48149f87bb9d",
+      "kind": "optional_stress_author_accepted_unsupported_deduction"
+    },
+    "after": {
+      "targeted_tests_passed": 179,
+      "subtests_passed": 160,
+      "command": [
+        "C:\\Miniconda\\python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_shared_recognition_stress.py",
+        "tests/test_recognition_bridge.py",
+        "tests/test_revenue_constraints.py",
+        "tests/test_research_evidence_roles.py",
+        "tests/test_w05_dated_contribution_contract.py",
+        "tests/test_w05_dated_contribution_composition.py",
+        "tests/test_w05_root_temporal_lineage.py",
+        "tests/test_w05_dated_contribution_output.py",
+        "tests/test_m3_period_flow_annual_consumers.py",
+        "tests/test_scoped_calibration_support.py",
+        "tests/test_model_economic_guardrails.py"
+      ]
+    }
+  },
+  "new_fee_usd": "0.00",
+  "regression_decisions": {
+    "already_reported_and_pending_mixed": "unsupported_exposure",
+    "covariate_only": "unsupported_exposure",
+    "repeated_source_aliases": "unsupported_exposure",
+    "native_cutoff": "retain",
+    "overall_publish_approval": "no_added_gate",
+    "required_analyst_long_horizon_support": "open"
+  },
+  "temporary_input_preparation": {
+    "source": "W12 execution/native-input-v4.json",
+    "derived_stress_rates": {
+      "shared_assumed_delay": 0.1,
+      "shared_assumed_cancellation": 0.05
+    },
+    "rate_kind": "scenario_stress",
+    "period": "FY2026",
+    "role": "illustrative_only"
+  }
+}

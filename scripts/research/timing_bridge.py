@@ -10,8 +10,8 @@ import re
 from contracts.constants import SCENARIOS
 from contracts.evidence import finite_number, require
 from forecast.calc import evaluate_derived_formula
-from forecast.dependencies import expand_derived_inputs
 from model_registry import driver_value_bounds
+from research.recognition_exposure import prove_pending_exposure
 
 
 def build_quarter_delay_bridge(data, *, segment_name, from_period, to_period,
@@ -104,19 +104,6 @@ def _put_derived_ratio(out, index, *, param_id, definition, period, scenario, fo
     index[param_id] = row
 
 
-def _exposure_projection(index, param_id, growth_id, scenario, period):
-    exposure = index.get(param_id, {})
-    require(exposure.get("dimension") == "revenue" and exposure.get("time_basis") == "period_flow"
-            and exposure.get("period") == period and exposure.get("scenario") in (None, "all", scenario),
-            f"{param_id}: stress exposure must be dated revenue in the affected fiscal period and scenario")
-    lineage = expand_derived_inputs((param_id,), index)
-    require(any(index[key]["kind"] in {"analyst_assumption", "scenario_stress", "management_guidance"} for key in lineage),
-            f"{param_id}: already reported revenue is outside the stress exposure")
-    require(param_id in expand_derived_inputs((growth_id,), index),
-            f"{param_id}: exposure is outside the affected business forecast path")
-    return finite_number(exposure["value"], param_id)
-
-
 def _stress_growth_formula(baseline_ids, offset, first, exposure_id, delay_id, loss_id):
     # Keep the relative ratios coherent when the temporary shock rolls off.
     # Do not retime a dated recognized-flow fact or feed the loss into the next
@@ -185,9 +172,12 @@ def build_shared_recognition_stress(
             drivers = spec["driver_parameter_ids"]["growth_rate"]
             baseline_ids = [segment["base_revenue_parameter_id"], *drivers]
             exposure_id = exposures[scenario]
-            require(exposure_id not in used[scenario], f"{exposure_id}: the same exposure cannot be shocked twice")
-            used[scenario].add(exposure_id)
-            value = _exposure_projection(index, exposure_id, drivers[first], scenario, period)
+            binding = prove_pending_exposure(data, index, baseline_ids[:first + 2], exposure_id, scenario, from_year)
+            pending_origins = set(binding["pending_origin_ids"])
+            require(used[scenario].isdisjoint(pending_origins),
+                    f"{exposure_id}: the same pending flow cannot be shocked twice")
+            used[scenario].update(pending_origins)
+            value = finite_number(index[exposure_id]["value"], exposure_id)
             current_amount = evaluate_derived_formula(_projected_amount(first + 1),
                                                       [index[pid]["value"] for pid in baseline_ids[:first + 2]])
             require(0 <= value <= current_amount, f"{exposure_id}: stress exposure exceeds the forecast path")
@@ -207,7 +197,10 @@ def build_shared_recognition_stress(
                                        rationale=rationale)
                     drivers[offset] = param_id
                     emitted.append(param_id)
-            stressed[name][scenario] = {"exposure_parameter_id": exposure_id, "growth_parameter_ids": emitted}
+            stressed[name][scenario] = {
+                "exposure_parameter_id": exposure_id, "growth_parameter_ids": emitted,
+                "recognized_addend": binding,
+            }
     return out, {"schema_version": "shared-recognition-stress/1", "status": "illustrative_stress",
                  "from_year": from_year, "catch_up_year": from_year + 1, "rationale": rationale,
                  "delay_rate_parameter_id": delay_rate_parameter_id,

@@ -442,6 +442,23 @@ def _flow_atoms(input_id: str, coefficient: float, index: dict[str, dict], fisca
     return [(start, end, input_id, coefficient, semantic)]
 
 
+@dataclass(frozen=True)
+class DatedFlowOrigin:
+    parameter_id: str
+    start: date
+    end: date
+    coefficient: float
+
+
+def dated_flow_origins(
+    parameter_id: str, parameter_index: dict[str, dict], fiscal_year_end: str,
+) -> list[DatedFlowOrigin]:
+    """Read the original flow identities and signed weights of a native amount."""
+    return [DatedFlowOrigin(origin, start, end, weight)
+            for start, end, origin, weight, _ in
+            _flow_atoms(parameter_id, 1.0, parameter_index, fiscal_year_end, frozenset())]
+
+
 def validate_windowed_composition(
     parameter_id: str,
     parameter: dict,
