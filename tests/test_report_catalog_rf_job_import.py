@@ -518,6 +518,65 @@ def test_interim_registrations_with_conflicting_validation_receipts_are_refused(
     assert catalog.list_reports(ENTITY_ID)["items"] == []
 
 
+@pytest.mark.parametrize("difference", (
+    pytest.param(None, id="attested_delisted"),
+    "exchange_mic", "security_id", "listing_status", "missing_status", "unattested_listing", "not_same_issuer",
+))
+def test_historical_listing_can_bind_its_original_with_issuer_attestation(tmp_path, difference):
+    root, metadata = _job_fixture(tmp_path, with_interim=True, interim_security_id="OLD")
+    catalog = ReportCatalog(root=tmp_path / "catalog")
+    historical_id = "LST_33333333-3333-4333-8333-333333333333"
+
+    def proof(query):
+        response = _proof(query)
+        package = response["owner_package"]
+        payload = package["payload"]
+        historical = {
+            **payload["listings"][0],
+            "listing_id": historical_id,
+            "security_id": "SEC_test-historical-security",
+            "exchange_raw": "NYSE",
+            "exchange_mic": "XNYS",
+            "ticker": "OLD",
+            "ticker_raw": "OLD",
+            "listing_status": "delisted",
+            "valid_to": "2026-07-02T00:00:00Z",
+        }
+        issuer = package["trusted_context"]["identity_receipts"][payload["verified_issuer_receipt_id"]]
+        attested = {key: value for key, value in historical.items() if key not in {"entity_id", "listing_id"}}
+        payload["listings"].append(historical)
+        issuer["listing_ids"].append(historical_id)
+        issuer["listing_attributes"][historical_id] = attested
+        if difference == "unattested_listing":
+            issuer["listing_ids"].remove(historical_id)
+        elif difference == "not_same_issuer":
+            issuer["same_legal_issuer"] = False
+        elif difference == "missing_status":
+            del historical["listing_status"]
+            del attested["listing_status"]
+        elif difference is not None:
+            attested[difference] = "active" if difference == "listing_status" else "OTHER"
+        response["receipt_sha256"] = canonical_sha256({
+            key: value for key, value in response.items() if key != "receipt_sha256"
+        })
+        return response
+
+    if difference is None:
+        first = _import_interim_job(catalog, root, metadata, issuer_proof=proof)
+        again = _import_interim_job(catalog, root, metadata, issuer_proof=proof)
+        assert first["status"] == "registered"
+        assert first["forecast_executions"] == 0
+        assert first["source_ref"] == metadata["ref"]
+        assert again["status"] == "already_registered"
+        assert again["report_id"] == first["report_id"]
+        assert catalog.get_run(JOB_ID)["run"]["company"]["listing_id"] == LISTING_ID
+    else:
+        with pytest.raises(CatalogError) as error:
+            _import_interim_job(catalog, root, metadata, issuer_proof=proof)
+        assert error.value.code == "source_identity_mismatch"
+        assert catalog.list_reports(ENTITY_ID)["items"] == []
+
+
 @pytest.mark.parametrize("variant", ("owner_versions", "listing_display", "receipt_display", "name_display"))
 def test_issuer_proof_accepts_additive_owner_metadata(tmp_path, variant):
     root, metadata = _job_fixture(tmp_path, with_interim=True)
@@ -584,6 +643,7 @@ def test_final_source_check_uses_stable_source_scope(tmp_path, field, value):
     ("exchange_mic", "issuer_proof_invalid"),
     ("ticker", "issuer_proof_invalid"),
     ("receipt_ticker", "issuer_proof_invalid"),
+    ("selected_delisted", "identity_unverified"),
     ("revision", "issuer_proof_invalid"),
     ("receipt_sha", "issuer_proof_invalid"),
     ("subject", "source_identity_mismatch"),
@@ -595,6 +655,7 @@ def test_issuer_proof_core_scope_and_receipt_must_still_match(variant, expected_
 
     query = {"entity_id": ENTITY_ID, "listing_id": LISTING_ID, "as_of": "2026-07-12T23:59:59Z"}
     proof = _proof(query)
+    identity = _identity()
     package = proof["owner_package"]
     payload = package["payload"]
     company_name = "Test Co"
@@ -603,6 +664,10 @@ def test_issuer_proof_core_scope_and_receipt_must_still_match(variant, expected_
     elif variant == "receipt_ticker":
         issuer = package["trusted_context"]["identity_receipts"][payload["verified_issuer_receipt_id"]]
         issuer["listing_attributes"][LISTING_ID]["ticker"] = "OTHER"
+    elif variant == "selected_delisted":
+        issuer = package["trusted_context"]["identity_receipts"][payload["verified_issuer_receipt_id"]]
+        for listing in (identity["entity"]["listings"][0], payload["listings"][0], issuer["listing_attributes"][LISTING_ID]):
+            listing["listing_status"] = "delisted"
     elif variant == "revision":
         payload["identity_revision"] = 2
     elif variant == "subject":
@@ -619,7 +684,7 @@ def test_issuer_proof_core_scope_and_receipt_must_still_match(variant, expected_
         proof["receipt_sha256"] = "0" * 64
     with pytest.raises(CatalogError) as error:
         _validate_issuer_proof(
-            _identity(), proof, entity_id=ENTITY_ID, listing_id=LISTING_ID, query=query,
+            identity, proof, entity_id=ENTITY_ID, listing_id=LISTING_ID, query=query,
             manifest=_manifest(_source_ref()), company_name=company_name,
         )
     assert error.value.code == expected_code

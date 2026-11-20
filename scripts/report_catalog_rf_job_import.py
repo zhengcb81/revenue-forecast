@@ -314,9 +314,11 @@ def _validate_issuer_proof(
                     or owner_listing.get("entity_id") != entity_id or owner_listing.get("market") != source_market):
                 continue
             attested = listing_attributes.get(candidate_id)
+            candidate_coordinates = _listing_coordinates(owner_listing)
+            # A delisted listing can still bind a historical filing.
             if (isinstance(attested, dict)
-                    and owner_listing.get("listing_status") == "active"
-                    and _listing_coordinates(owner_listing) == _listing_coordinates(attested)
+                    and all(isinstance(value, str) and value.strip() for value in candidate_coordinates)
+                    and candidate_coordinates == _listing_coordinates(attested)
                     and source_security.casefold() in _ticker_codes(owner_listing) & _ticker_codes(attested)):
                 same_listing = True
                 break
