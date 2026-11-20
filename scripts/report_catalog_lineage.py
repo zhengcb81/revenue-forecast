@@ -910,7 +910,8 @@ def get_calculation_trace(
         if node.get("output") is None or not node.get("expression"):
             reasons.add(node.get("missing_reason") or "native_calculation_unavailable")
         else:
-            missing_bindings = [b["missing_reason"] for b in own if b["missing_reason"]]
+            # The node carries a summary. Every affected input retains its own reason.
+            missing_bindings = dict.fromkeys(b["missing_reason"] for b in own if b["missing_reason"])
             node.update(
                 trace_state="partial"
                 if missing_bindings or child_incomplete

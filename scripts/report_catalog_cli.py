@@ -20,12 +20,51 @@ No forecast, model, network call, or artifact discovery runs from this CLI.
 from __future__ import annotations
 
 import argparse
+import base64
+import hashlib
 import json
+import re
 import sys
 
 from report_catalog import CatalogError, ReportCatalog, import_w09
 from report_catalog_deployment import (DeploymentError, assert_read_only_command,
                                        build_catalog, resolve_owner_root, split_owner_root)
+
+
+TRACE_PAGE_PROTOCOL = "rf-calculation-trace-page/1"
+# 1 MiB of source bytes stays below 2 MB after base64url and the JSON envelope.
+TRACE_PAGE_BYTES = 1024 * 1024
+
+
+def _trace_page(catalog: ReportCatalog, args: argparse.Namespace) -> dict:
+    if args.offset < 0 or (args.offset == 0) != (args.trace_sha256 is None) or (
+        args.trace_sha256 is not None and not re.fullmatch(r"[0-9a-f]{64}", args.trace_sha256)
+    ):
+        raise CatalogError("invalid_trace_page", "provide a trace digest with a positive continuation offset")
+
+    envelope = catalog.get_calculation_trace(args.report_id, args.node_id)
+    trace = envelope.pop("trace")
+    # An unrelated catalog update can change the observation revision while the
+    # report-bound graph stays immutable. Page identity binds the graph only.
+    body = json.dumps(
+        {key: value for key, value in trace.items() if key != "catalog_revision"},
+        ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    ).encode("utf-8")
+    digest = hashlib.sha256(body).hexdigest()
+    if args.trace_sha256 is not None and args.trace_sha256 != digest:
+        raise CatalogError("stale_cursor", "the requested trace differs from the first page")
+    if args.offset >= len(body):
+        raise CatalogError("invalid_trace_page", "the requested offset is outside this trace")
+    chunk = body[args.offset:args.offset + TRACE_PAGE_BYTES]
+    return {**envelope, "trace_page": {
+        "schema_version": TRACE_PAGE_PROTOCOL,
+        "report_id": args.report_id,
+        "node_id": args.node_id,
+        "trace_sha256": digest,
+        "total_bytes": len(body),
+        "offset": args.offset,
+        "content_base64url": base64.urlsafe_b64encode(chunk).decode("ascii"),
+    }}
 
 
 def _emit_error(code: str, message: str) -> int:
@@ -68,6 +107,11 @@ def main(argv: list[str] | None = None) -> int:
     trace = commands.add_parser("get-calculation-trace")
     trace.add_argument("--report-id", required=True)
     trace.add_argument("--node-id", required=True)
+    page = commands.add_parser("get-calculation-trace-page")
+    page.add_argument("--report-id", required=True)
+    page.add_argument("--node-id", required=True)
+    page.add_argument("--offset", type=int, default=0)
+    page.add_argument("--trace-sha256")
     snapshot = commands.add_parser("get-source-snapshot")
     snapshot.add_argument("--report-id", required=True)
     snapshot.add_argument("--snapshot-id", required=True)
@@ -97,12 +141,15 @@ def main(argv: list[str] | None = None) -> int:
             output = catalog.get_attempt(args.run_id, args.attempt_id)
         elif args.command == "get-report":
             output = catalog.get_report(args.report_id)
+            output["calculation_trace_page_protocol"] = TRACE_PAGE_PROTOCOL
         elif args.command == "get-model":
             output = catalog.get_model(args.report_id)
         elif args.command == "get-calculation":
             output = catalog.get_calculation(args.report_id, args.node_id)
         elif args.command == "get-calculation-trace":
             output = catalog.get_calculation_trace(args.report_id, args.node_id)
+        elif args.command == "get-calculation-trace-page":
+            output = _trace_page(catalog, args)
         elif args.command == "get-source-snapshot":
             output = catalog.get_source_snapshot(args.report_id, args.snapshot_id)
         else:

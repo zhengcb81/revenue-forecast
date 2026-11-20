@@ -9,6 +9,7 @@ data: the frozen artifact is produced by the owner engine inside the test.
 
 from __future__ import annotations
 
+import base64
 import copy
 import hashlib
 import io
@@ -34,7 +35,7 @@ from report_catalog_deployment import (DeploymentError, MANAGED_CATALOG_DIRECTOR
                                        build_catalog, managed_catalog_directory,
                                        resolve_owner_root, split_owner_root)
 from revenue_core import run_forecast  # noqa: E402
-from test_data_contract import finalize_contract  # noqa: E402
+from test_data_contract import apply_parameter_contract, finalize_contract  # noqa: E402
 from test_recognition_bridge import forecast_document  # noqa: E402
 
 ENTITY_ID = "ENT-deploy"
@@ -119,7 +120,8 @@ def _stderr_payload(capsys) -> dict[str, Any]:
     return json.loads(capsys.readouterr().err)
 
 
-def test_long_calculation_trace_streams_every_registered_parameter(tmp_path):
+def build_long_lineage_fixture(workspace: Path):
+    """Build the registered report fixture used by RF and Dashboard acceptance."""
     data = forecast_document()
     driver_id = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"]["revenue"][0]
     driver = next(row for row in data["parameters"] if row["parameter_id"] == driver_id)
@@ -129,7 +131,7 @@ def test_long_calculation_trace_streams_every_registered_parameter(tmp_path):
         leaf.update(
             parameter_id=f"long-lineage-{index}",
             definition=f"Computable source component {index}. " + "ABC" * 2500,
-            rationale="Independently bounded synthetic estimate. " + "ABC" * 5000,
+            rationale="Independently bounded synthetic estimate. " + "生产" * 3000,
             value=1,
         )
         leaves.append(leaf)
@@ -137,8 +139,13 @@ def test_long_calculation_trace_streams_every_registered_parameter(tmp_path):
     driver.update(kind="derived_fact", input_parameter_ids=leaf_ids,
                   formula="+".join(f"x{i}" for i in range(len(leaves))), value=len(leaves))
     data["parameters"].extend(leaves)
-    workspace = tmp_path / "owner"
     registered = _owner_workspace(workspace, data=finalize_contract(data))
+    return registered, driver_id, leaf_ids
+
+
+def test_long_calculation_trace_streams_every_registered_parameter(tmp_path):
+    workspace = tmp_path / "owner"
+    registered, driver_id, leaf_ids = build_long_lineage_fixture(workspace)
     before = _file_set(workspace)
     completed = subprocess.run(
         [sys.executable, "-B", "-X", "utf8", str(ROOT / "scripts/report_catalog_cli.py"),
@@ -155,7 +162,73 @@ def test_long_calculation_trace_streams_every_registered_parameter(tmp_path):
     assert trace["nodes"][0]["output"]["number"]["value"] == "110.0"
     assert trace["result_sha256"] == registered["report"]["result_sha256"]
     assert trace["input_sha256"] == registered["report"]["input_sha256"]
+    def read(*arguments):
+        return subprocess.run(
+            [sys.executable, "-B", "-X", "utf8", str(ROOT / "scripts/report_catalog_cli.py"),
+             "--owner-root", str(workspace), *arguments],
+            cwd=tmp_path, capture_output=True, check=False, timeout=30,
+        )
+
+    report = json.loads(read("get-report", "--report-id", LEFT_REPORT_ID).stdout)
+    assert report["calculation_trace_page_protocol"] == "rf-calculation-trace-page/1"
+    command = ("get-calculation-trace-page", "--report-id", LEFT_REPORT_ID,
+               "--node-id", "segment:0:base:2026")
+    body = bytearray()
+    trace_sha = None
+    pages = 0
+    while True:
+        continuation = () if trace_sha is None else (
+            "--offset", str(len(body)), "--trace-sha256", trace_sha,
+        )
+        completed = read(*command, *continuation)
+        assert completed.returncode == 0, completed.stderr.decode("utf-8", "replace")
+        assert len(completed.stdout) <= 2_000_000
+        envelope = json.loads(completed.stdout)
+        page = envelope["trace_page"]
+        assert page["schema_version"] == "rf-calculation-trace-page/1"
+        assert page["report_id"] == LEFT_REPORT_ID and page["node_id"] == trace["node_id"]
+        assert page["offset"] == len(body)
+        assert trace_sha is None or page["trace_sha256"] == trace_sha
+        trace_sha = page["trace_sha256"]
+        body.extend(base64.urlsafe_b64decode(page["content_base64url"]))
+        pages += 1
+        if len(body) == page["total_bytes"]:
+            break
+        assert 0 < len(body) < page["total_bytes"]
+        assert pages < 10
+    assert pages > 1 and hashlib.sha256(body).hexdigest() == trace_sha
+    assert {**json.loads(body), "catalog_revision": envelope["catalog_revision"]} == trace
+
+    bad = read(*command, "--offset", "1", "--trace-sha256", "0" * 64)
+    assert bad.returncode == 2 and not bad.stdout
+    assert json.loads(bad.stderr)["error"]["code"] == "stale_cursor"
     assert _file_set(workspace) == before
+
+
+def test_distinct_input_gaps_do_not_overflow_a_repeated_node_summary(tmp_path):
+    data = forecast_document()
+    for index in range(129):
+        by_scenario = {scenario: [] for scenario in ("low", "base", "high")}
+        for scenario, parameter_ids in by_scenario.items():
+            for year in data["forecast_years"]:
+                pid = f"adjustment_{index}_{scenario}_{year}"
+                row = dict(parameter_id=pid, kind="analyst_assumption", value=0, unit="USD million",
+                           period=f"FY{year}", definition=f"Synthetic adjustment {index}", scenario=scenario,
+                           rationale="Replay a historical adjustment with zero amount", source_ids=["filing"])
+                apply_parameter_contract(data, row, "revenue")
+                data["parameters"].append(row)
+                parameter_ids.append(pid)
+        data["forecast_adjustments"].append(dict(
+            name=f"Adjustment {index}", category="intersegment_elimination",
+            scenario_parameter_ids=by_scenario,
+        ))
+    owner = _owner_workspace(tmp_path / "owner", data=finalize_contract(data))["catalog"]
+    trace = owner.get_calculation_trace(LEFT_REPORT_ID, "consolidated:base:2026")["trace"]
+    assert trace["state"] == "partial"
+    reason = "adjustment_lineage_unavailable"
+    assert trace["nodes"][0]["missing_reason"] == reason
+    assert len({r for r in trace["missing_reasons"] if r.startswith(reason + ":")}) == 129
+    assert sum(binding["missing_reason"] == reason for binding in trace["bindings"]) == 129
 
 
 def test_invalid_lineage_is_refused_before_streaming(tmp_path, monkeypatch):
@@ -285,7 +358,7 @@ def test_every_command_is_classified_as_read_only_or_write():
     assert WRITE_COMMANDS == {"import-w09"}
     assert READ_ONLY_COMMANDS == {"list-runs", "list-reports", "get-run", "get-report",
                                    "get-model", "get-attempt", "get-calculation",
-                                   "get-calculation-trace", "get-source-snapshot"}
+                                   "get-calculation-trace", "get-calculation-trace-page", "get-source-snapshot"}
     assert not READ_ONLY_COMMANDS & WRITE_COMMANDS
 
 
