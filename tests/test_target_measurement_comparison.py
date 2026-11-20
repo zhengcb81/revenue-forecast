@@ -291,3 +291,54 @@ def test_guidance_order_uses_statement_publication_and_keeps_different_basis():
     assert "| earlier_disclosure |" in historical
     assert "2026-02-01" in historical
     assert "2026-03-01" in current
+
+
+def test_published_communication_diagnostics_are_refreshable_without_restating_the_archive(monkeypatch):
+    from research import targets
+    from research.communication_scope import analyze_communication_scope
+
+    data = forecast_document()
+    subject = data["sources"][0]
+    subject["company_wiki_trace"] = {"source_manifest": {
+        "canonical_entity_id": "company-a", "document_kind": "annual_report",
+    }}
+    statement = dict(subject, source_id="legacy_web_statement", source_type="company_release",
+                     published_date="2026-05-01")
+    statement.pop("company_wiki_trace")
+    data["sources"].append(statement)
+    coverage = data["management_communication_coverage"][-1]
+    coverage["source_ids"] = [statement["source_id"]]
+    coverage["checked_scope"] = {
+        "schema_version": "management-communication-scope/1",
+        "category": coverage["category"], "start_date": subject["published_date"],
+        "end_date": data["as_of_date"], "coverage_complete": True,
+        "items": [{"item_ref": "web-original", "source_id": statement["source_id"],
+                   "content_role": "business_original", "selected": True, "read": True}],
+    }
+
+    with monkeypatch.context() as compatibility:
+        # Produce a genuinely sealed result through the previous identity-
+        # agnostic diagnostic path. Preserve all of the runtime's other checks.
+        compatibility.setattr(
+            targets, "analyze_communication_scope",
+            lambda row, sources, cutoff, **kwargs: analyze_communication_scope(row, sources, cutoff),
+        )
+        archived = run_forecast(data)
+    previous = deepcopy(archived)
+    archived_coverage = archived["management_target_coverage"]["communications"][-1]
+    assert archived_coverage["status"] == "checked"
+    assert archived_coverage["coverage_diagnostic"]["coverage_complete"] is True
+    current = run_forecast(data)
+    assert current["consolidated_forecast"] == archived["consolidated_forecast"]
+    assert current["management_target_coverage"]["communications"][-1]["status"] == "incomplete"
+
+    validate_published_forecast(archived, data)
+    assert "source_issuer_not_bound" in render_markdown(archived)
+    assert archived == previous
+
+    # Source and the declared interval remain bound even when the diagnostic can evolve.
+    for key, false_value in (("source_ids", [subject["source_id"]]), ("checked_date", "2026-07-01")):
+        modified = deepcopy(archived)
+        modified["management_target_coverage"]["communications"][-1][key] = false_value
+        with pytest.raises(ForecastInputError, match="typed management coverage/input binding mismatch"):
+            validate_published_forecast(modified, data)

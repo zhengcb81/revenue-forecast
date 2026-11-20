@@ -146,6 +146,59 @@ class FinancialCommunicationWindowTests(unittest.TestCase):
         self.assertEqual(diagnostic["reason"], "source_issuer_not_bound")
         self.assertEqual(diagnostic["read_source_ids"], ["peer"])
 
+
+    def test_latest_communication_requires_the_subject_issuer_across_categories(self):
+        for category, kind, source_type in (
+            ("latest_annual_filing", "annual_report", "regulatory_filing"),
+            ("latest_results_release", "issuer_release", "company_release"),
+            ("latest_strategy_communication", "strategy_communication", "investor_presentation"),
+            ("latest_earnings_call", "earnings_call_transcript", "earnings_transcript"),
+            ("latest_investor_presentation", "investor_presentation", "investor_presentation"),
+        ):
+            with self.subTest(category=category):
+                holder = record()
+                holder["category"] = holder["checked_scope"]["category"] = category
+                holder["source_ids"] = ["statement"]
+                holder["checked_scope"]["items"] = [
+                    {"item_ref": "statement", "source_id": "statement",
+                     "content_role": "business_original", "selected": True, "read": True}
+                ]
+                subject = source("annual_report", "2026-08-29")
+                subject["company_wiki_trace"]["source_manifest"]["canonical_entity_id"] = "issuer-a"
+                statement = source(kind, "2026-09-12")
+                statement["source_type"] = source_type
+                statement["company_wiki_trace"]["source_manifest"]["canonical_entity_id"] = "issuer-b"
+                sources = {"subject": subject, "statement": statement}
+                diagnostic = analyze_communication_scope(holder, sources, "2026-10-08",
+                                                         issuer_source_ids=["subject"])
+                self.assertFalse(diagnostic["coverage_complete"])
+                self.assertEqual(diagnostic["reason"], "source_issuer_not_bound")
+                statement["company_wiki_trace"]["source_manifest"]["canonical_entity_id"] = "issuer-a"
+                diagnostic = analyze_communication_scope(holder, sources, "2026-10-08",
+                                                         issuer_source_ids=["subject"])
+                self.assertTrue(diagnostic["coverage_complete"])
+
+    def test_valid_partially_checked_tail_is_incomplete(self):
+        sources = {"issuer": source("annual_report", "2026-08-29")}
+        for authored_completeness in (False, True):
+            with self.subTest(authored_completeness=authored_completeness):
+                holder = record()
+                holder["checked_scope"].update(end_date="2026-09-15",
+                                               coverage_complete=authored_completeness)
+                diagnostic = analyze_communication_scope(holder, sources, "2026-10-08")
+                self.assertFalse(diagnostic["coverage_complete"])
+                self.assertEqual(diagnostic["reason"], "ends_before_as_of_date")
+
+    def test_discovery_date_after_declared_tail_is_still_refused(self):
+        holder = record()
+        holder["checked_scope"].update(end_date="2026-09-15", coverage_complete=False, items=[
+            {"item_ref": "later", "published_date": "2026-09-20", "content_role": "discovery_index",
+             "selected": False, "read": False, "skip_reason": "No business statement"}
+        ])
+        with self.assertRaisesRegex(ForecastInputError, "outside checked interval"):
+            analyze_communication_scope(holder, {"issuer": source("annual_report", "2026-08-29")},
+                                        "2026-10-08")
+
     def test_earlier_scope_with_only_boundary_filing_still_incomplete(self) -> None:
         r = record("2026-08-25")
         r["source_ids"] = ["issuer"]

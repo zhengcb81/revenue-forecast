@@ -222,5 +222,42 @@ def test_shared_or_unused_conflict_is_not_proven_independent(shared):
         validate_document(finalize_contract(data))
 
 
+
+def test_implicit_base_consumption_keeps_shared_observations_in_conflict():
+    from revenue_core import run_forecast
+    from test_recognition_bridge import add_parameter, forecast_document
+
+    data = forecast_document()
+    baseline = [segment["base_revenue_parameter_id"] for segment in data["segments"]]
+    values = {p["parameter_id"]: p["value"] for p in data["parameters"]}
+    for p in data["parameters"]:
+        if p["parameter_id"] in baseline:
+            p["definition"] = "IFRS external revenue under review"
+
+    base_driver_ids = []
+    for segment, peer in zip(data["segments"], reversed(baseline), strict=True):
+        for scenario, shift in (("low", 0.0), ("base", 0.1), ("high", 0.2)):
+            rates = []
+            for year in data["forecast_years"]:
+                pid = add_parameter(data, f'{segment["name"]}_{scenario}_{year}_rate',
+                                    values[peer] / 10000 + shift, year, scenario, dimension="ratio")
+                parameter = next(p for p in data["parameters"] if p["parameter_id"] == pid)
+                parameter.update(kind="derived_fact", source_ids=[], claim_ids=[],
+                                 formula=f"x0/10000+{shift}", input_parameter_ids=[peer])
+                rates.append(pid)
+            segment["scenarios"][scenario].update(
+                model="direct_growth", driver_parameter_ids={"growth_rate": rates},
+            )
+            if scenario == "base":
+                base_driver_ids.extend(rates)
+    growth = next(record for record in data["research_coverage"] if record["dimension"] == "growth_curve")
+    growth["parameter_ids"] = base_driver_ids
+
+    # Each model consumes its own baseline implicitly and the other one
+    # through a derived driver. Direct roots alone make them look exclusive.
+    with pytest.raises(ForecastInputError, match="unresolved conflicting"):
+        run_forecast(finalize_contract(data), mode="draft")
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-q"])

@@ -51,7 +51,12 @@ from research.target_comparison import (
     is_typed_target,
     target_band_position,
 )
-from research.targets import validate_management_target_coverage, add_management_target_analysis
+from research.targets import (
+    add_management_target_analysis,
+    current_management_communications,
+    management_ledger_content,
+    validate_management_target_coverage,
+)
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
 from revenue_publication import (
     VerificationContext,
@@ -1155,17 +1160,10 @@ def _validate_forecast_output(
                     ),
                     f"unmodeled management target gap missing from output: {target_id}",
                 )
-        # Wholesale ledger binding, deliberately AFTER the per-field checks so
-        # their specific messages keep firing first. Rebuild the ledger from the
-        # input and require the published coverage to match it, so a forged
-        # artifact cannot carry a declaration (comparison_value, tolerance,
-        # mapped_scenarios) that the input never stated: the per-field checks
-        # compare the artifact against itself here, while this compares it
-        # against the input ledger. Typed/audit inputs always bind. Legacy
-        # targets bind for any artifact of a current engine; the immutable
-        # 3.1-3.3 wire shapes are exempt because their published targets predate
-        # fields this validator adds, and binding them would refuse genuine old
-        # snapshots replayed with their input.
+        # Bind forecast targets and original communication inputs after
+        # the specific per-field checks. Scope diagnostics are derived views
+        # and may evolve on a genuine archive without restating the forecast.
+        # The 3.1-3.3 ledger predates some current mandatory fields.
         if data is not None and (data.get("audit_communication_coverage") or
                                  any(is_typed_target(t) for t in data.get("management_targets", [])) or
                                  any(c.get("checked_scope") is not None for c in data.get("management_communication_coverage", [])) or
@@ -1177,7 +1175,11 @@ def _validate_forecast_output(
             )
             expected = add_management_target_analysis({"management_target_coverage": checked,
                                                        "parameter_index": parameter_index}, result)
-            require(target_coverage == expected, "typed management coverage/input binding mismatch")
+            authored = data["management_communication_coverage"]
+            require(
+                management_ledger_content(target_coverage, authored) == management_ledger_content(expected, authored),
+                "typed management coverage/input binding mismatch",
+            )
     for sensitivity in result.get("sensitivities", []):
         baseline = float(sensitivity["baseline_terminal_revenue"])
         impact = max(
@@ -1825,26 +1827,30 @@ def render_markdown(result: dict[str, Any]) -> str:
     if result.get("management_target_coverage") is not None:
         target_coverage = result["management_target_coverage"]
         target_counts = target_coverage["counts"]
+        communications = current_management_communications(result)
+        checked_count = sum(record["status"] == "checked" for record in communications)
         lines.extend(
             [
                 "",
                 "## 管理层沟通与营收目标覆盖",
                 "",
-                f"- 已检查官方沟通类别：{target_counts['communications_checked']}/{len(MANAGEMENT_COMMUNICATION_CATEGORIES)}；重大/相关目标：{target_counts['targets_total']}；已进入情景：{target_counts['targets_modeled']}；独立基准比较：{target_counts.get('targets_independent_benchmarks', 0)}；未建模：{target_counts['targets_unmodeled']}。",
+                f"- 已检查官方沟通类别：{checked_count}/{len(MANAGEMENT_COMMUNICATION_CATEGORIES)}；重大/相关目标：{target_counts['targets_total']}；已进入情景：{target_counts['targets_modeled']}；独立基准比较：{target_counts.get('targets_independent_benchmarks', 0)}；未建模：{target_counts['targets_unmodeled']}。",
                 "",
                 "| 沟通类别 | 状态 | 结论 | 目标ID | 来源ID |",
                 "|---|---|---|---|---|",
             ]
         )
-        for record in target_coverage["communications"]:
+        for record in communications:
             lines.append(
                 f"| {_escape(record['category'])} | {_escape(record['status'])} | {_escape(record['conclusion'])} | "
                 f"{_escape(', '.join(record['material_revenue_target_ids']) or '—')} | {_escape(', '.join(record['source_ids']) or '—')} |"
             )
-        for record in target_coverage["communications"]:
+        for record in communications:
             diagnostic = record.get("coverage_diagnostic")
             if diagnostic is not None:
                 lines.extend(["", f"- {_escape(record['category'])} coverage: {_escape(diagnostic['status'])}; {_escape(diagnostic.get('start_date') or 'unknown')}–{_escape(diagnostic.get('end_date') or 'unknown')}; {_escape(diagnostic.get('reason') or 'complete')}."])
+        if communications != target_coverage["communications"]:
+            lines.extend(["", "- 此处采用按原始来源与实际区间重算的覆盖诊断。历史快照可查发布时状态。"])
         targets = target_coverage["targets"]
         disclosures, historical_ids = guidance_disclosures(result, targets)
         if disclosures:

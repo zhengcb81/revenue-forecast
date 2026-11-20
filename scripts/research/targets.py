@@ -39,6 +39,82 @@ from research.target_scope import resolve_scope_segments
 from research.communication_scope import analyze_communication_scope
 
 
+
+def _issuer_evidence_sources(data: dict, parameters: dict, claims: dict) -> set[str]:
+    # Use exact claims attached to the model's own consolidated base.
+    total = parameters.get(data.get("reported_total_revenue_parameter_id"), {})
+    bound_claim_ids = set(total.get("claim_ids", []))
+    for observation in data.get("historical_revenue", []):
+        if observation["year"] == data["base_year"]:
+            bound_claim_ids.update(observation.get("claim_ids", []))
+    return {
+        claims[cid]["source_id"] for cid in bound_claim_ids
+        if cid in claims and claims[cid]["support_type"] == "exact_value"
+    }
+
+
+def _communication_assessment(
+    record: dict, sources: dict, cutoff: str, issuer_sources: set[str], audit_legacy: bool,
+) -> tuple[str, dict | None]:
+    status = record["status"]
+    checked_scope = record.get("checked_scope") is not None
+    if not checked_scope and not audit_legacy:
+        return status, None
+    diagnostic = analyze_communication_scope(record, sources, cutoff, issuer_source_ids=issuer_sources)
+    if status == "checked" and checked_scope and not diagnostic["coverage_complete"]:
+        status = "incomplete"
+    return status, diagnostic
+
+
+def management_ledger_content(ledger: dict, authored_coverage: list[dict]) -> dict:
+    """Remove computed coverage verdicts from the signed input comparison.
+
+    The original checked interval, read item and claim lists, source references
+    and target declarations stay in the comparison. Only an authored check
+    with a declared scope may transition between checked and incomplete as
+    the diagnostic changes. The output checks its own original count of
+    checked records before the two ledgers are compared.
+    """
+    assessed_categories = {
+        row["category"] for row in authored_coverage
+        if row["status"] == "checked" and row.get("checked_scope") is not None
+    }
+    communications = []
+    for row in ledger["communications"]:
+        binding = {key: value for key, value in row.items() if key != "coverage_diagnostic"}
+        if row["category"] in assessed_categories and row["status"] in {"checked", "incomplete"}:
+            binding.pop("status")
+        communications.append(binding)
+    return {**ledger, "communications": communications,
+            "counts": {key: count for key, count in ledger["counts"].items()
+                       if key != "communications_checked"}}
+
+
+def current_management_communications(result: dict) -> list[dict]:
+    """Read current scope diagnostics from an already verified result's inputs."""
+    published = result["management_target_coverage"]["communications"]
+    data = result.get("input_document")
+    if not isinstance(data, dict):
+        return published
+    original = {row["category"]: row for row in data["management_communication_coverage"]}
+    sources = {source["source_id"]: source for source in result["sources"]}
+    parameters = {parameter["parameter_id"]: parameter for parameter in data["parameters"]}
+    claims = {claim["claim_id"]: claim for claim in result.get("evidence_claims", [])}
+    issuer_sources = _issuer_evidence_sources(data, parameters, claims)
+    rows = []
+    for row in published:
+        status, diagnostic = _communication_assessment(
+            original[row["category"]], sources, data["as_of_date"], issuer_sources,
+            data.get("audit_communication_coverage", False),
+        )
+        view = {key: value for key, value in row.items() if key != "coverage_diagnostic"}
+        view["status"] = status
+        if diagnostic is not None:
+            view["coverage_diagnostic"] = diagnostic
+        rows.append(view)
+    return rows
+
+
 def validate_management_target_coverage(
     data: dict[str, Any],
     source_index: dict[str, dict[str, Any]],
@@ -47,19 +123,7 @@ def validate_management_target_coverage(
     as_of: date,
 ) -> dict[str, Any]:
     """Validate official communication coverage and every material forward revenue target."""
-    total_id = data.get("reported_total_revenue_parameter_id")
-    total = parameter_index.get(total_id, {})
-    # Bind listing identity to the model's exact consolidated-base evidence.
-    # Other citations for the base and independently researched issuers have
-    # a different role and cannot set the subject's communication window.
-    bound_claim_ids = set(total.get("claim_ids", []))
-    for observation in data.get("historical_revenue", []):
-        if observation["year"] == data["base_year"]:
-            bound_claim_ids.update(observation.get("claim_ids", []))
-    issuer_sources = {
-        claim_index[cid]["source_id"] for cid in bound_claim_ids
-        if cid in claim_index and claim_index[cid]["support_type"] == "exact_value"
-    }
+    issuer_sources = _issuer_evidence_sources(data, parameter_index, claim_index)
     coverage = data.get("management_communication_coverage")
     require(
         isinstance(coverage, list), "management_communication_coverage must be a list"
@@ -205,16 +269,16 @@ def validate_management_target_coverage(
         for optional in ("rationale", "search_description"):
             if isinstance(record.get(optional), str) and record[optional].strip():
                 normalized[optional] = record[optional].strip()
-        if record.get("checked_scope") is not None or data.get("audit_communication_coverage"):
-            diagnostic = analyze_communication_scope(
-                record, source_index, as_of.isoformat(), issuer_source_ids=issuer_sources,
-            )
+        status, diagnostic = _communication_assessment(
+            record, source_index, as_of.isoformat(), issuer_sources,
+            data.get("audit_communication_coverage", False),
+        )
+        normalized["status"] = status
+        if diagnostic is not None:
             normalized["coverage_diagnostic"] = diagnostic
             if record.get("checked_scope") is not None:
                 normalized["checked_scope"] = copy.deepcopy(record["checked_scope"])
             if not diagnostic["coverage_complete"]:
-                if status == "checked" and record.get("checked_scope") is not None:
-                    normalized["status"] = "incomplete"
                 coverage_gaps.append(f"management_communication:{category}: {diagnostic['reason']}")
         elif status in {"not_checked", "incomplete"}:
             coverage_gaps.append(f"management_communication:{category}: {status}")

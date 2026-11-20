@@ -78,13 +78,16 @@ def series_parameter_ids(mapping: Any, scenario: str, year: int, years: list[int
     return [pid for observed_year, pid in _series(ids, years) if observed_year == year]
 
 
+def _scenario_config(segment: dict[str, Any], scenario: str) -> dict[str, Any]:
+    scenarios = segment.get("scenarios")
+    config = scenarios.get(scenario) if isinstance(scenarios, dict) else None
+    return config if isinstance(config, dict) else {}
+
+
 def segment_parameter_uses(data: dict[str, Any], segment: dict[str, Any], scenario: str) -> Iterator[ParameterUse]:
     """Direct native input uses with separate input and recognized clocks."""
     years = data.get("forecast_years", [])
-    scenarios = segment.get("scenarios")
-    config = scenarios.get(scenario, {}) if isinstance(scenarios, dict) else {}
-    if not isinstance(config, dict):
-        return
+    config = _scenario_config(segment, scenario)
     name, model = segment.get("name", ""), config.get("model", "")
     recognition = segment.get("recognition", {})
     lag = recognition.get("lag_years", 0) if isinstance(recognition, dict) and recognition.get("mode") == "lagged_activity" else 0
@@ -176,28 +179,22 @@ def exclusive_parameter_segment_scopes(
     cannot assign a business scope. Consolidated and shared uses remain
     unscoped for conflict resolution.
     """
+    formula_refs = {}
+    for parameter_id, row in parameters.items():
+        if row["kind"] != "derived_fact":
+            continue
+        formula = ast.parse(row["formula"], mode="eval")
+        operands = {f"x{i}": ref for i, ref in enumerate(row["input_parameter_ids"])}
+        formula_refs[parameter_id] = {
+            "kind": "derived_fact",
+            "input_parameter_ids": [operands[node.id] for node in ast.walk(formula)
+                                    if isinstance(node, ast.Name)],
+        }
     ancestry: dict[str, set[str]] = {}
-    inputs_by_id: dict[str, list[str]] = {}
 
     def used_inputs(parameter_id: str) -> set[str]:
         if parameter_id not in ancestry:
-            seen = set()
-            pending = [parameter_id]
-            while pending:
-                current = pending.pop()
-                if current in seen:
-                    continue
-                seen.add(current)
-                parameter = parameters.get(current)
-                if parameter and parameter["kind"] == "derived_fact":
-                    if current not in inputs_by_id:
-                        formula = ast.parse(parameter["formula"], mode="eval")
-                        operands = {f"x{i}": ref for i, ref in enumerate(parameter["input_parameter_ids"])}
-                        inputs_by_id[current] = [
-                            operands[node.id] for node in ast.walk(formula) if isinstance(node, ast.Name)
-                        ]
-                    pending.extend(inputs_by_id[current])
-            ancestry[parameter_id] = seen & candidates
+            ancestry[parameter_id] = expand_derived_inputs([parameter_id], formula_refs) & candidates
         return ancestry[parameter_id]
 
     scopes: dict[str, set[str | None]] = defaultdict(set)
@@ -215,6 +212,18 @@ def exclusive_parameter_segment_scopes(
         )
         for parameter_id in used_inputs(use.parameter_id):
             scopes[parameter_id].add(use.segment if local_model else None)
+
+    # Direct registered uses establish scope. Effective recognized values may
+    # widen it through implicit operating bases or shared value constraints.
+    # This prevents another segment's real consumption from looking exclusive.
+    if scopes:
+        for scenario in SCENARIOS:
+            for segment, cells in effective_segment_dependencies(data, scenario).items():
+                roots = set().union(*(cell.value_parameter_ids for cell in cells.values()))
+                for root in roots:
+                    for parameter_id in used_inputs(root):
+                        if parameter_id in scopes:
+                            scopes[parameter_id].add(segment)
 
     company_roots = data.get("base_adjustment_parameter_ids", [])
     if not isinstance(company_roots, list):
@@ -266,7 +275,8 @@ def _segment_recognized_dependencies(data: dict[str, Any], segment: dict[str, An
                                     scenario: str) -> dict[int, SegmentDependency]:
     years = data.get("forecast_years", [])
     uses = list(segment_parameter_uses(data, segment, scenario))
-    spec = MODEL_REGISTRY.get(segment.get("scenarios", {}).get(scenario, {}).get("model"))
+    model = _scenario_config(segment, scenario).get("model")
+    spec = MODEL_REGISTRY.get(model) if isinstance(model, str) else None
     modeled = {}
     for year in years:
         roots = {u.parameter_id for u in uses if u.kind == "model_driver" and u.input_year == year}
@@ -278,7 +288,7 @@ def _segment_recognized_dependencies(data: dict[str, Any], segment: dict[str, An
                 roots.add(segment["base_revenue_parameter_id"])
         modeled[year] = roots
     recognition = segment.get("recognition", {})
-    lag = recognition.get("lag_years", 0) if recognition.get("mode") == "lagged_activity" else 0
+    lag = recognition.get("lag_years", 0) if isinstance(recognition, dict) and recognition.get("mode") == "lagged_activity" else 0
     lag = lag if type(lag) is int and lag > 0 else 0
     result = {}
     for offset, year in enumerate(years):

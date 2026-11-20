@@ -79,12 +79,11 @@ def analyze_communication_scope(
     financial_anchor = None
     unknown_financial_publication = False
     post_filing = record["category"] == "material_announcements_since_last_filing"
-    issuer_documents = _issuer_documents(sources, issuer_source_ids) if post_filing else set(sources)
+    issuer_documents = _issuer_documents(sources, issuer_source_ids)
     if post_filing:
         issuer_filings = {sid: source for sid, source in sources.items() if sid in issuer_documents}
         dates, unknown_financial_publication = _financial_filing_dates(issuer_filings, cutoff)
         financial_anchor = max(dates, default=None)
-        require(end == cutoff, "post-filing checked_scope must extend through as_of_date")
     item_refs = set()
     read_sources = set()
     unresolved = []
@@ -131,13 +130,14 @@ def analyze_communication_scope(
             require(isinstance(item.get("skip_reason"), str) and bool(item["skip_reason"].strip()), "unselected communication requires materiality/skip reason")
     require(read_sources == set(record.get("source_ids", [])), "communication source_ids must match actual read originals")
     missed_start = financial_anchor is not None and start > financial_anchor
+    missed_end = post_filing and end < cutoff
     boundary_only = (financial_anchor is not None and financial_anchor < end
                      and bool(read_sources) and not unknown_read_publication
                      and all(published <= financial_anchor for published in read_dates))
     missing_financial_anchor = post_filing and financial_anchor is None
     unbound_reads = read_sources - issuer_documents
     complete = (scope["coverage_complete"] and not unresolved and not boundary_only
-                and not missed_start and not category_mismatches and not missing_financial_anchor
+                and not missed_start and not missed_end and not category_mismatches and not missing_financial_anchor
                 and not unbound_reads
                 and not unknown_financial_publication and not unknown_read_publication)
     reason = ("source_issuer_not_bound" if unbound_reads else
@@ -146,6 +146,7 @@ def analyze_communication_scope(
               "source_publication_unknown" if unknown_read_publication else
               "financial_filing_anchor_unavailable" if missing_financial_anchor else
               "starts_after_financial_filing_anchor" if missed_start else
+              "ends_before_as_of_date" if missed_end else
               "boundary_filing_does_not_cover_later_interval" if boundary_only else
               "scope_or_selected_content_incomplete" if not complete else None)
     return {"category": record["category"], "status": "verified_scope" if complete else "incomplete",
