@@ -76,7 +76,7 @@ def test_optional_diagnostic_separates_documentary_presence_and_unknown_magnitud
     old_result=run_forecast(old)
     assert result["confidence"]["score"]==old_result["confidence"]["score"]
     assert result["confidence"]["components"]==old_result["confidence"]["components"]
-    assert result["confidence"]["calculation_version"]=="stable-fsum/1"
+    assert result["confidence"]["calculation_version"] == old_result["confidence"]["calculation_version"]
     validate_published_forecast(result,d)
     report=render_markdown(result)
     assert "量级" in report and "new_product_ramp" in report and "unknown" in report

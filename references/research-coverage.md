@@ -199,6 +199,8 @@ Choose a named economic event and actual exposure: customer financing/demand, co
 
 Use existing `sum_cap`, `linked_ratio`, elimination or signed adjustment only when their evidence/perimeter fits. Missing capacity data is not a zero cap and does not permit a guessed dollar ceiling. A financing receivable delay is not automatically a revenue cancellation. For a Q4→next-Q1 delay, specify the actual affected Q4 amount, catch-up fraction and cancellation; `build_quarter_delay_bridge` supports the transparent direct-revenue case and must not infer annual revenue/4. Explain if a general conditional stress has no measured exposure or calibrated probability.
 
+For a shared cross-year acceptance event on recognized direct-growth paths, use the dated exposure and native relative-growth stress described in [Economic calibration](evidence-role-calibration.md#joint-financing-delivery-and-shared-capacity-pressure).
+
 Construct a separate new stress input with all consistent affected parameters, then rerun the native engine. Report original and stressed annual revenue, net differences, current-year deferral, next-year catch-up/cancellation and constraint audits. Single sensitivities use native `sensitivity_tests`; `percent=0.05` is ±5% of a value, `percentage_point=0.05` is ±5pp of a fraction, and `basis_point=50` is ±0.005. Review requested/effective values and clamping. Test a base parameter once; effects from separate tests must not be added to estimate the joint result. Preserve native path-order rejection; do not sort genuine crossing paths into a false low/base/high ordering.
 
 ### I. Preserve quote fidelity and attribution

@@ -5,10 +5,13 @@ fractions are explicit caller assumptions, not inferred from annual totals.
 """
 from __future__ import annotations
 from copy import deepcopy
+import math
 import re
 from contracts.constants import SCENARIOS
 from contracts.evidence import finite_number, require
 from forecast.calc import evaluate_derived_formula
+from forecast.dependencies import expand_derived_inputs
+from model_registry import driver_value_bounds
 
 
 def build_quarter_delay_bridge(data, *, segment_name, from_period, to_period,
@@ -75,3 +78,138 @@ def build_quarter_delay_bridge(data, *, segment_name, from_period, to_period,
                  "delay_quarters": 1, "rationale": rationale, "scenarios": changes,
                  "limitations": ["Not a calibrated Low; existing scenario order and shared constraints still apply.",
                                  "Annual model cannot resolve an in-year quarterly delay; no x4 or annual sorting."]}
+
+
+def _projected_amount(growth_count: int) -> str:
+    return "x0" + "".join(f"*(1+x{offset})" for offset in range(1, growth_count + 1))
+
+
+def _stress_ratio(index, param_id, period):
+    rate = index.get(param_id, {})
+    require(rate.get("dimension") == "ratio" and rate.get("period") == period
+            and rate.get("scenario") in (None, "all"),
+            f"{param_id}: shared stress needs a ratio for {period} across scenarios")
+    value = finite_number(rate.get("value"), param_id)
+    require(0 <= value <= 1, f"{param_id}: stress fraction must be between zero and one")
+
+
+def _put_derived_ratio(out, index, *, param_id, definition, period, scenario, formula, inputs, rationale):
+    require(param_id not in index, f"stress parameter already exists: {param_id}")
+    value = evaluate_derived_formula(formula, [index[dep]["value"] for dep in inputs])
+    row = {"parameter_id": param_id, "kind": "derived_fact", "definition": definition,
+           "value": value, "dimension": "ratio", "unit": "ratio", "time_basis": "annual",
+           "period": period, "scenario": scenario, "formula": formula, "input_parameter_ids": inputs,
+           "rationale": rationale, "source_ids": [], "claim_ids": []}
+    out["parameters"].append(row)
+    index[param_id] = row
+
+
+def _exposure_projection(index, param_id, growth_id, scenario, period):
+    exposure = index.get(param_id, {})
+    require(exposure.get("dimension") == "revenue" and exposure.get("time_basis") == "period_flow"
+            and exposure.get("period") == period and exposure.get("scenario") in (None, "all", scenario),
+            f"{param_id}: stress exposure must be dated revenue in the affected fiscal period and scenario")
+    lineage = expand_derived_inputs((param_id,), index)
+    require(any(index[key]["kind"] in {"analyst_assumption", "scenario_stress", "management_guidance"} for key in lineage),
+            f"{param_id}: already reported revenue is outside the stress exposure")
+    require(param_id in expand_derived_inputs((growth_id,), index),
+            f"{param_id}: exposure is outside the affected business forecast path")
+    return finite_number(exposure["value"], param_id)
+
+
+def _stress_growth_formula(baseline_ids, offset, first, exposure_id, delay_id, loss_id):
+    # Keep the relative ratios coherent when the temporary shock rolls off.
+    # Do not retime a dated recognized-flow fact or feed the loss into the next
+    # year's unshocked growth base. Each formula consumes only its own inputs.
+    inputs = baseline_ids[:offset + 2]
+    exposure = f"x{len(inputs)}"
+    inputs.append(exposure_id)
+    deltas = {}
+    if offset <= first + 1:
+        deltas[first] = f"-{exposure}*x{len(inputs)}"
+        inputs.append(loss_id)
+    if offset > first:
+        deltas[first + 1] = f"+{exposure}*x{len(inputs)}"
+        inputs.append(delay_id)
+    numerator = _projected_amount(offset + 1) + deltas.get(offset, "")
+    denominator = _projected_amount(offset) + deltas.get(offset - 1, "")
+    return f"({numerator})/({denominator})-1", inputs
+
+
+def build_shared_recognition_stress(
+    data, *, exposure_parameter_ids, from_year, delay_rate_parameter_id,
+    cancellation_rate_parameter_id, prefix, rationale,
+):
+    """Author a native, illustrative stress for one event across businesses.
+
+    Each exposure is an explicit dated forecast component of the business's
+    recognized direct-growth path. The delayed fraction moves once to the next
+    fiscal year. The cancellation fraction affects only the undelayed portion.
+    A later year returns to the no-event path when it is in the horizon.
+    """
+    require(isinstance(rationale, str) and bool(rationale.strip()), "stress rationale required")
+    require(isinstance(prefix, str) and bool(re.fullmatch(r"[A-Za-z0-9_.-]+", prefix)), "stress prefix invalid")
+    years = data["forecast_years"]
+    require(from_year in years and from_year + 1 in years, "stress needs two consecutive forecast years")
+    identified = {segment["name"]: i for i, segment in enumerate(data["segments"])}
+    require(bool(exposure_parameter_ids) and set(exposure_parameter_ids) <= identified.keys(),
+            "stress needs explicit exposures in known businesses")
+
+    out = deepcopy(data)
+    index = {p["parameter_id"]: p for p in out["parameters"]}
+    period = f"FY{from_year}"
+    first = years.index(from_year)
+    _stress_ratio(index, delay_rate_parameter_id, period)
+    _stress_ratio(index, cancellation_rate_parameter_id, period)
+    loss_rate = f"{prefix}_current_year_loss_fraction"
+    _put_derived_ratio(out, index, param_id=loss_rate, definition=f"{prefix} delayed plus canceled fraction",
+                       period=period, scenario="all", formula="x0+(1-x0)*x1",
+                       inputs=[delay_rate_parameter_id, cancellation_rate_parameter_id], rationale=rationale)
+    lower, upper = driver_value_bounds("direct_growth", "growth_rate")
+    original_domain = {"lower": lower if math.isfinite(lower) else None,
+                       "upper": upper if math.isfinite(upper) else None,
+                       "basis": "Original direct_growth.growth_rate bounds for continued native sensitivity."}
+    sensitivity_ids = {test["parameter_id"] for test in out.get("sensitivity_tests", [])}
+    stressed = {}
+    used = {scenario: set() for scenario in SCENARIOS}
+    for name, exposures in exposure_parameter_ids.items():
+        require(set(exposures) == set(SCENARIOS), f"{name}: stress needs low/base/high exposures")
+        ordinal = identified[name]
+        segment = out["segments"][ordinal]
+        require(segment["recognition"]["mode"] == "modeled_as_recognized",
+                f"{name}: this stress applies to a recognized revenue path")
+        stressed[name] = {}
+        for scenario in SCENARIOS:
+            spec = segment["scenarios"][scenario]
+            require(spec["model"] == "direct_growth", f"{name}: this stress requires direct_growth")
+            drivers = spec["driver_parameter_ids"]["growth_rate"]
+            baseline_ids = [segment["base_revenue_parameter_id"], *drivers]
+            exposure_id = exposures[scenario]
+            require(exposure_id not in used[scenario], f"{exposure_id}: the same exposure cannot be shocked twice")
+            used[scenario].add(exposure_id)
+            value = _exposure_projection(index, exposure_id, drivers[first], scenario, period)
+            current_amount = evaluate_derived_formula(_projected_amount(first + 1),
+                                                      [index[pid]["value"] for pid in baseline_ids[:first + 2]])
+            require(0 <= value <= current_amount, f"{exposure_id}: stress exposure exceeds the forecast path")
+            emitted = []
+            if value and index[loss_rate]["value"]:
+                for offset in range(first, min(first + 3, len(years))):
+                    original = drivers[offset]
+                    if original in sensitivity_ids:
+                        index[original].setdefault("sensitivity_domain", dict(original_domain))
+                    year = years[offset]
+                    param_id = f"{prefix}_{ordinal}_{scenario}_{year}"
+                    formula, inputs = _stress_growth_formula(baseline_ids, offset, first, exposure_id,
+                                                             delay_rate_parameter_id, loss_rate)
+                    _put_derived_ratio(out, index, param_id=param_id,
+                                       definition=f"{name} {prefix} conditional growth {scenario} FY{year}",
+                                       period=f"FY{year}", scenario=scenario, formula=formula, inputs=inputs,
+                                       rationale=rationale)
+                    drivers[offset] = param_id
+                    emitted.append(param_id)
+            stressed[name][scenario] = {"exposure_parameter_id": exposure_id, "growth_parameter_ids": emitted}
+    return out, {"schema_version": "shared-recognition-stress/1", "status": "illustrative_stress",
+                 "from_year": from_year, "catch_up_year": from_year + 1, "rationale": rationale,
+                 "delay_rate_parameter_id": delay_rate_parameter_id,
+                 "cancellation_rate_parameter_id": cancellation_rate_parameter_id,
+                 "loss_rate_parameter_id": loss_rate, "exposures": stressed}

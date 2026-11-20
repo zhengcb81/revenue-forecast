@@ -17,7 +17,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from contracts.evidence import canonical_sha256, require  # noqa: E402
 from revenue_core import validate_document  # noqa: E402
 from research.evidence_roles import analyze_operating_research  # noqa: E402
-from research.timing_bridge import build_quarter_delay_bridge  # noqa: E402
+from research.timing_bridge import build_quarter_delay_bridge, build_shared_recognition_stress  # noqa: E402
 
 
 def _load(path):
@@ -103,18 +103,20 @@ def main(argv=None):
         "new_supplier_calls": 0, "new_model_calls": 0, "new_downloads": 0,
         "limitations": ["Discovery receipt presence is not business content/read completeness.",
                         "Authored values and economic scope require original evidence review; unknown ranges stay unverified."]}
-    args.output_root.mkdir(parents=True)
     outputs = {"linked-input.json": data, "inventory.json": diagnostic["inventory"],
                "calibration.json": diagnostic["calibrations"], "research-adequacy.json": diagnostic,
                "assembly.json": receipt}
     if consumption is not None:
         outputs["narrative-consumption.json"] = consumption
     if args.delay_request is not None:
-        stressed, stress_receipt = build_quarter_delay_bridge(data, **_load(args.delay_request))
+        stress = _load(args.delay_request)
+        bridge = build_shared_recognition_stress if "exposure_parameter_ids" in stress else build_quarter_delay_bridge
+        stressed, stress_receipt = bridge(data, **stress)
         stressed["forecast_version"] = data.get("forecast_version", args.as_of + "-v1") + "-illustrative-stress"
         validate_document(stressed)
         outputs["stress-input.json"] = stressed
         outputs["stress-receipt.json"] = stress_receipt
+    args.output_root.mkdir(parents=True)
     for filename, value in outputs.items():
         (args.output_root / filename).write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"status": "assembled", "input_sha256": receipt["input_sha256"],
