@@ -33,6 +33,7 @@ FILING_FETCH_CLIENT = PROJECT_ROOT / "scripts" / "filing_fetch_client.py"
 
 import company_wiki_source  # noqa: E402
 from filing_upstream_cause import failure_observation, parse_error_document, safe_failure_message, validated_source_failure_reason  # noqa: E402
+from rf_cli_feedback import note_native, observed_entry  # noqa: E402
 from filing_fetch_client import select_filing  # noqa: E402
 from source_period_semantics import valid_fiscal_year  # noqa: E402
 
@@ -492,6 +493,7 @@ def prepare_source(
     )["source"]
 
 
+@observed_entry
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Revenue source preparation — the single production entry."
@@ -553,6 +555,7 @@ def main(argv: list[str] | None = None) -> int:
                                       if args.narrative_reader_command_json else None),
         )
     except (json.JSONDecodeError, ValueError) as exc:
+        note_native("bad_request", kind="refusal")
         sys.stderr.write(json.dumps({"error_code": "bad_request", "error": str(exc)}))
         sys.stderr.write("\n")
         return 2
@@ -562,6 +565,7 @@ def main(argv: list[str] | None = None) -> int:
                        ("upstream_cause", "acquisition_failure", "stage", "attempts", "calls", "downloads",
                         "source_failure_reason", "acquisition_observation", "request_diagnostic",
                         "companion_observation", "filing_fetch_result", "producer_exit_code")}))
+        note_native(failure.get("source_failure_reason") or failure["error_code"])
         sys.stderr.write(json.dumps(failure))
         sys.stderr.write("\n")
         return 3

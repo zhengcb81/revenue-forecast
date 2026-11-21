@@ -8,6 +8,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from rf_cli_feedback import note_native, observed_entry
 
 from revenue_core import (
     Collector,
@@ -49,6 +50,7 @@ def prepare_forecast(data: dict, *, mode: str = "formal") -> dict:
     return result
 
 
+@observed_entry
 def main() -> int:
     parser = argparse.ArgumentParser(description="Calculate a source-traceable revenue-only forecast")
     parser.add_argument(
@@ -91,6 +93,8 @@ def main() -> int:
         if args.markdown:
             _atomic_write_text(args.markdown, render_markdown(result))
     except (OSError, json.JSONDecodeError, ForecastInputError) as exc:
+        note_native(type(exc).__name__, kind="refusal" if isinstance(exc, (json.JSONDecodeError, ForecastInputError)) else "failure",
+                    effect="not_started" if isinstance(exc, json.JSONDecodeError) else "unknown")
         print(f"error: {exc}", file=sys.stderr)
         return 2
     return 0

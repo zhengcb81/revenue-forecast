@@ -27,6 +27,7 @@ import re
 import sys
 
 from report_catalog import CatalogError, ReportCatalog, import_w09
+from rf_cli_feedback import note_native, observed_entry
 from report_catalog_deployment import (DeploymentError, assert_read_only_command,
                                        build_catalog, resolve_owner_root, split_owner_root)
 
@@ -68,6 +69,10 @@ def _trace_page(catalog: ReportCatalog, args: argparse.Namespace) -> dict:
 
 
 def _emit_error(code: str, message: str) -> int:
+    request_refusal = (code.startswith(("owner_root_", "invalid_")) or code in
+                       {"not_found", "node_not_found", "identity_unverified", "write_command_forbidden"})
+    note_native(code, kind="refusal" if request_refusal else "failure",
+                effect="not_started" if request_refusal else "unknown")
     print(json.dumps({"schema_version": "rf-report-catalog/1", "error": {"code": code,
           "message": message}}, ensure_ascii=False, sort_keys=True), file=sys.stderr)
     return 2
@@ -81,6 +86,7 @@ def _query_filters(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--limit", type=int, default=50)
 
 
+@observed_entry
 def main(argv: list[str] | None = None) -> int:
     raw = sys.argv[1:] if argv is None else list(argv)
     try:

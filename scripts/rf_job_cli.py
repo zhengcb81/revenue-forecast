@@ -34,6 +34,7 @@ from rf_job_facade import (  # noqa: E402
     Deployment,
     resolve_owner_root,
 )
+from rf_cli_feedback import note_native, observed_entry
 
 OWNER_ROOT_OPTION = "--owner-root"
 DEPLOYMENT_CONFIG_OPTION = "--deployment-config"
@@ -44,6 +45,10 @@ def _emit(payload: dict) -> None:
 
 
 def _emit_error(code: str, message: str) -> int:
+    request_refusal = (code.startswith(("owner_root_", "deployment_config_", "request_")) or code in
+                       {"owner_job_not_found", "action_not_allowed", "lock_unavailable"})
+    note_native(code, kind="refusal" if request_refusal else "failure",
+                effect="not_started" if request_refusal else "unknown")
     print(json.dumps({"schema_version": "rf-job/1",
                       "error": {"code": code, "message": message}},
                      ensure_ascii=False, sort_keys=True), file=sys.stderr)
@@ -94,6 +99,7 @@ def _read_request(request_json: str | None) -> object:
     return json.load(sys.stdin)
 
 
+@observed_entry
 def main(argv: list[str] | None = None) -> int:
     for stream in (sys.stdout, sys.stderr):
         reconfigure = getattr(stream, "reconfigure", None)
@@ -151,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
     except json.JSONDecodeError:
         return _emit_error("request_invalid", "the request payload is not valid JSON")
     except (OSError, ValueError, KeyError, TypeError):
+        note_native("internal")
         print(json.dumps({"schema_version": "rf-job/1",
                           "error": {"code": "internal", "message": "owner job operation failed"}},
                          ensure_ascii=False, sort_keys=True), file=sys.stderr)

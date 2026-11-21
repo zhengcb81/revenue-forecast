@@ -839,6 +839,9 @@ def _source_failure_observations(stderr_path: Path, *, companion_read_only: bool
     if isinstance(calls, int) and not isinstance(calls, bool):
         observations["acquisition_calls"] = calls
     observed = failure_observation(payload)
+    reason = observed.get("source_failure_reason") or payload.get("error_code")
+    if isinstance(reason, str) and re.fullmatch(r"[a-z][a-z0-9_]{0,80}", reason):
+        observations["failure_reason"] = reason
     cause = observed.get("upstream_cause")
     companion = observed.get("companion_observation")
     acquisition = observed.get("acquisition_observation")
@@ -927,6 +930,11 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
     job["status"] = STATUS_RUNNING
     store.save_job(job)
     publish_attempt(owner_job_id, record, started=True)
+    # Children can bind their own process exit only to this stage, never to the outer job CLI.
+    env = dict(env or {}, RF_JOB_ACTIVE_RECORD=str(store.job_file(owner_job_id)),
+               RESEARCH_FEEDBACK_PROCESS_STEP_ID=f"{owner_job_id}/{record['attempt_id']}",
+               RESEARCH_FEEDBACK_RUN_ID=(os.environ.get("RESEARCH_FEEDBACK_RUN_ID") or "").strip() or owner_job_id,
+               RESEARCH_FEEDBACK_ATTEMPT_ID=(os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID") or "").strip() or record["attempt_id"])
     outcome = runner.run(stage=stage, command=command, timeout_seconds=timeout, env=env)
     record["ended_at"] = _utc_now()
     record["elapsed_seconds"] = round(outcome.elapsed_seconds, 6)
@@ -1046,7 +1054,7 @@ def _orchestrate(job: dict[str, Any], *, store: JobStore, deployment: Deployment
                 # Optional projection. Check the durable terminal write rather
                 # than publishing a result from an interrupted in-memory write.
                 try:
-                    persisted = store.load_job(job["owner_job_id"]) if os.environ.get("RESEARCH_FEEDBACK_OUT") else None
+                    persisted = store.load_job(job["owner_job_id"])
                 except (OSError, JobFacadeError):
                     persisted = None
                 if persisted and persisted["stages"][stage]["attempts"][-1] == attempts[-1]:
@@ -1445,7 +1453,7 @@ class JobFacade:
                 pass  # phase failures are recorded durably
             persisted = self.store.load_job(owner_job_id)
             view = job_view(persisted, self.store, lock_alive=False)
-            if os.environ.get("RESEARCH_FEEDBACK_OUT") and view["status_known"]:
+            if view["status_known"]:
                 last = next((_last_attempt(persisted["stages"][stage]) for stage in reversed(STAGES)
                              if persisted["stages"][stage]["attempts"]), None)
                 if last is not None:

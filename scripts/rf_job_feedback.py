@@ -12,6 +12,7 @@ import sys
 
 from owner_atomic_io import replace_file_bytes
 from owner_file_lock import OwnerFileLock
+from rf_feedback_outbox import flush, get_failure, publish
 
 
 OWNER = "revenue-forecast"
@@ -21,15 +22,12 @@ KEY = re.compile(r"[0-9a-f]{64}")
 
 
 def publish_attempt(job_id: str, attempt: dict, *, started: bool = False, cost_state: str | None = None) -> None:
-    path = os.environ.get("RESEARCH_FEEDBACK_OUT")
-    if not path:
-        return
     attempt_id = attempt["attempt_id"]
     row = {
         "schema_version": "feedback-observation/1",
         "owner": OWNER,
-        "run_id": os.environ.get("RESEARCH_FEEDBACK_RUN_ID") or job_id,
-        "attempt_id": os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID") or attempt_id,
+        "run_id": (os.environ.get("RESEARCH_FEEDBACK_RUN_ID") or "").strip() or job_id,
+        "attempt_id": (os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID") or "").strip() or attempt_id,
         "step_id": f"{job_id}/{attempt_id}",
         "evidence_ref": f"{JOB_SCHEMA}/{job_id}/{attempt_id}",
         "version": JOB_SCHEMA,
@@ -44,15 +42,12 @@ def publish_attempt(job_id: str, attempt: dict, *, started: bool = False, cost_s
                    terminal_check_id="stage-outcome")
     else:
         row.update(check_id="stage-outcome", expected="terminal", actual=attempt["status"])
-        if attempt["status"] == "interrupted":
-            row["disposition"] = "unknown"
-    try:
-        with Path(path).open("ab") as out:
-            out.write((json.dumps(row, ensure_ascii=True) + "\n").encode("ascii"))
-            out.flush()
-            os.fsync(out.fileno())
-    except OSError:
-        pass  # The durable job record remains authoritative.
+        if attempt["status"] in ("failed", "interrupted"):
+            observed = attempt.get("observations") or {}
+            reason = observed.get("failure_reason") or attempt.get("failure_code") or f"stage_{attempt['status']}"
+            row.update(disposition="deviation" if attempt["status"] == "failed" else "unknown",
+                       issue_key=f"{attempt['stage']}/{reason}", reason=reason, details_ref=row["evidence_ref"])
+    publish(row)
 
 
 def digest(value) -> str:
@@ -78,6 +73,13 @@ def lookup(owner_root: Path, request: dict) -> dict:
     _, payload = _action(request, "reconcile", "lookup")
     row = payload["observation"]
     ref = row.get("evidence_ref")
+    if isinstance(ref, str) and re.fullmatch(r"rf-cli/1/[0-9a-f]{32}", ref) and row.get("owner") == OWNER:
+        event = get_failure(ref.rsplit("/", 1)[1])
+        if (event and row.get("run_id") == event["run_id"] and row.get("attempt_id") == event["attempt_id"]
+                and row.get("step_id") == event["entrypoint"] + "/" + event["id"]):
+            return {"state": "done", "result": {"status": "known" if event["side_effect_state"] == "not_started" else "cost_unknown",
+                    "evidence_ref": ref, "native_code": event["native_code"], "side_effect_state": event["side_effect_state"]}}
+        return {"state": "unknown"}
     match = REFERENCE.fullmatch(ref) if isinstance(ref, str) else None
     if match is None:
         return {"state": "unknown"}
@@ -134,6 +136,8 @@ def record_report(root: Path, request: dict) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("flush-feedback")
+    commands.add_parser("get-failure").add_argument("identifier")
     commands.add_parser("reconcile").add_argument("--owner-root", type=Path, required=True)
     commands.add_parser("report").add_argument("--reports-dir", type=Path, required=True)
     get = commands.add_parser("get-report")
@@ -141,7 +145,13 @@ def main() -> int:
     get.add_argument("action_id")
     args = parser.parse_args()
     try:
-        if args.command == "reconcile":
+        if args.command == "flush-feedback":
+            result = flush()
+        elif args.command == "get-failure":
+            result = get_failure(args.identifier)
+            if result is None:
+                raise ValueError("unknown RF feedback occurrence")
+        elif args.command == "reconcile":
             result = lookup(args.owner_root, json.load(sys.stdin))
         elif args.command == "report":
             result = record_report(args.reports_dir, json.load(sys.stdin))
