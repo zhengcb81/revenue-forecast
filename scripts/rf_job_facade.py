@@ -50,7 +50,7 @@ from pathlib import Path
 from typing import Any, Callable, cast
 
 from filing_upstream_cause import failure_observation, validated_acquisition_observation
-from owner_atomic_io import replace_file_bytes
+from owner_atomic_io import native_path, replace_file_bytes
 from owner_file_lock import OwnerFileLock
 from rf_job_feedback import publish_attempt
 
@@ -306,7 +306,7 @@ def resolve_owner_root(value: str | None) -> Path:
     if not path.is_absolute():
         raise JobFacadeError("owner_root_invalid", "the owner root must be an absolute workspace path")
     try:
-        resolved = path.resolve()
+        resolved = native_path(path).resolve()
     except (OSError, RuntimeError, ValueError) as exc:
         raise JobFacadeError("owner_root_invalid",
                              "the owner root must be an absolute workspace path") from exc
@@ -431,7 +431,7 @@ class JobStore:
     """Durable job state under ``<owner-root>/artifacts/rf_jobs/``."""
 
     def __init__(self, owner_root: Path):
-        self.owner_root = owner_root.resolve()
+        self.owner_root = native_path(owner_root).resolve()
         self.store_root = self._owned_path(self.owner_root / "artifacts" / "rf_jobs")
         self.jobs_dir = self.store_root / "jobs"
         self.index_dir = self.store_root / "index"

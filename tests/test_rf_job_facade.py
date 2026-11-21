@@ -123,7 +123,11 @@ def test_submit_runs_three_stages_and_succeeds(tmp_path):
         assert "--owner-root" not in request["command_shape"]
     # durable layout exists
     job_dir = owner_root / "artifacts" / "rf_jobs" / "jobs" / result["owner_job_id"]
-    assert (job_dir / "stages" / "source" / "result-envelope.json").exists()
+    # Inspect the actual bytes through Win32's filesystem namespace even when pytest's
+    # own sandbox path already uses most of MAX_PATH.
+    from owner_atomic_io import native_path
+    job_dir = native_path(job_dir)
+    assert (job_dir / "stages" / "source" / "result-envelope.json").stat().st_size > 0
     assert (job_dir / "stages" / "compute" / "result.json").exists()
     assert (job_dir / "stages" / "publication" / "audit.json").exists()
 

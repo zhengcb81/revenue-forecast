@@ -8,6 +8,7 @@ import sys
 import pytest
 
 from test_rf_job_facade_cli import _deployment, _request
+from owner_atomic_io import native_path
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 
@@ -158,3 +159,86 @@ def test_native_lookup_will_not_attribute_cli_failure_to_another_step(tmp_path):
     assert lookup(row)["result"]["native_code"] == "request_invalid"
     assert lookup(dict(row, step_id="unrelated"))["state"] == "unknown"
 
+
+
+def test_untrusted_exception_attributes_and_failing_feedback_never_replace_native_outcome(tmp_path):
+    config = env(tmp_path)
+    (tmp_path / "valid.json").write_text("{}")
+    (tmp_path / "invalid.json").write_text("{")
+    body = """import sys
+sys.path.insert(0, sys.argv[1])
+import rf_cli_feedback, revenue_forecast as rf
+class BrokenReport(Exception):
+    @property
+    def lineno(self):
+        raise RuntimeError("optional_diagnostic_override")
+def crash(*args, **kwargs):
+    raise BrokenReport()
+def broken_projection(*args, **kwargs):
+    raise RuntimeError("optional_diagnostic_override")
+name = sys.argv[2]
+sys.argv[:] = ["revenue_forecast.py", name + ".json", "--validate-only"]
+if name == "valid":
+    rf.prepare_forecast = crash
+else:
+    rf_cli_feedback._observe = broken_projection
+raise SystemExit(rf.main())"""
+    for name, expected in (("valid", 1), ("invalid", 2)):
+        result = subprocess.run([sys.executable, "-B", "-c", body, str(SCRIPTS), name], env=config, cwd=tmp_path,
+                                capture_output=True, text=True, encoding="utf-8")
+        assert result.returncode == expected
+        assert "optional_diagnostic_override" not in result.stderr
+        if name == "valid":
+            assert "BrokenReport" in result.stderr
+    row, = observations(tmp_path / "box")
+    detail = json.loads(invoke(tmp_path, config, "rf_job_feedback", "get-failure", row["details_ref"].split("/")[-1]).stdout)
+    assert detail["cause_chain"][0]["type"] == "BrokenReport" and detail["code_version"]
+    assert detail["side_effect_state"] == "unknown"
+
+
+@pytest.fixture
+def long_windows_dir(tmp_path):
+    import shutil
+    top = tmp_path / ("statepart" * 8)
+    assert top.parent == tmp_path
+    try:
+        yield top / ("longpath" * 8) / ("longpath" * 8)
+    finally:
+        native = native_path(top)
+        if native.is_dir():
+            shutil.rmtree(native)
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Win32 extended-length paths")
+def test_long_windows_outbox_publishes_complete_ready_and_cold_reopens(tmp_path, long_windows_dir):
+    baseline = long_windows_dir
+    config = env(tmp_path)
+    config["RESEARCH_FEEDBACK_DIR"] = str(baseline)
+    config["RESEARCH_FEEDBACK_OUT"] = ""
+    result = invoke(tmp_path, config, "rf_job_cli", "--owner-root", tmp_path, "submit", data="{")
+    assert result.returncode == 2
+    extended = native_path(baseline)
+    row, = observations(extended)
+    assert row["reason"] == "request_invalid"
+    cold = invoke(tmp_path, config, "rf_job_feedback", "get-failure", row["evidence_ref"].split("/")[-1])
+    assert cold.returncode == 0 and json.loads(cold.stdout)["exit_code"] == 2
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Win32 extended-length paths")
+def test_long_state_keeps_original_pending_even_if_explicit_destination_is_unwritable(tmp_path, long_windows_dir):
+    root = long_windows_dir
+    broken = tmp_path / "legacy"
+    broken.write_text("blocked")
+    config = env(tmp_path)
+    config.update(LOCALAPPDATA=str(root), XDG_STATE_HOME=str(root), RESEARCH_FEEDBACK_OUT=str(broken / "result.jsonl"))
+    result = invoke(tmp_path, config, "rf_job_cli", "--owner-root", tmp_path, "submit", data="{")
+    assert result.returncode == 2
+    db = native_path(root / "revenue-forecast" / "feedback.sqlite3")
+    assert db.is_file()
+    broken.unlink()
+    broken.mkdir()
+    recovered = invoke(tmp_path, config, "rf_job_feedback", "flush-feedback")
+    assert recovered.returncode == 0
+    row, = [json.loads(line) for line in (broken / "result.jsonl").read_bytes().splitlines()]
+    details = invoke(tmp_path, config, "rf_job_feedback", "get-failure", row["details_ref"].split("/")[-1])
+    assert details.returncode == 0 and json.loads(details.stdout)["native_code"] == "request_invalid"

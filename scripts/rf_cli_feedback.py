@@ -8,7 +8,6 @@ import json
 import os
 from pathlib import Path
 import re
-import sqlite3
 import sys
 from uuid import NAMESPACE_URL, uuid4, uuid5
 
@@ -16,7 +15,6 @@ from rf_feedback_outbox import flush, publish
 
 _CURRENT = ContextVar("rf_feedback_invocation", default=None)
 _ROOT = Path(__file__).resolve().parent
-_IO_ERRORS = (OSError, sqlite3.Error, ValueError)
 _CODE = re.compile(r"[a-zA-Z][a-zA-Z0-9_.-]{0,128}")
 
 
@@ -32,18 +30,24 @@ def _chain(error):
     while isinstance(error, BaseException) and id(error) not in seen:
         seen.add(id(error))
         item = {"type": type(error).__name__}
-        tb = error.__traceback__
+        # Read the built-in exception state. Domain exceptions can override arbitrary
+        # attributes with properties that throw exceptions of their own.
+        tb = BaseException.__traceback__.__get__(error)
         while tb is not None:
             path = Path(tb.tb_frame.f_code.co_filename)
             if path.parent == _ROOT:
                 item.update(file=path.name, line=tb.tb_lineno, function=tb.tb_frame.f_code.co_name)
             tb = tb.tb_next
-        if hasattr(error, "lineno") and hasattr(error, "colno"):
+        if type(error) is json.JSONDecodeError:
             item.update(input_line=error.lineno, input_column=error.colno)
-        if isinstance(error, OSError) and error.errno:
-            item["errno"] = error.errno
+        if isinstance(error, OSError):
+            errno = OSError.errno.__get__(error)
+            if isinstance(errno, int):
+                item["errno"] = errno
         chain.append(item)
-        error = error.__cause__ or (None if error.__suppress_context__ else error.__context__)
+        cause = BaseException.__cause__.__get__(error)
+        context = None if BaseException.__suppress_context__.__get__(error) else BaseException.__context__.__get__(error)
+        error = cause if cause is not None else context
     return chain
 
 
@@ -104,8 +108,8 @@ def observed_entry(callback):
     def run(*args, **kwargs):
         try:
             flush()
-        except _IO_ERRORS:
-            pass
+        except Exception:
+            pass  # Recovering optional delivery may never change the operation about to run.
         entry = Path(callback.__code__.co_filename).stem
         state = {"entrypoint": entry, "kind": "failure", "native_code": "cli_failed", "side_effect_state": "unknown"}
         token = _CURRENT.set(state)
@@ -126,8 +130,8 @@ def observed_entry(callback):
             try:
                 if code:
                     _observe(state, code)
-            except _IO_ERRORS:
-                pass
+            except Exception:
+                pass  # The observed return or thrown exception always remains authoritative.
             finally:
                 _CURRENT.reset(token)
     return run
