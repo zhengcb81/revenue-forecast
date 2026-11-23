@@ -24,3 +24,11 @@ python -B -X utf8 -m pytest -q -p no:cacheprovider tests/test_f4_failure_coverag
 ## 部署交接
 
 正式总控仍调用 RF 固定发布检出下的 `scripts/rf_job_feedback.py`，已安装预测入口继续调用已有日志生产者，不需要另装读口。仅由总控推进发布检出并用实际安装入口复验；并行 RF 主工区和统一设置不纳入本仓补修。收件确认由总控负责，业务终态与实际费用是独立事实。
+
+## 远端完整 CI 夹具修复
+
+首次发版 `597c6bc2` 和其父版 `f90d28ad` 均在远端完整来源与预测检查失败。Ubuntu 3.12 在 `f90d28ad` 的干净归档复现 `test_catalog_write_failure_preserves_previous_publication_and_retries_once` 未触发异常。共享原子 writer 从 `f7c7c45f` 起使用较短的 `.rf-*.tmp`，旧测试仍按旧目录索引文件名前缀匹配，未执行约定的 13 字节半写中断。[本次远端故障](https://github.com/zhengcb81/revenue-forecast/actions/runs/45283601584/job/138074080032) · [父版远端故障](https://github.com/zhengcb81/revenue-forecast/actions/runs/44927702861)
+
+夹具以目标目录的实际文件系统身份及独占写入匹配同一原子路径。原目录索引字节、真实半写和退出、单次重试、失败的暂存件清理均有断言。独立代理核对三次真实暂存写入，只有初次成功和重试进入替换。Windows 邻近两项通过；在同一 Ubuntu 原始归档仅替换测试夹具即可由红转绿。
+
+按 GitHub 配置创建独立 Ubuntu Python 3.12 环境，运行 `python -B tools/pre_push_gate.py --ci`。Ruff、16 个公开类型文件通过，行为检查 **766 passed、46 subtests passed**，38.85 秒。例行提交检查负责静态扫描，推前原有 12 项固定冒烟，完整目录写入故障由远端 CI 执行。现有检查职责和生产代码均保持不变。

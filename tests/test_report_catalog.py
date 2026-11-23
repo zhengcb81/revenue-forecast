@@ -500,6 +500,7 @@ def test_catalog_write_failure_preserves_previous_publication_and_retries_once(t
     new_report = dict(report, run_id="run-second", report_id="rf-second")
     new_attempt = dict(attempt, run_id="run-second", report_ids=["rf-second"])
     original_open = Path.open
+    staged_writes = []
 
     class PartialWrite:
         def __init__(self, handle):
@@ -518,9 +519,8 @@ def test_catalog_write_failure_preserves_previous_publication_and_retries_once(t
 
     def fail_after_bytes(path, mode="r", *args, **kwargs):
         handle = original_open(path, mode, *args, **kwargs)
-        if (path == catalog.file and mode == "a") or (
-            path.parent == catalog.file.parent and path.name.startswith(catalog.file.name + ".") and mode == "xb"
-        ):
+        if mode == "xb" and path.parent.samefile(catalog.file.parent):
+            staged_writes.append(path)
             return PartialWrite(handle)
         return handle
 
@@ -529,6 +529,8 @@ def test_catalog_write_failure_preserves_previous_publication_and_retries_once(t
         with pytest.raises(CatalogError) as failed:
             catalog.add_records(runs=[new_run], attempts=[new_attempt], reports=[new_report])
     assert failed.value.code == "catalog_unavailable"
+    temporary, = staged_writes
+    assert not temporary.exists()
     assert catalog.file.read_bytes() == previous
     assert catalog.get_report(report["report_id"])["view"]["report"]["result_sha256"] == report["result_sha256"]
     catalog.add_records(runs=[new_run], attempts=[new_attempt], reports=[new_report])
