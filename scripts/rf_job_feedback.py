@@ -68,8 +68,6 @@ def _action(request: dict, kind: str, method: str) -> tuple[str, dict]:
 
 
 def lookup(owner_root: Path, request: dict) -> dict:
-    from rf_job_facade import JobFacade, JobFacadeError
-
     _, payload = _action(request, "reconcile", "lookup")
     row = payload["observation"]
     ref = row.get("evidence_ref")
@@ -77,8 +75,15 @@ def lookup(owner_root: Path, request: dict) -> dict:
         event = get_failure(ref.rsplit("/", 1)[1])
         if (event and row.get("run_id") == event["run_id"] and row.get("attempt_id") == event["attempt_id"]
                 and row.get("step_id") == event["entrypoint"] + "/" + event["id"]):
-            return {"state": "done", "result": {"status": "known" if event["side_effect_state"] == "not_started" else "cost_unknown",
-                    "evidence_ref": ref, "native_code": event["native_code"], "side_effect_state": event["side_effect_state"]}}
+            code = event.get("exit_code")
+            if type(code) is int and code != 0:
+                effect = event["side_effect_state"]
+                cost = "not_applicable" if effect == "not_started" else "unknown"
+                return {"state": "done", "result": {
+                    "status": "cost_unknown" if cost == "unknown" else "known",
+                    "job_status": "failed", "cost_state": cost, "evidence_ref": ref,
+                    "native_code": event["native_code"], "side_effect_state": effect,
+                }}
         return {"state": "unknown"}
     match = REFERENCE.fullmatch(ref) if isinstance(ref, str) else None
     if match is None:
@@ -86,6 +91,9 @@ def lookup(owner_root: Path, request: dict) -> dict:
     job_id, attempt_id, stage = match.groups()
     if row.get("owner") != OWNER or row.get("step_id") != f"{job_id}/{attempt_id}":
         return {"state": "unknown"}
+
+    from rf_job_facade import JobFacade, JobFacadeError
+
     try:
         view = JobFacade(owner_root, None).get_status(job_id)["job_view"]
     except JobFacadeError:

@@ -56,7 +56,9 @@ def test_natural_source_failure_exposes_failed_attempts(tmp_path):
     assert attempt["exit_code"] == 1
     # The FF calls count records local subprocesses. A read-only source
     # can be retried even if that count cannot establish paid usage.
-    assert attempt["observations"] == {"download_events": 0, "acquisition_calls": 2}
+    assert attempt["observations"]["download_events"] == 0
+    assert attempt["observations"]["acquisition_calls"] == 2
+    assert attempt["observations"]["failure_reason"] == "upstream"
     assert view["cost_state"] == "unknown"
     assert view["cost"] is None
 

@@ -1,4 +1,5 @@
 """Cold tests at the four RF entry points, using strictly local provider fixtures."""
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -37,6 +38,25 @@ def observations(root):
             assert all(row[k] == ident[k] for k in ("owner", "run_id", "attempt_id", "step_id"))
             events.append(row)
     return events
+
+
+def reconcile_observation(root, config, observation, *, owner_root=None):
+    def digest(value):
+        content = json.dumps(value, sort_keys=True, ensure_ascii=True, separators=(",", ":"))
+        return sha256(content.encode("ascii")).hexdigest()
+
+    owner = "revenue-forecast"
+    original = dict(observation, origin_owner=observation.get("origin_owner", observation["owner"]))
+    identity = [original[key] for key in ("owner", "origin_owner", "run_id", "attempt_id", "step_id", "check_id")]
+    occurrence = digest(identity)
+    key = digest(["reconcile", owner, occurrence])
+    payload = {"occurrence_id": occurrence, "observation": original}
+    request = dict(schema_version="feedback-action/1", owner=owner, kind="reconcile", method="lookup",
+                   payload=payload, action_id=key, request_digest=digest([owner, "reconcile", key, payload]))
+    reply = invoke(root, config, "rf_job_feedback", "reconcile", "--owner-root", owner_root or root,
+                   data=json.dumps(request))
+    assert reply.returncode == 0, reply.stderr
+    return json.loads(reply.stdout)
 
 
 @pytest.mark.parametrize(("script", "flags", "data", "reason"), [
@@ -117,6 +137,14 @@ def test_failed_source_and_unknown_usage_remain_independently_visible(tmp_path):
     assert view["stages"][0]["attempts"][0]["observations"]["failure_reason"] == failure["reason"]
     assert usage["disposition"] == "unknown" and usage["actual"] == "unknown"
     assert usage["evidence_ref"] == failure["evidence_ref"] == f"rf-job/1/{job}/source-1"
+    stage = reconcile_observation(tmp_path, config, usage, owner_root=owner)
+    assert stage == {"state": "done", "result": {"status": "cost_unknown", "job_status": "failed",
+                     "cost_state": "unknown", "evidence_ref": usage["evidence_ref"]}}
+    native = reconcile_observation(tmp_path, config, child, owner_root=owner)
+    assert native == {"state": "done", "result": {"status": "cost_unknown", "job_status": "failed",
+                      "cost_state": "unknown", "native_code": "source_bytes_mismatch",
+                      "side_effect_state": "unknown", "evidence_ref": child["evidence_ref"]}}
+    assert reconcile_observation(tmp_path, config, child, owner_root=owner) == native
     assert not any(r["check_id"] == "process-outcome" and r["actual"] == "exit:0" for r in rows)
     assert json.loads(invoke(tmp_path, config, "rf_job_cli", *args, "get-status", "--job-id", job).stdout)["job_view"] == view
 
@@ -138,7 +166,6 @@ def test_default_outbox_and_failed_semantic_native_job_have_separate_causes(tmp_
 
 
 def test_native_lookup_will_not_attribute_cli_failure_to_another_step(tmp_path):
-    from hashlib import sha256
     config = env(tmp_path)
     config.update(RESEARCH_FEEDBACK_RUN_ID="r", RESEARCH_FEEDBACK_ATTEMPT_ID="a",
                   RESEARCH_FEEDBACK_PROCESS_STEP_ID="root")
@@ -146,18 +173,14 @@ def test_native_lookup_will_not_attribute_cli_failure_to_another_step(tmp_path):
     assert failed.returncode == 2
     row, = observations(tmp_path / "box")
 
-    def lookup(observation):
-        owner = "revenue-forecast"
-        key = "3" * 64
-        value = {"observation": observation}
-        digest = sha256(json.dumps([owner, "reconcile", key, value], sort_keys=True, ensure_ascii=True,
-                                   separators=(",", ":")).encode("ascii")).hexdigest()
-        request = dict(schema_version="feedback-action/1", owner=owner, kind="reconcile", method="lookup",
-                       payload=value, action_id=key, request_digest=digest)
-        return json.loads(invoke(tmp_path, config, "rf_job_feedback", "reconcile", "--owner-root", tmp_path,
-                                 data=json.dumps(request)).stdout)
-    assert lookup(row)["result"]["native_code"] == "request_invalid"
-    assert lookup(dict(row, step_id="unrelated"))["state"] == "unknown"
+    receipt = {"state": "done", "result": {"status": "known", "job_status": "failed",
+               "cost_state": "not_applicable", "native_code": "request_invalid",
+               "side_effect_state": "not_started", "evidence_ref": row["evidence_ref"]}}
+    assert reconcile_observation(tmp_path, config, row) == receipt
+    assert reconcile_observation(tmp_path, config, row) == receipt
+    assert reconcile_observation(tmp_path, config, dict(row, step_id="unrelated")) == {"state": "unknown"}
+    missing = dict(row, evidence_ref="rf-cli/1/" + "0" * 32)
+    assert reconcile_observation(tmp_path, config, missing) == {"state": "unknown"}
 
 
 
