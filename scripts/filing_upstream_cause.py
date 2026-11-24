@@ -57,6 +57,7 @@ SOURCE_FAILURE_REASONS = frozenset({
     "source_clock_conflict",
     "primary_issuer_conflict", "primary_scope_conflict", "primary_identity_unresolved",
     "fiscal_period_unresolved",
+    "filing_fetch_invalid_error_document", "filing_fetch_invalid_response_json",
 })
 
 

@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import logging
 import math
 import os
 import re
@@ -35,17 +34,7 @@ from company_wiki_narrative_contracts import NarrativeTransportError, canonical_
 from company_wiki_narrative_process import run_bounded
 from filing_upstream_cause import FAILURE_STATUSES, failure_detail, failure_observation, safe_failure_message, validated_failure_candidates
 
-_logger = logging.getLogger(__name__)
-_STDERR_REDACT_RE = re.compile(
-    r"(?i)(api[_-]?key|token|secret|authorization|password)(\s*[:=]\s*)([^\s,;\"']+)"
-)
-def _redacted_stderr_excerpt(stderr: str | None, limit: int = 500) -> str:
-    if not stderr:
-        return ""
-    cleaned = _STDERR_REDACT_RE.sub(r"\1\2[REDACTED]", stderr).strip()
-    if len(cleaned) > limit:
-        cleaned = cleaned[-limit:]
-    return cleaned
+_DEPENDENCY_ERROR_LINE = re.compile(r"^(ImportError|ModuleNotFoundError):", re.MULTILINE)
 
 
 class _ClientError(RuntimeError):
@@ -384,25 +373,23 @@ def resolve_filing_result(
                 candidates=detail.get("candidates"),
                 **failure_observation(payload),
             )
-        stderr_excerpt = _redacted_stderr_excerpt(completed.stderr)
-        _logger.error(
-            "filing-fetch exited %d without valid JSON error envelope; stderr=%s",
-            completed.returncode,
-            stderr_excerpt or "<empty>",
-        )
-        suffix = f" ({stderr_excerpt})" if stderr_excerpt else ""
+        # Child stderr is untrusted free text. Preserve only a known startup
+        # hint and the measured process exit in the existing JSON error channel.
+        dependency_error = _DEPENDENCY_ERROR_LINE.search(completed.stderr or "")
+        suffix = f" (stderr reports {dependency_error.group(1)})" if dependency_error else ""
         raise _ClientError(
-            f"filing-fetch exited {completed.returncode}: invalid upstream error document{suffix}"
+            f"filing-fetch exited {completed.returncode}: invalid upstream error document{suffix}",
+            source_failure_reason="filing_fetch_invalid_error_document",
+            producer_exit_code=completed.returncode,
         )
     try:
         response = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
-        _logger.error(
-            "filing-fetch stdout is not valid JSON; stderr=%s",
-            _redacted_stderr_excerpt(completed.stderr) or "<empty>",
-            exc_info=True,
-        )
-        raise _ClientError("filing-fetch stdout is not valid JSON") from exc
+        raise _ClientError(
+            "filing-fetch stdout is not valid JSON",
+            source_failure_reason="filing_fetch_invalid_response_json",
+            producer_exit_code=completed.returncode,
+        ) from exc
     if not isinstance(response, dict):
         raise _ClientError("filing-fetch response must be an object")
     status = response.get("status")

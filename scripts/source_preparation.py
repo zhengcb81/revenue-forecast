@@ -565,7 +565,8 @@ def main(argv: list[str] | None = None) -> int:
                        ("upstream_cause", "acquisition_failure", "stage", "attempts", "calls", "downloads",
                         "source_failure_reason", "acquisition_observation", "request_diagnostic",
                         "companion_observation", "filing_fetch_result", "producer_exit_code")}))
-        note_native(failure.get("source_failure_reason") or failure["error_code"])
+        note_native(failure.get("source_failure_reason") or failure["error_code"],
+                    producer_exit_code=failure.get("producer_exit_code"))
         sys.stderr.write(json.dumps(failure))
         sys.stderr.write("\n")
         return 3

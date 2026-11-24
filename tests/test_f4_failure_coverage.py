@@ -265,3 +265,57 @@ def test_long_state_keeps_original_pending_even_if_explicit_destination_is_unwri
     row, = [json.loads(line) for line in (broken / "result.jsonl").read_bytes().splitlines()]
     details = invoke(tmp_path, config, "rf_job_feedback", "get-failure", row["details_ref"].split("/")[-1])
     assert details.returncode == 0 and json.loads(details.stdout)["native_code"] == "request_invalid"
+
+
+@pytest.mark.parametrize(("producer_exit", "reason"), [
+    (7, "filing_fetch_invalid_error_document"),
+    (0, "filing_fetch_invalid_response_json"),
+])
+def test_filing_transport_failure_keeps_one_safe_wire_and_cold_f4_record(tmp_path, producer_exit, reason):
+    calls = tmp_path / "calls"
+    fixture_root = tmp_path / "ff"
+    scripts = fixture_root / "scripts"
+    scripts.mkdir(parents=True)
+    fixture = scripts / "fetch_filing.py"
+    sentinels = ("synthetic-bearer-not-for-output", "synthetic-unmarked-not-for-output")
+    fixture.write_text(
+        "import pathlib, sys\n"
+        "with pathlib.Path(" + repr(str(calls)) + ").open('a') as sink: sink.write('called\\n')\n"
+        "print('{not-json')\n"
+        "print(" + repr("ImportError: Authorization: Bearer " + sentinels[0]) + ", file=sys.stderr)\n"
+        "print(" + repr(sentinels[1]) + ", file=sys.stderr)\n"
+        "raise SystemExit(" + repr(producer_exit) + ")\n",
+        encoding="utf-8",
+    )
+    config = env(tmp_path)
+    request = json.dumps({"company": "Acme", "document_kind": "annual_report", "fiscal_year": 2025})
+    direct = invoke(tmp_path, config, "filing_fetch_client", "--filing-fetch-root", fixture_root, data=request)
+    assert direct.returncode == 2 and not direct.stdout
+    wire_lines = len(direct.stderr.splitlines())
+    assert wire_lines == 1
+    error = json.loads(direct.stderr)
+    assert error["producer_exit_code"] == producer_exit
+    assert error["source_failure_reason"] == reason
+
+    catalog_config = tmp_path / "catalog.json"
+    catalog_config.write_text("{}", encoding="utf-8")
+    prepared = invoke(tmp_path, config, "source_preparation", "--filing-fetch-root", fixture_root,
+                      "--company-wiki-catalog-config", catalog_config, data=request)
+    assert prepared.returncode == 3 and not prepared.stdout
+    assert json.loads(prepared.stderr)["producer_exit_code"] == producer_exit
+    assert calls.read_text(encoding="utf-8").splitlines() == ["called", "called"]
+
+    row, = observations(tmp_path / "box")
+    assert row["reason"] == reason and row["actual"] == "exit:3"
+    evidence = row["details_ref"].split("/")[-1]
+    first = invoke(tmp_path, config, "rf_job_feedback", "get-failure", evidence)
+    second = invoke(tmp_path, config, "rf_job_feedback", "get-failure", evidence)
+    assert first.returncode == second.returncode == 0 and first.stdout == second.stdout
+    detail = json.loads(first.stdout)
+    assert detail["producer_exit_code"] == producer_exit
+    assert detail["native_code"] == reason and detail["side_effect_state"] == "unknown"
+    assert reconcile_observation(tmp_path, config, row)["result"]["cost_state"] == "unknown"
+    assert calls.read_text(encoding="utf-8").splitlines() == ["called", "called"]
+    persisted = b''.join(path.read_bytes() for path in (tmp_path / 'box').iterdir() if path.is_file())
+    captured = (direct.stderr + prepared.stderr + first.stdout).encode('utf-8')
+    assert not any(secret.encode('utf-8') in captured + persisted for secret in sentinels)

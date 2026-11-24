@@ -18,11 +18,13 @@ _ROOT = Path(__file__).resolve().parent
 _CODE = re.compile(r"[a-zA-Z][a-zA-Z0-9_.-]{0,128}")
 
 
-def note_native(code, *, kind="failure", effect="unknown"):
+def note_native(code, *, kind="failure", effect="unknown", producer_exit_code=None):
     """Called by the entry that owns the native return code; never copy arbitrary exception messages."""
     state = _CURRENT.get()
     if state is not None and isinstance(code, str) and _CODE.fullmatch(code):
         state.update(native_code=code, kind=kind, side_effect_state=effect, error=sys.exc_info()[1])
+        if type(producer_exit_code) is int:
+            state["producer_exit_code"] = producer_exit_code
 
 
 def _chain(error):
@@ -87,6 +89,8 @@ def _observe(state, code):
     detail = {"id": key, "entrypoint": entry, "native_code": reason, "classification": kind, "exit_code": code,
               "run_id": run, "attempt_id": attempt, "cause_chain": chain, "code_version": version,
               "side_effect_state": state["side_effect_state"]}
+    if "producer_exit_code" in state:
+        detail["producer_exit_code"] = state["producer_exit_code"]
     row = {"schema_version": "feedback-observation/1", "owner": "revenue-forecast", "run_id": run,
            "attempt_id": attempt, "step_id": entry + "/" + key, "check_id": "process-outcome",
            "expected": "exit:0", "actual": f"exit:{code}", "disposition": "deviation",
