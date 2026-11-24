@@ -20,11 +20,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import math
 import os
 import re
 import subprocess
 import sys
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -32,6 +34,18 @@ from typing import Any
 from company_wiki_narrative_contracts import NarrativeTransportError, canonical_bytes, decode_object
 from company_wiki_narrative_process import run_bounded
 from filing_upstream_cause import FAILURE_STATUSES, failure_detail, failure_observation, safe_failure_message, validated_failure_candidates
+
+_logger = logging.getLogger(__name__)
+_STDERR_REDACT_RE = re.compile(
+    r"(?i)(api[_-]?key|token|secret|authorization|password)(\s*[:=]\s*)([^\s,;\"']+)"
+)
+def _redacted_stderr_excerpt(stderr: str | None, limit: int = 500) -> str:
+    if not stderr:
+        return ""
+    cleaned = _STDERR_REDACT_RE.sub(r"\1\2[REDACTED]", stderr).strip()
+    if len(cleaned) > limit:
+        cleaned = cleaned[-limit:]
+    return cleaned
 
 
 class _ClientError(RuntimeError):
@@ -370,11 +384,25 @@ def resolve_filing_result(
                 candidates=detail.get("candidates"),
                 **failure_observation(payload),
             )
-        raise _ClientError(f"filing-fetch exited {completed.returncode}: invalid upstream error document")
+        stderr_excerpt = _redacted_stderr_excerpt(completed.stderr)
+        _logger.error(
+            "filing-fetch exited %d without valid JSON error envelope; stderr=%s",
+            completed.returncode,
+            stderr_excerpt or "<empty>",
+        )
+        suffix = f" ({stderr_excerpt})" if stderr_excerpt else ""
+        raise _ClientError(
+            f"filing-fetch exited {completed.returncode}: invalid upstream error document{suffix}"
+        )
     try:
         response = json.loads(completed.stdout)
-    except json.JSONDecodeError:
-        raise _ClientError("filing-fetch stdout is not valid JSON")
+    except json.JSONDecodeError as exc:
+        _logger.error(
+            "filing-fetch stdout is not valid JSON; stderr=%s",
+            _redacted_stderr_excerpt(completed.stderr) or "<empty>",
+            exc_info=True,
+        )
+        raise _ClientError("filing-fetch stdout is not valid JSON") from exc
     if not isinstance(response, dict):
         raise _ClientError("filing-fetch response must be an object")
     status = response.get("status")

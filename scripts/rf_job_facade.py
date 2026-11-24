@@ -38,6 +38,7 @@ write effects.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import subprocess
@@ -53,6 +54,8 @@ from filing_upstream_cause import failure_observation, validated_acquisition_obs
 from owner_atomic_io import native_path, replace_file_bytes
 from owner_file_lock import OwnerFileLock
 from rf_job_feedback import publish_attempt
+
+_logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -968,11 +971,20 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
     else:  # compute: the engine wrote result.json itself; it must parse
         try:
             _read_json(artifact)
-        except (OSError, json.JSONDecodeError, ValueError, UnicodeDecodeError):
+        except (OSError, json.JSONDecodeError, ValueError, UnicodeDecodeError) as exc:
+            _logger.error(
+                "compute stage result unreadable for job=%s (%s)",
+                owner_job_id,
+                type(exc).__name__,
+                exc_info=True,
+            )
             record["status"] = "failed"
+            record["error_detail"] = type(exc).__name__
             _mark_stage_failed(job, store, stage)
-            raise JobFacadeError("stage_failed",
-                                 "the compute stage exited zero without a readable forecast result")
+            raise JobFacadeError(
+                "stage_failed",
+                "the compute stage exited zero without a readable forecast result",
+            ) from exc
     record["result_artifact"] = artifact.name
     record["result_sha256"] = _sha256_file(artifact)
     if stage == "source":
