@@ -10,4 +10,6 @@ TDD 红线为 stage runner 缺 attempt_no 参数、release-readiness 走旧的 S
 
 独立 FF reviewer 首轮发现 readiness 在新调度层只保留退出码，无法区别目录与运行环境故障。增加保真回归，3 红 1 绿。返修投影 owner 公共错误类型、retryable 和有明确现存含义的目录不可用信息，保留早期配置异常的类型。假 bearer、路径和未知字段不会外泄，针对性复验 15 项通过，独审复验通过。
 
-远端 main 的观察值仍等于本候选父提交。等待实际快进及 CI 结果。仍开放的日审计、月审计、历史 baseline 和 report catalog 重构见 task_plan.md。
+已从精确远端父提交正常快进 RF main 到 9042f6e06cdf21144ad5a7d736eb99067cfe8845，提交 hook 的 Ruff、公共 mypy 和宿主路径测试通过，push hook 的 Ruff 与 12 项固定 smoke 通过。独立读取 origin/main 返回同一 SHA。精确源码 [CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45573177121) 成功。RF 旧主工作区仍保留原 HEAD 和在用变动。
+
+仍开放的日审计、月审计、历史 baseline 和 report catalog 重构见 task_plan.md。日审计真实记录 20261124T210001Z 对应 report 存在，保留原始 stale、exit 1、not-ok 结果。已确认其中仍观察 policy、scan、producer、legacy 和跨根指标。

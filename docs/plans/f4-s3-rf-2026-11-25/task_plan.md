@@ -1,6 +1,6 @@
 # RF F4 S3 / S4 边界整改
 
-状态 REVIEWED。工作从 RF 已发布主线 1b471df4383b41fe319fb292b55b0baa3ee6af4e 起步。主仓既有变动留给原任务。总控计划位于 company-wiki 的 module-boundaries-2026-11-11 审计。
+当前切片状态 MERGED。工作从 RF 已发布主线 1b471df4383b41fe319fb292b55b0baa3ee6af4e 起步。主仓既有变动留给原任务。总控计划位于 company-wiki 的 module-boundaries-2026-11-11 审计。
 
 ## 当前交付
 
@@ -9,7 +9,7 @@
 - [x] 移除曾退出分发的 WU-1304 canary 的可执行私有目录探针。保留原路径的退休提示。原版本、报告和推导留在 Git。
 - [x] 先复现上述三处，再做成功、失败、恢复和真实公开接口组合测试。
 - [x] 独立审查及返修通过。保留 CWP 发布的机器错误代码和安全失败类型，不转写 stderr 正文。
-- [ ] 提交并快进 RF 远端主线，复查精确发布版本。
+- [x] 正常 hooks、非强制快进及远端哈希复核通过。产品提交 9042f6e06cdf21144ad5a7d736eb99067cfe8845 的 [CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45573177121) 成功。
 
 ## 仍有工作
 
