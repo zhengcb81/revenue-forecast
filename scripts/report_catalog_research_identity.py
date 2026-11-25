@@ -14,7 +14,7 @@ from pathlib import Path
 import re
 from typing import TYPE_CHECKING, Any
 
-from report_catalog import CatalogError
+from report_catalog_common import CatalogError
 
 if TYPE_CHECKING:
     from report_catalog_research_attempt import _Observation

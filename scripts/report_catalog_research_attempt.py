@@ -16,11 +16,14 @@ from pathlib import Path
 import re
 import stat
 import tempfile
-from typing import Any, Callable, cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 from owner_file_lock import OwnerFileLock
-from report_catalog import CatalogError, ReportCatalog, _assert_pathless
+from report_catalog_common import CatalogError, assert_pathless
 from filing_upstream_cause import STAGES, validated_filing_fetch_failure
+
+if TYPE_CHECKING:
+    from report_catalog import ReportCatalog
 
 SCHEMA = "rf-research-attempt-admission/1"
 TERMINAL_SCHEMA = "rf-research-terminal/1"
@@ -1201,7 +1204,7 @@ def import_research_attempt(
     }
     summary["identity_evidence"] = identity
     summary["input_observations"] = obs.manifest()
-    _assert_pathless(summary)
+    assert_pathless(summary)
     body = (
         json.dumps(
             summary,

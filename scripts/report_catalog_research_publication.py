@@ -18,10 +18,10 @@ from typing import Any, Callable, cast
 
 from contracts.document import validate_sources
 from publication_registry import canonical_sha256
+from report_catalog_common import assert_pathless
 from report_catalog import (
     CatalogError,
     ReportCatalog,
-    _assert_pathless,
     _frozen_reporting_scale,
     _read_registry_file,
 )
@@ -1148,7 +1148,7 @@ def import_research_publication(
         source_identity_binding=binding,
         input_observations=obs.manifest(),
     )
-    _assert_pathless(summary)
+    assert_pathless(summary)
     body = (
         json.dumps(
             summary,

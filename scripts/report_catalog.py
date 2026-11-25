@@ -28,6 +28,12 @@ from contracts.constants import MONETARY_DIMENSIONS
 from owner_atomic_io import replace_file_bytes
 from owner_file_lock import OwnerFileLock
 from publication_registry import RegistryError, canonical_sha256, validate_registry_text
+from report_catalog_common import (
+    CatalogError as CatalogError,
+    SOURCE_REF_FIELDS as SOURCE_REF_FIELDS,
+    assert_pathless,
+    require as _require,
+)
 from revenue_backtest import validate_snapshot
 from revenue_report import validate_published_forecast
 from schema_compatibility import validating_engine_allowed
@@ -39,21 +45,7 @@ from research.input_quantities import (
 SCHEMA_VERSION = "rf-report-catalog/1"
 ENV_CATALOG = "REVENUE_REPORT_CATALOG"
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
-SOURCE_REF_FIELDS = frozenset(
-    {"document_id", "source_id", "content_sha256", "byte_size", "mime_type", "schema_version"}
-)
 MAX_ARTIFACT_BYTES = 64 * 1024 * 1024
-
-
-class CatalogError(RuntimeError):
-    def __init__(self, code: str, message: str):
-        super().__init__(message)
-        self.code = code
-
-
-def _require(condition: bool, code: str, message: str) -> None:
-    if not condition:
-        raise CatalogError(code, message)
 
 
 def _utc_now() -> str:
@@ -480,7 +472,7 @@ class ReportCatalog:
                  "attempt report IDs disagree with catalog")
         output = {"schema_version": SCHEMA_VERSION, "catalog_revision": revision,
                   "run_id": run_id, "attempt": self._public_attempt(attempt)}
-        _assert_pathless(output)
+        assert_pathless(output)
         return output
 
     def _run_view(self, run: dict, attempts: dict, reports: dict, revision: str) -> dict:
@@ -507,7 +499,7 @@ class ReportCatalog:
         _require(key in runs, "not_found", "run ID is not registered")
         output = {"schema_version": SCHEMA_VERSION, "catalog_revision": revision,
                   "run": self._run_view(runs[key], attempts, reports, revision)}
-        _assert_pathless(output)
+        assert_pathless(output)
         return output
 
     def list_runs(self, entity_id: str, *, analysis_subject_id: str | None = None,
@@ -525,7 +517,7 @@ class ReportCatalog:
         output = {"schema_version": SCHEMA_VERSION, "catalog_revision": revision,
                   "items": selected, "page": page,
                   "snapshot": self._snapshot(revision, state="available" if rows else "empty")}
-        _assert_pathless(output)
+        assert_pathless(output)
         return output
 
     @staticmethod
@@ -556,7 +548,7 @@ class ReportCatalog:
                   "snapshot": self._snapshot(revision, state="available" if rows else "empty"),
                   "resolved_latest_success_report_id": latest,
                   "resolved_at": _utc_now()}
-        _assert_pathless(output)
+        assert_pathless(output)
         return output
 
     def _report_record(self, report_id: str) -> tuple[dict, str]:
@@ -585,7 +577,7 @@ class ReportCatalog:
                       **view, "report_id": report_id, "result_sha256": record["result_sha256"],
                       "bytes_sha256": record["snapshot_artifact"]["bytes_sha256"],
                   }}
-        _assert_pathless(output)
+        assert_pathless(output)
         return output
 
     @staticmethod
@@ -728,7 +720,7 @@ class ReportCatalog:
                 "citations": citations, "snapshot": self._snapshot(revision,
                 run_id=record.get("run_id"), state="available" if available else "partial",
                 reasons=[] if available else [record["missing_reason"]])}
-        _assert_pathless(view)
+        assert_pathless(view)
         return {"schema_version": SCHEMA_VERSION, "catalog_revision": revision, "view": view}
 
     def get_model(self, report_id: str) -> dict:
@@ -763,7 +755,7 @@ class ReportCatalog:
                 "emitting_schema_version": record["schema_version"],
                 "emitting_engine_version": record["engine_version"],
                 "segments": segments, "parameters": parameters}
-        _assert_pathless(view)
+        assert_pathless(view)
         return view
 
     def get_calculation(self, report_id: str, node_id: str) -> dict:
@@ -866,7 +858,7 @@ class ReportCatalog:
                               "output": self._metric(record, value=value, year=year, scenario=scenario,
                                                      segment_id=index_text),
                               "trace_state": "partial", "missing_reason": ";".join(sorted(gaps))})
-        _assert_pathless(empty)
+        assert_pathless(empty)
         return {"schema_version": SCHEMA_VERSION, "catalog_revision": revision,
                 "calculation": empty}
 
@@ -881,21 +873,6 @@ class ReportCatalog:
         record, result, revision = self._exact_report(report_id)
         return {"schema_version": SCHEMA_VERSION, "catalog_revision": revision,
                 "source_snapshot": get_source_snapshot(self, record, result, snapshot_id)}
-
-
-def _assert_pathless(value: Any) -> None:
-    """Refuse accidental publication of a private Windows/Unix file locator."""
-    if isinstance(value, dict):
-        _require(not any(key in {"path", "relative_path", "original_path", "doc_root"} for key in value),
-                 "path_leak", "public projection contains a path key")
-        for child in value.values():
-            _assert_pathless(child)
-    elif isinstance(value, list):
-        for child in value:
-            _assert_pathless(child)
-    elif isinstance(value, str):
-        _require(not re.search(r"(?:[A-Za-z]:[\\/]|\\\\|/(?:Users|home|tmp|var)/)", value),
-                 "path_leak", "public projection contains a physical locator")
 
 
 def _read_registry_file(path: Path) -> list[dict]:

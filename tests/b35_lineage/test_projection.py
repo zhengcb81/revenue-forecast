@@ -25,6 +25,33 @@ def trace(c):
     ]
 
 
+def test_lineage_projection_runs_without_opening_the_catalog_facade(tmp_path):
+    scripts = Path(__file__).resolve().parents[2] / "scripts"
+    program = """
+import sys
+
+sys.path.insert(0, sys.argv[1])
+from report_catalog_lineage import public_pathless
+
+assert "report_catalog" not in sys.modules, "pure projection loaded catalog owner"
+public_pathless({"source_ref": {"source_id": "evidence-1"}})
+try:
+    public_pathless({"document": {"path": "/home/not-a-public-source"}})
+except RuntimeError as error:
+    failure = error
+else:
+    raise AssertionError("projection accepted a filesystem locator")
+assert "report_catalog" not in sys.modules
+from report_catalog import CatalogError
+assert type(failure) is CatalogError and failure.code == "path_leak"
+"""
+    child = subprocess.run(
+        [sys.executable, "-I", "-B", "-c", program, str(scripts)],
+        cwd=tmp_path, capture_output=True, encoding="utf-8", timeout=30, check=False,
+    )
+    assert child.returncode == 0, child.stderr
+
+
 def test_reachable_graph_keeps_conditional_kind_and_exact_node_links(tmp_path):
     c = build(tmp_path)
     t = trace(c)

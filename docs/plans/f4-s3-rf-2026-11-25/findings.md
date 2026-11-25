@@ -17,3 +17,13 @@ WU-1304 canary 在 MB-RF 已退出分发，运行路径和被调用的函数未�
 本机只读查询未找到 revenue_daily_t2 与 revenue_monthly_broker 注册项。该观察不能覆盖其他宿主。RF 原工作区另有真实 20261124T210001Z 日运行记录，21:02:21 结束并标为 stale，因此不能把日审计当作无人使用的历史脚本。检查 RF、CWP、RFAudit、FF、Dashboard、StockWiki 的当前代码没有发现其他跨仓调用点。月审计同日未找到当前 ledger。
 
 公开 status 不提供旧 canary 的逐件绑定、旧日审计的生产事件与 legacy bridge 台账、月度队列的无遗漏组合匹配、旧 baseline 的最近扫描及根的内部字段。generic query 既没有 artifact_id，又没有稳定的完整分页。暂不把互不等价的数据套成原指标。
+
+## 日审计迁移佐证与顺序
+
+最新实跑 20261124T210001Z 留下报告。旧日审计只因旧 schema 1.0 已完成绑定数量为 0 拒绝，历史 producer events 有 473。该指标只回答旧实现有没有产生特定记录，无法证明当前业务摘要是否可读。调度还读取 CWP 数据目录的 legacy_periods.json，通过 CWP 旧脚本路径调用 legacy_observer.py，同时传入 catalog SQLite 和周期文件物理路径。它可能为凑满旧观察期等待，日审计就绪又使用相同历史台账。
+
+下一次实施先用该份已保存报告复现旧拒绝。核实 run-daily 与 verify 的实际启动者、输出消费人及历史观察期是否仍有人使用。当前常态监控改读 CWP 公布的状态、原文/摘要读面和 F4 观测，新增精确采样要落到 owner 接口及证据。旧计数、根文件总数、观察期和旧 manifest 比对在尚须展示时作诊断，移除作为新材料可读性的代理。若旧周期仍有消费者，继续由 CWP owner 维护原轨迹并给 RF 公开的结果，只在旧用途证实无人需要后归档。先验真实失败路径及无重复写、无重复花费，保留历史日志。
+
+## 目录值级合同
+
+真实 Python 冷启动可证明 report_catalog_lineage 以前只做路径安全投影也会导入目录 facade。这是 owner 装配进基础值流程的反向依赖。CatalogError、准确 SourceRef 字段集合和内部路径检查放到无安装或数据依赖的值层。目录保留原公开的 CatalogError 类，report_catalog_research_attempt 对目录本身的引用成为仅类型引用。report_catalog_research_publication 和相应 sources 模块的深层互相调用、report_catalog_rf_job_import 的私有目录调用仍属独立的后续架构切片。

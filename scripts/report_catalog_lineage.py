@@ -17,7 +17,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from publication_registry import canonical_sha256
-from report_catalog import CatalogError, SOURCE_REF_FIELDS, _assert_pathless
+from report_catalog_common import CatalogError, SOURCE_REF_FIELDS, assert_pathless
 from report_catalog_research_attempt import _Observation, _not_linked, _json
 
 TRACE_SCHEMA = "rf-calculation-trace/1"
@@ -553,7 +553,7 @@ def public_pathless(value: Any) -> None:
                 result[key] = mask(child)
         return result
 
-    _assert_pathless(mask(value))
+    assert_pathless(mask(value))
 
 
 def _anchors(record: dict) -> None:
