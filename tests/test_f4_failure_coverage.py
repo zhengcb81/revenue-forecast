@@ -330,12 +330,19 @@ def test_filing_transport_retains_redacted_child_trace_tail_without_changing_wir
     scripts = fixture_root / "scripts"
     scripts.mkdir(parents=True)
     (scripts / "fetch_filing.py").write_text(
-        "import sys\n"
+        "import sqlite3, sys\n"
+        "class FilingFetchError(Exception): pass\n"
         "sys.stderr.write('x' * 14000 + '\\n')\n"
         "try:\n"
         "    raise FileNotFoundError(2, 'fixture-unmarked-value')\n"
         "except FileNotFoundError as exc:\n"
-        "    raise PermissionError(13, 'Authorization: Bearer fixture-bearer-value') from exc\n",
+        "    try:\n"
+        "        raise PermissionError(13, 'Authorization: Bearer fixture-bearer-value') from exc\n"
+        "    except PermissionError as permission:\n"
+        "        try:\n"
+        "            raise FilingFetchError('fixture-unmarked-value') from permission\n"
+        "        except FilingFetchError as filing:\n"
+        "            raise sqlite3.OperationalError('fixture-bearer-value') from filing\n",
         encoding="utf-8",
     )
     config = env(tmp_path)
@@ -364,6 +371,8 @@ def test_filing_transport_retains_redacted_child_trace_tail_without_changing_wir
     assert record["child_errors"] == [
         {"type": "FileNotFoundError", "errno": 2},
         {"type": "PermissionError", "errno": 13},
+        {"type": "FilingFetchError"},
+        {"type": "sqlite3.OperationalError"},
     ]
     assert record["producer_exit_code"] == 1
     assert b"fixture-unmarked-value" not in log.read_bytes()

@@ -19,7 +19,10 @@ from owner_file_lock import OwnerFileLock
 
 _TAIL_LENGTH = 16 * 1024
 _TRACEBACK = "Traceback (most recent call last):"
-_ERROR_LINE = re.compile(r"^([A-Za-z][A-Za-z0-9_]*):(?: \[Errno ([0-9]{1,5})\])?")
+_ERROR_LINE = re.compile(
+    r"^([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)(?::(?=\s|$)(?: \[Errno ([0-9]{1,5})\])?|$)",
+    re.ASCII,
+)
 
 
 def state_dir() -> Path:
@@ -32,16 +35,20 @@ def child_traceback_facts(stderr: str | None) -> list[dict[str, str | int]]:
     if not stderr:
         return []
     facts: list[dict[str, str | int]] = []
-    in_trace = False
+    in_trace = saw_frame = False
     for line in stderr[-_TAIL_LENGTH:].splitlines():
         if line == _TRACEBACK:
             in_trace = True
-        elif in_trace and (match := _ERROR_LINE.match(line)):
+            saw_frame = False
+        elif in_trace and line.startswith("  File "):
+            saw_frame = True
+        elif in_trace and saw_frame and (match := _ERROR_LINE.match(line)):
             name, raw_errno = match.groups()
-            exception = getattr(builtins, name, None)
-            if isinstance(exception, type) and issubclass(exception, BaseException):
+            if len(name) <= 96:
                 fact: dict[str, str | int] = {"type": name}
-                if issubclass(exception, OSError) and raw_errno and int(raw_errno) in errorcode:
+                exception = getattr(builtins, name, None)
+                if (isinstance(exception, type) and issubclass(exception, OSError)
+                        and raw_errno and int(raw_errno) in errorcode):
                     fact["errno"] = int(raw_errno)
                 facts.append(fact)
             in_trace = False
