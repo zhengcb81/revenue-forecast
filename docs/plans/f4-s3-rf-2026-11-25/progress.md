@@ -27,3 +27,5 @@ Ruff 和 113 项定向测试通过。覆盖每天入口、历史收据回读、�
 仓内 Windows 注册动作仍生成裸 `run-daily` 可以继续解析。手动隔离验证请给 RF 自己的 `--ledger`、`--alerts`、`--report-root`，并给 `run-daily --config` 指定 CWP 配置。可重复传 `--source-ref` 指定要验真的公开引用 JSON。实际本机任务的查询由系统拒绝访问，注册状态与当前部署代码由宿主另核。独审要求补齐等数目但错身份、SHA、字节数或 MIME 的返回反例，并验证不同排序的正确回复。RF 只对齐公开身份字段，实际原件仍由 CWP 验真。源和测试复验指纹为 `eb4f222609f502c8bb7a4c55acdd467c8bed0cc35aed7e09c150f0f4659dcca5`。
 
 独立非作者审查 ACCEPT，实际短路径复验 38 项通过，并以现有已安装 CWP 用裸 run-daily 分别验证缺库 blocked 和空库 ok。CWP 使用 SQLite 只读连接时可由 SQLite 自行生成 WAL/SHM 辅助文件，目录主文件的 SHA 一致。测试隔离根恢复清理。源码发布以包含本记录的 RF 主线提交为准。
+
+周跑接口盘点完成。FF 单作业和当前离线矩阵可为迁移提供证据。实际三市场采集加坏件反例的组合回告仍缺可消费的公开 owner 收据，进入明确 BLOCKED。Windows 实际注册查询返回拒绝访问。当前没有改动每日或每周生产任务。见 [周跑公开接口交接](weekly-owner-boundary.md)。
