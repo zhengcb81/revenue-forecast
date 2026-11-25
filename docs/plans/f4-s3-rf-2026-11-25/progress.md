@@ -16,4 +16,4 @@ TDD 红线为 stage runner 缺 attempt_no 参数、release-readiness 走旧的 S
 
 第二个切片的真实冷启动在旧基线确实加载了目录 facade，隔离测试先红。值级合同抽离后新进程回归绿，路径泄漏仍拒绝且错误对象保持原公开类。八个定向套件 317 passed、2 skipped、1 已有失败。该单例在不含候选改动的 1b471df4 同样返回 identity_not_resolved。用 c211f25c 对比该基线，相关 catalog 源码及身份用例字节没有变更。独立 FF reviewer 又跑冷启动与真实 owner CLI 两项，均通过。短路径隔离测试目录清理完成。
 
-上一个 readiness 发布的失败链路做了真实 F4 补验。建立临时 CWP 配置和空库。正常 status 返回可用，缺配置显示 FileNotFoundError，缺数据库显示 catalog_missing。两次失败通过原 run ID 查回 CWP JSONL，配置和数据库字节与修改时间未变，临时的状态和反馈一并清理，外部调用为零。第二个切片等待快进核验。
+上一个 readiness 发布的失败链路做了真实 F4 补验。建立临时 CWP 配置和空库。正常 status 返回可用，缺配置显示 FileNotFoundError，缺数据库显示 catalog_missing。两次失败通过原 run ID 查回 CWP JSONL，配置和数据库字节与修改时间未变，临时的状态和反馈一并清理，外部调用为零。第二个切片从 c211f25c 正常快进至 c3396e96ba9e22a6fd6601b783c504aecdb8f622。提交 hooks 的 Ruff、公共 mypy 和宿主路径测试通过。推送 hooks 的 Ruff 和 12 项固定测试通过。Git 远端哈希复核等于该源码，[CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45574901776) 成功。

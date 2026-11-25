@@ -7,7 +7,7 @@
 
 ## 2026-11-25 F4 S3 / S4 来源与作业边界
 
-当前切片 MERGED（9042f6e0，[CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45573177121)）。包含 CWP 公开状态接线、已退休 canary 关闭执行、运行器尝试编号改为显式传递。真实本地组合与先红后绿证据见 [F4 S3 / S4 计划](docs/plans/f4-s3-rf-2026-11-25/task_plan.md)。目录纯投影反向加载切片已独审，发布见同计划 progress。日审计、月审计及历史 baseline 的公开接口迁移仍在处理。
+当前切片 MERGED（9042f6e0，[CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45573177121)）。包含 CWP 公开状态接线、已退休 canary 关闭执行、运行器尝试编号改为显式传递。真实本地组合与先红后绿证据见 [F4 S3 / S4 计划](docs/plans/f4-s3-rf-2026-11-25/task_plan.md)。目录纯投影反向加载切片也已 MERGED（c3396e96，[CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45574901776)）。日审计、月审计及历史 baseline 的公开接口迁移仍在处理。
 
 ## 2026-11-20 W12 W01 共同确认压力
 

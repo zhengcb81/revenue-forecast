@@ -16,7 +16,7 @@
 - [x] 正常报告溯源投影从同一个纯契约层获取 CatalogError、SourceRef 键和公开输出路径校验。已有目录 facade 继续公开相同 CatalogError，读取投影的冷启动不需要加载目录存储。
 - [x] 真实新进程验证正常投影通过，物理 locator 仍按原错误拒绝。本次没有增加新的发布门禁。
 - [x] 既有八个回归套件验证读取、来源、失败登记和发布行为。单个跨仓身份旧夹具在未改的发布基线同样失败，单独保留待办。
-- [ ] 写入快进发布的精确源码与 CI 收据。
+- [x] 正常快进并复核远端源码 c3396e96ba9e22a6fd6601b783c504aecdb8f622，[CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45574901776) 成功。
 
 ## 仍有工作
 
