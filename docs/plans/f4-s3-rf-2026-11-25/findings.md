@@ -52,4 +52,4 @@ FC-505 的旧工具 tools/ex05_chain_replay.py 曾由 assurance/fc/FC-505/11_imp
 
 WU-0.1 的 tools/audit_baseline.py 仍能有选择地执行跨仓 SQLite 查询。已知调用为自身工具测试和旧证据 audit_review/2026-08-08_adversarial_plan/progress.md 中的手动命令。它读数据库版本、内部 roots 和 scan_runs 并返回物理根。仓库 Git、工具版本、配置 hash 等独立诊断仍有实际用途。下一步只去掉跨仓数据读取，保留这些独立诊断与旧参数的可解析性，明确区分历史 catalog 口径不再可提供。旧报告原样保存。
 
-当前候选保留 EX05 命令位置，执行即回告退役与历史收据出处，退出码 2。baseline 的旧 --catalog 参数仍接受，原 catalog JSON 键不变，并增加 status 和 reason 说明。未知状态不冒充数据库观测。--read-only 原许可标志变为兼容参数，本地检查始终只读，并禁止 git status 刷新索引。无任何 CWP 或 FF 入口在此闭包启动。
+已发布版本保留 EX05 命令位置，执行即回告退役与历史收据出处，退出码 2。baseline 的旧 --catalog 参数仍接受，原 catalog JSON 键不变，并增加 status 和 reason 说明。未知状态不冒充数据库观测。--read-only 原许可标志变为兼容参数，本地检查始终只读，并禁止 git status 刷新索引。无任何 CWP 或 FF 入口在此闭包启动。

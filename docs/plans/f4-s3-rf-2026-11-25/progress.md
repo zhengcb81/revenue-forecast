@@ -54,4 +54,4 @@ RF 以 `c34bf37126717e9d1108e8dd2b8b915d20a68f14` 为基线，先在实际入口
 
 基于已发布的 3ac1f6cda76328fd240f41b862622ad2162798f6。旧 EX05 在假 CWP 和 FF 导入下，真实 Python 冷启动确实开始遍历假 Dropbox。旧 baseline 对合成历史库触发 sqlite3.connect，并把旧表输出为当前数据；不带 --read-only 则拒绝本地 Git 与配置摘要。四条反例先红，原只读本地目录对照保绿。新版 84 项定向绿，Ruff 和 diff 检查通过。
 
-从本仓导出仍跟踪的 FC-505 原始收据，隔离验证两条真实手工命令。旧 EX05 不扫描数据，退出码 2 并指向已保存收据。baseline 正常返回隔离 Git 的暂存状态与配置字节 SHA，旧 catalog 标为 unavailable，且 Git 索引原字节和时间不变。不存在的 catalog 未创建，隔离根清理，归档原字节未变。FC-505 SHA-256 bae3b9271b2e8e9d533766ce73a6f2e64349db0c0ab554440568d0ca22729827。ROOT 独立运行 5 项通过，验证后清理隔离根。冻结 LF 指纹 41f9e5675adbd5da8ac1831569876774fd2addbe9016c12a55830506f05345fd。待主线精确验收。
+从本仓导出仍跟踪的 FC-505 原始收据，隔离验证两条真实手工命令。旧 EX05 不扫描数据，退出码 2 并指向已保存收据。baseline 正常返回隔离 Git 的暂存状态与配置字节 SHA，旧 catalog 标为 unavailable，且 Git 索引原字节和时间不变。不存在的 catalog 未创建，隔离根清理，归档原字节未变。FC-505 SHA-256 bae3b9271b2e8e9d533766ce73a6f2e64349db0c0ab554440568d0ca22729827。ROOT 独立运行 5 项通过，验证后清理隔离根。冻结 LF 指纹 41f9e5675adbd5da8ac1831569876774fd2addbe9016c12a55830506f05345fd。正常 commit 和 push hooks 通过，含 12 项固定快测。远端 main 精确源码 deb59f70f67875987f6c5cf6d781c5273893b568 的 [CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45599725734) 成功。
