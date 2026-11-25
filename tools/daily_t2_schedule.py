@@ -1,22 +1,7 @@
-"""ZR-902: daily Windows T2 scheduling — schedule/runner/freshness/release gate.
+"""Schedule RF's read-only daily health check and retain its local results.
 
-Wraps the existing FC-1102 ``tools/daily_t2_runner.py`` into a fully
-scheduled daily assurance loop:
-
-  run-daily    run the T2 runner, write the run ledger
-               (``assurance/runs/daily_manifest.json``), judge freshness
-               (<= 24h and ok -> fresh; older -> stale; absent -> missing)
-               and append an alert journal entry when not fresh.
-  register     register a Windows Task Scheduler daily task (deployment
-               action; requires elevation) that invokes ``run-daily``.
-  query        read-only status of the scheduled task (exists / last run).
-  unregister   remove the scheduled task (deployment action).
-  verify       combined status: schedule (registered/missing) + last run
-               (fresh/stale/missing) — the AUD2-01/02/03 oracle.
-
-The release gate (``release_gate``) is a pure function over the ledger:
-fresh + ok -> ready; stale / missing / not-ok -> blocked.  Scripts existing
-without a schedule, a stopped job, or an old green report never pass.
+The scheduled task delegates only to the RF runner. The optional exact source
+pins use the CWP public verifier. Existing daily ledgers still load normally.
 """
 
 from __future__ import annotations
@@ -25,9 +10,13 @@ import argparse
 import json
 import subprocess
 import sys
-import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+
+if __package__:
+    from .daily_t2_runner import DEFAULT_CONFIG, DEFAULT_REPORT_ROOT
+else:
+    from daily_t2_runner import DEFAULT_CONFIG, DEFAULT_REPORT_ROOT
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RUNNER = PROJECT_ROOT / "tools" / "daily_t2_runner.py"
@@ -64,125 +53,6 @@ ENVIRONMENT_MARKERS = (
     "permissionerror",
     "not installed",
 )
-
-# FC-705 window integrity (2026-09-10).  A close window is the gap between two
-# consecutive daily runs, and the task fires on a wall clock with sub-minute
-# jitter, so a gap can land seconds short of 24h (observed 23:59:41 and
-# 23:59:52) even though the zero-hit condition holds every night.  The runner
-# therefore waits out the missing seconds before closing the window, so the
-# >= 24h threshold is *satisfied* rather than met by luck.  The wait is
-# bounded: a run must never hang, and a manual re-run hours early stays
-# fail-closed (its window simply remains short and cannot count).
-OBSERVATION_WINDOW_MIN = timedelta(hours=24)
-MAX_WINDOW_WAIT_SECONDS = 180
-
-# Production paths for the REGISTERED task: the SYSTEM task fires the script
-# with a bare ``--run-daily`` (no per-run flags), so these must default to
-# the real catalog/manifest/report root — otherwise every 22:00 trigger
-# dies in argparse with "the following arguments are required" and the
-# daily ledger (and with it the FC-705 observation windows) never advances.
-DEFAULT_CATALOG = PROJECT_ROOT.parent / "company-wiki" / ".source_catalog" / "catalog.sqlite3"
-DEFAULT_MANIFEST = PROJECT_ROOT / "compatibility" / "current.json"
-DEFAULT_REPORT_ROOT = PROJECT_ROOT / "assurance" / "runs"
-
-# FC-705 observation advancement (GP-008): the daily run also advances the
-# legacy-observation periods ledger through the read-only wiki observer.
-# The observer writes ONLY the periods JSON (audit state) and never touches
-# the production catalog (mode=ro + query_only + _ReadOnlyCatalog).
-# Without this wiring the periods ledger never accumulates and
-# close_gate_allowed stays False forever.
-#
-# Authoritative ledger path: the wiki catalog dir (.source_catalog/
-# legacy_periods.json) — the historical convention recorded in the old
-# plan's observer runs (2026-08-09_data_lake_refactor_plan/progress.md:
-# --period-file .source_catalog/legacy_periods.json).  GP-008 initially
-# wrote to revenue's assurance/runs/legacy_periods.json, which created a
-# SECOND, divergent ledger (periods 1-3, gate True 09-06) next to the
-# stale pre-cutover ledger there (periods 1-6, last written 08-13).
-# Reverted to the single historical path on 2026-09-06 so the next run
-# (opening period 7) continues the original ledger and the two files do
-# not drift apart again.
-WIKI_ROOT = PROJECT_ROOT.parent / "company-wiki"
-LEGACY_OBSERVER = WIKI_ROOT / "scripts" / "legacy_observer.py"
-DEFAULT_PERIODS = WIKI_ROOT / ".source_catalog" / "legacy_periods.json"
-
-
-def read_periods(path: Path) -> dict:
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        if isinstance(data, dict) and isinstance(data.get("periods"), list):
-            return data
-    except (OSError, json.JSONDecodeError):
-        pass
-    return {"periods": []}
-
-
-def next_period_number(path: Path) -> int:
-    """Next FC-705 observation period: max existing + 1, or 1 on a fresh/
-    corrupt ledger (a corrupt ledger restarts the sequence — fail closed,
-    an open restart is never a pass)."""
-    numbered = [
-        p.get("period") for p in read_periods(path)["periods"]
-        if isinstance(p, dict) and isinstance(p.get("period"), int)
-    ]
-    return (max(numbered) + 1) if numbered else 1
-
-
-def observer_argv(catalog: Path, period: int, periods_path: Path) -> list[str]:
-    """argv for the read-only FC-705 legacy observer invocation."""
-    return [
-        sys.executable, "-B", str(LEGACY_OBSERVER),
-        "--catalog", str(catalog),
-        "--period", str(period),
-        "--period-file", str(periods_path),
-        "--read-only",
-    ]
-
-
-def open_period_started_at(path: Path, *,
-                           now: datetime | None = None) -> datetime | None:
-    """``started_at`` of the newest still-open (``ended_at is None``) period.
-
-    Returns ``None`` when no window is open (a fresh ledger, or every period
-    already closed) — that is the state in which the next run opens the very
-    first window and there is nothing to complete.
-    """
-    now = now or datetime.now(UTC)
-    newest: datetime | None = None
-    for entry in read_periods(path)["periods"]:
-        if not isinstance(entry, dict) or entry.get("ended_at") is not None:
-            continue
-        started = entry.get("started_at")
-        if not isinstance(started, str) or not started:
-            continue
-        try:
-            candidate = _iso_to_utc(started)
-        except ValueError:
-            continue
-        if candidate <= now and (newest is None or candidate > newest):
-            newest = candidate
-    return newest
-
-
-def window_wait_seconds(path: Path, *, now: datetime | None = None,
-                        minimum: timedelta = OBSERVATION_WINDOW_MIN,
-                        max_wait: int = MAX_WINDOW_WAIT_SECONDS) -> int:
-    """Seconds to wait so the open FC-705 window reaches ``minimum``.
-
-    ``0`` means "do not wait": no window is open, it is already long enough,
-    or the missing time exceeds ``max_wait`` (a scheduled run must not hang,
-    and an early manual re-run must stay fail-closed instead of being padded
-    into a window it did not observe).
-    """
-    now = now or datetime.now(UTC)
-    started = open_period_started_at(path, now=now)
-    if started is None:
-        return 0
-    missing = int(((started + minimum) - now).total_seconds() + 0.999)
-    if missing <= 0 or missing > max_wait:
-        return 0
-    return missing
-
 
 def _now_iso() -> str:
     return datetime.now(UTC).isoformat()
@@ -261,110 +131,67 @@ def _read_runner_report(report_path: Path) -> dict | None:
     return data if isinstance(data, dict) else None
 
 
-def run_outcome(proc: subprocess.CompletedProcess,
-                obs: subprocess.CompletedProcess,
-                report_path: Path) -> tuple[bool, str, str]:
-    """(ok, outcome, detail) for one daily run - the same split the weekly T3 loop uses.
-
-    ``ok`` (and therefore the ledger and the release gate) is unchanged: both the
-    runner and the observation must succeed.  What is new is the ATTRIBUTION recorded
-    in the alert: ``not-ok`` = the run produced a verdict and the verdict was bad;
-    ``blocked`` = no verdict was produced and the output looks like an environment
-    failure (explicit sentinel, or a marker), i.e. "this machine could not run it"
-    rather than "the product is broken".  The marker path is a HEURISTIC - the report
-    is the authority - and an observer failure always reads ``not-ok`` (the observer
-    IS part of the mechanism under test, so blaming the environment for it would be
-    the wrong direction).
-    """
-    output = ((proc.stdout or "") + (proc.stderr or "") + (obs.stdout or "")
-              + (obs.stderr or ""))
-    lowered = output.lower()
-    report = _read_runner_report(report_path)
-
-    if proc.returncode == 0 and report is not None and report.get("ok") is True \
-            and not report.get("problems"):
-        if obs.returncode == 0:
-            return True, "ok", "T2 run passed and the observation period advanced"
-        return False, "not-ok", (
-            f"observation period failed (exit {obs.returncode}) while the T2 run itself "
-            f"passed - the FC-705 window did not advance"
-        )
-
+def run_outcome(
+    proc: subprocess.CompletedProcess, report: dict | None,
+) -> tuple[bool, str, str]:
+    """Read today's native result, with legacy subprocess failure attribution."""
     if report is not None:
         problems = report.get("problems") or []
-        reason = "; ".join(str(item) for item in problems[:3]) or "runner reported ok=false"
-        return False, "not-ok", f"T2 runner produced a verdict: {reason}"
+        if proc.returncode == 0 and report.get("ok") is True and not problems:
+            return True, "ok", "Daily source assurance passed"
+        detail = "; ".join(str(item) for item in problems) or "runner reported failure"
+        if report.get("outcome") == "blocked":
+            return False, "blocked", detail
+        return False, "not-ok", f"T2 runner produced a verdict: {detail}"
 
-    if ENVIRONMENT_SENTINEL.lower() in lowered:
-        return False, "blocked", (
-            f"the run declared it could not run here (sentinel {ENVIRONMENT_SENTINEL}; "
-            f"runner exit {proc.returncode})"
-        )
-    markers = [marker for marker in ENVIRONMENT_MARKERS if marker in lowered]
+    output = ((proc.stdout or "") + (proc.stderr or "")).lower()
+    if ENVIRONMENT_SENTINEL.lower() in output:
+        return False, "blocked", f"runner reported sentinel {ENVIRONMENT_SENTINEL}; exit {proc.returncode}"
+    markers = [marker for marker in ENVIRONMENT_MARKERS if marker in output]
     if markers:
         return False, "blocked", (
-            f"no verdict was produced and the output looks environmental (runner exit "
-            f"{proc.returncode}; matched: {', '.join(markers[:3])}) - heuristic, check the "
-            f"report before blaming either side"
+            f"no verdict was produced (runner exit {proc.returncode}; "
+            f"matched: {', '.join(markers)}) - heuristic"
         )
-    return False, "not-ok", (
-        f"T2 runner failed without a report (exit {proc.returncode}) and the output "
-        f"carries no environment marker"
-    )
+    return False, "not-ok", f"T2 runner failed without a report (exit {proc.returncode})"
 
 
-def run_daily(catalog: Path, manifest: Path, report_root: Path,
-              ledger_path: Path, alert_path: Path,
-              periods_path: Path | None = None) -> int:
-    run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-    report_dir = report_root / run_id
-    proc = subprocess.run(
-        [sys.executable, "-B", str(RUNNER),
-         "--catalog", str(catalog), "--manifest", str(manifest),
-         "--report-root", str(report_root), "--run-id", run_id],
-        capture_output=True, text=True, errors="replace", timeout=600,
-    )
-    # FC-705 observation: advance the periods ledger through the read-only
-    # legacy observer (a new period closes the previous one).  Observer
-    # failure makes the run not-ok (alert + release blocked) — the windows
-    # must not silently stop accumulating.
-    period_path = periods_path or DEFAULT_PERIODS
-    period = next_period_number(period_path)
-    # FC-705 window integrity: wait out the seconds a jittering wall clock
-    # shaved off the open window, so the >= 24h requirement is satisfied by
-    # the mechanism instead of by luck.  The observer still timestamps with
-    # the real time it runs (no backdating).
-    wait_seconds = window_wait_seconds(period_path)
-    if wait_seconds:
-        print(f"FC-705 window {wait_seconds}s short of {OBSERVATION_WINDOW_MIN}; "
-              f"waiting before opening period {period}", flush=True)
-        time.sleep(wait_seconds)
-    obs = subprocess.run(
-        observer_argv(catalog, period, period_path),
-        capture_output=True, text=True, errors="replace", timeout=600,
-    )
-    if obs.returncode != 0:
-        obs_tail = (obs.stderr or obs.stdout or "")[-300:].strip()
-        print(f"observation period {period} FAILED: {obs_tail}", file=sys.stderr)
+def run_daily(
+    catalog_config: Path, report_root: Path, ledger_path: Path, alert_path: Path,
+    *, source_ref_files: tuple[Path, ...] = (),
+) -> int:
     started = _now_iso()
-    report_path = report_dir / "report.json"
-    ok, outcome, outcome_detail = run_outcome(proc, obs, report_path)
-    triplet = {"revenue": _head(PROJECT_ROOT),
-               "filing": _head(PROJECT_ROOT.parent / "filing-fetch"),
-               "wiki": _head(PROJECT_ROOT.parent / "company-wiki")}
-    write_ledger(ledger_path, run_id, started, triplet, ok,
-                 str(report_path),
-                 observation_period=period if obs.returncode == 0 else None)
-    status, detail = freshness_status(read_ledger(ledger_path), now=started)
-    if status != "fresh":
+    run_id = datetime.fromisoformat(started).strftime("%Y%m%dT%H%M%S%fZ")
+    report_path = report_root / run_id / "report.json"
+    argv = [
+        sys.executable, "-B", str(RUNNER), "--config", str(catalog_config),
+        "--report-root", str(report_root), "--run-id", run_id,
+    ]
+    for path in source_ref_files:
+        argv.extend(("--source-ref", str(path)))
+    try:
+        proc = subprocess.run(argv, capture_output=True, text=True, errors="replace", timeout=600)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        proc = subprocess.CompletedProcess(
+            argv, 2, "", f"{ENVIRONMENT_SENTINEL}: {type(error).__name__}",
+        )
+    report = _read_runner_report(report_path)
+    ok, outcome, detail = run_outcome(proc, report)
+    if report is None:
+        report = {"run_id": run_id, "ok": ok, "outcome": outcome, "checks": {},
+                  "problems": [detail], "triplet": {}}
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(json.dumps(report, ensure_ascii=False) + "\n", encoding="utf-8")
+    write_ledger(ledger_path, run_id, started, report.get("triplet", {}), ok, str(report_path))
+    status, freshness = freshness_status(read_ledger(ledger_path), now=started)
+    if not ok:
         append_alert(alert_path, {
             "at_utc": started, "run_id": run_id, "status": status,
-            "outcome": outcome, "reason": f"{outcome_detail} (ledger: {detail})",
-            "exit_code": proc.returncode,
+            "outcome": outcome, "reason": f"{detail} (ledger: {freshness})",
+            "exit_code": proc.returncode or 1,
         })
-    print(f"run_id={run_id} ok={ok} outcome={outcome} observation_period={period} "
-          f"status={status} detail={outcome_detail}")
-    return proc.returncode or obs.returncode
+    print(f"run_id={run_id} ok={ok} outcome={outcome} status={status} detail={detail}")
+    return 0 if ok else proc.returncode or 1
 
 
 def _head(repo: Path) -> str:
@@ -482,13 +309,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--alerts", type=Path, default=DEFAULT_ALERTS)
     sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser("run-daily")
-    # Defaults == the production paths the registered SYSTEM task must hit.
-    run.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
-    run.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    run.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     run.add_argument("--report-root", type=Path, default=DEFAULT_REPORT_ROOT)
-    run.add_argument("--periods", type=Path, default=DEFAULT_PERIODS,
-                     help="FC-705 periods ledger (default: assurance/runs/"
-                          "legacy_periods.json)")
+    run.add_argument("--source-ref", action="append", type=Path, default=[])
     for name in ("register", "unregister", "query", "verify"):
         sub.add_parser(name)
     return parser
@@ -497,9 +320,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
     if args.command == "run-daily":
-        return run_daily(args.catalog, args.manifest, args.report_root,
-                         Path(args.ledger), Path(args.alerts),
-                         periods_path=args.periods)
+        return run_daily(
+            args.config, args.report_root, args.ledger, args.alerts,
+            source_ref_files=tuple(args.source_ref),
+        )
     if args.command == "register":
         return cmd_register(args)
     if args.command == "unregister":

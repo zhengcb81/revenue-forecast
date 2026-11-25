@@ -17,3 +17,16 @@ dotenv and the host attestation provider, and clear inherited parent Git reposit
 context. They do not use the owner's configured signing service. The gate's
 TemporaryDirectory is removed on success or failure; each author still restores
 any separate test fixtures they create.
+
+## Daily source assurance
+
+The daily RF task invokes `python tools/daily_t2_schedule.py run-daily`. It checks
+the configured company-wiki catalog through the installed public status command
+and writes a report in RF. The default probes availability and owner-reported
+counts. An available empty catalog passes the default probe.
+
+Use `run-daily --config /path/to/source_catalog.yaml --source-ref /path/to/ref.json`
+for an exact original. Repeat `--source-ref` to include several public SourceRefs.
+CWP verifies the original bytes through its public SourceExport v2 command.
+The report records the matching export or the owner's failure code. The old
+`--catalog`, `--manifest` and `--periods` inputs belong to the archived checker.

@@ -204,15 +204,11 @@ def test_c4_subcommands_are_positional(tmp_path):
 
 def test_c5_bare_run_daily_parses_with_production_defaults(tmp_path):
     """Regression (GP-008): the registered SYSTEM task fires the script with
-    ONLY ``--run-daily`` plus the module-level ledger/alerts defaults.  The
-    run-daily catalog/manifest/report-root arguments must default to the
-    production paths — previously they were required, so every 03:30 trigger
-    died in argparse (SystemExit 2) and daily_manifest.json never advanced,
-    which also froze the FC-705 observation windows forever."""
+    bare run-daily plus the module-level ledger and alert defaults.
+    A bare invocation selects the public catalog configuration."""
     from daily_t2_schedule import (  # noqa: F811
-        DEFAULT_CATALOG,
+        DEFAULT_CONFIG,
         DEFAULT_LEDGER,
-        DEFAULT_MANIFEST,
         DEFAULT_REPORT_ROOT,
         build_parser,
     )
@@ -225,25 +221,22 @@ def test_c5_bare_run_daily_parses_with_production_defaults(tmp_path):
         "run-daily",
     ])
     assert args.command == "run-daily"
-    assert args.catalog == DEFAULT_CATALOG
-    assert args.manifest == DEFAULT_MANIFEST
+    assert args.config == DEFAULT_CONFIG
     assert args.report_root == DEFAULT_REPORT_ROOT
     # sanity: the defaults point at the real production surfaces
-    assert args.catalog.is_absolute() and args.catalog.name == "catalog.sqlite3"
-    assert args.manifest.name == "current.json"
+    assert args.config.is_absolute() and args.config.name == "source_catalog.yaml"
     assert DEFAULT_LEDGER.name == "daily_manifest.json"
 
 
 def test_c5_register_action_needs_no_extra_flags():
     """The register subcommand stores a bare ``--run-daily`` action; parse
-    that exact argv (no --ledger/--alerts/--catalog/... overrides) to prove
+    that exact argv (no --ledger/--alerts/--config/... overrides) to prove
     a freshly registered task resolves every path from module defaults and
     will not argparse-fail at trigger time."""
     from daily_t2_schedule import (  # noqa: F811
         DEFAULT_ALERTS,
-        DEFAULT_CATALOG,
+        DEFAULT_CONFIG,
         DEFAULT_LEDGER,
-        DEFAULT_MANIFEST,
         DEFAULT_REPORT_ROOT,
         build_parser,
     )
@@ -251,8 +244,7 @@ def test_c5_register_action_needs_no_extra_flags():
     args = build_parser().parse_args(["run-daily"])
     assert args.ledger == DEFAULT_LEDGER
     assert args.alerts == DEFAULT_ALERTS
-    assert args.catalog == DEFAULT_CATALOG
-    assert args.manifest == DEFAULT_MANIFEST
+    assert args.config == DEFAULT_CONFIG
     assert args.report_root == DEFAULT_REPORT_ROOT
 
 
@@ -307,181 +299,3 @@ def test_c8_register_action_uses_positional_subcommand():
     # And the bare positional must actually parse.
     args = build_parser().parse_args(["run-daily"])
     assert args.command == "run-daily"
-
-
-# ---------------------------------------------------------------------------
-# C6 — FC-705 observation advancement wired into the daily run (GP-008)
-# ---------------------------------------------------------------------------
-
-
-def test_c6_fresh_periods_file_starts_at_period_one(tmp_path):
-    """First daily run opens period 1 when no periods ledger exists yet."""
-    from daily_t2_schedule import next_period_number
-
-    assert next_period_number(tmp_path / "absent.json") == 1
-
-
-def test_c6_next_period_after_open_window(tmp_path):
-    """A second (or later) daily run opens max+1; an open period never
-    blocks the next number (it is closed by the new run's bookkeeping)."""
-    from daily_t2_schedule import next_period_number
-
-    path = tmp_path / "periods.json"
-    path.write_text(json.dumps({
-        "periods": [
-            {"period": 1, "started_at": "2026-09-04T03:30:00Z",
-             "ended_at": "2026-09-05T03:30:00Z", "legacy_bridge_hits": 0},
-            {"period": 2, "started_at": "2026-09-05T03:30:00Z",
-             "ended_at": None, "legacy_bridge_hits": 0},
-        ]
-    }), encoding="utf-8")
-    assert next_period_number(path) == 3
-
-
-def test_c6_corrupt_periods_file_fails_closed_to_one(tmp_path):
-    """A corrupt ledger must not crash the scheduled run; it restarts the
-    observation sequence (fail closed — an open restart is never a pass)."""
-    from daily_t2_schedule import next_period_number
-
-    path = tmp_path / "periods.json"
-    path.write_text("{not json", encoding="utf-8")
-    assert next_period_number(path) == 1
-
-
-def test_c6_observer_argv_is_read_only_with_period_file():
-    """The daily observation step invokes the wiki legacy_observer with
-    --read-only and an explicit period file (the FC-705 periods ledger)."""
-    from daily_t2_schedule import (
-        DEFAULT_PERIODS,
-        LEGACY_OBSERVER,
-        observer_argv,
-    )
-
-    argv = observer_argv(
-        Path(r"C:\repos\company-wiki\.source_catalog\catalog.sqlite3"),
-        period=3,
-        periods_path=Path(r"C:\repos\revenue-forecast\assurance\runs\legacy_periods.json"),
-    )
-    assert argv[0] == sys.executable
-    assert Path(argv[2]).resolve() == LEGACY_OBSERVER.resolve()
-    assert "--read-only" in argv
-    assert argv[argv.index("--period") + 1] == "3"
-    assert "--period-file" in argv
-    assert "--catalog" in argv
-    # default ledger location for the real scheduled run
-    assert DEFAULT_PERIODS.name == "legacy_periods.json"
-
-
-# ---------------------------------------------------------------------------
-# C7 — FC-705 window integrity (2026-09-10): the daily task fires on a
-# jittering wall clock, so a window can land seconds short of 24h
-# (observed 23:59:41 and 23:59:52) while the zero-hit condition holds.  The
-# runner waits out the missing seconds instead of leaving the >= 24h
-# threshold to luck.
-# ---------------------------------------------------------------------------
-
-
-def _periods_file(tmp_path: Path, periods: list[dict]) -> Path:
-    path = tmp_path / "legacy_periods.json"
-    path.write_text(json.dumps({"periods": periods}), encoding="utf-8")
-    return path
-
-
-def _open_period(ago: timedelta, period: int = 9) -> dict:
-    return {"period": period, "started_at": (NOW - ago).isoformat(),
-            "ended_at": None, "legacy_bridge_hits": 0}
-
-
-def _closed_period(period: int = 8) -> dict:
-    return {"period": period, "started_at": _old_iso(48),
-            "ended_at": _old_iso(24), "legacy_bridge_hits": 0}
-
-
-def test_c7_no_wait_without_an_open_window(tmp_path):
-    from daily_t2_schedule import window_wait_seconds
-
-    assert window_wait_seconds(_periods_file(tmp_path, [])) == 0
-    assert window_wait_seconds(_periods_file(tmp_path, [_closed_period()])) == 0
-
-
-def test_c7_waits_the_missing_seconds(tmp_path):
-    """A window 8s short (the 09-10 real case) waits exactly those 8s."""
-    from daily_t2_schedule import window_wait_seconds
-
-    path = _periods_file(tmp_path, [_closed_period(),
-                                    _open_period(timedelta(hours=24) - timedelta(seconds=8))])
-    assert window_wait_seconds(path, now=NOW) == 8
-
-
-def test_c7_no_wait_when_window_is_long_enough(tmp_path):
-    from daily_t2_schedule import window_wait_seconds
-
-    path = _periods_file(tmp_path, [_open_period(timedelta(hours=25))])
-    assert window_wait_seconds(path, now=NOW) == 0
-
-
-def test_c7_early_manual_rerun_is_not_padded(tmp_path):
-    """A manual re-run hours early must stay fail-closed: the missing time
-    exceeds the cap, so nothing is waited and the window stays short."""
-    from daily_t2_schedule import MAX_WINDOW_WAIT_SECONDS, window_wait_seconds
-
-    path = _periods_file(tmp_path, [_open_period(timedelta(hours=2))])
-    assert window_wait_seconds(path, now=NOW) == 0
-    assert window_wait_seconds(path, now=NOW,
-                               max_wait=10 ** 6) > MAX_WINDOW_WAIT_SECONDS
-
-
-def test_c7_corrupt_or_missing_ledger_never_waits(tmp_path):
-    from daily_t2_schedule import window_wait_seconds
-
-    missing = tmp_path / "absent.json"
-    assert window_wait_seconds(missing, now=NOW) == 0
-    broken = tmp_path / "broken.json"
-    broken.write_text("{not json", encoding="utf-8")
-    assert window_wait_seconds(broken, now=NOW) == 0
-    # also an entry with an unparsable timestamp must not raise
-    assert window_wait_seconds(
-        _periods_file(tmp_path, [{"period": 9, "started_at": "not-a-date",
-                                  "ended_at": None}]), now=NOW) == 0
-
-
-def test_c7_run_daily_waits_before_opening_the_period(tmp_path, monkeypatch):
-    """``run_daily`` sleeps the missing seconds BEFORE the observer runs, so
-    the window closes at a real (later) timestamp."""
-    import daily_t2_schedule as mod
-
-    periods = _periods_file(tmp_path, [
-        _closed_period(),
-        _open_period(timedelta(hours=24) - timedelta(seconds=5)),
-    ])
-    calls: list[list[str]] = []
-    sleeps: list[float] = []
-
-    class _Proc:
-        returncode = 0
-        stdout = "c" * 40
-        stderr = ""
-
-    def _fake_run(cmd, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003
-        calls.append(list(cmd))
-        return _Proc()
-
-    monkeypatch.setattr(mod.subprocess, "run", _fake_run)
-    monkeypatch.setattr(mod.time, "sleep", lambda seconds: sleeps.append(seconds))
-
-    rc = mod.run_daily(
-        catalog=tmp_path / "catalog.sqlite3",
-        manifest=tmp_path / "manifest.json",
-        report_root=tmp_path / "runs",
-        ledger_path=tmp_path / "daily_manifest.json",
-        alert_path=tmp_path / "daily_alert.jsonl",
-        periods_path=periods,
-    )
-
-    assert rc == 0
-    assert sleeps == [5], f"expected a single 5s wait, got {sleeps}"
-    # the wait must happen before the observer is invoked
-    observer_index = next(
-        i for i, cmd in enumerate(calls) if any("legacy_observer" in str(part) for part in cmd)
-    )
-    assert observer_index == 1  # [0] = T2 runner, [1] = observer

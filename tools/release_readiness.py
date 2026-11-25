@@ -39,13 +39,17 @@ tool exceptions, and explicitly supplied HEAD SHAs that do not match.
 from __future__ import annotations
 
 import argparse
-import builtins
 import json
 import re
 import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+
+if __package__:
+    from .cwp_catalog_status import CatalogStatusUnavailable, read_catalog_status
+else:
+    from cwp_catalog_status import CatalogStatusUnavailable, read_catalog_status
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -151,66 +155,13 @@ def _fingerprint_gate(
     return _gate(True, "ok", detail)
 
 
-def _catalog_status_cause(stderr: str) -> str | None:
-    """Project only pathless causes from CWP's public failure output."""
-    try:
-        payload = json.loads(stderr)
-    except json.JSONDecodeError:
-        # Invalid config can fail before the owner emits its JSON envelope.
-        tail = stderr.rstrip().rsplit("\n", 1)[-1]
-        name, separator, _message = tail.partition(":")
-        if not separator or "Traceback (most recent call last):" not in stderr:
-            return None
-        if name == "company_wiki.source_catalog.config.CatalogConfigError":
-            return "CatalogConfigError"
-        exception_type = getattr(builtins, name, None)
-        if isinstance(exception_type, type) and issubclass(exception_type, Exception):
-            return name
-        return None
-
-    if not isinstance(payload, dict) or payload.get("status") != "failed":
-        return None
-    code = payload.get("error_type")
-    # The published CWP catalog status error taxonomy. Only the diagnostic
-    # gets projected here. An unfamiliar error is still an owner failure.
-    if code not in ("catalog_busy", "catalog_locked", "db_timeout", "worker_paused",
-                    "legacy_evidence_archived", "fatal"):
-        return None
-    message = payload.get("error")
-    if code == "fatal" and isinstance(message, str):
-        if message.startswith("catalog does not exist (not created, not touched):"):
-            code = "catalog_missing"
-        elif message.startswith("cannot open catalog read-only:"):
-            code = "catalog_unavailable"
-    return f"{code} (retryable)" if payload.get("retryable") is True else code
-
-
 def catalog_integrity(config: Path) -> tuple[bool, str]:
     """Ask company-wiki to inspect its catalog through its public status command."""
-    command = [sys.executable, "-B", "-m", "company_wiki.source_catalog.cli",
-               "--config", str(config), "status"]
     try:
-        result = subprocess.run(
-            command, capture_output=True, text=True, encoding="utf-8",
-            errors="replace", timeout=30, check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        return False, f"CWP status command failed: {type(exc).__name__}"
-    if result.returncode != 0:
-        cause = _catalog_status_cause(result.stderr)
-        detail = f"CWP status command failed (exit {result.returncode})"
-        return False, f"{detail}: {cause}" if cause else detail
-
-    try:
-        status = json.loads(result.stdout)
-    except json.JSONDecodeError:
-        return False, "CWP status returned invalid JSON"
-    count_keys = ("documents", "sources", "active_locations", "missing_locations")
-    if not isinstance(status, dict) or any(
-        type(status.get(key)) is not int or status[key] < 0 for key in count_keys
-    ):
-        return False, "CWP status did not report valid catalog counts"
-    counts = ", ".join(f"{key}={status[key]}" for key in count_keys)
+        status = read_catalog_status(config)
+    except CatalogStatusUnavailable as exc:
+        return False, str(exc)
+    counts = ", ".join(f"{key}={count}" for key, count in status.items())
     return True, f"CWP read-only status ok, {counts}"
 
 
