@@ -1,6 +1,6 @@
 # RF 周跑的 FF 公开接口交接范围
 
-当前状态 REVIEWED。FF 同义组合收据已发布，RF 已完成隔离对接。以下保留整改前对照和原合同。近一次本机记录 `20261122T083603Z` 为 not-ok。现有 RF 调度器启动 FF 仓内的 pytest，并设置真实下载开关和宿主 profile。Windows 查询 `revenue_weekly_t3` 返回“拒绝访问”，暂缺实际注册动作证据。此轮只核对已发布接口和保留的收据。
+当前状态 MERGED。FF 同义组合收据已发布，RF 源码 43961a73 已进入主线，精确 [CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45596205549) 通过。以下保留整改前对照和原合同。近一次本机记录 `20261122T083603Z` 为 not-ok。现有 RF 调度器启动 FF 仓内的 pytest，并设置真实下载开关和宿主 profile。Windows 查询 `revenue_weekly_t3` 返回“拒绝访问”，暂缺实际注册动作证据。此轮只核对已发布接口和保留的收据。
 
 接口盘点基于 FF `711db1c1bd2d1eda56c6de8edbcc692f86ad4680` 和 RF `7409098d11da74761d8b0dec8df41f641a0c90be`。FF 的 [ff-job/1 协议](https://github.com/zhengcb81/filing-fetch/blob/711db1c1bd2d1eda56c6de8edbcc692f86ad4680/docs/ff-job-protocol.md) 与 [四项现行用例](https://github.com/zhengcb81/filing-fetch/blob/711db1c1bd2d1eda56c6de8edbcc692f86ad4680/tests/test_e2e_download.py) 提供对照。FF owner 复核公开接口盘点。
 
