@@ -1,82 +1,62 @@
-"""FC-1103: weekly real-provider isolated T3 runner.
-
-Runs the FC-805 T3 suite (CN/HK/US real downloads on a TEMP wiki — never the
-production catalog) through the real filing-fetch tests, and reports:
-
-  - PASS (exit 0): all three markets green with real downloads + second-request
-    zero-download verification (FC805_REAL_DOWNLOAD=1 must be set by the
-    release owner).
-  - BLOCKED (exit 2): T3 not authorized (FC805_REAL_DOWNLOAD != 1) or the
-    provider suite skipped checks — an alert, never a silent green.
-  - FAIL (exit 1): any market download/verification failed.
-
-The report lands under ``assurance/runs/{run_id}/t3_report.json`` (isolated).
-"""
+"""Inspect a completed or partial FF weekly T3 receipt and write an RF report."""
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
-import subprocess
 import sys
-import time
+from datetime import UTC, datetime
 from pathlib import Path
+from tempfile import mkdtemp
+from uuid import uuid4
+
+if __package__:
+    from .weekly_t3_assurance import add_owner_options, read_weekly_t3
+else:
+    from weekly_t3_assurance import add_owner_options, read_weekly_t3
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-FILING_ROOT = PROJECT_ROOT.parent / "filing-fetch"
-T3_TEST = FILING_ROOT / "tests" / "test_fc805_real_download_t3.py"
 REPORT_ROOT = PROJECT_ROOT / "assurance" / "runs"
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report-root", type=Path, default=REPORT_ROOT)
-    parser.add_argument("--run-id", default=None)
+    parser.add_argument("--run-id", help="local RF report identifier")
     parser.add_argument("--force", action="store_true",
-                        help="run real downloads (sets FC805_REAL_DOWNLOAD=1)")
+                        help="legacy flag retained for callers. Only reads existing owner evidence.")
+    add_owner_options(parser, run_id_option="--owner-run-id")
     args = parser.parse_args(argv)
 
-    run_id = args.run_id or time.strftime("%Y%m%dT%H%M%SZ")
-    report: dict = {"run_id": run_id, "force": args.force}
+    run_id = args.run_id
+    if run_id is None:
+        run_id = f"{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}-{uuid4().hex}"
+    if not run_id or run_id in {".", ".."} or any(char in run_id for char in "/\\:"):
+        parser.error("--run-id must be one local report name")
 
-    if not args.force:
-        report.update({"status": "blocked",
-                       "reason": "T3 real-provider download not authorized "
-                                 "(--force / FC805_REAL_DOWNLOAD=1 required)"})
-        out = args.report_root / run_id
-        out.mkdir(parents=True, exist_ok=True)
-        (out / "t3_report.json").write_text(
-            json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-        print("BLOCKED: " + report["reason"], file=sys.stderr)
-        return 2
-
-    env = dict(os.environ)
-    env["FC805_REAL_DOWNLOAD"] = "1"
-    env["PYTHONIOENCODING"] = "utf-8"
-    proc = subprocess.run(
-        [sys.executable, "-B", "-m", "pytest", str(T3_TEST), "-q"],
-        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800,
-        cwd=str(FILING_ROOT), env=env,
+    result = read_weekly_t3(
+        args.filing_fetch_root, receipts_dir=args.receipts_dir, owner_run_id=args.owner_run_id,
     )
-    report["returncode"] = proc.returncode
-    report["stdout_tail"] = proc.stdout[-2000:]
-    if proc.returncode == 0 and "skipped" not in proc.stdout.lower():
-        report["status"] = "passed"
-    elif proc.returncode == 0 and "skipped" in proc.stdout.lower():
-        report["status"] = "blocked"
-        report["reason"] = "T3 provider suite skipped one or more market checks"
-    else:
-        report["status"] = "failed"
+    status = {"ok": "passed", "not-ok": "failed", "blocked": "blocked"}[result.status]
+    args.report_root.mkdir(parents=True, exist_ok=True)
     out = args.report_root / run_id
-    out.mkdir(parents=True, exist_ok=True)
+    try:
+        out.mkdir()
+    except FileExistsError:
+        # An explicit name may already represent a historical observation.
+        out = Path(mkdtemp(prefix=f"{run_id}-", dir=args.report_root))
+    run_id = out.name
+    report = result.report(run_id)
+    report.update(status=status, force=args.force, returncode=result.exit_code, reason=result.detail)
     (out / "t3_report.json").write_text(
-        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"T3 status: {report['status']}")
-    if proc.returncode != 0:
-        print(proc.stdout[-1500:])
-    return {"passed": 0, "blocked": 2, "failed": 1}[report["status"]]
+        json.dumps(report, ensure_ascii=True, indent=2) + "\n", encoding="utf-8",
+    )
+    if status == "blocked":
+        print(f"BLOCKED: {result.detail} report_id={run_id}", file=sys.stderr)
+    else:
+        print(f"T3 status: {status} report_id={run_id}")
+    return result.exit_code
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

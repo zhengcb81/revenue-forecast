@@ -7,7 +7,7 @@
 
 ## 2026-11-25 F4 S3 / S4 来源与作业边界
 
-当前切片 MERGED（9042f6e0，[CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45573177121)）。包含 CWP 公开状态接线、已退休 canary 关闭执行、运行器尝试编号改为显式传递。真实本地组合与先红后绿证据见 [F4 S3 / S4 计划](docs/plans/f4-s3-rf-2026-11-25/task_plan.md)。目录纯投影反向加载切片也已 MERGED（c3396e96，[CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45574901776)）。本提交交付日审计公开接口改造。定向回归、真实隔离组合和独审已通过。实际 Windows 任务的查询由系统拒绝访问，部署由宿主另核。周跑公开收据迁移 BLOCKED，范围和 FF owner 交接口见 [周跑公开接口交接](docs/plans/f4-s3-rf-2026-11-25/weekly-owner-boundary.md)。月审计和历史 baseline 仍按同一计划跟踪。
+当前切片 MERGED（9042f6e0，[CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45573177121)）。包含 CWP 公开状态接线、已退休 canary 关闭执行、运行器尝试编号改为显式传递。真实本地组合与先红后绿证据见 [F4 S3 / S4 计划](docs/plans/f4-s3-rf-2026-11-25/task_plan.md)。目录纯投影反向加载切片也已 MERGED（c3396e96，[CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45574901776)）。本提交交付日审计公开接口改造。定向回归、真实隔离组合和独审已通过。实际 Windows 任务的查询由系统拒绝访问，部署由宿主另核。周跑公开收据迁移已通过独审和离线验证，详见 [周跑公开接口交接](docs/plans/f4-s3-rf-2026-11-25/weekly-owner-boundary.md)。月审计和历史 baseline 仍按同一计划跟踪。
 
 ## 2026-11-20 W12 W01 共同确认压力
 

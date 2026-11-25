@@ -31,7 +31,7 @@ sys.path.insert(0, str(ROOT / "assurance" / "unified_completion"))
 
 import release_gate as rg  # noqa: E402
 from daily_t2_schedule import freshness_status, release_gate  # noqa: E402
-from weekly_t3_schedule import _suite_outcome  # noqa: E402
+from weekly_t3_assurance import read_weekly_t3  # noqa: E402
 
 NOW = datetime.now(UTC)
 
@@ -129,11 +129,14 @@ def test_aud2_03_half_report_never_published(tmp_path):
     assert not (tmp_path / "out" / "half.json").exists()
 
 
-def test_aud2_03_swallowed_nonzero_turns_red(tmp_path):
-    # a wrapper swallowing a non-zero T3 exit must still record not-ok
-    ok, status, _detail = _suite_outcome(type("P", (), {
-        "returncode": 0, "stdout": "5 skipped in 0.10s", "stderr": ""})())
-    assert status == "blocked"  # all-skipped suite never a pass
+def test_aud2_03_swallowed_nonzero_turns_red(tmp_path, monkeypatch):
+    def without_proof(command, **_kwargs):
+        return subprocess.CompletedProcess(command, 0, "", "owner failed without a receipt")
+
+    monkeypatch.setattr(subprocess, "run", without_proof)
+    weekly = read_weekly_t3(tmp_path)
+    assert not weekly.ok and weekly.status == "blocked"
+    assert weekly.detail == "owner_response_invalid"
     ledger = _ledger(ok=False)
     # release gate over a not-ok ledger is blocked
     status2, _d = freshness_status(ledger, now=NOW.isoformat())

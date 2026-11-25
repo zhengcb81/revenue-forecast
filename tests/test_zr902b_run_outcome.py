@@ -2,8 +2,7 @@
 
 The weekly T3 loop got this split first (F-B01-10): ``not-ok`` is a statement about
 the PRODUCT, ``blocked`` says the run could not be evaluated here.  The owner decided
-the daily T2 loop gets the same treatment, so this file pins the daily behaviour and
-the fact that the two vocabularies are identical.
+the daily T2 loop gets the same treatment, so this file pins the daily behaviour.
 
 Hermetic: no subprocess, no real catalog, no network.  ``run_outcome`` is a pure
 function over (runner result, persisted report).
@@ -21,7 +20,6 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
 import daily_t2_schedule as d2  # noqa: E402
-import weekly_t3_schedule as w3  # noqa: E402
 
 
 def _proc(returncode: int, out: str = "", err: str = "") -> SimpleNamespace:
@@ -81,16 +79,6 @@ def test_zr902b_an_empty_problems_list_with_ok_true_is_a_pass():
     ok, outcome, _detail = d2.run_outcome(
         _proc(0, "done"), {"ok": True, "problems": []})
     assert ok is True and outcome == "ok"
-
-
-def test_zr902b_the_daily_and_weekly_vocabularies_are_identical():
-    """They are mirrored on purpose (weekly imports daily, so a shared constant would
-    invert the dependency).  Mirrored means 'must not drift': this case fails the
-    moment one list is edited without the other."""
-    assert set(d2.ENVIRONMENT_MARKERS) == set(w3.ENVIRONMENT_MARKERS)
-    assert d2.ENVIRONMENT_SENTINEL != w3.ENVIRONMENT_SENTINEL  # different loops, different tokens
-    assert d2.ENVIRONMENT_SENTINEL.endswith("COULD-NOT-RUN")
-    assert w3.ENVIRONMENT_SENTINEL.endswith("COULD-NOT-RUN")
 
 
 def test_zr902b_a_real_run_still_executes_the_same_gate_path(tmp_path, monkeypatch):

@@ -25,12 +25,7 @@ DEFAULT_ALERTS = PROJECT_ROOT / "assurance" / "runs" / "daily_alert.jsonl"
 TASK_NAME = "revenue_daily_t2"
 MAX_AGE_HOURS = 24
 
-# Outcome vocabulary shared with the weekly T3 loop (owner decision 2026-09-13: the
-# daily run gets the SAME split).  ``not-ok`` is a statement about the product;
-# ``blocked`` says the run could not be evaluated here.  The two tuples are mirrored
-# in tools/weekly_t3_schedule.py on purpose (that module imports this one, so a shared
-# constant here would invert the dependency); tests/test_zr902b_run_outcome.py pins
-# that the two vocabularies are IDENTICAL, so a change in one place cannot drift.
+# Legacy emergency fallback for daily subprocesses without an owner report.
 ENVIRONMENT_SENTINEL = "T2-RUN-COULD-NOT-RUN"
 ENVIRONMENT_MARKERS = (
     "not found",

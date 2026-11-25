@@ -30,3 +30,21 @@ for an exact original. Repeat `--source-ref` to include several public SourceRef
 CWP verifies the original bytes through its public SourceExport v2 command.
 The report records the matching export or the owner's failure code. The old
 `--catalog`, `--manifest` and `--periods` inputs belong to the archived checker.
+
+## Weekly source assurance
+
+The weekly RF task invokes `python -B tools/weekly_t3_schedule.py run-weekly`.
+It asks the filing-fetch owner for the latest existing T3 receipt. A live,
+completed receipt with four proved cases is current for seven days from
+the owner's completion time. The RF observation has a separate identifier.
+
+Use `run-weekly --run-id <ff-run-id>` to confirm the result of an existing owner
+run. The optional `--filing-fetch-root` and `--receipts-dir` select the owner
+tool and its receipt location. `verify --help` and the positional scheduled
+commands keep their original interface. Historical RF ledgers remain readable.
+
+For a standalone report, use `python -B tools/weekly_t3_runner.py --owner-run-id
+<ff-run-id>`. Its `--run-id` still names the local RF report. If the name is already present, RF prints
+the new report ID and preserves the archive. The historical
+`--force` flag is accepted as a compatibility option. Actual live T3 work
+and its resulting run ID belong to the filing-fetch owner.
