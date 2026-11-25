@@ -2,7 +2,10 @@
 from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
+import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -188,8 +191,45 @@ def test_body_reader_uses_exact_source_and_response(case):
     row = doc(args["run"] / "execution/sources.json")["sources"][3]
     source = args["source_input"]["sources"][3]
     assert retained_response(args["obs"], args["run"], source, row).endswith(b"2")
-    with pytest.raises(CatalogError):
+    with pytest.raises(CatalogError) as rejected:
         retained_response(args["obs"], args["run"], args["source_input"]["sources"][1], row)
+    assert rejected.value.code == "research_publication_invalid"
+
+
+def test_sealed_source_cold_read_does_not_load_publication_admission(case):
+    args = prepared(case)
+    recovery = validate_source_evidence(**args)
+    source = args["source_input"]["sources"][3]
+    seal = {"source_recovery": recovery, "input_observations": args["obs"].manifest()}
+    program = """
+import json
+from pathlib import Path
+import sys
+from types import SimpleNamespace
+
+sys.path.insert(0, sys.argv[1])
+from report_catalog_lineage import Sources
+
+spec = json.load(sys.stdin)
+reader = Sources.__new__(Sources)
+reader.catalog = SimpleNamespace(root=Path(spec["root"]))
+reader.report = {"run_id": spec["run_id"]}
+reader.bodies = {}
+reader.publication_seal = lambda: spec["seal"]
+body = reader._captured_body(spec["source"])
+assert body == b"Complete synthetic official result 2"
+assert reader.bodies == {spec["source"]["source_id"]: body}
+for module in ("report_catalog", "report_catalog_research_publication",
+               "report_catalog_research_publication_sources"):
+    assert module not in sys.modules, f"cold source read loaded publication admission: {module}"
+"""
+    result = subprocess.run(
+        [sys.executable, "-I", "-B", "-c", program, str(ROOT / "scripts")],
+        cwd=case["root"], input=json.dumps({"root": str(case["root"]), "run_id": args["run"].name,
+                                            "seal": seal, "source": source}),
+        capture_output=True, encoding="utf-8", timeout=20, check=False,
+    )
+    assert result.returncode == 0, result.stderr
 
 
 @pytest.mark.parametrize("mutation", [None, "sealed_hash", "missing_observation", "foreign_source", "transport_changed"])

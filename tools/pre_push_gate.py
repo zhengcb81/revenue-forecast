@@ -138,6 +138,7 @@ CI_TESTS = (
     "tools/tests/test_release_readiness_owner_status.py",
     "tests/test_rf_optional_tools_e2e.py::test_e3_explicit_catalog_config_runs_the_public_status_process",
     "tests/b35_lineage/test_projection.py::test_lineage_projection_runs_without_opening_the_catalog_facade",
+    "tests/b37_publication_sources/test_sources.py::test_sealed_source_cold_read_does_not_load_publication_admission",
     "tests/test_report_catalog.py::test_catalog_can_append_after_writer_process_exits_under_lock",
     "tests/test_report_catalog.py::test_catalog_write_failure_preserves_previous_publication_and_retries_once",
     "tests/test_report_catalog.py::test_public_report_catalog_cli_uses_only_the_selected_owner",

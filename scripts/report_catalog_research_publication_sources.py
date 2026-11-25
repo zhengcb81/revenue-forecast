@@ -11,16 +11,16 @@ from datetime import date, datetime
 import hashlib
 import importlib
 import json
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 import re
 
 from contracts.document import validate_sources
 from publication_registry import canonical_sha256
 from report_catalog_research_attempt import _Observation
 from report_catalog_research_identity import _code_hash
+from report_catalog_retained_source import EVENT_KIND as EVENT_KIND, retained_response
 
 SCHEMA = "rf-research-source-evidence/1"
-EVENT_KIND = "retained_tool_response_raw_bytes"
 # These are the native source validator's transitive evidence/clock/SourceRef
 # primitives, rather than a second implementation of their contracts.
 NATIVE_MODULES = (
@@ -66,63 +66,6 @@ def recheck_native_modules(scope: dict, hashes: dict) -> None:
               "source validator imported another native module root")
         _need(_code_hash(deployed, name) == hashes[name] == _code_hash(local, name),
               "source validator native module bytes or root changed")
-
-
-def _relative(value: object) -> str:
-    from report_catalog_research_publication import _need
-
-    _need(isinstance(value, str) and 0 < len(value) <= 200,
-          "source response artifact is invalid")
-    assert isinstance(value, str)
-    parts = value.split("/")
-    _need(not any(part in {"", ".", ".."} for part in parts)
-          and all(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,95}", p) for p in parts)
-          and not PurePosixPath(value).is_absolute()
-          and parts[0] == "research" and value.endswith(".json"),
-          "source response must be one relative research JSON artifact")
-    return value
-
-
-def retained_response(obs: _Observation, run: Path, source: dict, row: dict) -> bytes:
-    """Verify raw response, body and explicitly declared unsigned event reference."""
-    from report_catalog_research_publication import _need, _object, _sha
-
-    _need(set(row) == {"source_id", "kind", "source_record_sha256",
-                      "response_artifact", "transport_sha256", "snapshot_sha256",
-                      "event_reference_kind", "event_sha256"},
-          "retained response evidence fields differ")
-    _need(row["kind"] == "retained_tool_response"
-          and row["source_id"] == source.get("source_id")
-          and row["source_record_sha256"] == canonical_sha256(source)
-          and row["event_reference_kind"] == EVENT_KIND,
-          "source record or event reference kind differs")
-    raw = obs.read(run / _relative(row["response_artifact"]))
-    response = obs.document(run / row["response_artifact"])
-    pages = response.get("results")
-    _need(isinstance(pages, list) and len(pages) == 1
-          and response.get("failed_results") == [],
-          "retained response is not one complete successful tool result")
-    page = _object(pages[0])
-    text = page.get("raw_content")
-    _need(isinstance(text, str) and bool(text.strip()), "retained tool body is empty")
-    body = text.encode("utf-8", errors="strict")
-    capture = _object(source.get("capture"))
-    host = _object(capture.get("host_receipt"))
-    _need(source.get("source_type") == "company_release"
-          and source.get("url") == page.get("url")
-          and source.get("title") == page.get("title")
-          and isinstance(response.get("request_id"), str)
-          and bool(response["request_id"].strip())
-          and capture.get("tool_call_id") == response["request_id"]
-          and capture.get("tool_name") == "tavily_extract"
-          and capture.get("capture_method") == "api_response"
-          and host.get("tool_name") == "tavily_extract"
-          and host.get("action") == "tool_body_read"
-          and row["snapshot_sha256"] == capture.get("snapshot_sha256") == _sha(body)
-          and row["transport_sha256"] == row["event_sha256"]
-          == host.get("event_sha256") == _sha(raw),
-          "retained response does not bind source URL/title/tool/body/transport/event")
-    return body
 
 
 def validate_source_evidence(

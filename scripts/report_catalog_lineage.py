@@ -19,6 +19,7 @@ from urllib.parse import urlsplit
 from publication_registry import canonical_sha256
 from report_catalog_common import CatalogError, SOURCE_REF_FIELDS, assert_pathless
 from report_catalog_research_attempt import _Observation, _not_linked, _json
+from report_catalog_retained_source import retained_response
 
 TRACE_SCHEMA = "rf-calculation-trace/1"
 SNAPSHOT_SCHEMA = "rf-source-snapshot/1"
@@ -209,8 +210,6 @@ class Sources:
         need(isinstance(recovery, dict), "registered source recovery is absent")
         assert isinstance(recovery, dict)
         if recovery.get("schema_version") == "rf-research-source-evidence/1":
-            from report_catalog_research_publication_sources import retained_response
-
             rows = recovery.get("sources")
             need(isinstance(rows, list) and 2 <= len(rows) <= 16,
                  "registered multi-source evidence is invalid")
