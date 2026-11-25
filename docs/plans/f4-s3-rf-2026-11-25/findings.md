@@ -14,7 +14,7 @@ WU-1304 canary 在 MB-RF 已退出分发，运行路径和被调用的函数未�
 
 ## 拆分依据
 
-本机只读查询未找到 revenue_daily_t2 与 revenue_monthly_broker 注册项。该观察不能覆盖其他宿主。RF 原工作区另有真实 20261124T210001Z 日运行记录，21:02:21 结束并标为 stale，因此不能把日审计当作无人使用的历史脚本。检查 RF、CWP、RFAudit、FF、Dashboard、StockWiki 的当前代码没有发现其他跨仓调用点。月审计同日未找到当前 ledger。
+本机实际 Windows 注册状态未知。对 revenue_daily_t2 与 revenue_monthly_broker 的原生 schtasks 查询由系统拒绝。RF 原工作区有真实 20261124T210001Z 日运行记录，21:02:21 结束并标为 stale。另有 20261001T182300Z 月运行的账本和原 7/7 报告。检查 RF、CWP、RFAudit、FF、Dashboard、StockWiki 的当前代码没有发现其他跨仓调用点。
 
 公开 status 不提供旧 canary 的逐件绑定、旧日审计的生产事件与 legacy bridge 台账、月度队列的无遗漏组合匹配、旧 baseline 的最近扫描及根的内部字段。generic query 既没有 artifact_id，又没有稳定的完整分页。暂不把互不等价的数据套成原指标。
 
@@ -38,7 +38,9 @@ WU-1304 canary 在 MB-RF 已退出分发，运行路径和被调用的函数未�
 
 11 月 22 日有周跑失败记录 20261122T083603Z。当前 RF 周跑直接启动 FF 仓内真实下载 pytest，强制真实下载开关并重设宿主 profile。下一步由 FF 拥有测试执行和公开收据，RF 消费原结果。要求真实采集时需沿 FF 公开作业配置真实预算和恢复，单纯离线回放不能代替实际下载验收。
 
-月审计最近可见记录仍为 20261001T182300Z。原入口直接连接 CWP SQLite，依赖具名公司、标题或归属的并集以及旧 normalized/sections 工件角色。现在的 CWP 分页浏览按实体提供稳定页面，公开 export 能验原件。若要继续旧静态门槛，还需确认现用目的和完整公开口径。历史 baseline、EX05 和 SLO 工具没有发现当前生产调用，分别保留证据待判定用途。
+月审计最近可见记录仍为 20261001T182300Z。原入口直接读取 CWP SQLite 的 documents、document_entities、entities 和 artifacts，取标题或归属名称含固定关键词的券商报告，比较报告可能仅靠标题被纳入。检查只要求每项都有旧 normalized 与 sections 两个角色，不验实际原件字节、披露日、供应商或来源版本。CWP 现行提取质量合同允许 metadata_only 和 skipped_no_narrative，旧批量派生已按 owner 计划退役。
+
+CWP 公开 source-query 可经配置按来源商、供应商编号和 as-of 筛选，公开文档浏览可稳定分页单一 canonical issuer，export-v2 可以验证精确原件，公开叙述接口按 NarrativeRef 读取已发布证据。旧标题或归属并集和派生覆盖率没有等价的现行公开业务口径。旧执行入口退役后，已有账本继续按原 35 天读取，过期如实报告。历史 baseline、EX05 和 SLO 工具没有发现当前生产调用，分别保留证据待判定用途。
 
 ## 周检旧入口与现行 owner 证据
 
