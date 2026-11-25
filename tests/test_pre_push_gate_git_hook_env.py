@@ -60,3 +60,18 @@ def test_actual_child_git_uses_its_own_repo_under_parent_hook_context(monkeypatc
         "assert pathlib.Path(actual).resolve()==pathlib.Path(sys.argv[1]).resolve()"
     )
     assert pre_push_gate._run([sys.executable, "-B", "-c", code, str(child)], "isolated child Git") == 0
+
+
+def test_failed_gate_preserves_the_first_collection_error(monkeypatch, capsys):
+    def failed(command, **_kwargs):
+        return subprocess.CompletedProcess(
+            command, 4, "first reason: missing fixture\n" + "x" * 2400,
+            "ERROR: first affected test\n" + "z" * 1200,
+        )
+
+    monkeypatch.setattr(pre_push_gate.subprocess, "run", failed)
+
+    assert pre_push_gate._run(["pytest"], "consumer checks") == 4
+    output = capsys.readouterr()
+    assert "first reason: missing fixture" in output.out
+    assert "ERROR: first affected test" in output.err

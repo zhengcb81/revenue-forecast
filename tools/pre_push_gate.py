@@ -62,13 +62,15 @@ def _run(
         env=_subprocess_environment(),
         timeout=timeout,
     )
-    tail = (proc.stdout or "")[-2000:] + (proc.stderr or "")[-1000:]
     if proc.returncode != 0:
-        print(tail)
+        if proc.stdout:
+            print(proc.stdout, end="")
+        if proc.stderr:
+            print(proc.stderr, end="", file=sys.stderr)
         if blocking:
             print(f"FAILED: {label}")
     else:
-        print(tail.strip()[-500:] or "ok")
+        print(((proc.stdout or "") + (proc.stderr or "")).strip()[-500:] or "ok")
     return proc.returncode
 
 
@@ -133,10 +135,7 @@ CI_TESTS = (
     "tests/test_zr902b_run_outcome.py",
     "tests/test_zr903_weekly_t3.py",
     "tests/test_zr905_audit_self_test.py::test_aud2_03_swallowed_nonzero_turns_red",
-    "tests/test_zr1001_release_readiness.py::test_c2_default_does_not_contact_the_catalog_owner",
-    "tests/test_zr1001_release_readiness.py::test_c2_explicit_config_invokes_public_status",
-    "tests/test_zr1001_release_readiness.py::test_c2_invalid_owner_status_is_red",
-    "tests/test_zr1001_release_readiness.py::test_c2_owner_status_failure_keeps_pathless_cause",
+    "tools/tests/test_release_readiness_owner_status.py",
     "tests/test_rf_optional_tools_e2e.py::test_e3_explicit_catalog_config_runs_the_public_status_process",
     "tests/b35_lineage/test_projection.py::test_lineage_projection_runs_without_opening_the_catalog_facade",
     "tests/test_report_catalog.py::test_catalog_can_append_after_writer_process_exits_under_lock",
