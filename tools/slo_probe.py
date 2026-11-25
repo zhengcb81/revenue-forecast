@@ -21,11 +21,6 @@ import sys
 import time
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-WIKI_ROOT = PROJECT_ROOT.parent / "company-wiki"
-DEFAULT_CATALOG = WIKI_ROOT / ".source_catalog" / "catalog.sqlite3"
-DEFAULT_CONFIG = WIKI_ROOT / "config" / "source_catalog.yaml"
-
 # Frozen SLO budgets (seconds) — measured then frozen (FC-1303, findings 62).
 BUDGETS = {
     "exact_p95": 5.0,
@@ -45,17 +40,15 @@ LATEST_PROBE = {"company_query": "紫金矿业", "market": "CN",
 
 def _resolve(request: dict, config: Path) -> float:
     """One resolve call (exact or latest_as_of per request); wall seconds."""
-    cmd = [sys.executable, "-m", "company_wiki.source_catalog.cli",
-           "--config", str(config), "resolve", "--entity", "紫金矿业",
-           "--market", "CN", "--document-kind", "annual_report"]
+    cmd = [sys.executable, "-B", "-m", "company_wiki.source_catalog.cli",
+           "--config", str(config), "resolve", "--entity", request["company_query"],
+           "--market", request["market"], "--document-kind", request["document_kind"]]
     if request.get("mode") == "latest_as_of":
-        cmd.append("--mode")
-        cmd.append("latest_as_of")
+        cmd.extend(["--mode", request["mode"]])
     else:
-        cmd.extend(["--fiscal-year", "2025"])
+        cmd.extend(["--fiscal-year", str(request["fiscal_year"])])
     t0 = time.perf_counter()
-    subprocess.run(cmd, capture_output=True, text=True, timeout=120,
-                   cwd=str(WIKI_ROOT))
+    subprocess.run(cmd, capture_output=True, timeout=120, check=True)
     return time.perf_counter() - t0
 
 
@@ -92,20 +85,24 @@ def _peak_rss_gb() -> float:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
-    parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
+    # Old wrappers may still send this argument. Only the owner config selects data.
+    parser.add_argument("--catalog", type=Path, help=argparse.SUPPRESS)
+    parser.add_argument("--config", type=Path, required=True, help="CWP public resolver configuration")
     parser.add_argument("--samples", type=int, default=SAMPLES)
     parser.add_argument("--report", type=Path, default=None)
     args = parser.parse_args(argv)
-    if not args.catalog.is_file():
-        print(f"catalog missing: {args.catalog}", file=sys.stderr)
-        return 1
-
     samples = max(3, args.samples)
     exact, latest = [], []
-    for _ in range(samples):
-        exact.append(_resolve(EXACT_PROBE, args.config))
-        latest.append(_resolve(LATEST_PROBE, args.config))
+    try:
+        for _ in range(samples):
+            exact.append(_resolve(EXACT_PROBE, args.config))
+            latest.append(_resolve(LATEST_PROBE, args.config))
+    except subprocess.CalledProcessError as exc:
+        print(f"CWP resolve failed (exit {exc.returncode})", file=sys.stderr)
+        return 1
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        print(f"CWP resolve failed ({type(exc).__name__})", file=sys.stderr)
+        return 1
     # bundle: exact resolves carry the envelope; timing the same exact call
     # with the bundle consumer is the honest bundle-path latency proxy
     # (bundle_for_resolution rides the same resolve call).
@@ -118,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
         "bundle_proxy": _percentiles(bundle),
         "peak_rss_gb": round(rss, 3) if rss is not None else None,
         "samples": samples,
-        "catalog": str(args.catalog),
+        "catalog": None,
     }
     breaches = []
     if results["exact"]["p95"] > BUDGETS["exact_p95"]:

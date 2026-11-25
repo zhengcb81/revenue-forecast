@@ -165,6 +165,14 @@ def test_c2_invalid_owner_status_is_red(tmp_path, monkeypatch, stdout, returncod
         "error": "catalog does not exist (not created, not touched): /fake-SECRET",
         "retryable": False,
     }), "catalog_missing"),
+    (json.dumps({
+        "status": "failed", "error_type": "fatal", "reason": "catalog_missing",
+        "error": "供应来源目录不可用：/fake-SECRET", "retryable": False,
+    }), "catalog_missing"),
+    (json.dumps({
+        "status": "failed", "error_type": "fatal", "reason": "unrecognized",
+        "error": "catalog does not exist (not created, not touched): /fake-SECRET",
+    }), "fatal"),
     ("Traceback (most recent call last):\nFileNotFoundError: /fake-SECRET\n", "FileNotFoundError"),
     (json.dumps({"status": "failed", "error_type": "fake-SECRET"}), "exit 1"),
 ])

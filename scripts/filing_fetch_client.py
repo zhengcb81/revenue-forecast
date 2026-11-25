@@ -33,6 +33,7 @@ from typing import Any
 from company_wiki_narrative_contracts import NarrativeTransportError, canonical_bytes, decode_object
 from company_wiki_narrative_process import run_bounded
 from filing_upstream_cause import FAILURE_STATUSES, failure_detail, failure_observation, safe_failure_message, validated_failure_candidates
+from rf_local_diagnostics import child_traceback_facts, record_local_error
 
 _DEPENDENCY_ERROR_LINE = re.compile(r"^(ImportError|ModuleNotFoundError):", re.MULTILINE)
 
@@ -356,6 +357,7 @@ def resolve_filing_result(
             creationflags=creationflags,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
+        record_local_error("filing_fetch", code="filing_fetch_subprocess_failed", exception_type=type(exc).__name__)
         raise _ClientError("filing-fetch subprocess failed") from exc
     if completed.returncode != 0:
         # filing-fetch writes its structured error document to STDOUT and exits
@@ -373,8 +375,12 @@ def resolve_filing_result(
                 candidates=detail.get("candidates"),
                 **failure_observation(payload),
             )
-        # Child stderr is untrusted free text. Preserve only a known startup
-        # hint and the measured process exit in the existing JSON error channel.
+        record_local_error(
+            "filing_fetch", code="filing_fetch_invalid_error_document", producer_exit_code=completed.returncode,
+            child_errors=child_traceback_facts(completed.stderr),
+        )
+        # The public wire keeps its known startup hint and typed process exit.
+        # Child diagnostic facts remain in the owner log.
         dependency_error = _DEPENDENCY_ERROR_LINE.search(completed.stderr or "")
         suffix = f" (stderr reports {dependency_error.group(1)})" if dependency_error else ""
         raise _ClientError(
@@ -385,6 +391,10 @@ def resolve_filing_result(
     try:
         response = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
+        record_local_error(
+            "filing_fetch", code="filing_fetch_invalid_response_json", producer_exit_code=completed.returncode,
+            child_errors=child_traceback_facts(completed.stderr), exception_type=type(exc).__name__,
+        )
         raise _ClientError(
             "filing-fetch stdout is not valid JSON",
             source_failure_reason="filing_fetch_invalid_response_json",

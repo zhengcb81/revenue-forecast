@@ -11,11 +11,7 @@ from uuid import NAMESPACE_URL, uuid5
 from urllib.parse import quote
 
 from owner_atomic_io import native_path, replace_file_bytes
-
-
-def state_dir():
-    parent = os.environ.get("LOCALAPPDATA") if os.name == "nt" else os.environ.get("XDG_STATE_HOME")
-    return (Path(parent) if parent else Path.home() / ".local/state") / "revenue-forecast"
+from rf_local_diagnostics import record_local_error, state_dir
 
 
 def _json(value):
@@ -95,13 +91,14 @@ def publish(row, detail=None):
                 directory = dest.parent if single else dest
                 replace_file_bytes(directory / ".rf-evidence" / (detail["id"] + ".json"), _json(detail).encode("ascii"))
             _deliver(key, event)
-        except OSError:
-            pass
+        except OSError as exc:
+            record_local_error("feedback_delivery", code="fallback_unavailable", exception_type=type(exc).__name__)
         return
     try:
         _send(key)
-    except (OSError, ValueError, sqlite3.Error):
-        pass  # The owner can retransmit the original journal row, with no call to a business entry.
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        # The owner can retransmit the original journal row without calling a business entry.
+        record_local_error("feedback_delivery", code="outbox_delayed", exception_type=type(exc).__name__)
 
 
 def flush():

@@ -116,6 +116,18 @@ def test_unreadable_existing_job_is_not_a_missing_replica(tmp_path, completed_jo
     assert snapshot(tmp_path) == before
 
 
+@pytest.mark.parametrize("repeat", [False, True])
+def test_a_single_effective_root_reports_an_unverified_existing_job(tmp_path, completed_job, repeat):
+    original, original_job, config, job_id = completed_job
+    (original / original_job).write_text("{", encoding="utf-8")
+    roots = (original, original.parent / original.name) if repeat else (original,)
+    before = snapshot(tmp_path)
+    assert cold(tmp_path, config, request(job_id), *roots) == {
+        "state": "unknown", "code": "native_owner_unverified",
+    }
+    assert snapshot(tmp_path) == before
+
+
 def test_duplicate_resolved_roots_read_once_and_keep_old_attempt_refusal(tmp_path, completed_job, monkeypatch):
     original, _, _, job_id = completed_job
     original_get_status = JobFacade.get_status

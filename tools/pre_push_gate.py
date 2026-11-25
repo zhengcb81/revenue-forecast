@@ -120,11 +120,31 @@ CI_TESTS = (
     "tests/test_rf_job_facade_cli.py",
     "tests/test_rf_job_concurrency.py",
     "tests/test_rf_job_cost.py",
+    "tests/test_rf_job_recovery.py",
+    "tests/test_rf_job_feedback_roots.py",
+    "tests/test_f4_failure_coverage.py",
+    "tests/test_s1_p0_error_observability.py",
+    "tests/test_module_boundary_closure.py",
+    "tests/test_daily_t2_public_sources.py",
+    "tests/test_weekly_t3_owner_receipt.py",
+    "tests/test_fc1103_t3_runner.py",
+    "tests/test_gp009_monthly_broker.py",
+    "tests/test_zr902_daily_schedule.py",
+    "tests/test_zr902b_run_outcome.py",
+    "tests/test_zr903_weekly_t3.py",
+    "tests/test_zr905_audit_self_test.py::test_aud2_03_swallowed_nonzero_turns_red",
+    "tests/test_zr1001_release_readiness.py::test_c2_default_does_not_contact_the_catalog_owner",
+    "tests/test_zr1001_release_readiness.py::test_c2_explicit_config_invokes_public_status",
+    "tests/test_zr1001_release_readiness.py::test_c2_invalid_owner_status_is_red",
+    "tests/test_zr1001_release_readiness.py::test_c2_owner_status_failure_keeps_pathless_cause",
+    "tests/test_rf_optional_tools_e2e.py::test_e3_explicit_catalog_config_runs_the_public_status_process",
+    "tests/b35_lineage/test_projection.py::test_lineage_projection_runs_without_opening_the_catalog_facade",
     "tests/test_report_catalog.py::test_catalog_can_append_after_writer_process_exits_under_lock",
     "tests/test_report_catalog.py::test_catalog_write_failure_preserves_previous_publication_and_retries_once",
     "tests/test_report_catalog.py::test_public_report_catalog_cli_uses_only_the_selected_owner",
     "tests/test_report_catalog.py::test_default_catalog_refuses_links_to_another_owner",
     "tests/b34_publication/test_publication.py::test_native_stages_and_successful_whole_run_are_distinct",
+    "tools/tests/test_slo_probe.py",
 )
 
 
@@ -162,6 +182,8 @@ def main(argv: list[str] | None = None) -> int:
             "scripts/filing_fetch_client.py", "scripts/trust_anchor.py",
             "scripts/company_wiki_narrative_contracts.py"], "public contract types"))
     tests = CI_TESTS if options.ci else LOCAL_SMOKE_TESTS
+    if options.ci:
+        print("CI pytest targets:\n  " + "\n  ".join(tests))
     gates.append(([sys.executable, "-m", "pytest", "-q", "--tb=short", "-p", "no:cacheprovider", *tests],
         "complete CI source and forecast behavior" if options.ci else "fixed local source/ref/forecast smoke"))
     with tempfile.TemporaryDirectory(prefix="rf-ci-" if options.ci else "rf-local-") as scratch:

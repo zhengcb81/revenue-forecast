@@ -60,9 +60,12 @@ def test_ci_preserves_the_complete_behavior_set_and_types_once(monkeypatch):
     assert sum(command[1:3] == ["-m", "mypy"] for command in commands) == 1
     pytests = [command for command in commands if command[:3] == [sys.executable, "-m", "pytest"]]
     assert len(pytests) == 1
-    assert [arg for arg in pytests[0] if arg.startswith("tests/")] == list(gate.CI_TESTS)
+    assert [arg for arg in pytests[0] if arg.startswith(("tests/", "tools/tests/"))] == list(gate.CI_TESTS)
     assert gate.SMOKE_TESTS == gate.CI_TESTS  # Historical import alias keeps its meaning.
     assert "tests/test_registry_confidence_generations.py" in gate.CI_TESTS
+    assert "tests/test_f4_failure_coverage.py" in gate.CI_TESTS
+    assert "tests/test_daily_t2_public_sources.py" in gate.CI_TESTS
+    assert "tests/test_weekly_t3_owner_receipt.py" in gate.CI_TESTS
     assert "tests/test_decoupled_source_port.py" in gate.CI_TESTS
     assert "tests/test_p5_source_default_cli_e2e.py" not in gate.CI_TESTS
     assert "tests/test_confidence_determinism.py" in gate.CI_TESTS

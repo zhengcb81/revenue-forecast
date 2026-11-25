@@ -42,12 +42,16 @@ def _catalog_status_cause(stderr: str) -> str | None:
     if code not in ("catalog_busy", "catalog_locked", "db_timeout", "worker_paused",
                     "legacy_evidence_archived", "fatal"):
         return None
-    message = payload.get("error")
-    if code == "fatal" and isinstance(message, str):
-        if message.startswith("catalog does not exist (not created, not touched):"):
-            code = "catalog_missing"
-        elif message.startswith("cannot open catalog read-only:"):
-            code = "catalog_unavailable"
+    if code == "fatal":
+        reason = payload.get("reason")
+        if reason in ("catalog_missing", "catalog_unavailable"):
+            code = reason
+        elif "reason" not in payload and isinstance(message := payload.get("error"), str):
+            # N-1 CWP releases provided only a human diagnostic for these causes.
+            if message.startswith("catalog does not exist (not created, not touched):"):
+                code = "catalog_missing"
+            elif message.startswith("cannot open catalog read-only:"):
+                code = "catalog_unavailable"
     return f"{code} (retryable)" if payload.get("retryable") is True else code
 
 

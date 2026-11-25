@@ -98,6 +98,9 @@ def test_ordinary_failure_spools_and_recovers_without_reexecuting_business(tmp_p
     request.write_text("{")
     result = invoke(tmp_path, config, "revenue_forecast", request, "--validate-only")
     assert result.returncode == 2
+    outbox_log = tmp_path / "state" / "revenue-forecast" / "logs" / "runtime-errors.jsonl"
+    diagnostic, = (json.loads(line) for line in outbox_log.read_bytes().splitlines())
+    assert diagnostic["operation"] == "feedback_delivery" and diagnostic["code"] == "outbox_delayed"
     request.unlink()
     path.unlink()
     path.mkdir()
@@ -319,3 +322,49 @@ def test_filing_transport_failure_keeps_one_safe_wire_and_cold_f4_record(tmp_pat
     persisted = b''.join(path.read_bytes() for path in (tmp_path / 'box').iterdir() if path.is_file())
     captured = (direct.stderr + prepared.stderr + first.stdout).encode('utf-8')
     assert not any(secret.encode('utf-8') in captured + persisted for secret in sentinels)
+
+
+@pytest.mark.parametrize("log_available", (True, False))
+def test_filing_transport_retains_redacted_child_trace_tail_without_changing_wire(tmp_path, log_available):
+    fixture_root = tmp_path / "ff"
+    scripts = fixture_root / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "fetch_filing.py").write_text(
+        "import sys\n"
+        "sys.stderr.write('x' * 14000 + '\\n')\n"
+        "try:\n"
+        "    raise FileNotFoundError(2, 'fixture-unmarked-value')\n"
+        "except FileNotFoundError as exc:\n"
+        "    raise PermissionError(13, 'Authorization: Bearer fixture-bearer-value') from exc\n",
+        encoding="utf-8",
+    )
+    config = env(tmp_path)
+    config["RESEARCH_FEEDBACK_RUN_ID"] = "actual-trace-fixture"
+    log = tmp_path / "state" / "revenue-forecast" / "logs" / "runtime-errors.jsonl"
+    if not log_available:
+        log.parent.parent.mkdir(parents=True)
+        log.parent.write_text("blocked", encoding="utf-8")
+    request = json.dumps({"company": "Acme", "document_kind": "annual_report", "fiscal_year": 2025})
+    result = invoke(tmp_path, config, "filing_fetch_client", "--filing-fetch-root", fixture_root, data=request)
+    assert result.returncode == 2 and not result.stdout
+    assert json.loads(result.stderr) == {
+        "error_code": "fatal",
+        "error": "filing-fetch exited 1: invalid upstream error document",
+        "retryable": False,
+        "source_failure_reason": "filing_fetch_invalid_error_document",
+        "producer_exit_code": 1,
+    }
+
+    if not log_available:
+        assert log.parent.read_text(encoding="utf-8") == "blocked"
+        return
+    record, = (json.loads(line) for line in log.read_bytes().splitlines())
+    assert record["run_id"] == "actual-trace-fixture"
+    assert record["operation"] == "filing_fetch"
+    assert record["child_errors"] == [
+        {"type": "FileNotFoundError", "errno": 2},
+        {"type": "PermissionError", "errno": 13},
+    ]
+    assert record["producer_exit_code"] == 1
+    assert b"fixture-unmarked-value" not in log.read_bytes()
+    assert b"fixture-bearer-value" not in log.read_bytes()

@@ -12,6 +12,7 @@ import sys
 from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from rf_feedback_outbox import flush, publish
+from rf_local_diagnostics import record_local_error
 
 _CURRENT = ContextVar("rf_feedback_invocation", default=None)
 _ROOT = Path(__file__).resolve().parent
@@ -112,8 +113,8 @@ def observed_entry(callback):
     def run(*args, **kwargs):
         try:
             flush()
-        except Exception:
-            pass  # Recovering optional delivery may never change the operation about to run.
+        except Exception as exc:
+            record_local_error("feedback_flush", code="flush_unavailable", exception_type=type(exc).__name__)
         entry = Path(callback.__code__.co_filename).stem
         state = {"entrypoint": entry, "kind": "failure", "native_code": "cli_failed", "side_effect_state": "unknown"}
         token = _CURRENT.set(state)
@@ -134,8 +135,8 @@ def observed_entry(callback):
             try:
                 if code:
                     _observe(state, code)
-            except Exception:
-                pass  # The observed return or thrown exception always remains authoritative.
+            except Exception as exc:
+                record_local_error("feedback_observation", code="observe_unavailable", exception_type=type(exc).__name__)
             finally:
                 _CURRENT.reset(token)
     return run

@@ -82,7 +82,7 @@ def _read_configured_job(owner_roots: Sequence[Path], job_id: str) -> tuple[dict
     try:
         roots = dict.fromkeys(native_path(root).resolve() for root in owner_roots)
     except (OSError, RuntimeError):
-        return None, "native_owner_unverified" if len(owner_roots) > 1 else None
+        return None, "native_owner_unverified"
 
     observed = []
     unverified = False
@@ -102,7 +102,7 @@ def _read_configured_job(owner_roots: Sequence[Path], job_id: str) -> tuple[dict
             unverified = True
 
     if unverified:
-        return None, "native_owner_unverified" if len(roots) > 1 else None
+        return None, "native_owner_unverified"
     if not observed:
         return None, None
     first = observed[0]
