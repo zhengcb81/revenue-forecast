@@ -205,14 +205,19 @@ def _schtasks(args: list[str]) -> subprocess.CompletedProcess:
 
 
 def query_task_status(task_name: str) -> tuple[str, str]:
-    """registered / missing / unknown — never claim "missing" when unreadable.
+    """Inspect Windows registration independently of the portable daily ledger.
 
     A SYSTEM task is not queryable from a non-elevated session (`Access is
     denied`), so a failed query is UNKNOWN, not missing: reporting a
     successfully registered task as missing is a false signal (observed
     2026-09-08 right after the monthly task was registered).
     """
-    proc = _schtasks(["/query", "/tn", task_name, "/fo", "csv", "/v"])
+    if sys.platform != "win32":
+        return "unsupported", "Windows Task Scheduler is unavailable on this host"
+    try:
+        proc = _schtasks(["/query", "/tn", task_name, "/fo", "csv", "/v"])
+    except (OSError, subprocess.TimeoutExpired) as error:
+        return "unknown", f"cannot read task ({type(error).__name__})"
     if proc.returncode != 0:
         detail = (proc.stderr or proc.stdout or "").strip().splitlines()
         first = detail[0] if detail else "schtasks query failed"

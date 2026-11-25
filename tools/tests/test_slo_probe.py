@@ -53,7 +53,10 @@ def test_probe_measures_only_successful_resolves_from_configured_owner(tmp_path,
         assert len((tmp_path / "requests.jsonl").read_text().splitlines()) == 1
     else:
         assert result.returncode == 0, result.stderr
-        assert json.loads(result.stdout) == json.loads(report.read_bytes())
+        value = json.loads(result.stdout)
+        assert value == json.loads(report.read_bytes())
+        if sys.platform == "linux":
+            assert value["slo_probe"]["peak_rss_gb"] > 0
         calls = [json.loads(line) for line in (tmp_path / "requests.jsonl").read_text().splitlines()]
         assert len(calls) == 6
         assert sum("--fiscal-year" in call for call in calls) == 3

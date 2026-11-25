@@ -178,7 +178,10 @@ def test_c4_verify_prints_all_three_statuses(tmp_path, capsys):
         capture_output=True, text=True, encoding="utf-8", timeout=60,
     )
     out = proc.stdout + proc.stderr
-    assert "schedule=" in out  # registered or missing — read-only, no assumption
+    assert "schedule=" in out
+    if sys.platform != "win32":
+        assert proc.returncode == 1 and "schedule=unsupported" in out
+        assert proc.stderr == ""
     assert "last_run=fresh" in out
     assert "release_gate=" in out
 

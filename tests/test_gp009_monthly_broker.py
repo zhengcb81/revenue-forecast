@@ -8,6 +8,7 @@ import subprocess
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -251,6 +252,7 @@ def test_query_task_status_unknown_when_unreadable(
     sys.path.insert(0, str(ROOT / "tools"))
     import daily_t2_schedule as schedule
 
+    monkeypatch.setattr(schedule, "sys", SimpleNamespace(platform="win32"))
     monkeypatch.setattr(
         schedule, "_schtasks",
         lambda args: _QueryProc(1, stderr="ERROR: Access is denied."),
@@ -266,6 +268,7 @@ def test_query_task_status_registered_and_missing(
     sys.path.insert(0, str(ROOT / "tools"))
     import daily_t2_schedule as schedule
 
+    monkeypatch.setattr(schedule, "sys", SimpleNamespace(platform="win32"))
     monkeypatch.setattr(
         schedule, "_schtasks",
         lambda args: _QueryProc(0, stdout='TaskName\n\\revenue_monthly_broker\n'),

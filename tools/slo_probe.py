@@ -61,26 +61,27 @@ def _percentiles(values: list[float]) -> dict[str, float]:
     }
 
 
-def _peak_rss_gb() -> float:
-    # Windows has no resource.getrusage; psutil (already a project dep via
-    # FC-1002) reports peak working set.  Honest failure: without psutil the
-    # value is None and the RSS budget is skipped, never faked.
+def _peak_rss_gb() -> float | None:
+    if sys.platform == "linux":
+        import resource  # noqa: PLC0415
+
+        # Linux reports the peak of completed resolver children in KiB.
+        return resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / (1024**2)
+    if sys.platform != "win32":
+        return None
+    # The Windows backend uses psutil's working-set counter when available.
     try:
         import psutil  # noqa: PLC0415
-
-        # FC-1303-F3 fix: measure the RESOLVER process, not the probe shell.
-        # The resolver is the last heavyweight child spawned; psutil tracks
-        # our process tree's peak.  Sum current RSS of resolver children.
+    except ImportError:
+        return None
+    try:
         me = psutil.Process()
-        try:
-            kids = me.children(recursive=True)
-        except psutil.Error:
-            kids = []
+        kids = me.children(recursive=True)
         if kids:
             return max(k.memory_info().rss for k in kids) / (1024**3)
         return me.memory_info().peak_wset / (1024**3)
-    except ImportError:
-        return None  # type: ignore[return-value]
+    except (AttributeError, psutil.Error):
+        return None
 
 
 def main(argv: list[str] | None = None) -> int:
