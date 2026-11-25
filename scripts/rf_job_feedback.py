@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Sequence
 import hashlib
 import json
 import os
@@ -10,7 +11,7 @@ from pathlib import Path
 import re
 import sys
 
-from owner_atomic_io import replace_file_bytes
+from owner_atomic_io import native_path, replace_file_bytes
 from owner_file_lock import OwnerFileLock
 from rf_feedback_outbox import flush, get_failure, publish
 
@@ -67,7 +68,50 @@ def _action(request: dict, kind: str, method: str) -> tuple[str, dict]:
     return key, payload
 
 
-def lookup(owner_root: Path, request: dict) -> dict:
+def _job_proof(view: dict) -> tuple:
+    # Compare the original scope, attempt lineage, output bytes and settlement.
+    # Presentation and allowed-action fields do not establish replica identity.
+    return tuple(view[key] for key in (
+        "owner_job_id", "scope", "created_at", "stages", "result", "status", "cost_state", "cost",
+    ))
+
+
+def _read_configured_job(owner_roots: Sequence[Path], job_id: str) -> tuple[dict | None, str | None]:
+    from rf_job_facade import JobFacade, JobFacadeError
+
+    try:
+        roots = dict.fromkeys(native_path(root).resolve() for root in owner_roots)
+    except (OSError, RuntimeError):
+        return None, "native_owner_unverified" if len(owner_roots) > 1 else None
+
+    observed = []
+    unverified = False
+    for root in roots:
+        try:
+            view = JobFacade(root, None).get_status(job_id)["job_view"]
+        except JobFacadeError as exc:
+            if exc.code != "owner_job_not_found":
+                unverified = True
+            continue
+        except OSError:
+            unverified = True
+            continue
+        if view["status_known"] is True:
+            observed.append(view)
+        else:
+            unverified = True
+
+    if unverified:
+        return None, "native_owner_unverified" if len(roots) > 1 else None
+    if not observed:
+        return None, None
+    first = observed[0]
+    if any(_job_proof(view) != _job_proof(first) for view in observed[1:]):
+        return None, "native_owner_conflict"
+    return first, None
+
+
+def lookup(owner_root: Path, request: dict, *, additional_owner_roots: Sequence[Path] = ()) -> dict:
     _, payload = _action(request, "reconcile", "lookup")
     row = payload["observation"]
     ref = row.get("evidence_ref")
@@ -92,14 +136,9 @@ def lookup(owner_root: Path, request: dict) -> dict:
     if row.get("owner") != OWNER or row.get("step_id") != f"{job_id}/{attempt_id}":
         return {"state": "unknown"}
 
-    from rf_job_facade import JobFacade, JobFacadeError
-
-    try:
-        view = JobFacade(owner_root, None).get_status(job_id)["job_view"]
-    except JobFacadeError:
-        return {"state": "unknown"}
-    if view["status_known"] is not True:
-        return {"state": "unknown"}
+    view, reason = _read_configured_job((owner_root, *additional_owner_roots), job_id)
+    if view is None:
+        return {"state": "unknown", "code": reason} if reason else {"state": "unknown"}
     native = next((entry for entry in view["stages"] if entry["stage"] == stage), None)
     if not native or not native["attempts"] or native["attempts"][-1]["attempt_id"] != attempt_id:
         return {"state": "unknown", "code": "native_attempt_mismatch"}
@@ -146,7 +185,10 @@ def main() -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("flush-feedback")
     commands.add_parser("get-failure").add_argument("identifier")
-    commands.add_parser("reconcile").add_argument("--owner-root", type=Path, required=True)
+    commands.add_parser("reconcile").add_argument(
+        "--owner-root", type=Path, action="append", required=True,
+        help="configured read-only RF owner root; repeat for known additional stores",
+    )
     commands.add_parser("report").add_argument("--reports-dir", type=Path, required=True)
     get = commands.add_parser("get-report")
     get.add_argument("--reports-dir", type=Path, required=True)
@@ -160,7 +202,7 @@ def main() -> int:
             if result is None:
                 raise ValueError("unknown RF feedback occurrence")
         elif args.command == "reconcile":
-            result = lookup(args.owner_root, json.load(sys.stdin))
+            result = lookup(args.owner_root[0], json.load(sys.stdin), additional_owner_roots=args.owner_root[1:])
         elif args.command == "report":
             result = record_report(args.reports_dir, json.load(sys.stdin))
         else:
