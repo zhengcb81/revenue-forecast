@@ -591,9 +591,9 @@ class SubprocessStageRunner:
     def log_paths(self, stage: str, attempt_no: int) -> tuple[Path, Path]:
         return self._store.log_paths(self._owner_job_id, stage, attempt_no)
 
-    def run(self, *, stage: str, command: list[str], timeout_seconds: float,
+    def run(self, *, stage: str, attempt_no: int, command: list[str], timeout_seconds: float,
             env: dict[str, str] | None = None) -> AttemptOutcome:
-        stdout_path, stderr_path = self.log_paths(stage, self._pending_attempt_no)
+        stdout_path, stderr_path = self.log_paths(stage, attempt_no)
         stdout_path.parent.mkdir(parents=True, exist_ok=True)
         started = time.monotonic()
         full_env = dict(os.environ)
@@ -622,8 +622,6 @@ class SubprocessStageRunner:
         elapsed = time.monotonic() - started
         return AttemptOutcome(exit_code=exit_code, killed=killed, elapsed_seconds=elapsed)
 
-    _pending_attempt_no: int = 1
-
 
 class FakeStageRunner(SubprocessStageRunner):
     """Test double: records the requested commands instead of spawning them.
@@ -644,9 +642,8 @@ class FakeStageRunner(SubprocessStageRunner):
         self._die_on_stage = die_on_stage
         self._failure_stderr = failure_stderr
 
-    def run(self, *, stage: str, command: list[str], timeout_seconds: float,
+    def run(self, *, stage: str, attempt_no: int, command: list[str], timeout_seconds: float,
             env: dict[str, str] | None = None) -> AttemptOutcome:
-        attempt_no = self._pending_attempt_no
         self.requests.append({"stage": stage, "command": command, "attempt_no": attempt_no,
                               "timeout_seconds": timeout_seconds, "env": env})
         if self._die_on_stage == stage:
@@ -912,7 +909,6 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
                              f"stage {stage} has exhausted its configured attempt budget")
     command, env, timeout = _stage_command(job, store, deployment, stage)
     attempt_no = len(attempts) + 1
-    runner._pending_attempt_no = attempt_no  # runner writes per-attempt logs
     record: dict[str, Any] = {
         "attempt_id": f"{stage}-{attempt_no}",
         "attempt_no": attempt_no,
@@ -938,7 +934,8 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
                RESEARCH_FEEDBACK_PROCESS_STEP_ID=f"{owner_job_id}/{record['attempt_id']}",
                RESEARCH_FEEDBACK_RUN_ID=(os.environ.get("RESEARCH_FEEDBACK_RUN_ID") or "").strip() or owner_job_id,
                RESEARCH_FEEDBACK_ATTEMPT_ID=(os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID") or "").strip() or record["attempt_id"])
-    outcome = runner.run(stage=stage, command=command, timeout_seconds=timeout, env=env)
+    outcome = runner.run(stage=stage, attempt_no=attempt_no, command=command,
+                         timeout_seconds=timeout, env=env)
     record["ended_at"] = _utc_now()
     record["elapsed_seconds"] = round(outcome.elapsed_seconds, 6)
     record["exit_code"] = outcome.exit_code

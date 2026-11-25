@@ -55,6 +55,21 @@ def test_canary_is_retired_from_distribution_but_retained_as_history():
     assert CANARY not in manifest(ROOT)
 
 
+def test_retired_canary_cli_cannot_probe_an_owner_catalog(tmp_path):
+    catalog = tmp_path / "opaque-owner-catalog.sqlite3"
+    content = b"not a readable SQLite database"
+    catalog.write_bytes(content)
+    proc = subprocess.run(
+        [sys.executable, "-B", str(ROOT / CANARY), "--catalog", str(catalog), "--read-only"],
+        capture_output=True, text=True, encoding="utf-8", timeout=10,
+    )
+    assert proc.returncode == 2
+    assert not proc.stdout
+    assert "retired" in proc.stderr and "company-wiki" in proc.stderr
+    assert catalog.read_bytes() == content
+    assert set(tmp_path.iterdir()) == {catalog}
+
+
 def test_no_runtime_module_references_the_retired_canary():
     candidates = [*SCRIPTS.rglob("*.py"), *(ROOT / "agents").rglob("*"),
                   *(ROOT / "config").rglob("*"), ROOT / "SKILL.md",

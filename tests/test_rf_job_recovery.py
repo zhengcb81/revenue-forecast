@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from rf_job_facade import (  # noqa: E402
+    FakeStageRunner,
     JobFacade,
     SimulatedProcessDeath,
     JobFacadeError,
@@ -59,6 +60,32 @@ def test_resume_after_death_completes_without_rerunning_completed_stages(tmp_pat
     assert len(job["stages"]["source"]["attempts"]) == 1
     assert len(job["stages"]["compute"]["attempts"]) == 2
     assert len(job["stages"]["publication"]["attempts"]) == 1
+
+
+def test_restarted_runner_receives_the_attempt_used_for_its_logs(tmp_path, monkeypatch):
+    received = []
+    run = FakeStageRunner.run
+
+    def record_attempt(self, *, stage, attempt_no, command, timeout_seconds, env=None):
+        received.append((stage, attempt_no))
+        return run(self, stage=stage, attempt_no=attempt_no, command=command,
+                   timeout_seconds=timeout_seconds, env=env)
+
+    monkeypatch.setattr(FakeStageRunner, "run", record_attempt)
+    initial, _ = _facade(tmp_path, die_on_stage="compute")
+    with pytest.raises(SimulatedProcessDeath):
+        initial.submit(_request())
+    restarted, _ = _facade(tmp_path)
+    [job_id] = restarted.store.list_job_ids()
+    result = restarted.act(job_id, "resume")
+    assert result["job_view"]["status"] == "succeeded"
+    assert result["job_view"]["cost_state"] == "unknown"
+    assert result["job_view"]["cost"] is None
+    assert received == [("source", 1), ("compute", 1), ("compute", 2), ("publication", 1)]
+    first_logs = restarted.store.log_paths(job_id, "compute", 1)
+    second_logs = restarted.store.log_paths(job_id, "compute", 2)
+    assert all(not path.exists() for path in first_logs)
+    assert all(path.is_file() for path in second_logs)
 
 
 def test_reconcile_repairs_state_and_reports_completed_stages(tmp_path):

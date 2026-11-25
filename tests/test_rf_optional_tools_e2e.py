@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -281,20 +282,32 @@ def test_e3_missing_backup_dir_is_nonzero(tmp_path):
     assert proc.returncode == 1, proc.stdout + proc.stderr
 
 
-def test_e3_explicit_catalog_is_probed(tmp_path):
-    import sqlite3
-
-    catalog = tmp_path / "catalog.sqlite3"
-    with sqlite3.connect(catalog) as con:
-        for table in ("documents", "sources", "locations"):
-            con.execute(f"CREATE TABLE {table} (id INTEGER PRIMARY KEY)")
-    proc = _run([str(READINESS), "--catalog", str(catalog)])
+def test_e3_explicit_catalog_config_runs_the_public_status_process(tmp_path):
+    package = tmp_path / "company_wiki" / "source_catalog"
+    package.mkdir(parents=True)
+    (package.parent / "__init__.py").touch()
+    (package / "__init__.py").touch()
+    (package / "cli.py").write_text(
+        "import json, sys\nfrom pathlib import Path\n"
+        "assert sys.argv[1] == '--config' and sys.argv[3:] == ['status']\n"
+        "print(json.dumps(json.loads(Path(sys.argv[2]).read_text(encoding='utf-8'))))\n",
+        encoding="utf-8",
+    )
+    config = tmp_path / "owner source catalog.yaml"
+    config.write_text(
+        json.dumps({"documents": 1, "sources": 1, "active_locations": 1, "missing_locations": 0}),
+        encoding="utf-8",
+    )
+    before = _tree_state(tmp_path)
+    env = dict(os.environ, PYTHONPATH=str(tmp_path))
+    proc = _run([str(READINESS), "--catalog-config", str(config)], env=env)
     assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "documents=1" in proc.stdout
+    assert _tree_state(tmp_path) == before
 
-
-def test_e3_missing_catalog_is_nonzero(tmp_path):
-    proc = _run([str(READINESS), "--catalog", str(tmp_path / "absent.sqlite3")])
+    proc = _run([str(READINESS), "--catalog-config", str(tmp_path / "absent.yaml")], env=env)
     assert proc.returncode == 1, proc.stdout + proc.stderr
+    assert _tree_state(tmp_path) == before
 
 
 # ---------------------------------------------------------------------------

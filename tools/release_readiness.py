@@ -9,9 +9,9 @@ numeric diagnostics.  Material that is not supplied is reported as
                       are never required.  An explicit ``--expect-head
                       REPO=SHA`` that is malformed, names an unknown
                       repository, or does not match the live HEAD is RED.
-  integrity           read-only SQLite open + key-table row probe — only
-                      with an explicit ``--catalog PATH``; the default never
-                      opens a neighbour repository's database.
+  integrity           company-wiki's read-only status command, only with an
+                      explicit ``--catalog-config PATH``. The default never
+                      contacts the source owner.
   scenario_evidence   frozen-matrix / evidence revalidation reusing
                       ``uc.scenarios`` — only with an explicit
                       ``--scenario-registry PATH``.  A missing evidence hash
@@ -28,7 +28,7 @@ numeric diagnostics.  Material that is not supplied is reported as
 
 Usage:
   python tools/release_readiness.py                      # check-only, 0 writes
-  python tools/release_readiness.py --catalog <path>     # explicit input
+  python tools/release_readiness.py --catalog-config <owner-config.yaml>     # explicit input
   python tools/release_readiness.py --expect-head revenue=<40-hex sha>
   python tools/release_readiness.py --record-rollback <path>
 
@@ -39,9 +39,9 @@ tool exceptions, and explicitly supplied HEAD SHAs that do not match.
 from __future__ import annotations
 
 import argparse
+import builtins
 import json
 import re
-import sqlite3
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -151,31 +151,67 @@ def _fingerprint_gate(
     return _gate(True, "ok", detail)
 
 
-def catalog_integrity(catalog: Path) -> tuple[bool, str]:
-    """Read-only open + key-table row probes of an EXPLICIT catalog.
-
-    ``PRAGMA integrity_check`` takes minutes on a production catalog; a
-    read-only open already validates WAL/page-header consistency and the
-    key-table probes confirm the schema answers.  Nothing is ever written.
-    """
-    target = Path(catalog)
-    if not target.is_file():
-        return False, f"catalog not found: {target}"
-    uri = target.resolve().as_posix()
+def _catalog_status_cause(stderr: str) -> str | None:
+    """Project only pathless causes from CWP's public failure output."""
     try:
-        con = sqlite3.connect(f"file:{uri}?mode=ro", uri=True, timeout=30)
-        try:
-            counts = {}
-            for table in ("documents", "sources", "locations"):
-                counts[table] = con.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[
-                    0
-                ]
-        finally:
-            con.close()
-    except (OSError, sqlite3.Error, ValueError) as exc:
-        return False, f"catalog unreadable: {exc}"
-    detail = "read-only open ok, " + ", ".join(f"{k}={v}" for k, v in counts.items())
-    return True, detail
+        payload = json.loads(stderr)
+    except json.JSONDecodeError:
+        # Invalid config can fail before the owner emits its JSON envelope.
+        tail = stderr.rstrip().rsplit("\n", 1)[-1]
+        name, separator, _message = tail.partition(":")
+        if not separator or "Traceback (most recent call last):" not in stderr:
+            return None
+        if name == "company_wiki.source_catalog.config.CatalogConfigError":
+            return "CatalogConfigError"
+        exception_type = getattr(builtins, name, None)
+        if isinstance(exception_type, type) and issubclass(exception_type, Exception):
+            return name
+        return None
+
+    if not isinstance(payload, dict) or payload.get("status") != "failed":
+        return None
+    code = payload.get("error_type")
+    # The published CWP catalog status error taxonomy. Only the diagnostic
+    # gets projected here. An unfamiliar error is still an owner failure.
+    if code not in ("catalog_busy", "catalog_locked", "db_timeout", "worker_paused",
+                    "legacy_evidence_archived", "fatal"):
+        return None
+    message = payload.get("error")
+    if code == "fatal" and isinstance(message, str):
+        if message.startswith("catalog does not exist (not created, not touched):"):
+            code = "catalog_missing"
+        elif message.startswith("cannot open catalog read-only:"):
+            code = "catalog_unavailable"
+    return f"{code} (retryable)" if payload.get("retryable") is True else code
+
+
+def catalog_integrity(config: Path) -> tuple[bool, str]:
+    """Ask company-wiki to inspect its catalog through its public status command."""
+    command = [sys.executable, "-B", "-m", "company_wiki.source_catalog.cli",
+               "--config", str(config), "status"]
+    try:
+        result = subprocess.run(
+            command, capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=30, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return False, f"CWP status command failed: {type(exc).__name__}"
+    if result.returncode != 0:
+        cause = _catalog_status_cause(result.stderr)
+        detail = f"CWP status command failed (exit {result.returncode})"
+        return False, f"{detail}: {cause}" if cause else detail
+
+    try:
+        status = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return False, "CWP status returned invalid JSON"
+    count_keys = ("documents", "sources", "active_locations", "missing_locations")
+    if not isinstance(status, dict) or any(
+        type(status.get(key)) is not int or status[key] < 0 for key in count_keys
+    ):
+        return False, "CWP status did not report valid catalog counts"
+    counts = ", ".join(f"{key}={status[key]}" for key in count_keys)
+    return True, f"CWP read-only status ok, {counts}"
 
 
 def _uc_scenarios():
@@ -294,7 +330,7 @@ def write_rollback_point(
 
 def run_checks(
     *,
-    catalog: Path | None = None,
+    catalog_config: Path | None = None,
     registry: Path | None = None,
     registry_root: Path | None = None,
     backup_dir: Path | None = None,
@@ -308,14 +344,14 @@ def run_checks(
     result: dict[str, dict] = {}
     result["fingerprints"] = _fingerprint_gate(heads, expect_heads)
 
-    if catalog is None:
+    if catalog_config is None:
         result["integrity"] = _gate(
             True,
             "not_supplied",
-            "catalog not_supplied (pass --catalog PATH to probe one)",
+            "catalog not_supplied (pass --catalog-config PATH to ask the owner)",
         )
     else:
-        ok, detail = _guard("catalog", catalog_integrity, catalog)
+        ok, detail = _guard("catalog", catalog_integrity, catalog_config)
         result["integrity"] = _gate(
             ok, "ok" if ok else "red", detail, [] if ok else [detail]
         )
@@ -380,10 +416,10 @@ def run_checks(
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Release readiness (ZR-1001)")
     parser.add_argument(
-        "--catalog",
+        "--catalog-config",
         type=Path,
         default=None,
-        help="explicit catalog SQLite to probe read-only",
+        help="explicit company-wiki source catalog configuration for public status",
     )
     parser.add_argument(
         "--scenario-registry",
@@ -439,7 +475,7 @@ def main(argv: list[str] | None = None) -> int:
             parser.error(f"--expect-head expects REPO=SHA, got {raw!r}")
         expect_heads[name.strip()] = sha.strip()
     result = run_checks(
-        catalog=args.catalog,
+        catalog_config=args.catalog_config,
         registry=args.scenario_registry,
         backup_dir=args.backup_dir,
         expect_heads=expect_heads or None,

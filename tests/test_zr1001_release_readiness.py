@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-import sqlite3
+import subprocess
 import sys
 from pathlib import Path
 
@@ -110,40 +110,73 @@ def test_c1_head_fingerprints_reads_real_repos():
 # ---------------------------------------------------------------------------
 
 
-def test_c2_default_does_not_open_neighbour_catalog(monkeypatch):
-    def explode(*args, **kwargs):  # pragma: no cover - must never run
-        raise AssertionError("default readiness must not open a SQLite catalog")
+def test_c2_default_does_not_contact_the_catalog_owner(monkeypatch):
+    def unexpected(*args):
+        pytest.fail("default readiness contacted the catalog owner")
 
-    monkeypatch.setattr(rr.sqlite3, "connect", explode)
-    gates = rr.run_checks()
-    assert gates["integrity"]["status"] == "not_supplied"
-    assert gates["integrity"]["ok"] is True
-
-
-def test_c2_supplied_catalog_is_probed_read_only(tmp_path):
-    catalog = tmp_path / "catalog.sqlite3"
-    with sqlite3.connect(catalog) as con:
-        for table in ("documents", "sources", "locations"):
-            con.execute(f"CREATE TABLE {table} (id INTEGER PRIMARY KEY)")
-            con.execute(f"INSERT INTO {table} VALUES (1)")
-    gate = rr.run_checks(catalog=catalog)["integrity"]
-    assert gate["ok"] is True, gate
-    assert gate["status"] == "ok"
-    assert "documents=1" in gate["detail"]
+    monkeypatch.setattr(rr, "catalog_integrity", unexpected)
+    gate = rr.run_checks()["integrity"]
+    assert gate["status"] == "not_supplied"
+    assert gate["ok"] is True
 
 
-def test_c2_missing_supplied_catalog_is_red(tmp_path):
-    gate = rr.run_checks(catalog=tmp_path / "absent.sqlite3")["integrity"]
-    assert gate["ok"] is False
-    assert gate["status"] == "red"
+def test_c2_explicit_config_invokes_public_status(tmp_path, monkeypatch):
+    config = tmp_path / "source catalog.yaml"
+    calls = []
+
+    def owner_status(command, **kwargs):
+        calls.append(command)
+        return subprocess.CompletedProcess(
+            command, 0, json.dumps({
+                "documents": 0, "sources": 3, "active_locations": 2,
+                "missing_locations": 1, "future_diagnostic": True,
+            }), "",
+        )
+
+    monkeypatch.setattr(rr.subprocess, "run", owner_status)
+    ok, detail = rr.catalog_integrity(config)
+    assert ok is True
+    assert "documents=0" in detail and "missing_locations=1" in detail
+    assert calls == [[sys.executable, "-B", "-m", "company_wiki.source_catalog.cli",
+                      "--config", str(config), "status"]]
 
 
-def test_c2_corrupt_supplied_catalog_is_red(tmp_path):
-    catalog = tmp_path / "catalog.sqlite3"
-    catalog.write_bytes(b"not a sqlite database at all")
-    gate = rr.run_checks(catalog=catalog)["integrity"]
-    assert gate["ok"] is False
-    assert gate["status"] == "red"
+@pytest.mark.parametrize("stdout, returncode", [
+    ("not JSON", 0), ("[]", 0), ('{"documents": true}', 0), ("{}", 1),
+])
+def test_c2_invalid_owner_status_is_red(tmp_path, monkeypatch, stdout, returncode):
+    def owner_status(command, **kwargs):
+        return subprocess.CompletedProcess(command, returncode, stdout, "owner error")
+
+    monkeypatch.setattr(rr.subprocess, "run", owner_status)
+    ok, detail = rr.catalog_integrity(tmp_path / "source_catalog.yaml")
+    assert ok is False
+    assert "CWP" in detail
+
+
+@pytest.mark.parametrize("stderr, safe_reason", [
+    (json.dumps({
+        "status": "failed", "error_type": "catalog_busy",
+        "error": "database is locked: Bearer fake-SECRET",
+        "retryable": True,
+    }), "catalog_busy"),
+    (json.dumps({
+        "status": "failed", "error_type": "fatal",
+        "error": "catalog does not exist (not created, not touched): /fake-SECRET",
+        "retryable": False,
+    }), "catalog_missing"),
+    ("Traceback (most recent call last):\nFileNotFoundError: /fake-SECRET\n", "FileNotFoundError"),
+    (json.dumps({"status": "failed", "error_type": "fake-SECRET"}), "exit 1"),
+])
+def test_c2_owner_status_failure_keeps_pathless_cause(tmp_path, monkeypatch, stderr, safe_reason):
+    def owner_status(command, **kwargs):
+        return subprocess.CompletedProcess(command, 1, "", stderr)
+
+    monkeypatch.setattr(rr.subprocess, "run", owner_status)
+    ok, detail = rr.catalog_integrity(tmp_path / "source_catalog.yaml")
+    assert ok is False
+    assert safe_reason in detail
+    assert "fake-SECRET" not in detail
 
 
 def test_c2_default_registry_is_not_supplied():

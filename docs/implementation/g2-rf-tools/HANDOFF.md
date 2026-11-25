@@ -177,7 +177,7 @@ python -B tools/release_readiness.py --json
 # 显式版本化输入（真实校验，坏输入/坏 SHA 非零）
 python -B tools/release_readiness.py --expect-head revenue=<40-hex sha>
 python -B tools/release_readiness.py --scenario-registry assurance/unified_completion/scenarios/scenario_registry.json
-python -B tools/release_readiness.py --catalog <path.sqlite3> --backup-dir <dir> --budget-mb 2048
+python -B tools/release_readiness.py --catalog-config <owner-source-catalog.yaml> --backup-dir <dir> --budget-mb 2048
 
 # 唯一显式写点（check-only 永不写）
 python -B tools/release_readiness.py --record-rollback <path.json>
