@@ -45,3 +45,9 @@ CWP 公开 source-query 可经配置按来源商、供应商编号和 as-of 筛�
 ## 周检旧入口与现行 owner 证据
 
 周调度之前启动 FF 的整个现行下载测试，手工入口还设置真实下载开关运行较早的 FC805。两条入口都把 stdout 猜测成结论，无法保证指定的是同一既有运行。RF 现在仅查原作业收据。已证明失败不会因另一个用例阻断而变成普通环境缺失，FF 公共诊断随原 case 或运行完整保留。已发布的旧归档记录保持可读，现行四项覆盖和较早 FC805 的 gap 流程区别见 [周检接口交接](weekly-owner-boundary.md)。
+
+## EX05 与基线工具的剩余旧边界
+
+FC-505 的旧工具 tools/ex05_chain_replay.py 曾由 assurance/fc/FC-505/11_implementer_receipt.json 手工执行，收据记录两项准确复用和两项旧采集不完整，原文未下载。当前仓内未找到启动该脚本的运行器或 CI。另有历史 scenario_runner 的 EX-03、DBX-01 指向已从当前 Git 树移除的独立测试，EX-05 指向 CWP 旧 resolver 测试，须与名为 EX05 的历史执行脚本区分。旧脚本拼装相邻仓和 Dropbox 的物理根、导入 FF 同级脚本、遍历 Dropbox 比较指纹并输出物理路径。建议保留证据和历史版本，将可执行入口安全退役。独立的 scenario map 本轮不动。
+
+WU-0.1 的 tools/audit_baseline.py 仍能有选择地执行跨仓 SQLite 查询。已知调用为自身工具测试和旧证据 audit_review/2026-08-08_adversarial_plan/progress.md 中的手动命令。它读数据库版本、内部 roots 和 scan_runs 并返回物理根。仓库 Git、工具版本、配置 hash 等独立诊断仍有实际用途。下一步只去掉跨仓数据读取，保留这些独立诊断与旧参数的可解析性，明确区分历史 catalog 口径不再可提供。旧报告原样保存。

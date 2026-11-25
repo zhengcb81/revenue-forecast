@@ -48,4 +48,4 @@ RF 以 `c34bf37126717e9d1108e8dd2b8b915d20a68f14` 为基线，先在实际入口
 
 从原 RF 工作区只读复制真实归档 ledger 和详细报告到隔离根，用原生 CLI 验证 verify 返回 stale 和退出码 1，裸 run-monthly 和同一编号手工入口返回退役。20261001T182300Z 原报告覆盖 7/7。两份原件和隔离副本的字节均未变，无新增文件，隔离副本已清理。原 ledger SHA-256 c8ee858f0f9f6e131c75c0cae064541be791356c8bf02989305eafd78673d887，原 report SHA-256 b704d1b3a20648f3f3c31686dd0942f3800912f9c7b27e409e48920ff7e6b09f。未改实际 Windows 任务、全局技能、副本或 CWP 数据。
 
-月检和日/周调度等七个定向测试文件合计 79 项通过，Ruff 与 diff 检查通过。额外历史 CA204 文件收集时报缺 test_zr709_zijin_journey，精确基线已无该模块，CA204 文件本轮未改。ROOT 独立复验 12 项通过，确认仅按原方式读取历史和移除既有 task，现行代码未发现其他消费者。冻结指纹 34a1842413e0eb4a1b0037517e12884abe91e18d73e3e35800d3380416b3ea4c。待主线验收。
+月检和日/周调度等七个定向测试文件合计 79 项通过，Ruff 与 diff 检查通过。额外历史 CA204 文件收集时报缺 test_zr709_zijin_journey，精确基线已无该模块，CA204 文件本轮未改。ROOT 独立复验 12 项通过，确认仅按原方式读取历史和移除既有 task，现行代码未发现其他消费者。冻结指纹 34a1842413e0eb4a1b0037517e12884abe91e18d73e3e35800d3380416b3ea4c。正常 hooks 通过，精确 RF main 4b9a4783f0aa835245ae363e6279a4a4414b9fba 的 [CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45598302331) 成功。
