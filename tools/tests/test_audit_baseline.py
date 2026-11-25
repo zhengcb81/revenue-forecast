@@ -1,21 +1,4 @@
-"""WU-0.1: read-only audit baseline tool contract tests.
-
-The tool ``tools/audit_baseline.py --read-only`` must:
-
-1.  collect baseline facts (commits, tool versions, config hashes,
-    catalog schema/size/scan status, root realpaths) and print JSON;
-2.  NEVER open the catalog SQLite with a write transaction — the
-    connection must be ``mode=ro``;
-3.  NEVER create or modify any file under a probe root it is pointed
-    at (a temp writable root containing files);
-4.  leave real roots byte-identical before/after (tree metadata/hash
-    sampling equal).
-
-RED phase: these tests must fail while the tool is missing — the
-subprocess raises FileNotFoundError, which unittest records as an
-ERROR (not a skip, not a pass).  Mutation check: changing the tool to
-open ``mode=rw`` or to write a file must flip tests below to red.
-"""
+"""Legacy assurance tools retain local diagnostics and historical evidence."""
 
 from __future__ import annotations
 
@@ -30,9 +13,6 @@ import unittest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TOOL = REPO_ROOT / "tools" / "audit_baseline.py"
-sys.path.insert(0, str(REPO_ROOT / "tools"))
-
-from audit_baseline import open_catalog_readonly  # noqa: E402
 
 
 def tree_hash(root: Path) -> str:
@@ -50,7 +30,7 @@ def tree_hash(root: Path) -> str:
 
 class AuditBaselineTests(unittest.TestCase):
     def _run_tool(self, *args: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
-        cmd = [sys.executable, str(TOOL), *args]
+        cmd = [sys.executable, "-B", str(TOOL), *args]
         return subprocess.run(
             cmd, capture_output=True, text=True, encoding="utf-8", cwd=cwd, timeout=120
         )
@@ -73,62 +53,67 @@ class AuditBaselineTests(unittest.TestCase):
         con.close()
         return db
 
-    def test_requires_readonly_flag(self) -> None:
-        """Without --read-only the tool must refuse to run."""
-        proc = self._run_tool()
-        self.assertNotEqual(proc.returncode, 0)
-        self.assertIn("read-only", (proc.stdout + proc.stderr).lower())
-
-    def test_collects_baseline_facts(self) -> None:
-        """Baseline JSON must carry commits, versions, config hashes,
-        catalog schema/scan status and root realpaths."""
+    def test_local_baseline_without_mode_acknowledgment(self) -> None:
         with TemporaryDirectory() as td:
             tmp = Path(td)
-            catalog = self._make_catalog(tmp)
             cfg = tmp / "source_catalog.yaml"
             cfg.write_text("reusable_root_kinds: [company_raw]\n", encoding="utf-8")
             proc = self._run_tool(
-                "--read-only",
-                "--catalog", str(catalog),
                 "--config", str(cfg),
                 "--repos", str(REPO_ROOT),
                 "--probe-roots", str(tmp / "companies"),
             )
             self.assertEqual(proc.returncode, 0, proc.stderr)
             data = json.loads(proc.stdout)
-            self.assertIn("repos", data)
-            self.assertIn("environment", data)
-            self.assertIn("configs", data)
-            self.assertIn("catalog", data)
-            self.assertIn("roots", data)
-            self.assertTrue(data["catalog"]["schema_version"] >= 0)
-            self.assertIn("completed_with_errors", data["catalog"]["recent_scan_status"])
+            self.assertIn(REPO_ROOT.name, data["repos"])
+            self.assertIn("python", data["environment"])
+            self.assertEqual(data["configs"][str(cfg)], hashlib.sha256(cfg.read_bytes()).hexdigest())
+            self.assertIn(str(tmp / "companies"), data["roots"])
+            self.assertEqual(data["catalog"]["status"], "not_requested")
+            self.assertIsNone(data["catalog"]["schema_version"])
+            self.assertIsNone(data["catalog"]["error"])
 
-    def test_catalog_opened_readonly(self) -> None:
-        """Catalog connection must be mode=ro: any write attempt must fail."""
+    def test_explicit_legacy_catalog_shape_is_unavailable(self) -> None:
         with TemporaryDirectory() as td:
             tmp = Path(td)
             catalog = self._make_catalog(tmp)
             before = catalog.read_bytes()
-            proc = self._run_tool("--read-only", "--catalog", str(catalog))
+            proc = self._run_tool("--read-only", "--catalog", str(catalog), cwd=tmp)
             self.assertEqual(proc.returncode, 0, proc.stderr)
-            self.assertEqual(catalog.read_bytes(), before, "catalog modified by tool")
-            # WAL/SHM side files must not be created by a read-only opener
-            for side in (catalog.parent / f"{catalog.name}-wal", catalog.parent / f"{catalog.name}-shm"):
-                self.assertFalse(side.exists(), f"side file created: {side}")
+            response = json.loads(proc.stdout)["catalog"]
+            self.assertEqual(response["status"], "unavailable")
+            self.assertEqual(response["reason"], "catalog_owner_interface_required")
+            self.assertIsNone(response["schema_version"])
+            self.assertIsNone(response["size_bytes"])
+            self.assertIsNone(response["recent_scan_status"])
+            self.assertEqual(response["roots"], [])
+            self.assertNotIn(catalog.name, proc.stdout)
+            self.assertEqual(catalog.read_bytes(), before)
+            self.assertEqual(list(tmp.iterdir()), [catalog])
 
-    def test_open_catalog_readonly_rejects_writes(self) -> None:
-        """Unit-level: the connection must reject writes even before any tool code
-        decides to be careful — a mode=rw mutation must flip this test red."""
+    def test_explicit_catalog_does_not_open_private_sqlite(self) -> None:
+        bootstrap = """\
+import runpy
+import sys
+
+def guard(event, args):
+    if event == "sqlite3.connect":
+        raise AssertionError("RF audit opened a private SQLite database")
+
+sys.argv = sys.argv[1:]
+sys.addaudithook(guard)
+runpy.run_path(sys.argv[0], run_name="__main__")
+"""
         with TemporaryDirectory() as td:
             tmp = Path(td)
             catalog = self._make_catalog(tmp)
-            con = open_catalog_readonly(catalog)
-            try:
-                with self.assertRaises(sqlite3.OperationalError):
-                    con.execute("CREATE TABLE evil (x TEXT)")
-            finally:
-                con.close()
+            proc = subprocess.run(
+                [sys.executable, "-B", "-c", bootstrap, str(TOOL),
+                 "--read-only", "--catalog", str(catalog)],
+                cwd=tmp, capture_output=True, text=True, encoding="utf-8", timeout=30,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertEqual(json.loads(proc.stdout)["catalog"]["status"], "unavailable")
 
     def test_probe_root_unchanged(self) -> None:
         """Pointing the tool at a writable probe root must leave it byte-identical."""
@@ -143,6 +128,58 @@ class AuditBaselineTests(unittest.TestCase):
             proc = self._run_tool("--read-only", "--probe-roots", str(probe))
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertEqual(tree_hash(probe), before, "probe root modified by tool")
+
+
+class ArchivedReplayTests(unittest.TestCase):
+    def test_legacy_replay_stops_before_traversal_or_owner_use(self) -> None:
+        script = REPO_ROOT / "tools" / "ex05_chain_replay.py"
+        receipt_path = Path("assurance/fc/FC-505/11_implementer_receipt.json")
+        receipt = (REPO_ROOT / receipt_path).read_bytes()
+        bootstrap = """\
+import runpy
+import sys
+from pathlib import Path
+from types import ModuleType
+
+# Stub the old imports so old execution deterministically reaches Dropbox
+# traversal without touching any real CWP, FF, Dayu or user directory.
+for name, identifiers in {
+    "company_wiki.source_catalog": (
+        "CatalogConfig ResolutionStatus RootSpec SourceCatalog SourceRequest SourceResolver"
+    ),
+    "company_wiki_source": "build_revenue_source_record",
+    "filing_contracts": "validate_handle",
+}.items():
+    module = ModuleType(name)
+    for identifier in identifiers.split():
+        setattr(module, identifier, None)
+    sys.modules[name] = module
+Path.home = classmethod(lambda cls: Path.cwd())
+
+def guard(event, args):
+    if event in {"pathlib.Path.rglob", "sqlite3.connect"}:
+        raise AssertionError("archived replay tried to traverse or open owner data")
+
+sys.argv = sys.argv[1:]
+sys.addaudithook(guard)
+runpy.run_path(sys.argv[0], run_name="__main__")
+"""
+        with TemporaryDirectory() as td:
+            tmp = Path(td)
+            archived = tmp / receipt_path
+            archived.parent.mkdir(parents=True)
+            archived.write_bytes(receipt)
+            proc = subprocess.run(
+                [sys.executable, "-B", "-c", bootstrap, str(script)],
+                cwd=tmp, capture_output=True, text=True, encoding="utf-8", timeout=15,
+            )
+            self.assertEqual(proc.returncode, 2, proc.stderr)
+            self.assertFalse(proc.stdout)
+            self.assertIn("fc505_replay_retired", proc.stderr)
+            self.assertIn(receipt_path.as_posix(), proc.stderr)
+            self.assertEqual(archived.read_bytes(), receipt)
+            self.assertEqual([f for f in tmp.rglob("*") if f.is_file()], [archived])
+        self.assertEqual((REPO_ROOT / receipt_path).read_bytes(), receipt)
 
 
 if __name__ == "__main__":

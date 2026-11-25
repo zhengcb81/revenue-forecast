@@ -1,21 +1,9 @@
-"""WU-0.1: capture a read-only audit baseline for the three repositories.
+"""Collect read-only local audit metadata.
 
-Usage::
-
-    python tools/audit_baseline.py --read-only [--catalog PATH] [--config PATH]...
-                                    [--repos PATH]... [--probe-roots PATH]...
-
-The ``--read-only`` flag is mandatory; without it the tool refuses to run.
-Output is a single JSON document on stdout with::
-
-    repos        git HEAD + dirty files per repo
-    environment  python/pytest/ruff/sqlite versions
-    configs      sha256 per config file
-    catalog      user_version, size, recent scan status, roots (mode=ro)
-    roots        resolved realpath per probe root
-
-The catalog is opened with a ``file:...?mode=ro`` URI; any write attempt
-raises ``OperationalError``.  The tool never creates or modifies files.
+Git working-tree status, tool versions, config digests, and explicitly
+requested diagnostic roots are reported as JSON. The legacy --catalog
+option reports the unavailable cross-owner section. Catalog state is
+available from company-wiki's public interface.
 """
 
 from __future__ import annotations
@@ -40,7 +28,7 @@ def _sha256(path: Path) -> str:
 def _git(cwd: Path, *args: str) -> str | None:
     try:
         proc = subprocess.run(
-            ["git", "-C", str(cwd), *args],
+            ["git", "--no-optional-locks", "-C", str(cwd), *args],
             capture_output=True,
             text=True,
             # FC-1205 (PORT-01): text=True defaults to the locale codepage
@@ -98,47 +86,23 @@ def collect_configs(configs: list[Path]) -> dict:
     return out
 
 
-def open_catalog_readonly(catalog: Path) -> sqlite3.Connection:
-    """Open the catalog with a read-only URI; any write raises OperationalError."""
-    uri = f"file:{catalog}?mode=ro"
-    con = sqlite3.connect(uri, uri=True)
-    con.execute("PRAGMA query_only = ON")  # belt-and-suspenders: no writes
-    return con
-
-
-def collect_catalog(catalog: Path | None) -> dict:
-    if catalog is None or not catalog.is_file():
-        return {"schema_version": None, "size_bytes": None,
-                "recent_scan_status": None, "roots": [], "error": "catalog missing"}
-    con = open_catalog_readonly(catalog)
-    error = None
-    try:
-        schema_version = con.execute("PRAGMA user_version").fetchone()[0]
-        size_bytes = catalog.stat().st_size
-        roots = []
-        recent = None
-        try:
-            for row in con.execute("SELECT root_id, kind, path, priority FROM roots ORDER BY priority"):
-                roots.append({"root_id": row[0], "kind": row[1], "path": row[2], "priority": row[3]})
-        except sqlite3.OperationalError as exc:
-            roots = []
-            error = f"roots query failed: {exc}"
-        try:
-            row = con.execute("SELECT status FROM scan_runs ORDER BY rowid DESC LIMIT 1").fetchone()
-            if row:
-                recent = row[0]
-        except sqlite3.OperationalError as exc:
-            recent = None
-            error = f"scan_runs query failed: {exc}"
-        return {
-            "schema_version": schema_version,
-            "size_bytes": size_bytes,
-            "recent_scan_status": recent,
-            "roots": roots,
-            "error": error,
-        }
-    finally:
-        con.close()
+def collect_catalog(catalog_requested: bool) -> dict:
+    result = {
+        "schema_version": None,
+        "size_bytes": None,
+        "recent_scan_status": None,
+        "roots": [],
+        "error": None,
+        "status": "not_requested",
+        "reason": None,
+    }
+    if catalog_requested:
+        result.update(
+            status="unavailable",
+            reason="catalog_owner_interface_required",
+            error="Legacy catalog probe retired. Use the company-wiki public interface.",
+        )
+    return result
 
 
 def collect_roots(probe_roots: list[Path]) -> dict:
@@ -149,32 +113,24 @@ def collect_roots(probe_roots: list[Path]) -> dict:
 
 
 def main() -> int:
-    # FC-1205 (PORT-01): the baseline JSON carries non-ASCII paths (Chinese
-    # user name); force UTF-8 on the child side so any reader — pytest or a
-    # consumer — decodes the stream deterministically (fetch_filing pattern).
-    # FC-1205 (PORT-01): the baseline JSON carries non-ASCII paths (Chinese
-    # user name); force UTF-8 on the child side so any reader — pytest or a
-    # consumer — decodes the stream deterministically (fetch_filing pattern).
+    # FC-1205: preserve deterministic UTF-8 for local paths and Git output.
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="strict")
 
     parser = argparse.ArgumentParser(description="Read-only audit baseline capture")
     parser.add_argument("--read-only", action="store_true",
-                        help="mandatory: confirms read-only operation")
-    parser.add_argument("--catalog", type=Path, default=None, help="path to catalog.sqlite3")
+                        help="legacy acknowledgment (the tool is read-only)")
+    parser.add_argument("--catalog", type=Path, default=None, help="legacy option (catalog section is reported as unavailable)")
     parser.add_argument("--config", type=Path, action="append", default=[], help="config file to hash")
     parser.add_argument("--repos", type=Path, action="append", default=[], help="git repo dirs")
     parser.add_argument("--probe-roots", type=Path, action="append", default=[], help="roots to resolve")
     args = parser.parse_args()
-    if not args.read_only:
-        print("refusing to run: the --read-only flag is mandatory", file=sys.stderr)
-        return 2
     baseline = {
         "repos": collect_repos(args.repos),
         "environment": collect_environment(),
         "configs": collect_configs(args.config),
-        "catalog": collect_catalog(args.catalog),
+        "catalog": collect_catalog(args.catalog is not None),
         "roots": collect_roots(args.probe_roots),
     }
     print(json.dumps(baseline, indent=2, ensure_ascii=False))

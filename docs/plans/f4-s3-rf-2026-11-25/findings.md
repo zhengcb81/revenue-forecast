@@ -36,7 +36,7 @@ WU-1304 canary 在 MB-RF 已退出分发，运行路径和被调用的函数未�
 
 ## 周跑、月审计和历史入口
 
-11 月 22 日有周跑失败记录 20261122T083603Z。当前 RF 周跑直接启动 FF 仓内真实下载 pytest，强制真实下载开关并重设宿主 profile。下一步由 FF 拥有测试执行和公开收据，RF 消费原结果。要求真实采集时需沿 FF 公开作业配置真实预算和恢复，单纯离线回放不能代替实际下载验收。
+11 月 22 日有周跑失败记录 20261122T083603Z。迁移前的 RF 周跑直接启动 FF 仓内真实下载 pytest，强制真实下载开关并重设宿主 profile。下一步由 FF 拥有测试执行和公开收据，RF 消费原结果。要求真实采集时需沿 FF 公开作业配置真实预算和恢复，单纯离线回放不能代替实际下载验收。
 
 月审计最近可见记录仍为 20261001T182300Z。原入口直接读取 CWP SQLite 的 documents、document_entities、entities 和 artifacts，取标题或归属名称含固定关键词的券商报告，比较报告可能仅靠标题被纳入。检查只要求每项都有旧 normalized 与 sections 两个角色，不验实际原件字节、披露日、供应商或来源版本。CWP 现行提取质量合同允许 metadata_only 和 skipped_no_narrative，旧批量派生已按 owner 计划退役。
 
@@ -51,3 +51,5 @@ CWP 公开 source-query 可经配置按来源商、供应商编号和 as-of 筛�
 FC-505 的旧工具 tools/ex05_chain_replay.py 曾由 assurance/fc/FC-505/11_implementer_receipt.json 手工执行，收据记录两项准确复用和两项旧采集不完整，原文未下载。当前仓内未找到启动该脚本的运行器或 CI。另有历史 scenario_runner 的 EX-03、DBX-01 指向已从当前 Git 树移除的独立测试，EX-05 指向 CWP 旧 resolver 测试，须与名为 EX05 的历史执行脚本区分。旧脚本拼装相邻仓和 Dropbox 的物理根、导入 FF 同级脚本、遍历 Dropbox 比较指纹并输出物理路径。建议保留证据和历史版本，将可执行入口安全退役。独立的 scenario map 本轮不动。
 
 WU-0.1 的 tools/audit_baseline.py 仍能有选择地执行跨仓 SQLite 查询。已知调用为自身工具测试和旧证据 audit_review/2026-08-08_adversarial_plan/progress.md 中的手动命令。它读数据库版本、内部 roots 和 scan_runs 并返回物理根。仓库 Git、工具版本、配置 hash 等独立诊断仍有实际用途。下一步只去掉跨仓数据读取，保留这些独立诊断与旧参数的可解析性，明确区分历史 catalog 口径不再可提供。旧报告原样保存。
+
+当前候选保留 EX05 命令位置，执行即回告退役与历史收据出处，退出码 2。baseline 的旧 --catalog 参数仍接受，原 catalog JSON 键不变，并增加 status 和 reason 说明。未知状态不冒充数据库观测。--read-only 原许可标志变为兼容参数，本地检查始终只读，并禁止 git status 刷新索引。无任何 CWP 或 FF 入口在此闭包启动。

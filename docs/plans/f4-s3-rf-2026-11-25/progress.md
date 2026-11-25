@@ -49,3 +49,9 @@ RF 以 `c34bf37126717e9d1108e8dd2b8b915d20a68f14` 为基线，先在实际入口
 从原 RF 工作区只读复制真实归档 ledger 和详细报告到隔离根，用原生 CLI 验证 verify 返回 stale 和退出码 1，裸 run-monthly 和同一编号手工入口返回退役。20261001T182300Z 原报告覆盖 7/7。两份原件和隔离副本的字节均未变，无新增文件，隔离副本已清理。原 ledger SHA-256 c8ee858f0f9f6e131c75c0cae064541be791356c8bf02989305eafd78673d887，原 report SHA-256 b704d1b3a20648f3f3c31686dd0942f3800912f9c7b27e409e48920ff7e6b09f。未改实际 Windows 任务、全局技能、副本或 CWP 数据。
 
 月检和日/周调度等七个定向测试文件合计 79 项通过，Ruff 与 diff 检查通过。额外历史 CA204 文件收集时报缺 test_zr709_zijin_journey，精确基线已无该模块，CA204 文件本轮未改。ROOT 独立复验 12 项通过，确认仅按原方式读取历史和移除既有 task，现行代码未发现其他消费者。冻结指纹 34a1842413e0eb4a1b0037517e12884abe91e18d73e3e35800d3380416b3ea4c。正常 hooks 通过，精确 RF main 4b9a4783f0aa835245ae363e6279a4a4414b9fba 的 [CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45598302331) 成功。
+
+## 2026-11-25 EX05 和 baseline 的旧边界
+
+基于已发布的 3ac1f6cda76328fd240f41b862622ad2162798f6。旧 EX05 在假 CWP 和 FF 导入下，真实 Python 冷启动确实开始遍历假 Dropbox。旧 baseline 对合成历史库触发 sqlite3.connect，并把旧表输出为当前数据；不带 --read-only 则拒绝本地 Git 与配置摘要。四条反例先红，原只读本地目录对照保绿。新版 84 项定向绿，Ruff 和 diff 检查通过。
+
+从本仓导出仍跟踪的 FC-505 原始收据，隔离验证两条真实手工命令。旧 EX05 不扫描数据，退出码 2 并指向已保存收据。baseline 正常返回隔离 Git 的暂存状态与配置字节 SHA，旧 catalog 标为 unavailable，且 Git 索引原字节和时间不变。不存在的 catalog 未创建，隔离根清理，归档原字节未变。FC-505 SHA-256 bae3b9271b2e8e9d533766ce73a6f2e64349db0c0ab554440568d0ca22729827。ROOT 独立运行 5 项通过，验证后清理隔离根。冻结 LF 指纹 41f9e5675adbd5da8ac1831569876774fd2addbe9016c12a55830506f05345fd。待主线精确验收。

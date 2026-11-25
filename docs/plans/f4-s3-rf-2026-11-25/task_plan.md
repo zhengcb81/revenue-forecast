@@ -23,7 +23,7 @@
 - 日审计已改用 CWP 公开状态与按需原版验真，保留 RF 本仓收据和历史回读。已完成源、实际公开端口验证及独立审查。Windows 任务实际注册查询由系统拒绝，部署状态独立跟踪。周跑已按下项移植。月度队列和其余历史 baseline 分开处置。
 - 周跑已对接 FF 发布的四项组合收据，RF 独立审查、定向 83 项和精确主线 [CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45596205549) 已通过，源码 43961a73 已发布。实际 Windows 任务部署和真实实跑继续由所属模块协调，见 [周跑公开接口交接](weekly-owner-boundary.md)。
 - 月度 broker 旧执行入口退役已发布 4b9a4783，定向回归、真实旧归档回读、独审和精确 [CI](https://github.com/zhengcb81/revenue-forecast/actions/runs/45598302331) 通过。原 20261001T182300Z 仍为历史 7/7。原查询、历史验证和手工移除命令保留。系统拒绝实际 Windows 注册查询，本次无系统任务变更。未来若有现行月度需求，从公开来源和证据目标定义新口径，使用对应 owner 供数。
-- 历史 baseline 不直接迁移 SQLite schema、扫描记录和根信息。先核实归档复查用途并确定由 owner 提供的公开收据字段。单独修复可验证的近代入口。
+- EX05 旧执行与 baseline 跨仓 SQLite 查询的候选已移除，84 项定向与独审 5 项通过，待主线精确验收。保留 FC-505 原始收据和 baseline 的本地 Git、配置摘要、运行环境观测。旧参数可解析，未请求等于未观察，显式旧库观测记录为 unavailable。独立历史 scenario runner 和 SLO 保留原样。
 - 合并其他 runtime/report catalog 耦合项仍需按总控审计逐项收口。本轮三个修复不能作为 RF S3 完整结案。
 
 ## 收口标准
