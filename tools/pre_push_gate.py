@@ -124,6 +124,7 @@ CI_TESTS = (
     "tests/test_rf_job_cost.py",
     "tests/test_rf_job_recovery.py",
     "tests/test_rf_job_feedback_roots.py",
+    "tests/test_rf_pytest_feedback_isolation.py",
     "tests/test_rf_job_attempt_lifecycle.py",
     "tests/test_f4_failure_coverage.py",
     "tests/test_s1_p0_error_observability.py",
