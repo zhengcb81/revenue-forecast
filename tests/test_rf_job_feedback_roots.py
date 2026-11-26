@@ -16,9 +16,10 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from owner_atomic_io import native_path, open_regular_file  # noqa: E402
+from rf_assurance_history import AssuranceRun  # noqa: E402
 from rf_feedback_outbox import flush, publish, was_published  # noqa: E402
-from rf_job_facade import JobFacade  # noqa: E402
-from rf_job_feedback import digest, lookup  # noqa: E402
+from rf_job_facade import AttemptOutcome, JobFacade  # noqa: E402
+from rf_job_feedback import digest, lookup, publish_attempt  # noqa: E402
 from test_f4_failure_coverage import env, invoke, observations  # noqa: E402
 from test_rf_job_facade import _facade, _request  # noqa: E402
 
@@ -69,6 +70,19 @@ def lookup_request(observation, **overrides):
     }
 
 
+def triage_request(observation, **overrides):
+    request = lookup_request(observation, **overrides)
+    payload = request["payload"]
+    key = digest(["triage", OWNER, payload["occurrence_id"]])
+    return dict(request, kind="triage", method="submit", action_id=key,
+                request_digest=digest([OWNER, "triage", key, payload]))
+
+
+def triage(tmp_path, config, request, owner, receipts):
+    return invoke(tmp_path, config, "rf_job_feedback", "triage", "--owner-root", owner,
+                  "--reports-dir", receipts, data=json.dumps(request))
+
+
 def cold(tmp_path, config, payload, *roots):
     flags = [item for root in roots for item in ("--owner-root", root)]
     result = invoke(tmp_path, config, "rf_job_feedback", "reconcile", *flags, data=json.dumps(payload))
@@ -79,6 +93,150 @@ def cold(tmp_path, config, payload, *roots):
 def snapshot(root):
     return {item.relative_to(root).as_posix(): sha256(item.read_bytes()).hexdigest()
             for item in root.rglob("*") if item.is_file()}
+
+
+def test_reconcile_batch_keeps_single_item_truth_and_order(tmp_path, completed_job):
+    owner, _, config, job_id, usage = completed_job
+    missing = tmp_path / "missing"
+    known = lookup_request(usage)
+    wrong = lookup_request(usage, attempt_id="unrelated")
+    lost = lookup_request(usage, step_id="rfjob-absent/source-1", evidence_ref="rf-job/1/rfjob-absent/source-1")
+    bad_digest = dict(known, request_digest="0" * 64)
+    ledger = tmp_path / "configured-daily.json"
+    assurance = AssuranceRun(ledger, "daily", sources=(), request={})
+    [check] = [row for row in observations(tmp_path / "box") if assurance.run_id in row["evidence_ref"]]
+    pending = lookup_request(check)
+    requests = [known, "untrusted-input", wrong, bad_digest, lost, pending, known]
+
+    def prefix(request, result):
+        return {key: request.get(key) for key in ("action_id", "request_digest")} | result
+
+    known_result = {"state": "done", "result": {
+        "status": "known", "job_status": "succeeded", "cost_state": "known",
+        "evidence_ref": f"rf-job/1/{job_id}/publication-1",
+    }}
+    invalid = {"state": "failed", "code": "action_invalid"}
+    expected = [
+        prefix(known, known_result),
+        prefix({}, invalid),
+        prefix(wrong, {"state": "unknown", "code": "native_attempt_mismatch"}),
+        prefix(bad_digest, invalid),
+        prefix(lost, {"state": "unknown"}),
+        prefix(pending, {"state": "pending"}),
+        prefix(known, known_result),
+    ]
+    before = snapshot(tmp_path)
+    result = invoke(tmp_path, config, "rf_job_feedback", "reconcile-batch",
+                    "--owner-root", missing, "--owner-root", owner,
+                    "--assurance-ledger", "daily", ledger, data=json.dumps(requests))
+    assert result.returncode == 0, result.stdout
+    assert json.loads(result.stdout) == expected
+    assert "untrusted-input" not in result.stdout and snapshot(tmp_path) == before
+
+
+def test_triage_keeps_original_failure_effect_and_recovers_immutable_receipt(tmp_path, isolated_outbox):
+    config = env(tmp_path)
+    identifier = "a" * 32
+    ref = "rf-cli/1/" + identifier
+    row = dict(isolated_outbox, step_id="rf_job_cli/" + identifier, check_id="process-outcome",
+               expected="exit:0", actual="exit:2", disposition="deviation", evidence_ref=ref, details_ref=ref,
+               issue_key="rf_job_cli/owner_job_id_invalid", version="b" * 64)
+    publish(row, {
+        "id": identifier, "entrypoint": "rf_job_cli", "native_code": "owner_job_id_invalid",
+        "classification": "failure", "exit_code": 2, "run_id": row["run_id"], "attempt_id": row["attempt_id"],
+        "code_version": row["version"], "side_effect_state": "unknown", "cause_chain": [
+            {"type": "JobFacadeError", "message": "fixture-private-argument"},
+        ],
+    })
+    request = triage_request(row)
+    receipts = tmp_path / "receipts"
+    result = triage(tmp_path, config, request, tmp_path, receipts)
+    assert result.returncode == 0, result.stdout
+    decision = json.loads(result.stdout)["result"]
+    assert decision["decision"] == "needs_evidence"
+    assert decision["issue_ref"].endswith(request["action_id"])
+    assert decision["original_facts"] == {
+        "proof": "owner_diagnostic", "evidence_ref": ref, "outcome": "failed", "reason_code": "owner_job_id_invalid",
+        "exit_code": 2, "cost_state": "unknown", "side_effect_state": "unknown",
+    }
+    assert "original_side_effect_record" in decision["next_missing_evidence"]
+    assert "fixture-private-argument" not in result.stdout
+
+    frozen = snapshot(receipts)
+    recovery = invoke(tmp_path, config, "rf_job_feedback", "get-triage", "--reports-dir", receipts, request["action_id"])
+    assert recovery.returncode == 0 and json.loads(recovery.stdout)["receipt"] == {
+        "request": request, "result": decision,
+    }
+    # Prove that recovery and a duplicate do not recollect even if old detail is unavailable.
+    (tmp_path / "state" / OWNER / "feedback.sqlite3").unlink()
+    assert json.loads(triage(tmp_path, config, request, tmp_path, receipts).stdout)["result"] == decision
+    changed = triage_request(row, actual="exit:3")
+    assert changed["action_id"] == request["action_id"]
+    assert triage(tmp_path, config, changed, tmp_path, receipts).returncode == 1
+    assert snapshot(receipts) == frozen
+
+
+def test_triage_preserves_verified_terminal_observation_when_job_is_missing(tmp_path, isolated_outbox):
+    config = env(tmp_path)
+    owner = tmp_path / "missing-owner"
+    job = "rfjob-old-source"
+    attempt = {"attempt_id": "source-1", "stage": "source", "status": "failed",
+               "observations": {"failure_reason": "source_bytes_mismatch"}}
+    publish_attempt(job, attempt)
+    row, = observations(tmp_path / "box")
+    request = triage_request(row)
+    receipts = tmp_path / "receipts"
+    result = triage(tmp_path, config, request, owner, receipts)
+    assert result.returncode == 0, result.stdout
+    decision = json.loads(result.stdout)["result"]
+    assert decision["decision"] == "needs_evidence"
+    assert decision["original_facts"] == {
+        "proof": "owner_observation", "evidence_ref": row["evidence_ref"], "outcome": "failed",
+        "reason_code": "source_bytes_mismatch", "cost_state": "unknown",
+    }
+    assert "original_job_record" in decision["next_missing_evidence"]
+    assert not owner.exists()
+
+    forged = triage_request(row, run_id="not-the-recorded-run", refusal_code="source_bytes_mismatch")
+    result = triage(tmp_path, config, forged, owner, receipts)
+    assert result.returncode == 0, result.stdout
+    other = json.loads(result.stdout)["result"]
+    assert other["original_facts"]["proof"] == "unavailable"
+    assert "reason_code" not in other["original_facts"] and "outcome" not in other["original_facts"]
+    assert other["gate_review"]["decision"] == "needs_evidence"
+
+
+def test_triage_and_batch_share_original_failed_stage_and_unknown_cost(tmp_path, isolated_outbox):
+    config = env(tmp_path)
+    facade, owner = _facade(
+        tmp_path, behavior={"source": lambda *_args: AttemptOutcome(exit_code=3, killed=False, elapsed_seconds=0.05)},
+        failure_stderr={"error_code": "source_bytes_mismatch"},
+    )
+    assert facade.submit(_request())["job_view"]["status"] == "failed"
+    rows = observations(tmp_path / "box")
+    [failure] = [row for row in rows if row["check_id"] == "stage-outcome"]
+    [usage] = [row for row in rows if row["check_id"] == "job-usage"]
+    original = snapshot(tmp_path)
+    requests = [lookup_request(failure), lookup_request(usage)]
+    batch = invoke(tmp_path, config, "rf_job_feedback", "reconcile-batch", "--owner-root", owner,
+                   data=json.dumps(requests))
+    assert batch.returncode == 0, batch.stdout
+    for request, result in zip(requests, json.loads(batch.stdout), strict=True):
+        assert result == {"action_id": request["action_id"], "request_digest": request["request_digest"],
+                          "state": "done", "result": {
+                              "status": "cost_unknown", "job_status": "failed", "cost_state": "unknown",
+                              "evidence_ref": failure["evidence_ref"],
+                          }}
+    assert snapshot(tmp_path) == original
+    receipts = tmp_path / "receipts"
+    result = triage(tmp_path, config, triage_request(failure), owner, receipts)
+    assert result.returncode == 0, result.stdout
+    decision = json.loads(result.stdout)["result"]
+    assert decision["decision"] == "needs_evidence"
+    assert decision["original_facts"] == {"proof": "owner_job", "evidence_ref": failure["evidence_ref"],
+                                           "outcome": "failed", "reason_code": "source_bytes_mismatch",
+                                           "cost_state": "unknown"}
+    assert {key: value for key, value in snapshot(tmp_path).items() if not key.startswith("receipts/")} == original
 
 
 @pytest.mark.parametrize("completed_job", ("direct", "wrapper"), indirect=True)
