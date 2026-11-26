@@ -1,9 +1,11 @@
-"""Atomic replacements of RF-owned durable artifacts."""
+"""File acquisition and atomic replacement for RF-owned durable artifacts."""
 
+import errno
 import os
 from pathlib import Path
+import stat
 import time
-from typing import Callable
+from typing import BinaryIO, Callable
 from uuid import uuid4
 
 
@@ -17,6 +19,58 @@ def native_path(path: Path) -> Path:
     if absolute.startswith("\\\\"):
         return Path("\\\\?\\UNC\\" + absolute[2:])
     return Path("\\\\?\\" + absolute)
+
+
+def _ordinary_file(info: os.stat_result) -> bool:
+    return stat.S_ISREG(info.st_mode) and not (
+        getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT
+    )
+
+
+def _regular_leaf(path: Path) -> os.stat_result:
+    info = path.lstat()
+    if not _ordinary_file(info):
+        raise OSError(errno.EINVAL, "owner path must have an ordinary file leaf")
+    return info
+
+
+def open_regular_file(path: Path, *, append: bool = False) -> BinaryIO:
+    """Open the configured leaf without reading or writing an unverified file."""
+    path = native_path(path)
+    flags = (os.O_RDWR | os.O_APPEND) if append else os.O_RDONLY
+    flags |= getattr(os, "O_BINARY", 0)
+    if os.name == "posix":
+        flags |= os.O_NOFOLLOW | os.O_NONBLOCK
+    before: os.stat_result | None
+    fd = None
+    try:
+        before = _regular_leaf(path)
+    except FileNotFoundError:
+        if not append:
+            raise
+        before = None
+        try:
+            fd = os.open(path, flags | os.O_CREAT | os.O_EXCL, 0o666)
+        except FileExistsError:
+            # A peer may have created the outbox before this exclusive open.
+            # Reacquire that ordinary file once with the existing-file flags.
+            before = _regular_leaf(path)
+
+    # Parents may intentionally be configured aliases. Compare the leaf
+    # before and after opening and never use the descriptor for I/O first.
+    if fd is None:
+        fd = os.open(path, flags)
+    try:
+        opened = os.fstat(fd)
+        after = path.lstat()
+        if (not _ordinary_file(opened) or not _ordinary_file(after)
+                or not os.path.samestat(opened, after)
+                or (before is not None and not os.path.samestat(before, opened))):
+            raise OSError(errno.EAGAIN, "owner file identity changed while opening")
+        return os.fdopen(fd, "a+b" if append else "rb")
+    except BaseException:
+        os.close(fd)
+        raise
 
 
 def replace_file_bytes(path: Path, data: bytes, *, before_replace: Callable[[], None] | None = None) -> None:

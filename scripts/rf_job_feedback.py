@@ -13,7 +13,7 @@ import sys
 from owner_atomic_io import native_path, replace_file_bytes
 from owner_file_lock import OwnerFileLock
 from rf_assurance_history import get_run
-from rf_feedback_outbox import flush, get_failure, publish
+from rf_feedback_outbox import flush, get_failure, publish, was_published
 from rf_local_diagnostics import record_local_error
 
 
@@ -31,26 +31,46 @@ def _feedback_identity(job_id: str, attempt: dict) -> tuple[str, str]:
     )
 
 
-def publish_attempt(job_id: str, attempt: dict, *, started: bool = False, cost_state: str | None = None) -> None:
-    attempt_id = attempt["attempt_id"]
-    run_id, feedback_attempt_id = _feedback_identity(job_id, attempt)
-    row = {
+def _stage_observation(job_id: str, attempt_id: str, run_id: str, wrapper_attempt: str) -> dict:
+    return {
         "schema_version": "feedback-observation/1",
         "owner": OWNER,
         "run_id": run_id,
-        "attempt_id": feedback_attempt_id,
+        "attempt_id": wrapper_attempt,
         "step_id": f"{job_id}/{attempt_id}",
         "evidence_ref": f"{JOB_SCHEMA}/{job_id}/{attempt_id}",
         "version": JOB_SCHEMA,
         "disposition": "expected",
     }
+
+
+def _started(row: dict) -> dict:
+    return dict(row, check_id="action-started", expected="started", actual="started",
+                terminal_check_id="stage-outcome")
+
+
+def _matches_attempt(job_id: str, attempt: dict, observation: dict) -> bool:
+    run_id, wrapper_attempt = observation.get("run_id"), observation.get("attempt_id")
+    if (run_id, wrapper_attempt) == _feedback_identity(job_id, attempt):
+        return True
+    if attempt.get("feedback_run_id") is not None or attempt.get("feedback_attempt_id") is not None:
+        return False
+    if not isinstance(run_id, str) or not run_id or not isinstance(wrapper_attempt, str) or not wrapper_attempt:
+        return False
+    # A pre-metadata wrapper can be attributed only if its exact native stage
+    # start is still in RF's outbox. The business outcome stays owner-verified.
+    return was_published(_started(_stage_observation(job_id, attempt["attempt_id"], run_id, wrapper_attempt)))
+
+
+def publish_attempt(job_id: str, attempt: dict, *, started: bool = False, cost_state: str | None = None) -> None:
+    attempt_id = attempt["attempt_id"]
+    row = _stage_observation(job_id, attempt_id, *_feedback_identity(job_id, attempt))
     if cost_state is not None:
         row.update(check_id="job-usage", expected="accounted", actual=cost_state)
         if cost_state == "unknown":
             row["disposition"] = "unknown"
     elif started:
-        row.update(check_id="action-started", expected="started", actual="started",
-                   terminal_check_id="stage-outcome")
+        row = _started(row)
     else:
         row.update(check_id="stage-outcome", expected="terminal", actual=attempt["status"])
         if attempt["status"] in ("failed", "interrupted"):
@@ -184,7 +204,7 @@ def lookup(
         return {"state": "unknown", "code": reason} if reason else {"state": "unknown"}
     native = next((entry for entry in view["stages"] if entry["stage"] == stage), None)
     attempt = next((entry for entry in native["attempts"] if entry["attempt_id"] == attempt_id), None) if native else None
-    if attempt is None or (row.get("run_id"), row.get("attempt_id")) != _feedback_identity(job_id, attempt):
+    if attempt is None or not _matches_attempt(job_id, attempt, row):
         return {"state": "unknown", "code": "native_attempt_mismatch"}
     # An interrupted old stage remains interrupted when a newer stage has
     # succeeded. A read-only check may discover the interruption before repair.

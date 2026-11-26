@@ -10,7 +10,7 @@ from uuid import NAMESPACE_URL, uuid5
 
 from urllib.parse import quote
 
-from owner_atomic_io import native_path, replace_file_bytes
+from owner_atomic_io import native_path, open_regular_file, replace_file_bytes
 from rf_local_diagnostics import record_local_error, state_dir
 
 
@@ -35,6 +35,30 @@ def _destination():
     return dest, bool(single)
 
 
+def _packet(row):
+    dest, single = _destination()
+    event = {"row": row, "target": str(dest), "single": single}
+    encoded = _json(event)
+    return uuid5(NAMESPACE_URL, encoded).hex, event, encoded
+
+
+def was_published(row: dict) -> bool:
+    """Verify one exact original observation in the configured owner outbox."""
+    key, event, _ = _packet(row)
+    dest = Path(event["target"])
+    data = (_json(row) + "\n").encode("ascii")
+    try:
+        if event["single"]:
+            with open_regular_file(dest) as stream:
+                return any(line == data for line in stream)
+        # Directory delivery acknowledges by consuming the ready marker.
+        # The deterministic packet itself remains the original owner bytes.
+        with open_regular_file(dest / f"feedback-{key}.jsonl") as stream:
+            return stream.read(len(data) + 1) == data
+    except OSError:
+        return False
+
+
 def _deliver(key, event):
     dest = native_path(Path(event["target"]))
     row = event["row"]
@@ -42,7 +66,7 @@ def _deliver(key, event):
     if event["single"]:
         dest.parent.mkdir(parents=True, exist_ok=True)
         # A previous process may have written and fsynced this row before it acknowledged delivery.
-        with dest.open("a+b") as stream:
+        with open_regular_file(dest, append=True) as stream:
             stream.seek(0)
             for line in stream:
                 try:
@@ -75,10 +99,8 @@ def _send(key):
 
 
 def publish(row, detail=None):
-    dest, single = _destination()
-    event = {"row": row, "target": str(dest), "single": single}
-    encoded = _json(event)
-    key = uuid5(NAMESPACE_URL, encoded).hex
+    key, event, encoded = _packet(row)
+    dest, single = Path(event["target"]), event["single"]
     try:
         with _connection() as db:
             if detail is not None:
