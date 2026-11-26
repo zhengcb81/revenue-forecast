@@ -5,7 +5,9 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import os
 from pathlib import Path
+import subprocess
 import sys
 import threading
 
@@ -399,8 +401,32 @@ def _adapters(metadata: dict, *, market: str = "US") -> tuple:
     return export, identity, _proof
 
 
-def test_public_import_registers_completed_job_and_replays_without_duplication(tmp_path: Path) -> None:
+@pytest.mark.parametrize("layout", ["legacy", "attempt"])
+def test_public_import_registers_completed_job_and_replays_without_duplication(tmp_path: Path, layout: str) -> None:
     job_root, metadata = _job_fixture(tmp_path)
+    if layout == "attempt":
+        directory = metadata["job_dir"]
+        state_file = directory / "job.json"
+        state = json.loads(state_file.read_bytes())
+        for stage, description in state["stages"].items():
+            [attempt] = description["attempts"]
+            ordinal = 2 if stage == "compute" else 1
+            if ordinal == 2:
+                description["attempts"].insert(0, {"attempt_no": 1, "attempt_id": "compute-1", "status": "interrupted"})
+            attempt.update(artifact_layout="attempt/1", attempt_no=ordinal, attempt_id=f"{stage}-{ordinal}")
+            stage_directory = directory / "stages" / stage
+            current = stage_directory / f"a{ordinal}"
+            current.mkdir()
+            for file in stage_directory.iterdir():
+                if file.is_file():
+                    file.replace(current / file.name)
+                    file.write_bytes(b"late legacy write")
+        registry = directory / "registry/publications.jsonl"
+        registry.replace(directory / "stages/compute/a2/publications.jsonl")
+        registry.write_bytes(b"late legacy write")
+        raw = _json_bytes(state)
+        state_file.write_bytes(raw)
+        metadata["job_sha256"] = _sha(raw)
     catalog = ReportCatalog(root=tmp_path / "catalog")
     export, identity, proof = _adapters(metadata)
     first = import_rf_job(
@@ -430,6 +456,30 @@ def test_public_import_registers_completed_job_and_replays_without_duplication(t
     run = catalog._index()[0][JOB_ID]
     assert run["company"]["entity_id"] == ENTITY_ID
     assert run["source_bound_identity_evidence"]["binding"]["kind"] == "issuer_receipt_exact_source_url"
+    scripts = Path(__file__).resolve().parents[1] / "scripts"
+    launcher = """
+import runpy, sys
+class NoImportOfPublicationOwner:
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "report_catalog_rf_job_import":
+            raise AssertionError("historical read loaded admission implementation")
+sys.meta_path.insert(0, NoImportOfPublicationOwner())
+root, *args = sys.argv[1:]
+sys.path.insert(0, root)
+script = root + "/report_catalog_cli.py"
+sys.argv = [script, *args]
+runpy.run_path(script, run_name="__main__")
+"""
+    completed = subprocess.run(
+        [sys.executable, "-B", "-c", launcher, str(scripts),
+         "--owner-root", str(catalog.root), "get-attempt", "--run-id", JOB_ID,
+         "--attempt-id", first["attempt_id"]],
+        check=False, capture_output=True, encoding="utf-8", timeout=30,
+        env=dict(os.environ, LOCALAPPDATA=str(tmp_path), XDG_STATE_HOME=str(tmp_path),
+                 RESEARCH_FEEDBACK_OUT=str(tmp_path / "feedback.jsonl")),
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout)["attempt"]["report_ids"] == [report_id]
 
 
 def _import_interim_job(catalog, root, metadata, **kwargs):

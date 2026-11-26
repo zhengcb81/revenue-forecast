@@ -16,8 +16,20 @@ import re
 
 from contracts.document import validate_sources
 from publication_registry import canonical_sha256
-from report_catalog_research_attempt import _Observation
-from report_catalog_research_identity import _code_hash
+from report_catalog_publication_capture import (
+    capture_entrypoint_index as _script_index,
+    completed_capture as _complete,
+    frozen_capture_input as _frozen,
+    publication_capture_id as _capture_id,
+    publication_object as _object,
+    require_publication as _need,
+)
+from report_catalog_research_capture import (
+    BoundObservation,
+    read_recorded_object as _json,
+    sha256_bytes as _sha,
+)
+from report_catalog_research_identity import code_artifact_hash
 from report_catalog_retained_source import EVENT_KIND as EVENT_KIND, retained_response
 
 SCHEMA = "rf-research-source-evidence/1"
@@ -50,8 +62,6 @@ def validator_program(code_root: str) -> str:
 
 def recheck_native_modules(scope: dict, hashes: dict) -> None:
     """Bind the declared native root to the admission process's actual source."""
-    from report_catalog_research_publication import _need
-
     _need(isinstance(hashes, dict) and set(hashes) == set(NATIVE_MODULES),
           "source validator native module set differs")
     deployed = Path(scope["RF_code_root"])
@@ -64,18 +74,14 @@ def recheck_native_modules(scope: dict, hashes: dict) -> None:
         assert isinstance(module_file, str)
         _need(Path(module_file).resolve() == (local / name).resolve(),
               "source validator imported another native module root")
-        _need(_code_hash(deployed, name) == hashes[name] == _code_hash(local, name),
+        _need(code_artifact_hash(deployed, name) == hashes[name] == code_artifact_hash(local, name),
               "source validator native module bytes or root changed")
 
 
 def validate_source_evidence(
-    obs: _Observation, run: Path, closure: dict, source_input: dict, anchor: dict,
+    obs: BoundObservation, run: Path, closure: dict, source_input: dict, anchor: dict,
     started: dict, finished: dict, *, scope: dict, layout: dict, manifest_name: str,
 ) -> dict:
-    from report_catalog_research_publication import (
-        _capture_id, _complete, _frozen, _json, _need, _object, _script_index, _sha,
-    )
-
     _need(isinstance(manifest_name, str)
           and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}\.json", manifest_name),
           "source evidence requires one execution JSON basename")

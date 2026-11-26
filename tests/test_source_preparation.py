@@ -80,7 +80,7 @@ def test_prepare_source_raises_on_client_failure(tmp_path, monkeypatch):
 
     def fake_run(*args, **kwargs):
         return subprocess.CompletedProcess(
-            args[0], returncode=1, stdout="", stderr="boom"
+            args[0], returncode=1, stdout=b"", stderr=b"boom"
         )
 
     monkeypatch.setattr(subprocess, "run", fake_run)
@@ -205,8 +205,8 @@ def _run_v2(monkeypatch, tmp_path, captured):
     def fake_run(command, **kwargs):  # noqa: ARG001
         captured["command"] = list(command)
         return subprocess.CompletedProcess(
-            command, returncode=0, stdout=json.dumps(_src_ref_handle()),
-            stderr="",
+            command, returncode=0, stdout=json.dumps(_src_ref_handle()).encode("utf-8"),
+            stderr=b"",
         )
 
     monkeypatch.setattr(subprocess, "run", fake_run)

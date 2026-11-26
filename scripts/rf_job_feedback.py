@@ -6,29 +6,39 @@ import argparse
 from collections.abc import Sequence
 import hashlib
 import json
-import os
 from pathlib import Path
 import re
 import sys
 
 from owner_atomic_io import native_path, replace_file_bytes
 from owner_file_lock import OwnerFileLock
+from rf_assurance_history import get_run
 from rf_feedback_outbox import flush, get_failure, publish
+from rf_local_diagnostics import record_local_error
 
 
 OWNER = "revenue-forecast"
 JOB_SCHEMA = "rf-job/1"
 REFERENCE = re.compile(r"rf-job/1/(rfjob-[A-Za-z0-9_-]{1,96})/((source|compute|publication)-[1-9][0-9]*)")
+ASSURANCE_REFERENCE = re.compile(r"rf-assurance-run/1/(daily|weekly)/([0-9]{8}T[0-9]{12}Z-[0-9a-f]{32})")
 KEY = re.compile(r"[0-9a-f]{64}")
+
+
+def _feedback_identity(job_id: str, attempt: dict) -> tuple[str, str]:
+    return (
+        attempt.get("feedback_run_id") or job_id,
+        attempt.get("feedback_attempt_id") or attempt["attempt_id"],
+    )
 
 
 def publish_attempt(job_id: str, attempt: dict, *, started: bool = False, cost_state: str | None = None) -> None:
     attempt_id = attempt["attempt_id"]
+    run_id, feedback_attempt_id = _feedback_identity(job_id, attempt)
     row = {
         "schema_version": "feedback-observation/1",
         "owner": OWNER,
-        "run_id": (os.environ.get("RESEARCH_FEEDBACK_RUN_ID") or "").strip() or job_id,
-        "attempt_id": (os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID") or "").strip() or attempt_id,
+        "run_id": run_id,
+        "attempt_id": feedback_attempt_id,
         "step_id": f"{job_id}/{attempt_id}",
         "evidence_ref": f"{JOB_SCHEMA}/{job_id}/{attempt_id}",
         "version": JOB_SCHEMA,
@@ -48,7 +58,11 @@ def publish_attempt(job_id: str, attempt: dict, *, started: bool = False, cost_s
             reason = observed.get("failure_reason") or attempt.get("failure_code") or f"stage_{attempt['status']}"
             row.update(disposition="deviation" if attempt["status"] == "failed" else "unknown",
                        issue_key=f"{attempt['stage']}/{reason}", reason=reason, details_ref=row["evidence_ref"])
-    publish(row)
+    try:
+        publish(row)
+    except (OSError, TypeError, ValueError, RuntimeError) as exc:
+        record_local_error("rf_job_feedback", code="attempt_delivery_unavailable",
+                           job_id=job_id, attempt_id=attempt_id, exception_type=type(exc).__name__)
 
 
 def digest(value) -> str:
@@ -111,10 +125,39 @@ def _read_configured_job(owner_roots: Sequence[Path], job_id: str) -> tuple[dict
     return first, None
 
 
-def lookup(owner_root: Path, request: dict, *, additional_owner_roots: Sequence[Path] = ()) -> dict:
+def lookup(
+    owner_root: Path, request: dict, *, additional_owner_roots: Sequence[Path] = (),
+    assurance_ledgers: dict[str, Path] | None = None,
+) -> dict:
     _, payload = _action(request, "reconcile", "lookup")
     row = payload["observation"]
     ref = row.get("evidence_ref")
+    assurance = ASSURANCE_REFERENCE.fullmatch(ref) if isinstance(ref, str) else None
+    if assurance is not None:
+        period, original_id = assurance.groups()
+        ledger = (assurance_ledgers or {}).get(period)
+        if ledger is None:
+            ledgers = [root / "assurance" / "runs" / f"{period}_manifest.json"
+                       for root in (owner_root, *additional_owner_roots)]
+        else:
+            ledgers = [ledger]
+        records = [record for file in dict.fromkeys(ledgers) if (record := get_run(file, period, original_id))]
+        record = records[0] if records else None
+        if any(other != record for other in records[1:]):
+            return {"state": "unknown", "code": "native_owner_conflict"}
+        if (record is None or row.get("owner") != OWNER
+                or row.get("step_id") != f"assurance/{period}/{original_id}"
+                or row.get("run_id") != record["feedback_run_id"]
+                or row.get("attempt_id") != record["feedback_attempt_id"]):
+            return {"state": "unknown"}
+        if record["state"] == "started":
+            return {"state": "pending"}
+        if record["state"] in ("completed", "failed"):
+            return {"state": "done", "result": {
+                "status": "known", "job_status": "succeeded" if record["state"] == "completed" else "failed",
+                "evidence_ref": ref, "cost_state": "not_applicable", "side_effect_state": "read_only",
+            }}
+        return {"state": "unknown"}
     if isinstance(ref, str) and re.fullmatch(r"rf-cli/1/[0-9a-f]{32}", ref) and row.get("owner") == OWNER:
         event = get_failure(ref.rsplit("/", 1)[1])
         if (event and row.get("run_id") == event["run_id"] and row.get("attempt_id") == event["attempt_id"]
@@ -140,18 +183,25 @@ def lookup(owner_root: Path, request: dict, *, additional_owner_roots: Sequence[
     if view is None:
         return {"state": "unknown", "code": reason} if reason else {"state": "unknown"}
     native = next((entry for entry in view["stages"] if entry["stage"] == stage), None)
-    if not native or not native["attempts"] or native["attempts"][-1]["attempt_id"] != attempt_id:
+    attempt = next((entry for entry in native["attempts"] if entry["attempt_id"] == attempt_id), None) if native else None
+    if attempt is None or (row.get("run_id"), row.get("attempt_id")) != _feedback_identity(job_id, attempt):
         return {"state": "unknown", "code": "native_attempt_mismatch"}
-    if native["status"] == "running":
+    # An interrupted old stage remains interrupted when a newer stage has
+    # succeeded. A read-only check may discover the interruption before repair.
+    outcome = attempt["status"]
+    if outcome == "running" and native["status"] == "interrupted" and native["attempts"][-1] is attempt:
+        outcome = "interrupted"
+    if outcome == "running":
         return {"state": "pending"}
-    if view["status"] not in ("succeeded", "failed", "cancelled", "interrupted"):
+    status = outcome if outcome in ("failed", "interrupted") and row.get("check_id") != "job-usage" else view["status"]
+    if status not in ("succeeded", "failed", "cancelled", "interrupted"):
         return {"state": "pending"}
-    cost = view["cost_state"]
+    cost = "unknown" if outcome == "interrupted" else view["cost_state"]
     if cost not in ("known", "not_applicable", "unknown"):
         return {"state": "unknown"}
     return {"state": "done", "result": {
         "status": "cost_unknown" if cost == "unknown" else "known",
-        "evidence_ref": ref, "job_status": view["status"], "cost_state": cost,
+        "evidence_ref": ref, "job_status": status, "cost_state": cost,
     }}
 
 
@@ -185,10 +235,13 @@ def main() -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("flush-feedback")
     commands.add_parser("get-failure").add_argument("identifier")
-    commands.add_parser("reconcile").add_argument(
+    reconcile = commands.add_parser("reconcile")
+    reconcile.add_argument(
         "--owner-root", type=Path, action="append", required=True,
         help="configured read-only RF owner root; repeat for known additional stores",
     )
+    reconcile.add_argument("--assurance-ledger", nargs=2, action="append", default=[],
+                           metavar=("PERIOD", "PATH"), help="explicit ledger for daily or weekly assurance")
     commands.add_parser("report").add_argument("--reports-dir", type=Path, required=True)
     get = commands.add_parser("get-report")
     get.add_argument("--reports-dir", type=Path, required=True)
@@ -202,7 +255,9 @@ def main() -> int:
             if result is None:
                 raise ValueError("unknown RF feedback occurrence")
         elif args.command == "reconcile":
-            result = lookup(args.owner_root[0], json.load(sys.stdin), additional_owner_roots=args.owner_root[1:])
+            ledgers = {period: Path(path) for period, path in args.assurance_ledger}
+            result = lookup(args.owner_root[0], json.load(sys.stdin), additional_owner_roots=args.owner_root[1:],
+                            assurance_ledgers=ledgers)
         elif args.command == "report":
             result = record_report(args.reports_dir, json.load(sys.stdin))
         else:

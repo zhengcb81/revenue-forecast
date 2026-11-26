@@ -38,7 +38,6 @@ write effects.
 from __future__ import annotations
 
 import json
-import logging
 import os
 import re
 import subprocess
@@ -53,9 +52,10 @@ from typing import Any, Callable, cast
 from filing_upstream_cause import failure_observation, validated_acquisition_observation
 from owner_atomic_io import native_path, replace_file_bytes
 from owner_file_lock import OwnerFileLock
+from rf_job_artifacts import ATTEMPT_LAYOUT, STAGE_RESULTS, latest_attempt as _last_attempt
+from rf_job_artifacts import selected_artifacts, stage_directory
 from rf_job_feedback import publish_attempt
-
-_logger = logging.getLogger(__name__)
+from rf_local_diagnostics import child_traceback_facts, record_local_error
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -542,21 +542,17 @@ class JobStore:
 
     # ---- per-job workspace -------------------------------------------------
 
-    def stage_dir(self, owner_job_id: str, stage: str) -> Path:
-        return self._owned_path(self.job_dir(owner_job_id) / "stages" / stage)
+    def stage_dir(self, owner_job_id: str, stage: str, attempt: dict[str, Any]) -> Path:
+        return self._owned_path(self.job_dir(owner_job_id) / stage_directory(stage, attempt))
 
     def logs_dir(self, owner_job_id: str) -> Path:
         return self._owned_path(self.job_dir(owner_job_id) / "logs")
 
-    def registry_file(self, owner_job_id: str) -> Path:
-        return self._owned_path(self.job_dir(owner_job_id) / "registry" / "publications.jsonl")
+    def registry_file(self, job: dict[str, Any]) -> Path:
+        return self._owned_path(self.job_dir(job["owner_job_id"]) / selected_artifacts(job)["publication_registry"])
 
-    def result_artifact(self, owner_job_id: str, stage: str) -> Path:
-        if stage == "source":
-            return self.stage_dir(owner_job_id, stage) / "result-envelope.json"
-        if stage == "compute":
-            return self.stage_dir(owner_job_id, stage) / "result.json"
-        return self.stage_dir(owner_job_id, stage) / "audit.json"
+    def result_artifact(self, owner_job_id: str, stage: str, attempt: dict[str, Any]) -> Path:
+        return self._owned_path(self.stage_dir(owner_job_id, stage, attempt) / STAGE_RESULTS[stage])
 
     def log_paths(self, owner_job_id: str, stage: str, attempt_no: int) -> tuple[Path, Path]:
         logs_dir = self.logs_dir(owner_job_id)
@@ -570,19 +566,20 @@ class JobStore:
 class AttemptOutcome:
     """What the runner observed about one stage invocation."""
 
-    def __init__(self, *, exit_code: int | None, killed: bool, elapsed_seconds: float):
+    def __init__(self, *, exit_code: int | None, killed: bool, elapsed_seconds: float,
+                 stdout: bytes = b"", stderr: bytes = b"", started: bool = True,
+                 process_error: str | None = None):
         self.exit_code = exit_code
         self.killed = killed
         self.elapsed_seconds = elapsed_seconds
+        self.stdout = stdout
+        self.stderr = stderr
+        self.started = started
+        self.process_error = process_error
 
 
 class SubprocessStageRunner:
-    """Runs the fixed stage command as a subprocess, capturing stdout/stderr.
-
-    On timeout the child is killed (subprocess.run does this after
-    TimeoutExpired) and the attempt is recorded as interrupted with no exit
-    code — the same durable shape a hard process kill leaves behind.
-    """
+    """Capture child bytes for typed attribution before writing diagnostics."""
 
     def __init__(self, store: JobStore, owner_job_id: str):
         self._store = store
@@ -593,34 +590,34 @@ class SubprocessStageRunner:
 
     def run(self, *, stage: str, attempt_no: int, command: list[str], timeout_seconds: float,
             env: dict[str, str] | None = None) -> AttemptOutcome:
-        stdout_path, stderr_path = self.log_paths(stage, attempt_no)
-        stdout_path.parent.mkdir(parents=True, exist_ok=True)
         started = time.monotonic()
         full_env = dict(os.environ)
+        full_env["PYTHONUTF8"] = "1"
         if env:
             full_env.update(env)
-        killed = False
-        exit_code: int | None = None
         try:
-            with open(stdout_path, "wb") as out, open(stderr_path, "wb") as err:
-                try:
-                    proc = subprocess.run(
-                        command, stdout=out, stderr=err, timeout=timeout_seconds,
-                        check=False, env=full_env, cwd=str(PROJECT_ROOT),
-                    )
-                    exit_code = proc.returncode
-                except subprocess.TimeoutExpired:
-                    killed = True
-        except OSError:
-            # The child could not even be started; that is a failed attempt
-            # with its diagnostic on stderr.
-            stderr_path.parent.mkdir(parents=True, exist_ok=True)
-            stderr_path.write_text(json.dumps({"error_code": "stage_spawn_failed",
-                                               "error": "the stage command could not be started"}),
-                                   encoding="utf-8")
-            exit_code = 3
-        elapsed = time.monotonic() - started
-        return AttemptOutcome(exit_code=exit_code, killed=killed, elapsed_seconds=elapsed)
+            proc = subprocess.Popen(
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=full_env, cwd=PROJECT_ROOT,
+                creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+            )
+        except OSError as exc:
+            return AttemptOutcome(exit_code=3, killed=False, elapsed_seconds=time.monotonic() - started,
+                                  started=False, process_error=type(exc).__name__)
+        with proc:
+            try:
+                stdout, stderr = proc.communicate(timeout=timeout_seconds)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                stdout, stderr = proc.communicate()
+                return AttemptOutcome(exit_code=None, killed=True, elapsed_seconds=time.monotonic() - started,
+                                      stdout=stdout, stderr=stderr)
+            except OSError as exc:
+                proc.kill()
+                proc.wait()
+                return AttemptOutcome(exit_code=None, killed=True, elapsed_seconds=time.monotonic() - started,
+                                      process_error=type(exc).__name__)
+        return AttemptOutcome(exit_code=proc.returncode, killed=False, elapsed_seconds=time.monotonic() - started,
+                              stdout=stdout, stderr=stderr)
 
 
 class FakeStageRunner(SubprocessStageRunner):
@@ -650,19 +647,15 @@ class FakeStageRunner(SubprocessStageRunner):
             # Leave the attempt record in its durable running state, exactly
             # like a real process kill, then die without any cleanup.
             raise SimulatedProcessDeath
-        stdout_path, stderr_path = self.log_paths(stage, attempt_no)
-        stdout_path.parent.mkdir(parents=True, exist_ok=True)
         outcome_factory = self._behavior.get(stage)
         outcome = outcome_factory(stage, command) if outcome_factory is not None else None
         if outcome is None:
-            stdout_path.write_text(self._success_stdout(stage), encoding="utf-8")
-            stderr_path.write_text("", encoding="utf-8")
-            self._write_success_artifact(stage)
-            outcome = AttemptOutcome(exit_code=0, killed=False, elapsed_seconds=0.05)
-        else:
-            stderr_path.write_text(
-                json.dumps(self._failure_stderr, ensure_ascii=False, sort_keys=True)
-                if self._failure_stderr else "", encoding="utf-8")
+            if stage == "compute":
+                self._write_compute_artifact(attempt_no)
+            outcome = AttemptOutcome(exit_code=0, killed=False, elapsed_seconds=0.05,
+                                     stdout=self._success_stdout(stage).encode("utf-8"))
+        elif self._failure_stderr:
+            outcome.stderr = json.dumps(self._failure_stderr, ensure_ascii=False, sort_keys=True).encode("utf-8")
         return outcome
 
     def _success_stdout(self, stage: str) -> str:
@@ -675,21 +668,14 @@ class FakeStageRunner(SubprocessStageRunner):
                               ensure_ascii=False, sort_keys=True)
         return "no problems\n" if stage == "publication" else ""
 
-    def _write_success_artifact(self, stage: str) -> None:
-        if stage == "source":
-            _atomic_write_text(self._store.result_artifact(self._owner_job_id, "source"),
-                               self._success_stdout("source"))
-        elif stage == "compute":
-            sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
-            from revenue_core import run_forecast
+    def _write_compute_artifact(self, attempt_no: int) -> None:
+        job = self._store.load_job(self._owner_job_id)
+        attempt = job["stages"]["compute"]["attempts"][attempt_no - 1]
+        artifact = self._store.result_artifact(self._owner_job_id, "compute", attempt)
+        from revenue_core import run_forecast
 
-            job = self._store.load_job(self._owner_job_id)
-            result = run_forecast(job["forecast_input"], mode="draft")
-            _atomic_write_text(self._store.result_artifact(self._owner_job_id, "compute"),
-                               json.dumps(result, ensure_ascii=False, sort_keys=True, allow_nan=False))
-        elif stage == "publication":
-            _atomic_write_text(self._store.result_artifact(self._owner_job_id, "publication"),
-                               "no problems\n")
+        result = run_forecast(job["forecast_input"], mode="draft")
+        _atomic_write_text(artifact, json.dumps(result, ensure_ascii=False, sort_keys=True, allow_nan=False))
 
 
 # ------------------------------------------------------------- job building
@@ -733,15 +719,16 @@ def _fresh_job(*, owner_job_id: str, normalized: dict[str, Any], limits_ref: str
 
 
 def _stage_command(job: dict[str, Any], store: JobStore, deployment: Deployment,
-                   stage: str) -> tuple[list[str], dict[str, str] | None, float]:
+                   stage: str, attempt: dict[str, Any]
+                   ) -> tuple[list[str], dict[str, str] | None, float, tuple[Path, dict] | None]:
     owner_job_id = job["owner_job_id"]
     python = deployment.python
+    work = store.stage_dir(owner_job_id, stage, attempt)
     if stage == "source":
         request = dict(deployment.source_request_template)
         request["company_query"] = job["scope"]["company_query"]
         request["as_of_date"] = job["scope"]["information_as_of"]
-        request_path = store.stage_dir(owner_job_id, "source") / "request.json"
-        _atomic_write_json(request_path, request)
+        request_path = work / "request.json"
         command = [
             python, "-B", str(_SOURCE_SCRIPT),
             "--result-envelope",
@@ -754,27 +741,29 @@ def _stage_command(job: dict[str, Any], store: JobStore, deployment: Deployment,
         ]
         if deployment.source_reader_command is not None:
             command.extend(("--source-reader-command-json", json.dumps(deployment.source_reader_command)))
-        return command, None, deployment.source_timeout
+        return command, None, deployment.source_timeout, (request_path, request)
     if stage == "compute":
-        input_path = store.stage_dir(owner_job_id, "compute") / "input.json"
-        _atomic_write_json(input_path, job["forecast_input"])
-        output_path = store.stage_dir(owner_job_id, "compute") / "result.json"
-        markdown_path = store.stage_dir(owner_job_id, "compute") / "report.md"
+        input_path = work / "input.json"
+        output_path = work / "result.json"
+        markdown_path = work / "report.md"
         command = [
             python, "-B", str(_COMPUTE_SCRIPT),
             str(input_path),
             "--output", str(output_path),
             "--markdown", str(markdown_path),
         ]
-        env = {"REVENUE_PUBLICATION_REGISTRY": str(store.registry_file(owner_job_id))}
-        return command, env, deployment.compute_timeout
-    result_path = store.result_artifact(owner_job_id, "compute")
+        env = {"REVENUE_PUBLICATION_REGISTRY": str(store.registry_file(job))}
+        return command, env, deployment.compute_timeout, (input_path, job["forecast_input"])
+    compute = _last_attempt(job["stages"]["compute"])
+    if compute is None:
+        raise JobFacadeError("stage_result_unavailable", "the job has no selected compute result")
+    result_path = store.result_artifact(owner_job_id, "compute", compute)
     command = [
         python, "-B", str(_AUDIT_SCRIPT),
         "audit", "--result", str(result_path),
     ]
-    env = {"REVENUE_PUBLICATION_REGISTRY": str(store.registry_file(owner_job_id))}
-    return command, env, deployment.publication_timeout
+    env = {"REVENUE_PUBLICATION_REGISTRY": str(store.registry_file(job))}
+    return command, env, deployment.publication_timeout, None
     # (no stage command ever receives the trusted owner root or the store
     #  root: stage commands only touch job-workspace paths the facade wrote)
 
@@ -817,7 +806,7 @@ def _confirms_no_provider_effect(observation: dict[str, Any]) -> bool:
             and Decimal(observation["cost_usd"]) == 0)
 
 
-def _source_failure_observations(stderr_path: Path, *, companion_read_only: bool) -> dict[str, Any] | None:
+def _source_failure_observations(stderr: bytes, *, companion_read_only: bool) -> dict[str, Any] | None:
     """Real resource observations from a failed source attempt's stderr doc.
 
     The filing-fetch ``calls`` counter counts local company-wiki subprocess
@@ -826,8 +815,8 @@ def _source_failure_observations(stderr_path: Path, *, companion_read_only: bool
     ``acquisition_calls`` and never enters the paid-call budget.
     """
     try:
-        payload = json.loads(stderr_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError, ValueError, UnicodeDecodeError):
+        payload = json.loads(stderr.decode("utf-8"))
+    except (ValueError, UnicodeDecodeError):
         return None
     if not isinstance(payload, dict):
         return None
@@ -874,21 +863,16 @@ def _compute_or_audit_observations(stage: str) -> dict[str, Any]:
     }
 
 
-def _freeze_source_artifact(stdout_path: Path, artifact_path: Path) -> bool:
+def _freeze_source_artifact(stdout: bytes, artifact_path: Path) -> dict | None:
     """Capture the source stage's stdout envelope as the durable artifact."""
     try:
-        envelope = json.loads(stdout_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError, ValueError, UnicodeDecodeError):
-        return False
+        envelope = json.loads(stdout.decode("utf-8"))
+    except (ValueError, UnicodeDecodeError):
+        return None
     if not isinstance(envelope, dict) or envelope.get("schema_version") != "source-preparation-result/1":
-        return False
+        return None
     _atomic_write_json(artifact_path, envelope)
-    return True
-
-
-def _freeze_audit_artifact(stdout_path: Path, artifact_path: Path) -> None:
-    text = stdout_path.read_text(encoding="utf-8", errors="replace")
-    _atomic_write_text(artifact_path, text)
+    return envelope
 
 
 def _mark_stage_failed(job: dict[str, Any], store: JobStore, stage: str) -> None:
@@ -907,17 +891,21 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
     if len(attempts) >= max_attempts:
         raise JobFacadeError("stage_attempts_exhausted",
                              f"stage {stage} has exhausted its configured attempt budget")
-    command, env, timeout = _stage_command(job, store, deployment, stage)
     attempt_no = len(attempts) + 1
+    attempt_id = f"{stage}-{attempt_no}"
     record: dict[str, Any] = {
-        "attempt_id": f"{stage}-{attempt_no}",
+        "attempt_id": attempt_id,
         "attempt_no": attempt_no,
+        "artifact_layout": ATTEMPT_LAYOUT,
         "stage": stage,
         "status": "running",
         "started_at": _utc_now(),
         "pid": os.getpid(),
-        "command_shape": command,
         "exit_code": None,
+        "execution_state": "launch_pending",
+        "input_sha256": job["request_sha256"],
+        "feedback_run_id": (os.environ.get("RESEARCH_FEEDBACK_RUN_ID") or "").strip() or owner_job_id,
+        "feedback_attempt_id": (os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID") or "").strip() or attempt_id,
     }
     companion_read_only = _companion_read_only(deployment.source_request_template)
     if stage == "source":
@@ -927,55 +915,86 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
     attempts.append(record)
     job["stages"][stage]["status"] = "running"
     job["status"] = STATUS_RUNNING
+    command, env, timeout, stage_input = _stage_command(job, store, deployment, stage, record)
+    record["command_shape"] = [
+        "<configured-source-reader>" if index and command[index - 1] == "--source-reader-command-json" else value
+        for index, value in enumerate(command)
+    ]
+    try:
+        record["code_version"] = _sha256_file(Path(command[2]))
+    except OSError:
+        pass
     store.save_job(job)
     publish_attempt(owner_job_id, record, started=True)
+    if stage_input is not None:
+        try:
+            _atomic_write_json(*stage_input)
+        except OSError as exc:
+            record.update(status="failed", ended_at=_utc_now(), failure_code="stage_setup_failed",
+                          error_detail=type(exc).__name__, execution_state="not_started",
+                          observations={"download_events": 0, "model_calls": 0, "source_no_external_effect": True})
+            _mark_stage_failed(job, store, stage)
+            raise JobFacadeError("stage_failed", f"stage {stage} could not prepare its workspace") from exc
     # Children can bind their own process exit only to this stage, never to the outer job CLI.
     env = dict(env or {}, RF_JOB_ACTIVE_RECORD=str(store.job_file(owner_job_id)),
                RESEARCH_FEEDBACK_PROCESS_STEP_ID=f"{owner_job_id}/{record['attempt_id']}",
-               RESEARCH_FEEDBACK_RUN_ID=(os.environ.get("RESEARCH_FEEDBACK_RUN_ID") or "").strip() or owner_job_id,
-               RESEARCH_FEEDBACK_ATTEMPT_ID=(os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID") or "").strip() or record["attempt_id"])
+               RESEARCH_FEEDBACK_RUN_ID=record["feedback_run_id"],
+               RESEARCH_FEEDBACK_ATTEMPT_ID=record["feedback_attempt_id"])
     outcome = runner.run(stage=stage, attempt_no=attempt_no, command=command,
                          timeout_seconds=timeout, env=env)
     record["ended_at"] = _utc_now()
     record["elapsed_seconds"] = round(outcome.elapsed_seconds, 6)
     record["exit_code"] = outcome.exit_code
-    stdout_path, stderr_path = runner.log_paths(stage, attempt_no)
+    record["diagnostics"] = {
+        "stdout_bytes": len(outcome.stdout), "stderr_bytes": len(outcome.stderr),
+        "child_errors": child_traceback_facts(outcome.stderr.decode("utf-8", errors="replace"),
+                                              source=Path(command[2]).name),
+    }
+    if not outcome.started:
+        record.update(execution_state="not_started", failure_code="stage_spawn_failed",
+                      error_detail=outcome.process_error)
+    else:
+        record["execution_state"] = "unknown" if outcome.killed else "exited"
     if outcome.killed:
         record["status"] = "interrupted"
+        record["failure_code"] = "stage_transport_interrupted" if outcome.process_error else "stage_timeout"
+        if outcome.process_error:
+            record["error_detail"] = outcome.process_error
         job["stages"][stage]["status"] = "interrupted"
         job["status"] = STATUS_INTERRUPTED
         store.save_job(job)
         raise JobFacadeError("stage_interrupted", f"stage {stage} was interrupted by its timeout")
     if outcome.exit_code != 0:
         record["status"] = "failed"
-        record["observations"] = (
-            _source_failure_observations(stderr_path, companion_read_only=companion_read_only)
-            if stage == "source" else None
-        )
+        record["observations"] = (_source_failure_observations(
+            outcome.stderr, companion_read_only=companion_read_only,
+        ) if stage == "source" else None)
+        if not outcome.started:
+            record["observations"] = {"download_events": 0, "model_calls": 0, "source_no_external_effect": True}
         _mark_stage_failed(job, store, stage)
         raise JobFacadeError("stage_failed",
                              f"stage {stage} failed with exit code {outcome.exit_code}")
     # completed: freeze and verify the durable result artifact
-    artifact = store.result_artifact(owner_job_id, stage)
+    artifact = store.result_artifact(owner_job_id, stage, record)
     if stage == "source":
-        if not _freeze_source_artifact(stdout_path, artifact):
+        envelope = _freeze_source_artifact(outcome.stdout, artifact)
+        if envelope is None:
+            record["failure_code"] = "stage_result_unreadable"
             record["status"] = "failed"
             _mark_stage_failed(job, store, stage)
             raise JobFacadeError("stage_failed",
                                  "the source stage exited zero without a readable source-preparation result")
     elif stage == "publication":
-        _freeze_audit_artifact(stdout_path, artifact)
+        _atomic_write_json(artifact, {"schema_version": "rf-publication-audit/1", "status": "verified", "exit_code": 0})
     else:  # compute: the engine wrote result.json itself; it must parse
         try:
             _read_json(artifact)
         except (OSError, json.JSONDecodeError, ValueError, UnicodeDecodeError) as exc:
-            _logger.error(
-                "compute stage result unreadable for job=%s (%s)",
-                owner_job_id,
-                type(exc).__name__,
-                exc_info=True,
-            )
+            record_local_error("rf_job_compute", code="stage_result_unreadable",
+                               job_id=owner_job_id, attempt_id=record["attempt_id"],
+                               exception_type=type(exc).__name__)
             record["status"] = "failed"
+            record["failure_code"] = "stage_result_unreadable"
             record["error_detail"] = type(exc).__name__
             _mark_stage_failed(job, store, stage)
             raise JobFacadeError(
@@ -985,10 +1004,6 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
     record["result_artifact"] = artifact.name
     record["result_sha256"] = _sha256_file(artifact)
     if stage == "source":
-        try:
-            envelope = _read_json(artifact)
-        except (OSError, json.JSONDecodeError, ValueError):
-            envelope = {}
         observations = _source_observations(envelope)
         if observations is None:
             record["status"] = "failed"
@@ -1017,6 +1032,20 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
         budget["paid_model_calls"] += observations["model_calls"]
     _enforce_budget(job, store)
     store.save_job(job)
+
+
+def _project_stage_diagnostics(runner: SubprocessStageRunner, attempt: dict[str, Any], job_id: str) -> None:
+    diagnostics = attempt.get("diagnostics", {})
+    try:
+        stdout_path, stderr_path = runner.log_paths(attempt["stage"], attempt["attempt_no"])
+        _atomic_write_json(stdout_path, {"bytes": diagnostics.get("stdout_bytes", 0)})
+        _atomic_write_json(stderr_path, {
+            "bytes": diagnostics.get("stderr_bytes", 0), "child_errors": diagnostics.get("child_errors", []),
+            "process_error": attempt.get("error_detail"), "failure_code": attempt.get("failure_code"),
+        })
+    except (OSError, ValueError, RuntimeError) as exc:
+        record_local_error("rf_job_diagnostics", code="stage_log_unavailable",
+                           job_id=job_id, attempt_id=attempt["attempt_id"], exception_type=type(exc).__name__)
 
 
 def _enforce_budget(job: dict[str, Any], store: JobStore) -> None:
@@ -1067,6 +1096,7 @@ def _orchestrate(job: dict[str, Any], *, store: JobStore, deployment: Deployment
                 except (OSError, JobFacadeError):
                     persisted = None
                 if persisted and persisted["stages"][stage]["attempts"][-1] == attempts[-1]:
+                    _project_stage_diagnostics(runner, attempts[-1], job["owner_job_id"])
                     publish_attempt(job["owner_job_id"], attempts[-1], started=False)
     _finalize_succeeded(job, store)
 
@@ -1075,9 +1105,9 @@ def _finalize_succeeded(job: dict[str, Any], store: JobStore) -> None:
     job["status"] = STATUS_SUCCEEDED
     artifacts = {}
     for stage in STAGES:
-        artifact = store.result_artifact(job["owner_job_id"], stage)
-        if artifact.exists():
-            artifacts[stage] = {"artifact": artifact.name, "sha256": _sha256_file(artifact)}
+        attempt = _last_attempt(job["stages"][stage])
+        if attempt is not None:
+            artifacts[stage] = {"artifact": attempt["result_artifact"], "sha256": attempt["result_sha256"]}
     job["result"] = {"stage_artifacts": artifacts}
     store.save_job(job)
 
@@ -1085,26 +1115,17 @@ def _finalize_succeeded(job: dict[str, Any], store: JobStore) -> None:
 # ------------------------------------------------------- state derivation
 
 
-def _last_attempt(stage_state: dict[str, Any]) -> dict[str, Any] | None:
-    attempts = stage_state.get("attempts")
-    if isinstance(attempts, list) and attempts and isinstance(attempts[-1], dict):
-        return attempts[-1]
-    return None
-
-
 def _stage_artifact_verified(job: dict[str, Any], store: JobStore, stage: str) -> bool:
     attempt = _last_attempt(job["stages"][stage])
     if attempt is None:
-        return False
-    artifact = store.result_artifact(job["owner_job_id"], stage)
-    if not artifact.exists():
         return False
     recorded = attempt.get("result_sha256")
     if not isinstance(recorded, str):
         return False
     try:
+        artifact = store.result_artifact(job["owner_job_id"], stage, attempt)
         return _sha256_file(artifact) == recorded
-    except OSError:
+    except (OSError, ValueError, JobFacadeError):
         return False
 
 
@@ -1176,6 +1197,14 @@ def derive_stage_views(job: dict[str, Any], store: JobStore, *, lock_alive: bool
                     "ended_at": attempt.get("ended_at"),
                     "elapsed_seconds": attempt.get("elapsed_seconds"),
                     "observations": attempt.get("observations"),
+                    "failure_code": attempt.get("failure_code"),
+                    "error_detail": attempt.get("error_detail"),
+                    "execution_state": attempt.get("execution_state"),
+                    "code_version": attempt.get("code_version"),
+                    "feedback_run_id": attempt.get("feedback_run_id"),
+                    "feedback_attempt_id": attempt.get("feedback_attempt_id"),
+                    "input_sha256": attempt.get("input_sha256"),
+                    "diagnostics": attempt.get("diagnostics"),
                 }
                 for attempt in (attempts if isinstance(attempts, list) else [])
                 if isinstance(attempt, dict)
@@ -1410,11 +1439,19 @@ class JobFacade:
                 last["status"] = "interrupted"
                 last["ended_at"] = last.get("ended_at") or _utc_now()
                 last["interrupted_by"] = "reconcile"
+                last["execution_state"] = "unknown"
                 changed = True
             derived = _derive_stage_status(job, self.store, stage, lock_alive=False)
             changed |= state.get("status") != derived
             state["status"] = derived
         return changed
+
+    @staticmethod
+    def _report_recovered_attempts(job: dict[str, Any]) -> None:
+        for stage in STAGES:
+            for attempt in job["stages"][stage]["attempts"]:
+                if attempt.get("interrupted_by") == "reconcile" and attempt.get("feedback_run_id"):
+                    publish_attempt(job["owner_job_id"], attempt)
 
     def _reconcile(self, owner_job_id: str) -> dict[str, Any]:
         if not self.store.job_file(owner_job_id).is_file():
@@ -1430,6 +1467,8 @@ class JobFacade:
             status = derive_live_status(job, self.store, lock_alive=False)
             if self._repair_stages(job, status):
                 self.store.save_job(job)
+            if status != STATUS_UNKNOWN:
+                self._report_recovered_attempts(job)
             return {"owner_job_id": owner_job_id,
                     "job_view": job_view(job, self.store, lock_alive=False)}
         finally:
@@ -1455,6 +1494,7 @@ class JobFacade:
             job["status"] = STATUS_RUNNING
             job.pop("stop", None)
             self.store.save_job(job)
+            self._report_recovered_attempts(job)
             runner = self._runner_factory(self.store, owner_job_id)
             try:
                 _orchestrate(job, store=self.store, deployment=deployment, runner=runner)

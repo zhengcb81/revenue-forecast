@@ -22,6 +22,8 @@ from typing import Any, Callable
 
 from owner_file_lock import OwnerFileLock
 from publication_registry import RegistryError, canonical_sha256, validate_registry_text
+from rf_job_artifacts import RETAINED_ARTIFACTS as SOURCE_FILES, selected_artifacts
+from report_catalog_rf_job_evidence import read_artifact_object as _read_json_bytes
 from report_catalog import (
     CatalogError,
     ReportCatalog,
@@ -39,15 +41,6 @@ EVIDENCE_SPAN_SCHEMA = "1.0.0"
 SOURCE_EXPORT_ID_PREFIX = "urn:company-wiki:source-export:sha256:"
 MAX_DEPLOYMENT_CONFIG_BYTES = 65536
 MAX_SOURCE_EXPORT_BYTES = 8 * 1024 * 1024
-SOURCE_FILES = {
-    "job": "job.json",
-    "source_result": "stages/source/result-envelope.json",
-    "compute_input": "stages/compute/input.json",
-    "compute_result": "stages/compute/result.json",
-    "report_markdown": "stages/compute/report.md",
-    "publication_audit": "stages/publication/audit.json",
-    "publication_registry": "registry/publications.jsonl",
-}
 _OPAQUE_JOB_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,191}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _ENTITY_ID = re.compile(
@@ -71,25 +64,6 @@ _SOURCE_EXPORT_MANIFEST_TEXT_FIELDS = _SOURCE_EXPORT_MANIFEST_FIELDS - {
 def _need(condition: bool, code: str, message: str) -> None:
     if not condition:
         raise CatalogError(code, message)
-
-
-def _read_json_bytes(raw: bytes, code: str = "rf_job_artifact_invalid") -> dict[str, Any]:
-    def pairs(items: list[tuple[str, Any]]) -> dict[str, Any]:
-        result: dict[str, Any] = {}
-        for key, value in items:
-            _need(key not in result, code, "JSON contains duplicate keys")
-            result[key] = value
-        return result
-
-    def constant(_: str) -> None:
-        raise CatalogError(code, "JSON contains a non-finite number")
-
-    try:
-        value = json.loads(raw.decode("utf-8"), object_pairs_hook=pairs, parse_constant=constant)
-    except (UnicodeError, ValueError, RecursionError) as exc:
-        raise CatalogError(code, "JSON artifact is invalid") from exc
-    _need(isinstance(value, dict), code, "JSON artifact must contain an object")
-    return value
 
 
 def _text(value: Any, code: str = "rf_job_artifact_invalid") -> str:
@@ -367,7 +341,7 @@ def _identity_binding_scope(proof: Any) -> tuple[Any, ...] | None:
     ))
 
 
-def _job_files(job_root: Path, job_id: str) -> tuple[Path, dict[str, Path]]:
+def _job_files(job_root: Path, job_id: str, expected_job_sha256: str) -> dict[str, bytes]:
     _need(isinstance(job_id, str) and _OPAQUE_JOB_ID.fullmatch(job_id) is not None,
           "job_id_invalid", "job ID is invalid")
     try:
@@ -377,19 +351,28 @@ def _job_files(job_root: Path, job_id: str) -> tuple[Path, dict[str, Path]]:
         raise CatalogError("rf_job_unavailable", "selected rf-job is unavailable") from exc
     _need(root.is_dir() and job_dir.is_dir() and job_dir.is_relative_to(root),
           "rf_job_unavailable", "selected rf-job is outside the source job root")
-    paths: dict[str, Path] = {}
-    for key, relative in SOURCE_FILES.items():
-        candidate = (job_dir / Path(relative)).resolve(strict=True)
-        _need(candidate.is_relative_to(job_dir) and candidate.is_file(),
-              "rf_job_unavailable", "required rf-job artifact is unavailable")
-        paths[key] = candidate
-    return job_dir, paths
+    def read(relative: Path) -> bytes:
+        try:
+            candidate = (job_dir / relative).resolve(strict=True)
+            _need(candidate.is_relative_to(job_dir) and candidate.is_file(),
+                  "rf_job_unavailable", "required rf-job artifact is unavailable")
+            return candidate.read_bytes()
+        except (OSError, RuntimeError, ValueError) as exc:
+            raise CatalogError("rf_job_unavailable", "required rf-job artifact is unavailable") from exc
+
+    job_bytes = read(Path("job.json"))
+    _need(_sha(job_bytes) == expected_job_sha256,
+          "rf_job_artifact_mismatch", "rf-job differs from its independently recorded SHA-256")
+    try:
+        paths = selected_artifacts(_read_json_bytes(job_bytes))
+    except (KeyError, TypeError, ValueError) as exc:
+        raise CatalogError("rf_job_artifact_invalid", "rf-job artifact layout is invalid") from exc
+    return dict(job=job_bytes, **{key: read(path) for key, path in paths.items() if key != "job"})
 
 
 def _read_job(
-    paths: dict[str, Path], job_id: str, *, expected_report_sha256: str,
-) -> tuple[dict[str, Any], dict[str, bytes], dict[str, dict]]:
-    raw = {key: path.read_bytes() for key, path in paths.items()}
+    raw: dict[str, bytes], job_id: str, *, expected_report_sha256: str,
+) -> tuple[dict[str, Any], dict[str, dict]]:
     job = _read_json_bytes(raw["job"])
     _need(job.get("schema_version") == "rf-job-state/1"
           and job.get("protocol") == "rf-job/1"
@@ -417,12 +400,8 @@ def _read_job(
     stages = job.get("stages")
     _need(isinstance(stage_artifacts, dict) and isinstance(stages, dict),
           "rf_job_artifact_mismatch", "job terminal stage record is incomplete")
-    stage_map = {
-        "source": ("source_result", "stages/source/result-envelope.json"),
-        "compute": ("compute_result", "stages/compute/result.json"),
-        "publication": ("publication_audit", "stages/publication/audit.json"),
-    }
-    for stage, (artifact_key, _) in stage_map.items():
+    stage_map = {"source": "source_result", "compute": "compute_result", "publication": "publication_audit"}
+    for stage, artifact_key in stage_map.items():
         record = stage_artifacts.get(stage)
         stage_state = stages.get(stage)
         _need(isinstance(record, dict) and isinstance(stage_state, dict)
@@ -460,7 +439,7 @@ def _read_job(
     except UnicodeError as exc:
         raise CatalogError("rf_job_artifact_invalid", "retained Markdown is not UTF-8") from exc
     publication = _forecast_publication(raw["publication_registry"], result)
-    return job, raw, {
+    return job, {
         "input": input_document,
         "result": result,
         "source_result": source_result,
@@ -517,61 +496,6 @@ def _validate_source_period(
         raise CatalogError("source_period_mismatch", "source or forecast information date is invalid") from exc
     _need(published <= information_cutoff,
           "source_period_mismatch", "source was published after the forecast information date")
-
-
-def _validate_job_attempt(catalog: ReportCatalog, attempt: dict[str, Any]) -> None:
-    evidence = attempt.get("source_evidence")
-    _need(isinstance(evidence, dict) and evidence.get("kind") == "rf_job_record",
-          "attempt_unverified", "attempt lacks rf-job evidence")
-    _need(set(evidence) == {"kind", "job_id", "artifacts", "report_sha256"}
-          and isinstance(evidence.get("artifacts"), dict)
-          and set(evidence["artifacts"]) == set(SOURCE_FILES),
-          "attempt_unverified", "rf-job evidence artifact set is incomplete")
-    _need(evidence.get("job_id") == attempt.get("run_id"),
-          "attempt_unverified", "rf-job evidence ID differs from the registered run")
-    raw: dict[str, bytes] = {}
-    for key, ref in evidence["artifacts"].items():
-        _need(isinstance(ref, dict), "attempt_unverified", "rf-job artifact reference is invalid")
-        raw[key] = catalog._read_artifact(ref)
-    job = _read_json_bytes(raw["job"])
-    _need(job.get("owner_job_id") == evidence["job_id"]
-          and job.get("status") == "succeeded" and job.get("status_known") is True,
-          "attempt_unverified", "retained rf-job no longer proves success")
-    input_document = _read_json_bytes(raw["compute_input"])
-    result = _read_json_bytes(raw["compute_result"])
-    _need(canonical_sha256(input_document) == result.get("input_sha256")
-          and result.get("result_sha256") == canonical_sha256(
-              {key: value for key, value in result.items() if key != "result_sha256"}
-          ), "attempt_unverified", "retained rf-job input/result hashes do not verify")
-    stage_artifacts = job.get("result", {}).get("stage_artifacts", {})
-    for stage, raw_key in (("source", "source_result"), ("compute", "compute_result"),
-                           ("publication", "publication_audit")):
-        record = stage_artifacts.get(stage, {})
-        stage_state = job.get("stages", {}).get(stage, {})
-        _need(record.get("sha256") == _sha(raw[raw_key])
-              and stage_state.get("status") == "completed"
-              and any(isinstance(item, dict) and item.get("exit_code") == 0
-                      and item.get("result_sha256") == _sha(raw[raw_key])
-                      for item in stage_state.get("attempts", [])),
-              "attempt_unverified", "retained rf-job stage evidence is inconsistent")
-    registry = validate_registry_text(raw["publication_registry"].decode("utf-8"))
-    _need(any(item.get("artifact_type") == "forecast"
-              and item.get("input_sha256") == result.get("input_sha256")
-              and item.get("result_sha256") == result.get("result_sha256")
-              and item.get("validation_status") == "validated" for item in registry),
-          "attempt_unverified", "retained publication record does not bind this forecast")
-    _need(isinstance(evidence.get("report_sha256"), str)
-          and _HEX64.fullmatch(evidence["report_sha256"]) is not None
-          and _sha(raw["report_markdown"]) == evidence["report_sha256"],
-          "attempt_unverified", "retained report differs from its admitted SHA-256")
-    source_result = _read_json_bytes(raw["source_result"])
-    ff = source_result.get("filing_fetch", {})
-    filing = ff.get("filing", {}) if isinstance(ff, dict) else {}
-    _need(source_result.get("schema_version") == "source-preparation-result/1"
-          and isinstance(ff, dict) and ff.get("status") == "source_candidate"
-          and isinstance(filing, dict) and filing.get("download_events") == 0
-          and filing.get("resolution_outcome") == "reused_existing",
-          "attempt_unverified", "retained job did not use the existing source")
 
 
 def _catalog_artifacts(
@@ -699,11 +623,9 @@ def _register_import_records(
         "snapshot_id": snapshot_id,
     }
     try:
-        existing_runs, existing_attempts, existing_reports, _ = catalog._index()
-        if job_id in existing_runs:
-            existing_attempt = existing_attempts.get((job_id, attempt_id))
-            existing_report = existing_reports.get(report_id)
-            stored_run = existing_runs[job_id]
+        existing = catalog.find_registered_binding(job_id, attempt_id, report_id)
+        if existing is not None:
+            stored_run, existing_attempt, existing_report, revision = existing
             evidence_key = "source_bound_identity_evidence"
             original_proof = stored_run.get(evidence_key)
             _need(_identity_binding_scope(original_proof) == _identity_binding_scope(run[evidence_key])
@@ -711,15 +633,14 @@ def _register_import_records(
                   and existing_attempt == attempt and existing_report == report,
                   "rf_job_import_conflict", "this immutable job ID is already bound to different evidence")
             verify_current()
-            catalog._validate_attempt_source(existing_attempt)
-            catalog._validate_report_artifact(existing_report)
+            catalog.verify_registered_binding(existing_attempt, existing_report)
             return {
                 "schema_version": IMPORT_SCHEMA,
                 "status": "already_registered",
                 "run_id": job_id,
                 "attempt_id": attempt_id,
                 "report_id": report_id,
-                "catalog_revision": catalog._index()[3],
+                "catalog_revision": revision,
                 "input_sha256": result["input_sha256"],
                 "result_sha256": result["result_sha256"],
                 "source_ref": ref,
@@ -770,14 +691,10 @@ def import_rf_job(
     _need(isinstance(entity_id, str) and _ENTITY_ID.fullmatch(entity_id) is not None
           and isinstance(listing_id, str) and _LISTING_ID.fullmatch(listing_id) is not None,
           "identity_input_invalid", "entity and listing IDs must be owner UUIDs")
-    job_dir, source_paths = _job_files(Path(job_root), job_id)
     _need(isinstance(expected_job_sha256, str) and _HEX64.fullmatch(expected_job_sha256) is not None,
           "rf_job_artifact_mismatch", "an independently recorded job SHA-256 is required")
-    _need(_sha(source_paths["job"].read_bytes()) == expected_job_sha256,
-          "rf_job_artifact_mismatch", "rf-job differs from its independently recorded SHA-256")
-    job, source_raw, parsed = _read_job(
-        source_paths, job_id, expected_report_sha256=expected_report_sha256,
-    )
+    source_raw = _job_files(Path(job_root), job_id, expected_job_sha256)
+    job, parsed = _read_job(source_raw, job_id, expected_report_sha256=expected_report_sha256)
     input_document = parsed["input"]
     result = parsed["result"]
     snapshot_id = None

@@ -9,12 +9,11 @@ registry, artifact, clock, budget, identity and append checks remain mandatory.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-import hashlib
 import json
 import math
 from pathlib import Path
 import re
-from typing import Any, Callable, cast
+from typing import Callable, cast
 
 from contracts.document import validate_sources
 from publication_registry import canonical_sha256
@@ -25,22 +24,31 @@ from report_catalog import (
     _frozen_reporting_scale,
     _read_registry_file,
 )
-from report_catalog_research_attempt import (
-    CAPTURE,
-    HEX,
-    _Observation,
-    MAX_FILE,
-    _admission_lock,
-    _admission_unlock,
-    _capture_logs,
-    _capture_request,
-    _events,
-    _identifier,
-    _json,
-    _logs,
-    _not_linked,
-    _publish_seal,
-    _stamp,
+from report_catalog_research_capture import (
+    HEX, MAX_FILE,
+    BoundObservation as _Observation,
+    owned_unlinked_path as _not_linked,
+    read_recorded_object as _json,
+    matches_capture_path as _equal_path,
+    read_recorded_events as _events,
+    read_source_capture_request as _capture_request,
+    read_source_failure as _logs,
+    read_timestamp as _stamp,
+    research_identifier as _identifier,
+    sha256_bytes as _sha,
+)
+from report_catalog_publication_capture import (
+    require_publication as _need,
+    publication_object as _object,
+    publication_capture_id as _capture_id,
+    completed_capture as _complete,
+    frozen_capture_input as _frozen,
+    capture_entrypoint_index as _script_index,
+)
+from report_catalog_research_seal import (
+    acquire_admission_lock as _admission_lock,
+    release_admission_lock as _admission_unlock,
+    write_admission_seal as _publish_seal,
 )
 from report_catalog_research_identity import (
     successful_capture_source,
@@ -117,166 +125,6 @@ def publication_layout(version: str = "v1") -> dict:
         *ARTIFACTS[4:],
     )
     return result
-
-
-def _need(value: Any, detail: str) -> None:
-    if not value:
-        raise CatalogError("research_publication_invalid", detail)
-
-
-def _sha(raw: bytes) -> str:
-    return hashlib.sha256(raw).hexdigest()
-
-
-def _object(value: Any) -> dict:
-    _need(isinstance(value, dict), "publication field is not an object")
-    return value
-
-
-def _capture_id(value: Any) -> str:
-    _need(isinstance(value, str) and CAPTURE.fullmatch(value), "capture ID is invalid")
-    return value
-
-
-def _equal_path(value: Any, expected: Path) -> bool:
-    return (
-        isinstance(value, str)
-        and Path(value).is_absolute()
-        and not any(part in {".", ".."} for part in re.split(r"[\\/]", value))
-        and Path(value) == expected
-    )
-
-
-def _complete(
-    obs: _Observation,
-    run: Path,
-    cid: str,
-    started: dict,
-    finished: dict,
-    *,
-    succeeded: bool,
-) -> tuple[dict, dict[str, bytes], dict]:
-    _capture_id(cid)
-    _need(cid in started and cid in finished, "selected capture is missing")
-    start, data = started[cid], finished[cid]
-    _need(
-        data.get("child_started") is True
-        and data.get("input_complete") is True
-        and data.get("output_complete") is True
-        and data.get("input_cleanup_complete") is True
-        and data.get("execution_error") is None
-        and data.get("timed_out") is False
-        and type(data.get("exit_code")) is int
-        and ((data["exit_code"] == 0) if succeeded else data["exit_code"] not in {0, 2})
-        and start.get("command") == data.get("command")
-        and start.get("executed_command") == data.get("executed_command")
-        and start.get("started_at") == data.get("started_at"),
-        "selected native stage is incomplete or contradicts its status",
-    )
-    _need(
-        _stamp(data["started_at"]) <= _stamp(data["finished_at"]),
-        "native clock is reversed",
-    )
-    streams, logs = _capture_logs(obs, run, cid, data)
-    if succeeded:
-        _need(streams["stderr"] == b"", "successful stage has native error diagnostics")
-    return data, streams, logs
-
-
-def _frozen(
-    obs: _Observation, run: Path, cid: str, data: dict, expected: dict[int, Path]
-) -> dict[int, bytes]:
-    """Bind exact original argv, consumed argv and retained input bytes."""
-    command, executed = data.get("command"), data.get("executed_command")
-    rows = data.get("input_snapshots")
-    _need(
-        isinstance(command, list)
-        and isinstance(executed, list)
-        and isinstance(rows, list)
-        and len(rows) == len(expected),
-        "native frozen inputs are incomplete",
-    )
-    command = cast(list[str], command)
-    executed = cast(list[str], executed)
-    rows = cast(list[dict], rows)
-    folder = run / "roles/executor/commands" / cid
-    replacement = list(command)
-    observed: dict[int, bytes] = {}
-    for row in rows:
-        row = _object(row)
-        indices = row.get("argument_indices")
-        _need(
-            isinstance(indices, list)
-            and len(indices) == 1
-            and type(indices[0]) is int
-            and indices[0] in expected,
-            "frozen input argument is unexpected",
-        )
-        indices = cast(list[int], indices)
-        index = indices[0]
-        _need(
-            index not in observed
-            and 0 <= index < len(command)
-            and _equal_path(command[index], expected[index])
-            and _equal_path(row.get("original_path"), expected[index]),
-            "frozen input names another artifact",
-        )
-        frozen = Path(row.get("frozen_path", ""))
-        consumed = Path(row.get("consumed_path", ""))
-        _need(
-            frozen.is_absolute()
-            and frozen.parent == folder
-            and consumed.is_absolute()
-            and consumed.parent == folder,
-            "retained input is outside its native capture",
-        )
-        raw = obs.read(frozen)
-        _need(
-            type(row.get("byte_size")) is int
-            and len(raw) == row["byte_size"]
-            and row.get("sha256") == _sha(raw)
-            and row.get("consumed_unchanged") is True
-            and row.get("consumed_after_bytes") == len(raw)
-            and row.get("consumed_after_sha256") == _sha(raw)
-            and obs.read(expected[index]) == raw,
-            "native input bytes changed",
-        )
-        replacement[index] = str(consumed)
-        observed[index] = raw
-    _need(
-        set(observed) == set(expected) and executed == replacement,
-        "executed argv differs from its frozen inputs",
-    )
-    return observed
-
-
-def _script_index(command: Any, script: Path) -> int:
-    _need(
-        isinstance(command, list)
-        and 2 <= len(command) <= 32
-        and all(isinstance(x, str) and "\x00" not in x for x in command)
-        and Path(command[0]).name.lower()
-        in {"python", "python.exe", "python3", "python3.exe"},
-        "native command is not the fixed Python stage",
-    )
-    index = 1
-    seen = set()
-    while index < len(command) and command[index] in {"-B", "-u", "-X"}:
-        token = command[index]
-        _need(token not in seen, "native Python flags are duplicated")
-        seen.add(token)
-        index += 1
-        if token == "-X":
-            _need(
-                index < len(command) and command[index] == "utf8",
-                "unsupported native Python flag",
-            )
-            index += 1
-    _need(
-        index < len(command) and _equal_path(command[index], script),
-        "native command is not the pinned RF entry",
-    )
-    return index
 
 
 def _forecast_stage(
@@ -362,7 +210,7 @@ def _budget_and_events(
         and metadata.get("run_id") == run.name
         and scope.get("schema_version") == "b34-research-attempt-scope/1"
         and scope.get("run_id") == run.name
-        and scope.get("root") == run.as_posix()
+        and _equal_path(scope.get("root"), run)
         and scope.get("company_query") == metadata.get("company_query")
         and scope.get("as_of_date") == metadata.get("as_of_date")
         and scope.get("attempt_id") == closure["parent_research_attempt_id"],

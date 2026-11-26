@@ -19,6 +19,9 @@ else:
     from daily_t2_runner import DEFAULT_CONFIG, DEFAULT_REPORT_ROOT
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+from rf_assurance_history import AssuranceRun, get_run, path_reference, show_run, write_json  # noqa: E402
+
 RUNNER = PROJECT_ROOT / "tools" / "daily_t2_runner.py"
 DEFAULT_LEDGER = PROJECT_ROOT / "assurance" / "runs" / "daily_manifest.json"
 DEFAULT_ALERTS = PROJECT_ROOT / "assurance" / "runs" / "daily_alert.jsonl"
@@ -49,10 +52,6 @@ ENVIRONMENT_MARKERS = (
     "not installed",
 )
 
-def _now_iso() -> str:
-    return datetime.now(UTC).isoformat()
-
-
 def _iso_to_utc(value: str) -> datetime:
     return datetime.fromisoformat(value).astimezone(UTC)
 
@@ -60,7 +59,6 @@ def _iso_to_utc(value: str) -> datetime:
 def write_ledger(path: Path, run_id: str, started_at: str, triplet: dict,
                  ok: bool, report_path: str,
                  observation_period: int | None = None) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "latest_run_id": run_id,
         "started_at": started_at,
@@ -70,10 +68,7 @@ def write_ledger(path: Path, run_id: str, started_at: str, triplet: dict,
     }
     if observation_period is not None:
         payload["observation_period"] = observation_period
-    path.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    write_json(path, payload)
 
 
 def read_ledger(path: Path) -> dict | None:
@@ -155,8 +150,13 @@ def run_daily(
     catalog_config: Path, report_root: Path, ledger_path: Path, alert_path: Path,
     *, source_ref_files: tuple[Path, ...] = (),
 ) -> int:
-    started = _now_iso()
-    run_id = datetime.fromisoformat(started).strftime("%Y%m%dT%H%M%S%fZ")
+    attempt = AssuranceRun(
+        ledger_path, "daily", sources=(Path(__file__), RUNNER, RUNNER.with_name("cwp_catalog_status.py")),
+        request={"catalog_config_ref": path_reference(catalog_config),
+                 "source_ref_files": [path_reference(path) for path in source_ref_files]},
+    )
+    started = attempt.body["started_at"]
+    run_id = attempt.run_id
     report_path = report_root / run_id / "report.json"
     argv = [
         sys.executable, "-B", str(RUNNER), "--config", str(catalog_config),
@@ -165,28 +165,46 @@ def run_daily(
     for path in source_ref_files:
         argv.extend(("--source-ref", str(path)))
     try:
-        proc = subprocess.run(argv, capture_output=True, text=True, errors="replace", timeout=600)
+        proc = subprocess.run(argv, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
     except (OSError, subprocess.TimeoutExpired) as error:
+        cause = type(error).__name__
         proc = subprocess.CompletedProcess(
-            argv, 2, "", f"{ENVIRONMENT_SENTINEL}: {type(error).__name__}",
+            argv, 2, "", f"{ENVIRONMENT_SENTINEL}: {cause}",
         )
+    else:
+        cause = None
     report = _read_runner_report(report_path)
     ok, outcome, detail = run_outcome(proc, report)
+    exit_code = 0 if ok else proc.returncode or 1
+    diagnostic = {"owner_exit_code": proc.returncode, "report_available": report is not None}
+    if cause is not None:
+        diagnostic["cause_chain"] = [{"type": cause}]
+    elif report is not None:
+        diagnostic["checks"] = report.get("checks", {})
+    attempt.finish(exit_code=exit_code, outcome=outcome, diagnostic=diagnostic)
     if report is None:
         report = {"run_id": run_id, "ok": ok, "outcome": outcome, "checks": {},
                   "problems": [detail], "triplet": {}}
-        report_path.parent.mkdir(parents=True, exist_ok=True)
-        report_path.write_text(json.dumps(report, ensure_ascii=False) + "\n", encoding="utf-8")
-    write_ledger(ledger_path, run_id, started, report.get("triplet", {}), ok, str(report_path))
+        try:
+            write_json(report_path, report)
+        except OSError as exc:
+            print(f"warning: could not record report {run_id} ({type(exc).__name__})", file=sys.stderr)
+    try:
+        write_ledger(ledger_path, run_id, started, report.get("triplet", {}), ok, str(report_path))
+    except OSError as exc:
+        print(f"warning: could not refresh daily ledger {run_id} ({type(exc).__name__})", file=sys.stderr)
     status, freshness = freshness_status(read_ledger(ledger_path), now=started)
     if not ok:
-        append_alert(alert_path, {
-            "at_utc": started, "run_id": run_id, "status": status,
-            "outcome": outcome, "reason": f"{detail} (ledger: {freshness})",
-            "exit_code": proc.returncode or 1,
-        })
+        try:
+            append_alert(alert_path, {
+                "at_utc": started, "run_id": run_id, "status": status,
+                "outcome": outcome, "reason": f"{detail} (ledger: {freshness})",
+                "exit_code": exit_code,
+            })
+        except OSError as exc:
+            print(f"warning: could not record daily alert {run_id} ({type(exc).__name__})", file=sys.stderr)
     print(f"run_id={run_id} ok={ok} outcome={outcome} status={status} detail={detail}")
-    return 0 if ok else proc.returncode or 1
+    return exit_code
 
 
 def _head(repo: Path) -> str:
@@ -298,6 +316,9 @@ def cmd_verify(args: argparse.Namespace) -> int:
     ready, gate = release_gate(Path(args.ledger))
     print(f"schedule={status} ({detail})")
     print(f"last_run={run_status} ({run_detail})")
+    attempt = get_run(Path(args.ledger), "daily")
+    if attempt is not None and attempt["state"] == "started":
+        print(f"latest_attempt={attempt['run_id']} completion=unconfirmed")
     print(f"release_gate={ready} ({gate})")
     return 0 if (status == "registered" and run_status == "fresh") else 1
 
@@ -312,6 +333,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     run.add_argument("--report-root", type=Path, default=DEFAULT_REPORT_ROOT)
     run.add_argument("--source-ref", action="append", type=Path, default=[])
+    sub.add_parser("get-run", help="read from the RF assurance history").add_argument("--run-id")
     for name in ("register", "unregister", "query", "verify"):
         sub.add_parser(name)
     return parser
@@ -324,6 +346,8 @@ def main() -> int:
             args.config, args.report_root, args.ledger, args.alerts,
             source_ref_files=tuple(args.source_ref),
         )
+    if args.command == "get-run":
+        return show_run(args.ledger, "daily", args.run_id)
     if args.command == "register":
         return cmd_register(args)
     if args.command == "unregister":

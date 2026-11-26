@@ -34,6 +34,7 @@ from report_catalog_common import (
     assert_pathless,
     require as _require,
 )
+from report_catalog_rf_job_evidence import validate_retained_attempt
 from revenue_backtest import validate_snapshot
 from revenue_report import validate_published_forecast
 from schema_compatibility import validating_engine_allowed
@@ -322,14 +323,25 @@ class ReportCatalog:
             _require(receipt.get("status") == attempt["status"],
                      "attempt_unverified", "attempt receipt status mismatch")
         elif kind == "rf_job_record":
-            # Kept behind the catalog owner boundary: only the RF-owned job
-            # importer defines and validates this evidence format.
-            from report_catalog_rf_job_import import _validate_job_attempt
-            _validate_job_attempt(self, attempt)
+            validate_retained_attempt(attempt, self._read_artifact)
         else:
             raise CatalogError("attempt_unverified", "unsupported owner attempt evidence")
         if attempt["status"] in {"failed", "cancelled"}:
             _require(bool(attempt.get("error_code")), "attempt_unverified", "failed attempt needs error code")
+
+    def find_registered_binding(
+        self, run_id: str, attempt_id: str, report_id: str,
+    ) -> tuple[dict, dict | None, dict | None, str] | None:
+        """Read one revision of the owner index for an admission replay."""
+        runs, attempts, reports, revision = self._index()
+        if run_id not in runs:
+            return None
+        return runs[run_id], attempts.get((run_id, attempt_id)), reports.get(report_id), revision
+
+    def verify_registered_binding(self, attempt: dict, report: dict) -> None:
+        """Re-check the retained evidence of an already admitted replay."""
+        self._validate_attempt_source(attempt)
+        self._validate_report_artifact(report)
 
     def add_records(self, *, runs: list[dict] | None = None,
                     attempts: list[dict] | None = None,

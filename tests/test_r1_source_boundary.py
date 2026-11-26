@@ -87,7 +87,7 @@ def test_client_exception_keeps_complete_ff_sidecar(tmp_path):
     with patch.object(
         client.subprocess,
         "run",
-        return_value=subprocess.CompletedProcess([], 2, json.dumps(payload), ""),
+        return_value=subprocess.CompletedProcess([], 2, json.dumps(payload).encode("utf-8"), b""),
     ):
         with pytest.raises(client._ClientError) as caught:
             client.resolve_filing_result(

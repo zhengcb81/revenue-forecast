@@ -12,12 +12,16 @@ import json
 import os
 from pathlib import Path
 import re
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from report_catalog_common import CatalogError
-
-if TYPE_CHECKING:
-    from report_catalog_research_attempt import _Observation
+from report_catalog_research_capture import (
+    BoundObservation,
+    read_capture_streams as _capture_logs,
+    read_recorded_object as _json,
+    read_source_capture_request as _capture_request,
+    read_timestamp as _stamp,
+)
 
 
 PROBE_MODULES = {
@@ -42,7 +46,7 @@ def _object(value: Any, detail: str) -> dict:
     return value
 
 
-def _code_hash(root: Path, relative: str) -> str:
+def code_artifact_hash(root: Path, relative: str) -> str:
     path = root / relative
     _require(root.is_absolute() and root.is_dir(), "pinned code root is unavailable")
     current = root
@@ -77,7 +81,7 @@ def _recorded_path(value: str) -> Path:
 
 
 def validate_pinned_deployment(
-    obs: _Observation,
+    obs: BoundObservation,
     run: Path,
     snapshot_path: Path,
     scope: dict,
@@ -85,7 +89,6 @@ def validate_pinned_deployment(
     started: dict,
     finished: dict,
 ) -> tuple[dict, dict]:
-    from report_catalog_research_attempt import _capture_logs, _json, _stamp
 
     value = obs.document(snapshot_path)
     selected = terminal["terminal_capture_id"]
@@ -226,7 +229,7 @@ def validate_pinned_deployment(
 
 
 def successful_capture_source(
-    obs: _Observation,
+    obs: BoundObservation,
     run: Path,
     capture_id: str,
     *,
@@ -237,12 +240,6 @@ def successful_capture_source(
     terminal_capture_id: str,
     expected_script: Path,
 ) -> dict:
-    from report_catalog_research_attempt import (
-        _capture_logs,
-        _capture_request,
-        _json,
-        _stamp,
-    )
     from contracts.company_wiki_original import validate_manifest, validate_receipt, validate_ref
     from contracts.document import validate_sources
 

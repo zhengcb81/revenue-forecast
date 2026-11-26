@@ -48,6 +48,15 @@ def test_native_stages_and_successful_whole_run_are_distinct(case):
     assert all(p.read_bytes() == raw for p, raw in before.items())
 
 
+def test_publication_requires_scope_for_the_same_owner_run(case):
+    scope_path = case["run"] / "execution/scope.json"
+    scope = doc(scope_path)
+    scope["root"] = case["run"].with_name("different-run").as_posix()
+    write(scope_path, scope)
+    with pytest.raises(pub.CatalogError, match="run/scope identity disagrees"):
+        admit(case)
+
+
 def test_exact_replay_keeps_catalog_and_stable_report(case):
     first = admit(case)
     catalog = ReportCatalog(root=case["root"])

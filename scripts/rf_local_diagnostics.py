@@ -19,6 +19,7 @@ from owner_file_lock import OwnerFileLock
 
 _TAIL_LENGTH = 16 * 1024
 _TRACEBACK = "Traceback (most recent call last):"
+_FRAME = re.compile(r'^  File "([^"]+)", line ([0-9]+)')
 _ERROR_LINE = re.compile(
     r"^([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)(?::(?=\s|$)(?: \[Errno ([0-9]{1,5})\])?|$)",
     re.ASCII,
@@ -30,18 +31,23 @@ def state_dir() -> Path:
     return (Path(parent) if parent else Path.home() / ".local/state") / "revenue-forecast"
 
 
-def child_traceback_facts(stderr: str | None) -> list[dict[str, str | int]]:
+def child_traceback_facts(stderr: str | None, *, source: str | None = None) -> list[dict[str, str | int]]:
     """Read exception structure from the tail without retaining untrusted text."""
     if not stderr:
         return []
     facts: list[dict[str, str | int]] = []
     in_trace = saw_frame = False
+    frame_line = None
     for line in stderr[-_TAIL_LENGTH:].splitlines():
         if line == _TRACEBACK:
             in_trace = True
             saw_frame = False
+            frame_line = None
         elif in_trace and line.startswith("  File "):
             saw_frame = True
+            frame = _FRAME.match(line)
+            if source is not None and frame and frame[1].replace("\\", "/").rsplit("/", 1)[-1] == source:
+                frame_line = int(frame[2])
         elif in_trace and saw_frame and (match := _ERROR_LINE.match(line)):
             name, raw_errno = match.groups()
             if len(name) <= 96:
@@ -50,6 +56,8 @@ def child_traceback_facts(stderr: str | None) -> list[dict[str, str | int]]:
                 if (isinstance(exception, type) and issubclass(exception, OSError)
                         and raw_errno and int(raw_errno) in errorcode):
                     fact["errno"] = int(raw_errno)
+                if source is not None and frame_line is not None:
+                    fact.update(file=source, line=frame_line)
                 facts.append(fact)
             in_trace = False
     return facts

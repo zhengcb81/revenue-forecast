@@ -13,6 +13,9 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+from rf_local_diagnostics import child_traceback_facts  # noqa: E402
+
 FILING_ROOT = PROJECT_ROOT.parent / "filing-fetch"
 RECEIPT_SCHEMA = "ff-t3-assurance/1"
 REPORT_SCHEMA = "rf-weekly-t3-check/1"
@@ -33,6 +36,7 @@ class WeeklyT3Result:
     receipt: dict | None = None
     owner_exit_code: int | None = None
     requested_owner_run_id: str | None = None
+    cause_chain: tuple[dict[str, str | int], ...] = ()
 
     @property
     def ok(self) -> bool:
@@ -58,6 +62,7 @@ class WeeklyT3Result:
             "observed_at": self.observed_at,
             "requested_owner_run_id": self.requested_owner_run_id,
             "owner_exit_code": self.owner_exit_code,
+            "cause_chain": list(self.cause_chain),
             "receipt": self.receipt,
         }
 
@@ -71,7 +76,8 @@ def add_owner_options(parser: argparse.ArgumentParser, *, run_id_option: str = "
                         help="read an exact FF run instead of asking the owner for its latest receipt")
 
 
-def _label(value: object) -> str | None:
+def receipt_label(value: object) -> str | None:
+    """Return a safe opaque label from the public receipt contract."""
     return value if isinstance(value, str) and _LABEL.fullmatch(value) else None
 
 
@@ -136,10 +142,10 @@ def _diagnostic(value: object) -> dict | None:
 
 def _project_receipt(raw: dict) -> dict:
     """Keep named owner facts, rather than child stdout, stderr or paths."""
-    receipt = {"schema_version": RECEIPT_SCHEMA, "run_id": _label(raw.get("run_id"))}
+    receipt = {"schema_version": RECEIPT_SCHEMA, "run_id": receipt_label(raw.get("run_id"))}
     for field in ("mode", "state", "owner_revision", "reason"):
         if field in raw:
-            receipt[field] = _label(raw[field])
+            receipt[field] = receipt_label(raw[field])
     for field in ("started_at", "completed_at"):
         if field in raw:
             receipt[field] = raw[field] if _stamp(raw[field]) else None
@@ -155,7 +161,7 @@ def _project_receipt(raw: dict) -> dict:
             outcome = entry.get("outcome")
             case = {
                 "outcome": outcome if outcome in _RESULT else "unknown",
-                "reason": _label(entry.get("reason")),
+                "reason": receipt_label(entry.get("reason")),
                 "evidence_ref": _reference(entry.get("evidence_ref")),
             }
             diagnostic = _diagnostic(entry.get("diagnostic"))
@@ -208,7 +214,7 @@ def read_weekly_t3(
     now: datetime | None = None,
 ) -> WeeklyT3Result:
     """Locate an existing owner result. This port has no acquisition operation."""
-    requested = _label(owner_run_id)
+    requested = receipt_label(owner_run_id)
     try:
         argv = [sys.executable, "-B", str(filing_fetch_root.absolute() / "scripts" / "ff_t3_receipt.py")]
         if receipts_dir is not None:
@@ -219,15 +225,17 @@ def read_weekly_t3(
             argv, capture_output=True, text=True, encoding="utf-8",
             errors="replace", timeout=30, check=False,
         )
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as exc:
         return WeeklyT3Result(
             "blocked", "owner_lookup_timeout", (now or datetime.now(UTC)).isoformat(),
             requested_owner_run_id=requested,
+            cause_chain=({"type": type(exc).__name__},),
         )
-    except (OSError, ValueError):
+    except (OSError, ValueError) as exc:
         return WeeklyT3Result(
             "blocked", "owner_lookup_unavailable", (now or datetime.now(UTC)).isoformat(),
             requested_owner_run_id=requested,
+            cause_chain=({"type": type(exc).__name__},),
         )
     observed = now or datetime.now(UTC)
     raw = _decode(process.stdout)
@@ -236,9 +244,11 @@ def read_weekly_t3(
         return WeeklyT3Result(
             "blocked", detail, observed.isoformat(), owner_exit_code=process.returncode,
             requested_owner_run_id=requested,
+            cause_chain=tuple(child_traceback_facts(process.stderr, source="ff_t3_receipt.py")),
         )
     receipt = _project_receipt(raw)
     status, detail = _classify(receipt, process.returncode, owner_run_id, observed)
     return WeeklyT3Result(
         status, detail, observed.isoformat(), receipt, process.returncode, requested,
+        tuple(child_traceback_facts(process.stderr, source="ff_t3_receipt.py")) if process.returncode else (),
     )

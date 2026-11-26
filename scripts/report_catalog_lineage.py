@@ -18,7 +18,11 @@ from urllib.parse import urlsplit
 
 from publication_registry import canonical_sha256
 from report_catalog_common import CatalogError, SOURCE_REF_FIELDS, assert_pathless
-from report_catalog_research_attempt import _Observation, _not_linked, _json
+from report_catalog_research_capture import (
+    BoundObservation as _Observation,
+    owned_unlinked_path as _not_linked,
+    read_recorded_object as _json,
+)
 from report_catalog_retained_source import retained_response
 
 TRACE_SCHEMA = "rf-calculation-trace/1"

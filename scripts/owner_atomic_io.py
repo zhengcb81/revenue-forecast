@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+import time
 from typing import Callable
 from uuid import uuid4
 
@@ -30,6 +31,22 @@ def replace_file_bytes(path: Path, data: bytes, *, before_replace: Callable[[], 
             os.fsync(handle.fileno())
         if before_replace is not None:
             before_replace()
-        os.replace(temporary, path)
+            os.replace(temporary, path)
+        else:
+            _replace(temporary, path)
     finally:
         temporary.unlink(missing_ok=True)
+
+
+def _replace(temporary: Path, path: Path) -> None:
+    # Windows readers may briefly hold the old or new name without delete
+    # sharing. Keep the same fully-written replacement while the handle closes.
+    for delay in (0.01, 0.02, 0.04, 0.08, 0):
+        try:
+            os.replace(temporary, path)
+        except PermissionError as exc:
+            if not delay or os.name != "nt" or getattr(exc, "winerror", None) not in (5, 32, 33):
+                raise
+            time.sleep(delay)
+        else:
+            return

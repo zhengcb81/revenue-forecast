@@ -122,14 +122,13 @@ def test_submit_runs_three_stages_and_succeeds(tmp_path):
     for request in facade_obj.store.load_job(result["owner_job_id"])["stages"]["source"]["attempts"]:
         assert "--owner-root" not in request["command_shape"]
     # durable layout exists
-    job_dir = owner_root / "artifacts" / "rf_jobs" / "jobs" / result["owner_job_id"]
-    # Inspect the actual bytes through Win32's filesystem namespace even when pytest's
-    # own sandbox path already uses most of MAX_PATH.
-    from owner_atomic_io import native_path
-    job_dir = native_path(job_dir)
-    assert (job_dir / "stages" / "source" / "result-envelope.json").stat().st_size > 0
-    assert (job_dir / "stages" / "compute" / "result.json").exists()
-    assert (job_dir / "stages" / "publication" / "audit.json").exists()
+    job_id = result["owner_job_id"]
+    state = facade_obj.store.load_job(job_id)
+    for stage in facade.STAGES:
+        [attempt] = state["stages"][stage]["attempts"]
+        artifact = facade_obj.store.result_artifact(job_id, stage, attempt)
+        assert artifact.parent.name == "a1"
+        assert artifact.stat().st_size > 0
 
 
 def test_stage_commands_are_fixed_and_pathless_to_business(tmp_path):
@@ -152,7 +151,8 @@ def test_stage_commands_are_fixed_and_pathless_to_business(tmp_path):
     assert publication[2].endswith("publication_registry.py")
     assert publication[3:5] == ["audit", "--result"]
     # the compute input written by the facade is the exact request document
-    stored_input = json.loads((facade_obj.store.stage_dir(job["owner_job_id"], "compute")
+    [compute] = job["stages"]["compute"]["attempts"]
+    stored_input = json.loads((facade_obj.store.stage_dir(job["owner_job_id"], "compute", compute)
                                / "input.json").read_text(encoding="utf-8"))
     assert stored_input == document
 

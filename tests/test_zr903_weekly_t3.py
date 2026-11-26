@@ -114,7 +114,7 @@ def test_repeated_lookup_does_not_extend_owner_freshness(tmp_path, monkeypatch):
 def test_diagnostic_write_failure_preserves_owner_verdict_ledger_and_alert(tmp_path, monkeypatch):
     ledger = tmp_path / "weekly_manifest.json"
     alerts = tmp_path / "weekly_alert.jsonl"
-    real_write = Path.write_text
+    real_write = w3.write_json
     result = WeeklyT3Result("not-ok", "owner_case_failed", NOW.isoformat())
 
     def selective(path, *args, **kwargs):
@@ -123,13 +123,15 @@ def test_diagnostic_write_failure_preserves_owner_verdict_ledger_and_alert(tmp_p
         return real_write(path, *args, **kwargs)
 
     monkeypatch.setattr(w3, "read_weekly_t3", lambda *args, **kwargs: result)
-    monkeypatch.setattr(Path, "write_text", selective)
+    monkeypatch.setattr(w3, "write_json", selective)
     assert w3.run_weekly(ledger, alerts) == 1
     loaded = w3.read_ledger(ledger)
     assert loaded["ok"] is False
     assert loaded["report_path"].endswith(".log (NOT WRITTEN: OSError)")
     assert "LOCAL_PATH_PRIVATE_SENTINEL" not in ledger.read_text(encoding="utf-8")
     assert json.loads(alerts.read_bytes())["status"] == "not-ok"
+    original = w3.get_run(ledger, "weekly", loaded["latest_run_id"])
+    assert original["state"] == "failed" and original["diagnostic"]["reason"] == "owner_case_failed"
 
 
 def test_owner_timeout_replaces_green_ledger_with_named_blocker(tmp_path, monkeypatch):

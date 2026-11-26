@@ -124,11 +124,13 @@ CI_TESTS = (
     "tests/test_rf_job_cost.py",
     "tests/test_rf_job_recovery.py",
     "tests/test_rf_job_feedback_roots.py",
+    "tests/test_rf_job_attempt_lifecycle.py",
     "tests/test_f4_failure_coverage.py",
     "tests/test_s1_p0_error_observability.py",
     "tests/test_module_boundary_closure.py",
     "tests/test_daily_t2_public_sources.py",
     "tests/test_weekly_t3_owner_receipt.py",
+    "tests/test_assurance_run_lifecycle.py",
     "tests/test_fc1103_t3_runner.py",
     "tests/test_gp009_monthly_broker.py",
     "tests/test_zr902_daily_schedule.py",
@@ -143,8 +145,10 @@ CI_TESTS = (
     "tests/test_report_catalog.py::test_catalog_write_failure_preserves_previous_publication_and_retries_once",
     "tests/test_report_catalog.py::test_public_report_catalog_cli_uses_only_the_selected_owner",
     "tests/test_report_catalog.py::test_default_catalog_refuses_links_to_another_owner",
+    "tests/test_report_catalog_rf_job_import.py::test_public_import_registers_completed_job_and_replays_without_duplication",
     "tests/b34_publication/test_publication.py::test_native_stages_and_successful_whole_run_are_distinct",
     "tools/tests/test_slo_probe.py",
+    "tools/tests/test_audit_baseline.py::AuditBaselineTests::test_explicit_catalog_does_not_open_private_sqlite",
 )
 
 

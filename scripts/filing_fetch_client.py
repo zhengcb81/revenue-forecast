@@ -298,13 +298,13 @@ def request_financial_statements(
     return _statement_result(completed.returncode, completed.stdout, completed.stderr)
 
 
-def _try_loads(text: str) -> Any:
-    """Parse *text* as JSON, returning ``None`` when it is empty or not JSON."""
-    if not text:
+def _try_loads(data: str | bytes) -> Any:
+    """Parse one UTF-8 JSON document, independently of diagnostic output."""
+    if not data:
         return None
     try:
-        return json.loads(text)
-    except json.JSONDecodeError:
+        return json.loads(data.decode("utf-8") if isinstance(data, bytes) else data)
+    except (UnicodeDecodeError, json.JSONDecodeError):
         return None
 
 
@@ -344,10 +344,7 @@ def resolve_filing_result(
     try:
         completed = subprocess.run(
             cmd,
-            input=json.dumps(request, ensure_ascii=False),
-            text=True,
-            encoding="utf-8",
-            errors="strict",
+            input=json.dumps(request, ensure_ascii=False).encode("utf-8"),
             capture_output=True,
             timeout=timeout_seconds + _FILING_FETCH_EXIT_GRACE_SECONDS,
             cwd=root,
@@ -359,6 +356,7 @@ def resolve_filing_result(
     except (OSError, subprocess.TimeoutExpired) as exc:
         record_local_error("filing_fetch", code="filing_fetch_subprocess_failed", exception_type=type(exc).__name__)
         raise _ClientError("filing-fetch subprocess failed") from exc
+    stderr = completed.stderr.decode("utf-8", errors="replace")
     if completed.returncode != 0:
         # filing-fetch writes its structured error document to STDOUT and exits
         # non-zero (stderr is typically empty). Parse stdout first so callers
@@ -377,11 +375,11 @@ def resolve_filing_result(
             )
         record_local_error(
             "filing_fetch", code="filing_fetch_invalid_error_document", producer_exit_code=completed.returncode,
-            child_errors=child_traceback_facts(completed.stderr),
+            child_errors=child_traceback_facts(stderr),
         )
         # The public wire keeps its known startup hint and typed process exit.
         # Child diagnostic facts remain in the owner log.
-        dependency_error = _DEPENDENCY_ERROR_LINE.search(completed.stderr or "")
+        dependency_error = _DEPENDENCY_ERROR_LINE.search(stderr)
         suffix = f" (stderr reports {dependency_error.group(1)})" if dependency_error else ""
         raise _ClientError(
             f"filing-fetch exited {completed.returncode}: invalid upstream error document{suffix}",
@@ -389,11 +387,11 @@ def resolve_filing_result(
             producer_exit_code=completed.returncode,
         )
     try:
-        response = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
+        response = json.loads(completed.stdout.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         record_local_error(
             "filing_fetch", code="filing_fetch_invalid_response_json", producer_exit_code=completed.returncode,
-            child_errors=child_traceback_facts(completed.stderr), exception_type=type(exc).__name__,
+            child_errors=child_traceback_facts(stderr), exception_type=type(exc).__name__,
         )
         raise _ClientError(
             "filing-fetch stdout is not valid JSON",

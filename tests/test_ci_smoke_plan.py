@@ -31,11 +31,16 @@ def _commands(monkeypatch, mode):
 
 def test_workflow_explicitly_selects_the_complete_ci_plan():
     workflow = yaml.safe_load((ROOT / ".github/workflows/quality.yml").read_text(encoding="utf-8"))
-    assert len(workflow["jobs"]) == 1
-    commands = [shlex.split(line) for job in workflow["jobs"].values()
+    jobs = workflow["jobs"]
+    commands = [shlex.split(line) for job in jobs.values()
                 for step in job["steps"] for line in step.get("run", "").splitlines() if line.strip()]
     gates = [tokens for tokens in commands if tokens[:2] == ["python", "tools/pre_push_gate.py"]]
     assert gates == [["python", "tools/pre_push_gate.py", "--ci"]]
+    windows = jobs["windows-lifecycle"]
+    assert windows["runs-on"] == "windows-latest"
+    lifecycle = next(tokens for tokens in commands if "tests/test_rf_job_attempt_lifecycle.py" in tokens)
+    assert lifecycle[:3] == ["python", "-m", "pytest"]
+    assert "tests/test_assurance_run_lifecycle.py" in lifecycle
 
 
 def test_default_local_plan_is_fixed_small_smoke_without_repeated_mypy(monkeypatch):

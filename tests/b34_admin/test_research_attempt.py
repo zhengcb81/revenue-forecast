@@ -699,24 +699,27 @@ def test_management_lock_released_after_actual_child_kill(tmp_path):
 
 
 def test_partial_seal_publish_never_claims_final_name(tmp_path, monkeypatch):
+    import report_catalog_research_seal as seal_store
+
     body = b'{"complete":"sealed facts"}\n'
     evidence = tmp_path / "evidence"
     evidence.mkdir()
     seal = evidence / "seal.json"
-    original = admission.os.link
+    primitive = "rename" if seal_store.os.name == "nt" else "link"
+    original = getattr(seal_store.os, primitive)
 
     def unavailable(*args):
         raise OSError("controlled publication failure")
 
-    monkeypatch.setattr(admission.os, "link", unavailable)
+    monkeypatch.setattr(seal_store.os, primitive, unavailable)
     with pytest.raises(CatalogError, match="cannot be published"):
-        admission._publish_seal(tmp_path, seal, body)
+        seal_store.write_admission_seal(tmp_path, seal, body)
     assert not seal.exists() and list(evidence.iterdir()) == []
-    monkeypatch.setattr(admission.os, "link", original)
-    admission._publish_seal(tmp_path, seal, body)
+    monkeypatch.setattr(seal_store.os, primitive, original)
+    seal_store.write_admission_seal(tmp_path, seal, body)
     assert seal.read_bytes() == body
     with pytest.raises(CatalogError, match="sealed admission bytes disagree"):
-        admission._publish_seal(tmp_path, seal, b'{"different":true}')
+        seal_store.write_admission_seal(tmp_path, seal, b'{"different":true}')
     assert seal.read_bytes() == body
 
 

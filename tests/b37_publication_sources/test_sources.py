@@ -94,8 +94,16 @@ def prepared(case):
             "scope": scope, "layout": publication_layout(), "manifest_name": "sources.json"}
 
 
-def test_four_sources_all_original_bytes_and_unsigned_kind(case):
+def test_four_sources_all_original_bytes_and_unsigned_kind(case, monkeypatch):
     args = prepared(case)
+    import builtins
+    original_import = builtins.__import__
+
+    def read_only_import(name, *args, **kwargs):
+        assert name != "report_catalog_research_publication", "source validation loaded publication admission"
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", read_only_import)
     result = validate_source_evidence(**args)
     assert len(result["sources"]) == 4 and result["schema_version"] == SCHEMA
     assert result["sources"][1]["event_reference_kind"] == EVENT_KIND
@@ -220,7 +228,7 @@ body = reader._captured_body(spec["source"])
 assert body == b"Complete synthetic official result 2"
 assert reader.bodies == {spec["source"]["source_id"]: body}
 for module in ("report_catalog", "report_catalog_research_publication",
-               "report_catalog_research_publication_sources"):
+               "report_catalog_research_publication_sources", "report_catalog_research_attempt"):
     assert module not in sys.modules, f"cold source read loaded publication admission: {module}"
 """
     result = subprocess.run(

@@ -40,7 +40,7 @@ def observations(root):
     return events
 
 
-def reconcile_observation(root, config, observation, *, owner_root=None):
+def reconcile_observation(root, config, observation, *, owner_root=None, ledger=None):
     def digest(value):
         content = json.dumps(value, sort_keys=True, ensure_ascii=True, separators=(",", ":"))
         return sha256(content.encode("ascii")).hexdigest()
@@ -53,8 +53,9 @@ def reconcile_observation(root, config, observation, *, owner_root=None):
     payload = {"occurrence_id": occurrence, "observation": original}
     request = dict(schema_version="feedback-action/1", owner=owner, kind="reconcile", method="lookup",
                    payload=payload, action_id=key, request_digest=digest([owner, "reconcile", key, payload]))
+    args = ("--assurance-ledger", *ledger) if ledger is not None else ()
     reply = invoke(root, config, "rf_job_feedback", "reconcile", "--owner-root", owner_root or root,
-                   data=json.dumps(request))
+                   *args, data=json.dumps(request))
     assert reply.returncode == 0, reply.stderr
     return json.loads(reply.stdout)
 
@@ -143,6 +144,11 @@ def test_failed_source_and_unknown_usage_remain_independently_visible(tmp_path):
     stage = reconcile_observation(tmp_path, config, usage, owner_root=owner)
     assert stage == {"state": "done", "result": {"status": "cost_unknown", "job_status": "failed",
                      "cost_state": "unknown", "evidence_ref": usage["evidence_ref"]}}
+    for field in ("run_id", "attempt_id"):
+        other_scope = {**usage, field: "some-other-run-scope"}
+        assert reconcile_observation(tmp_path, config, other_scope, owner_root=owner) == {
+            "state": "unknown", "code": "native_attempt_mismatch",
+        }
     native = reconcile_observation(tmp_path, config, child, owner_root=owner)
     assert native == {"state": "done", "result": {"status": "cost_unknown", "job_status": "failed",
                       "cost_state": "unknown", "native_code": "source_bytes_mismatch",
@@ -274,7 +280,8 @@ def test_long_state_keeps_original_pending_even_if_explicit_destination_is_unwri
     (7, "filing_fetch_invalid_error_document"),
     (0, "filing_fetch_invalid_response_json"),
 ])
-def test_filing_transport_failure_keeps_one_safe_wire_and_cold_f4_record(tmp_path, producer_exit, reason):
+@pytest.mark.parametrize("invalid_pipe", (None, "stdout", "stderr"))
+def test_filing_transport_failure_keeps_one_safe_wire_and_cold_f4_record(tmp_path, producer_exit, reason, invalid_pipe):
     calls = tmp_path / "calls"
     fixture_root = tmp_path / "ff"
     scripts = fixture_root / "scripts"
@@ -287,7 +294,8 @@ def test_filing_transport_failure_keeps_one_safe_wire_and_cold_f4_record(tmp_pat
         "print('{not-json')\n"
         "print(" + repr("ImportError: Authorization: Bearer " + sentinels[0]) + ", file=sys.stderr)\n"
         "print(" + repr(sentinels[1]) + ", file=sys.stderr)\n"
-        "raise SystemExit(" + repr(producer_exit) + ")\n",
+        + (f"sys.{invalid_pipe}.buffer.write(bytes([255]))\n" if invalid_pipe else "")
+        + "raise SystemExit(" + repr(producer_exit) + ")\n",
         encoding="utf-8",
     )
     config = env(tmp_path)

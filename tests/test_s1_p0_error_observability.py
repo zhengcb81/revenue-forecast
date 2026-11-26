@@ -25,8 +25,8 @@ def test_invoke_filing_fetch_includes_redacted_stderr_on_non_json_failure(tmp_pa
         return subprocess.CompletedProcess(
             args[0],
             returncode=2,
-            stdout="",
-            stderr="ImportError: missing dependency token=TOPSECRET42\n",
+            stdout=b"",
+            stderr=b"ImportError: missing dependency token=TOPSECRET42\n",
         )
 
     monkeypatch.setattr(ffc.subprocess, "run", _fake_run)
@@ -52,8 +52,8 @@ def test_invoke_filing_fetch_preserves_json_decode_cause_chain(tmp_path, monkeyp
         return subprocess.CompletedProcess(
             args[0],
             returncode=0,
-            stdout="{broken-json",
-            stderr="",
+            stdout=b"{broken-json",
+            stderr=b"",
         )
 
     monkeypatch.setattr(ffc.subprocess, "run", _fake_run)
