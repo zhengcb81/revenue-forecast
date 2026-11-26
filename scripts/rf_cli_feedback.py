@@ -19,6 +19,13 @@ _ROOT = Path(__file__).resolve().parent
 _CODE = re.compile(r"[a-zA-Z][a-zA-Z0-9_.-]{0,128}")
 
 
+def note_operation(operation: str, *, external_work_possible: bool) -> None:
+    """Bind the parsed public operation before any owner action runs."""
+    state = _CURRENT.get()
+    if state is not None:
+        state.update(operation=operation, external_work_possible=external_work_possible)
+
+
 def note_native(code, *, kind="failure", effect="unknown", producer_exit_code=None):
     """Called by the entry that owns the native return code; never copy arbitrary exception messages."""
     state = _CURRENT.get()
@@ -87,9 +94,12 @@ def _observe(state, code):
     reason, kind = state["native_code"], state["kind"]
     ref = "rf-cli/1/" + key
     chain = _chain(state.get("error")) or [{"type": reason, "file": source.name}]
+    effect = "not_started" if state.get("external_work_possible") is False else state["side_effect_state"]
     detail = {"id": key, "entrypoint": entry, "native_code": reason, "classification": kind, "exit_code": code,
               "run_id": run, "attempt_id": attempt, "cause_chain": chain, "code_version": version,
-              "side_effect_state": state["side_effect_state"]}
+              "side_effect_state": effect}
+    if "operation" in state:
+        detail["operation"] = state["operation"]
     if "producer_exit_code" in state:
         detail["producer_exit_code"] = state["producer_exit_code"]
     row = {"schema_version": "feedback-observation/1", "owner": "revenue-forecast", "run_id": run,

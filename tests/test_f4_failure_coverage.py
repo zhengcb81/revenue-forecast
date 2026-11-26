@@ -112,6 +112,36 @@ def test_ordinary_failure_spools_and_recovers_without_reexecuting_business(tmp_p
     assert len(rows) == 1 and rows[0]["reason"] == "JSONDecodeError"
 
 
+@pytest.mark.parametrize(("operation", "reason", "effect", "exit_code"), [
+    ("get-status", "owner_job_id_invalid", "not_started", 2),
+    ("list-jobs", "internal", "not_started", 3),
+    ("reconcile", "owner_job_id_invalid", "not_started", 2),
+    ("resume", "owner_job_id_invalid", "unknown", 2),
+])
+def test_job_cli_failure_distinguishes_local_operations_from_execution(
+    tmp_path, operation, reason, effect, exit_code,
+):
+    if operation == "list-jobs":
+        (tmp_path / "artifacts/rf_jobs/index/jobs.jsonl").mkdir(parents=True)
+        args = ("list-jobs",)
+    elif operation == "get-status":
+        args = ("get-status", "--job-id", "not-a-job")
+    else:
+        args = ("act", "--job-id", "not-a-job", "--action", operation)
+    config = env(tmp_path)
+    result = invoke(tmp_path, config, "rf_job_cli", "--owner-root", tmp_path, *args)
+    assert result.returncode == exit_code and json.loads(result.stderr)["error"]["code"] == reason
+    row, = observations(tmp_path / "box")
+    lookup = invoke(tmp_path, config, "rf_job_feedback", "get-failure", row["evidence_ref"].rsplit("/", 1)[1])
+    assert lookup.returncode == 0, lookup.stderr
+    detail = json.loads(lookup.stdout)
+    assert detail["operation"] == operation and detail["side_effect_state"] == effect
+    assert "not-a-job" not in lookup.stdout and str(tmp_path) not in lookup.stdout
+    recovery = reconcile_observation(tmp_path, config, row)["result"]
+    assert recovery["job_status"] == "failed"
+    assert recovery["cost_state"] == ("unknown" if effect == "unknown" else "not_applicable")
+
+
 def test_failed_source_and_unknown_usage_remain_independently_visible(tmp_path):
     owner = tmp_path / "owner"
     owner.mkdir()

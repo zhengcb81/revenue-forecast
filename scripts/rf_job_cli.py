@@ -34,7 +34,7 @@ from rf_job_facade import (  # noqa: E402
     Deployment,
     resolve_owner_root,
 )
-from rf_cli_feedback import note_native, observed_entry
+from rf_cli_feedback import note_native, note_operation, observed_entry
 
 OWNER_ROOT_OPTION = "--owner-root"
 DEPLOYMENT_CONFIG_OPTION = "--deployment-config"
@@ -131,6 +131,8 @@ def main(argv: list[str] | None = None) -> int:
     listing = commands.add_parser("list-jobs", help="list owner jobs in this store")
     listing.add_argument("--limit", type=int, default=50)
     args = parser.parse_args(command_argv)
+    operation = args.action if args.command == "act" else args.command
+    note_operation(operation, external_work_possible=operation not in ("get-status", "list-jobs", "reconcile"))
 
     try:
         owner_root = resolve_owner_root(owner_root_text)
