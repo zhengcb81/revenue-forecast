@@ -1,5 +1,7 @@
 """File acquisition and atomic replacement for RF-owned durable artifacts."""
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 import errno
 import os
 from pathlib import Path
@@ -73,8 +75,8 @@ def open_regular_file(path: Path, *, append: bool = False) -> BinaryIO:
         raise
 
 
-def replace_file_bytes(path: Path, data: bytes, *, before_replace: Callable[[], None] | None = None) -> None:
-    """Prepare complete bytes in the same directory, then publish atomically."""
+@contextmanager
+def _staged_file(path: Path, data: bytes) -> Iterator[tuple[Path, Path]]:
     path = native_path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".rf-{uuid4().hex}.tmp")
@@ -83,13 +85,29 @@ def replace_file_bytes(path: Path, data: bytes, *, before_replace: Callable[[], 
             handle.write(data)
             handle.flush()
             os.fsync(handle.fileno())
-        if before_replace is not None:
-            before_replace()
-            os.replace(temporary, path)
-        else:
-            _replace(temporary, path)
+        yield temporary, path
     finally:
         temporary.unlink(missing_ok=True)
+
+
+def replace_file_bytes(path: Path, data: bytes, *, before_replace: Callable[[], None] | None = None) -> None:
+    """Prepare complete bytes in the same directory, then publish atomically."""
+    with _staged_file(path, data) as (temporary, destination):
+        if before_replace is not None:
+            before_replace()
+            os.replace(temporary, destination)
+        else:
+            _replace(temporary, destination)
+
+
+def create_file_bytes(path: Path, data: bytes) -> None:
+    """Publish complete bytes once. An existing destination raises FileExistsError."""
+    with _staged_file(path, data) as (temporary, destination):
+        if os.name == "nt":
+            # Windows rename never replaces an existing destination.
+            os.rename(temporary, destination)
+        else:
+            os.link(temporary, destination, follow_symlinks=False)
 
 
 def _replace(temporary: Path, path: Path) -> None:

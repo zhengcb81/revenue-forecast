@@ -11,7 +11,7 @@ import re
 import sqlite3
 import sys
 
-from owner_atomic_io import native_path, open_regular_file, replace_file_bytes
+from owner_atomic_io import create_file_bytes, native_path, open_regular_file, replace_file_bytes
 from owner_file_lock import OwnerFileLock
 from rf_assurance_history import get_run
 from rf_feedback_outbox import flush, get_failure, publish, was_published
@@ -26,6 +26,17 @@ CLI_REFERENCE = re.compile(r"rf-cli/1/([0-9a-f]{32})")
 KEY = re.compile(r"[0-9a-f]{64}")
 _CODE = re.compile(r"[A-Za-z][A-Za-z0-9_.-]{0,128}")
 _OBSERVATION_IDENTITY = ("owner", "origin_owner", "run_id", "attempt_id", "step_id", "check_id")
+_TRIAGE_REQUEST_FIELDS = {
+    "schema_version", "owner", "kind", "method", "action_id", "payload", "request_digest",
+}
+# F4 passes the normalized observation to its owner. Preserve those exact
+# fields for durable lookup without retaining raw producer-only content.
+_TRIAGE_OBSERVATION_REQUIRED = frozenset(_OBSERVATION_IDENTITY) | {"schema_version", "expected", "actual", "disposition"}
+_TRIAGE_OBSERVATION_FIELDS = _TRIAGE_OBSERVATION_REQUIRED | {
+    "issue_key", "version", "evidence_ref", "details_ref", "parent_step_id",
+    "original_occurrence_id", "terminal_check_id", "refusal_code",
+}
+_REFUSAL_CODE = re.compile(r"[a-z][a-z0-9_-]{0,80}")
 _EVIDENCE_READ_ERRORS = (OSError, ValueError, TypeError, KeyError, AttributeError, IndexError, RuntimeError,
                          ArithmeticError, sqlite3.Error)
 
@@ -297,13 +308,19 @@ def lookup_batch(owner_roots: Sequence[Path], requests: object, assurance_ledger
 
 
 def _triage_scope(request: dict) -> tuple[str, dict]:
+    if not isinstance(request, dict) or request.keys() != _TRIAGE_REQUEST_FIELDS:
+        raise ValueError("expected the normalized triage request")
     key, payload = _action(request, "triage", "submit")
+    if payload.keys() != {"occurrence_id", "observation"}:
+        raise ValueError("expected the normalized triage payload")
     row = _observation(payload)
-    normalized = {"origin_owner": row.get("owner"), **row}
-    identity = [normalized.get(name) for name in _OBSERVATION_IDENTITY]
-    if not all(isinstance(value, str) and value.strip() for value in identity):
-        raise ValueError("missing original feedback identity")
-    occurrence = digest(identity)
+    if (not _TRIAGE_OBSERVATION_REQUIRED <= row.keys() <= _TRIAGE_OBSERVATION_FIELDS
+            or not all(isinstance(value, str) and value.strip() for value in row.values())
+            or row["schema_version"] != "feedback-observation/1"
+            or row["disposition"] not in {"expected", "unknown", "deviation"}
+            or ("refusal_code" in row and not _REFUSAL_CODE.fullmatch(row["refusal_code"]))):
+        raise ValueError("expected the normalized triage observation")
+    occurrence = digest([row[name] for name in _OBSERVATION_IDENTITY])
     if payload.get("occurrence_id") != occurrence or key != digest(["triage", OWNER, occurrence]):
         raise ValueError("triage identity mismatch")
     return key, row
@@ -418,22 +435,21 @@ def record_triage(
     root: Path, owner_roots: Sequence[Path], request: dict, assurance_ledgers: dict[str, Path] | None = None,
 ) -> dict:
     key, row = _triage_scope(request)
-    lock = OwnerFileLock(native_path(root / f"triage-{key}.lock"))
-    if not lock.acquire():
-        raise ValueError("triage is being recorded")
     try:
+        receipt = get_triage(root, key)["receipt"]
+    except FileNotFoundError:
+        result = _triage_result(owner_roots, key, row, assurance_ledgers or {})
+        receipt = {"request": request, "result": result}
+        data = (json.dumps(receipt, ensure_ascii=True, sort_keys=True) + "\n").encode("ascii")
         try:
+            create_file_bytes(root / f"triage-{key}.json", data)
+        except FileExistsError:
+            # A concurrent publisher won. Only the durable winner can be
+            # returned, even if evidence arrived between the two reads.
             receipt = get_triage(root, key)["receipt"]
-        except FileNotFoundError:
-            result = _triage_result(owner_roots, key, row, assurance_ledgers or {})
-            receipt = {"request": request, "result": result}
-            data = (json.dumps(receipt, ensure_ascii=True, sort_keys=True) + "\n").encode("ascii")
-            replace_file_bytes(root / f"triage-{key}.json", data)
-        if receipt["request"] != request:
-            raise ValueError("conflicting triage for the same action")
-        return {"result": receipt["result"]}
-    finally:
-        lock.release()
+    if receipt["request"] != request:
+        raise ValueError("conflicting triage for the same action")
+    return {"result": receipt["result"]}
 
 
 def record_report(root: Path, request: dict) -> dict:

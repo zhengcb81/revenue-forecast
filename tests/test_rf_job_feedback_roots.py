@@ -19,6 +19,7 @@ from owner_atomic_io import native_path, open_regular_file  # noqa: E402
 from rf_assurance_history import AssuranceRun  # noqa: E402
 from rf_feedback_outbox import flush, publish, was_published  # noqa: E402
 from rf_job_facade import AttemptOutcome, JobFacade  # noqa: E402
+import rf_job_feedback as feedback  # noqa: E402
 from rf_job_feedback import digest, lookup, publish_attempt  # noqa: E402
 from test_f4_failure_coverage import env, invoke, observations  # noqa: E402
 from test_rf_job_facade import _facade, _request  # noqa: E402
@@ -71,7 +72,8 @@ def lookup_request(observation, **overrides):
 
 
 def triage_request(observation, **overrides):
-    request = lookup_request(observation, **overrides)
+    # The upstream F4 normalizer drops the raw publisher's convenience reason.
+    request = lookup_request({key: value for key, value in observation.items() if key != "reason"}, **overrides)
     payload = request["payload"]
     key = digest(["triage", OWNER, payload["occurrence_id"]])
     return dict(request, kind="triage", method="submit", action_id=key,
@@ -174,6 +176,76 @@ def test_triage_keeps_original_failure_effect_and_recovers_immutable_receipt(tmp
     assert changed["action_id"] == request["action_id"]
     assert triage(tmp_path, config, changed, tmp_path, receipts).returncode == 1
     assert snapshot(receipts) == frozen
+
+
+@pytest.mark.parametrize("target", ("action", "payload", "observation", "observation-value"))
+def test_triage_rejects_fields_outside_the_normalized_request(tmp_path, isolated_outbox, target):
+    request = triage_request(isolated_outbox, disposition="deviation")
+    level = {
+        "action": request,
+        "payload": request["payload"],
+        "observation": request["payload"]["observation"],
+        "observation-value": request["payload"]["observation"],
+    }[target]
+    field = "details_ref" if target == "observation-value" else "unrecognized"
+    level[field] = {"authorization": "isolated-fixture-only"}
+    request["request_digest"] = digest([OWNER, "triage", request["action_id"], request["payload"]])
+    receipts = tmp_path / "receipts"
+    failed = triage(tmp_path, env(tmp_path), request, tmp_path, receipts)
+    assert failed.returncode == 1 and "isolated-fixture-only" not in failed.stdout
+    assert not receipts.exists()
+
+
+@pytest.mark.parametrize("duplicate", (False, True))
+def test_triage_concurrent_writers_return_the_first_complete_receipt(tmp_path, isolated_outbox, monkeypatch, duplicate):
+    request = triage_request(isolated_outbox, disposition="deviation", version="publisher-release")
+    other = request if duplicate else triage_request(isolated_outbox, disposition="deviation", version="other-release")
+    assert request["action_id"] == other["action_id"]
+    receipts = tmp_path / "receipts"
+    ready = Barrier(2, timeout=5)
+    create = feedback.create_file_bytes
+
+    def publish_together(path, content):
+        ready.wait()
+        create(path, content)
+
+    def record(value):
+        try:
+            return feedback.record_triage(receipts, (tmp_path,), value)
+        except ValueError as error:
+            assert str(error) == "conflicting triage for the same action"
+            return None
+
+    monkeypatch.setattr(feedback, "create_file_bytes", publish_together)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        outcomes = list(pool.map(record, (request, other)))
+    winner = feedback.get_triage(receipts, request["action_id"])["receipt"]
+    assert winner["request"] in (request, other)
+    assert outcomes.count({"result": winner["result"]}) == (2 if duplicate else 1)
+    assert list(snapshot(receipts)) == [f"triage-{request['action_id']}.json"]
+
+
+@pytest.mark.skipif(os.name != "posix", reason="requires real POSIX symlink leaves")
+def test_triage_write_ignores_linked_legacy_lock_and_refuses_linked_receipt(tmp_path, isolated_outbox):
+    request = triage_request(isolated_outbox, disposition="deviation")
+    receipts = tmp_path / "receipts"
+    receipts.mkdir()
+    outside = tmp_path / "external-file"
+    stem = "triage-" + request["action_id"]
+    (receipts / f"{stem}.lock").symlink_to(outside)
+    config = env(tmp_path)
+    submitted = triage(tmp_path, config, request, tmp_path, receipts)
+    assert submitted.returncode == 0, submitted.stdout
+    assert not outside.exists()
+
+    path = receipts / f"{stem}.json"
+    outside.write_bytes(path.read_bytes())
+    untouched = outside.read_bytes(), outside.stat().st_mtime_ns
+    path.unlink()
+    path.symlink_to(outside)
+    attempted = triage(tmp_path, config, request, tmp_path, receipts)
+    assert attempted.returncode == 1
+    assert path.is_symlink() and (outside.read_bytes(), outside.stat().st_mtime_ns) == untouched
 
 
 def test_triage_preserves_verified_terminal_observation_when_job_is_missing(tmp_path, isolated_outbox):
