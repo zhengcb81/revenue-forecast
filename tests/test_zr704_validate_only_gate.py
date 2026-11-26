@@ -21,6 +21,8 @@ from pathlib import Path
 
 import pytest
 
+from rf_subprocess_env import isolated_rf_subprocess_env
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -31,12 +33,13 @@ from test_recognition_bridge import forecast_document  # noqa: E402
 def _run_validate_only(
     tmp_path: Path, input_file: Path, *, env: dict | None = None
 ) -> subprocess.CompletedProcess:
-    env = env or {}
-    env.setdefault("REVENUE_PUBLICATION_REGISTRY", str(tmp_path / "publications.jsonl"))
+    environment = isolated_rf_subprocess_env()
+    environment["REVENUE_PUBLICATION_REGISTRY"] = str(tmp_path / "publications.jsonl")
+    environment.update(env or {})
     return subprocess.run(
         [sys.executable, "scripts/revenue_forecast.py", str(input_file),
          "--validate-only"],
-        cwd=str(ROOT), text=True, capture_output=True, env=env, timeout=120,
+        cwd=str(ROOT), text=True, capture_output=True, env=environment, timeout=120,
     )
 
 

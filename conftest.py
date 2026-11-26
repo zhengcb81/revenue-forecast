@@ -1,4 +1,4 @@
-"""Keep owner outputs from pytest and its CLI children in disposable state."""
+"""Keep repository-wide pytest and its CLI children in disposable owner state."""
 
 from __future__ import annotations
 

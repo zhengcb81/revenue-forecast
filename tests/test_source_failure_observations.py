@@ -9,6 +9,8 @@ import sys
 
 import pytest
 
+from rf_subprocess_env import isolated_rf_subprocess_env
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import source_preparation as prep  # noqa: E402
@@ -48,9 +50,7 @@ def fake(tmp_path, payload, *, exit_code=2, stderr=None):
 def actual_cli(root, tmp_path, *, client_only=False):
     config = tmp_path / "catalog.yaml"
     config.write_text("schema_version: '1.0'\n", encoding="utf-8")
-    names = {"SYSTEMROOT", "WINDIR", "PATH", "PATHEXT", "COMSPEC", "TEMP", "TMP", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "HOMEDRIVE", "HOMEPATH"}
-    env = {key: value for key, value in os.environ.items() if key.upper() in names}
-    env.update(PYTHONUTF8="1", PYTHONDONTWRITEBYTECODE="1", PYTHON_DOTENV_DISABLED="1")
+    env = isolated_rf_subprocess_env()
     script = "filing_fetch_client.py" if client_only else "source_preparation.py"
     options = ["--source-ref-v2", "--result-envelope"] if client_only else ["--company-wiki-catalog-config", str(config)]
     result = subprocess.run([sys.executable, "-X", "utf8", "-B", str(ROOT / "scripts" / script),
@@ -59,6 +59,31 @@ def actual_cli(root, tmp_path, *, client_only=False):
                             text=True, encoding="utf-8", timeout=15, check=False)
     assert result.returncode == (2 if client_only else 3) and not result.stdout
     return json.loads(result.stderr)
+
+
+def test_source_cli_retains_isolated_owner_state_when_filtering_environment(tmp_path, monkeypatch):
+    state = tmp_path / "test-state"
+    desktop = tmp_path / "desktop"
+    monkeypatch.setenv("LOCALAPPDATA", str(state))
+    monkeypatch.setenv("XDG_STATE_HOME", str(state))
+    monkeypatch.setenv("HOME", str(desktop))
+    monkeypatch.setenv("RF_TEST_CREDENTIAL", "unused-fixture-token")
+    run = subprocess.run
+
+    def isolated_run(*args, env, **kwargs):
+        # Check before launching. A failed test must not run against a real home.
+        assert env.get("XDG_STATE_HOME") == str(state)
+        assert env.get("LOCALAPPDATA") == str(state)
+        assert "RF_TEST_CREDENTIAL" not in env
+        return run(*args, env=env, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", isolated_run)
+    result = actual_cli(fake(tmp_path, failure(), exit_code=2), tmp_path)
+    assert result["error_code"] == "upstream"
+    feedback = state / "revenue-forecast"
+    assert (feedback / "feedback.sqlite3").is_file()
+    assert len(list((feedback / "observations").glob("*.ready"))) == 1
+    assert not desktop.exists()
 
 
 @pytest.mark.parametrize("v2,exit_code", [(True, 2), (True, 0), (False, 2), (False, 0)])
@@ -298,11 +323,8 @@ def test_actual_native_refusal_reader_preparation_cli_retains_only_published_sco
         package.joinpath("source_reader_cli.py").write_text(native_code, encoding="utf-8")
         config = owned / "catalog.yaml"
         config.write_text("schema_version: '1.0'\n", encoding="utf-8")
-        names = {"SYSTEMROOT", "WINDIR", "PATH", "PATHEXT", "COMSPEC", "TEMP", "TMP",
-                 "USERPROFILE", "APPDATA", "LOCALAPPDATA", "HOMEDRIVE", "HOMEPATH"}
-        env = {key: value for key, value in os.environ.items() if key.upper() in names}
-        env.update(PYTHONUTF8="1", PYTHONDONTWRITEBYTECODE="1", PYTHON_DOTENV_DISABLED="1",
-                   PYTHONPATH=str(owned / "wire-producer"))
+        env = isolated_rf_subprocess_env()
+        env["PYTHONPATH"] = str(owned / "wire-producer")
         request = {"schema_version": "1.1", "company_query": "Fixture", "document_kind": "annual_report",
                    "fiscal_year": 2025, "fiscal_period": None, "as_of_date": "2026-09-27"}
         process = subprocess.run(

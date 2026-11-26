@@ -45,9 +45,10 @@ def test_emit(tmp_path, monkeypatch):
 @pytest.mark.parametrize("inherit_explicit", (False, True))
 def test_pytest_feedback_stays_out_of_inherited_desktop(tmp_path, inherit_explicit):
     suite = tmp_path / "suite"
-    suite.mkdir()
-    (suite / "conftest.py").write_bytes(Path(__file__).with_name("conftest.py").read_bytes())
-    (suite / "test_probe.py").write_text(PROBE, encoding="utf-8")
+    tool_tests = suite / "tools" / "tests"
+    tool_tests.mkdir(parents=True)
+    (suite / "conftest.py").write_bytes((ROOT / "conftest.py").read_bytes())
+    (tool_tests / "test_probe.py").write_text(PROBE, encoding="utf-8")
     (suite / "pytest.ini").write_text("[pytest]\n", encoding="ascii")
     desktop = tmp_path / "desktop"
     desktop.mkdir()
@@ -64,7 +65,7 @@ def test_pytest_feedback_stays_out_of_inherited_desktop(tmp_path, inherit_explic
         environment.update(RESEARCH_FEEDBACK_OUT=str(inherited_out), RESEARCH_FEEDBACK_DIR=str(inherited_dir))
     child = subprocess.run(
         [sys.executable, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider",
-         "--confcutdir", str(suite), "--basetemp", str(tmp_path / "pt"), "test_probe.py"],
+         "--confcutdir", str(suite), "--basetemp", str(tmp_path / "pt"), "tools/tests/test_probe.py"],
         cwd=suite, env=environment, capture_output=True, text=True, encoding="utf-8", timeout=60,
     )
     assert not any(desktop.iterdir()), "pytest wrote to the inherited RF owner state"

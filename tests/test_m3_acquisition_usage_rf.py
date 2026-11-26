@@ -9,12 +9,13 @@ through unmodified (``usage stays producer-owned``).
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
 
 import pytest
+
+from rf_subprocess_env import isolated_rf_subprocess_env
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -100,10 +101,7 @@ def fake(tmp_path, payload, *, exit_code=2):
 def actual_cli(root, tmp_path):
     config = tmp_path / "catalog.yaml"
     config.write_text("schema_version: '1.0'\n", encoding="utf-8")
-    names = {"SYSTEMROOT", "WINDIR", "PATH", "PATHEXT", "COMSPEC", "TEMP", "TMP",
-             "USERPROFILE", "APPDATA", "LOCALAPPDATA", "HOMEDRIVE", "HOMEPATH"}
-    env = {key: value for key, value in os.environ.items() if key.upper() in names}
-    env.update(PYTHONUTF8="1", PYTHONDONTWRITEBYTECODE="1", PYTHON_DOTENV_DISABLED="1")
+    env = isolated_rf_subprocess_env()
     result = subprocess.run(
         [sys.executable, "-X", "utf8", "-B", str(ROOT / "scripts/source_preparation.py"),
          "--filing-fetch-root", str(root), "--company-wiki-catalog-config", str(config)],
@@ -185,10 +183,7 @@ class TestActualCliBoundary:
                           wire_usage_complete=True, http_exchanges_complete=True)
         payload = success_envelope(obs)
         root = fake(tmp_path, payload, exit_code=0)
-        names = {"SYSTEMROOT", "WINDIR", "PATH", "PATHEXT", "COMSPEC", "TEMP", "TMP",
-                 "USERPROFILE", "APPDATA", "LOCALAPPDATA", "HOMEDRIVE", "HOMEPATH"}
-        env = {key: value for key, value in os.environ.items() if key.upper() in names}
-        env.update(PYTHONUTF8="1", PYTHONDONTWRITEBYTECODE="1", PYTHON_DOTENV_DISABLED="1")
+        env = isolated_rf_subprocess_env()
         result = subprocess.run(
             [sys.executable, "-X", "utf8", "-B", str(ROOT / "scripts/filing_fetch_client.py"),
              "--filing-fetch-root", str(root), "--source-ref-v2", "--result-envelope"],
