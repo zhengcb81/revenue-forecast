@@ -33,6 +33,7 @@ from contracts.evidence import (
     ForecastInputError,
     MultiValidationError,
     canonical_sha256,
+    check,
     collect_mode,
     finite_number,
     parse_iso_date,
@@ -91,8 +92,12 @@ def validate_top_level(data: dict[str, Any]) -> tuple[list[int], date]:
         "management_targets",
         "evidence_claims",
     )
-    for key in required:
-        require(key in data, f"missing required field: {key}")
+    require(isinstance(data, dict), "forecast input must be an object")
+    missing = [key for key in required if key not in data]
+    if missing:
+        for key in missing[:-1]:
+            check(False, f"missing required field: {key}")
+        raise ForecastInputError(f"missing required field: {missing[-1]}")
 
     require(
         data["schema_version"]
@@ -155,7 +160,24 @@ def validate_top_level(data: dict[str, Any]) -> tuple[list[int], date]:
             require(
                 len(values) == len(set(values)), f"{field} must not contain duplicates"
             )
+    _validate_shared_inputs(data)
     return years, as_of
+
+
+def _validate_shared_inputs(data: dict[str, Any]) -> None:
+    """Check the shapes relied on by more than one validator before dispatch."""
+    history = data["historical_revenue"]
+    require(isinstance(history, list), "historical_revenue must be a list")
+    for position, record in enumerate(history):
+        require(isinstance(record, dict), f"historical_revenue[{position}] must be an object")
+        require(isinstance(record.get("year"), int), f"historical_revenue[{position}].year must be an integer")
+    segments = data["segments"]
+    require(isinstance(segments, list) and segments, "segments must be a non-empty list")
+    for position, segment in enumerate(segments):
+        require(isinstance(segment, dict), f"segments[{position}] must be an object")
+        name = segment.get("name")
+        require(isinstance(name, str) and name.strip(), f"segments[{position}].name is required")
+    require(isinstance(data["reported_total_revenue_parameter_id"], str), "reported_total_revenue_parameter_id must be a string")
 
 
 def validate_historical_revenue(
@@ -165,7 +187,6 @@ def validate_historical_revenue(
     claim_index: dict[str, dict[str, Any]],
 ) -> None:
     history = data["historical_revenue"]
-    require(isinstance(history, list), "historical_revenue must be a list")
     pre_revenue = bool(data.get("pre_revenue", False))
     require(
         pre_revenue or len(history) >= 2,
@@ -183,15 +204,7 @@ def validate_historical_revenue(
             data=data, source_index=source_index, claim_index=claim_index,
             target_type="parameter", target_id=reported_parameter["parameter_id"])
     for position, record in enumerate(history):
-        require(
-            isinstance(record, dict),
-            f"historical_revenue[{position}] must be an object",
-        )
-        year = record.get("year")
-        require(
-            isinstance(year, int),
-            f"historical_revenue[{position}].year must be an integer",
-        )
+        year = record["year"]
         require(
             year <= data["base_year"],
             f"historical revenue year cannot exceed base_year: {year}",
@@ -664,7 +677,7 @@ def validate_evidence_claims(
                 bool(excerpt),
                 f"{claim_id}.excerpt must be non-empty",
             )
-        require(
+        check(
             claim.get("excerpt_sha256") == text_sha256(excerpt),
             f"claim excerpt hash mismatch: {claim_id}",
         )
@@ -689,11 +702,11 @@ def validate_evidence_claims(
                 f"claim source capture is missing: {claim_id}",
             )
             assert isinstance(source_capture, dict)  # narrow; require() enforced
-            require(
+            check(
                 claim.get("capture_receipt_sha256") == source_capture["receipt_sha256"],
                 f"claim capture receipt mismatch: {claim_id}",
             )
-            require(
+            check(
                 claim["content_sha256"] == source_capture["snapshot_sha256"],
                 f"claim/source snapshot mismatch: {claim_id}",
             )
@@ -1015,19 +1028,10 @@ def validate_base_reconciliation(
     )
     total = float(total_parameter["value"])
 
-    segments = data["segments"]
-    require(
-        isinstance(segments, list) and segments, "segments must be a non-empty list"
-    )
     names: set[str] = set()
     segment_total = 0.0
-    for position, segment in enumerate(segments):
-        require(isinstance(segment, dict), f"segments[{position}] must be an object")
-        name = segment.get("name")
-        require(
-            isinstance(name, str) and name.strip(),
-            f"segments[{position}].name is required",
-        )
+    for segment in data["segments"]:
+        name = segment["name"]
         require(name not in names, f"duplicate segment name: {name}")
         names.add(name)
         base_id = segment.get("base_revenue_parameter_id")
@@ -1123,9 +1127,9 @@ def validate_document(
 
     With ``collector`` set, gates append violations instead of failing fast and a
     :class:`~contracts.evidence.MultiValidationError` is raised at the end
-    carrying every collected violation. Collection is best-effort: a gate that
-    crashes on bad downstream data is recorded, and dependent later gates are
-    skipped. The default path (``collector=None``) is unchanged.
+    carrying the collected input violations. A failed prerequisite stops its
+    validation step and steps that need its result. Unexpected faults propagate
+    to the caller with their original traceback.
     """
     if collector is None:
         years, as_of = validate_top_level(data)
@@ -1148,19 +1152,7 @@ def validate_document(
         validate_base_reconciliation(data, parameter_index)
         validate_operating_units(data)
         _validate_optional_operating_research(data, parameter_index, claim_index)
-        try:
-            revenue_constraints = validate_revenue_constraints(
-                data.get("revenue_constraints", []),
-                [
-                    segment.get("name")
-                    for segment in data.get("segments", [])
-                    if isinstance(segment, dict)
-                ],
-                parameter_index,
-                years,
-            )
-        except RevenueConstraintError as exc:
-            raise ForecastInputError(str(exc)) from exc
+        revenue_constraints = _validate_document_revenue_constraints(data, parameter_index, years)
         research_coverage = validate_research_coverage(
             data, source_index, parameter_index
         )
@@ -1191,7 +1183,7 @@ def validate_document(
         source_index = _run_gate(
             collector, "sources", validate_sources, data, as_of, require_capture=True
         )
-        if source_index is None:
+        if source_index is None or any(gate == "sources" for gate, _ in collector.errors):
             raise MultiValidationError(collector.errors)
         parameter_index = _run_gate(
             collector, "parameters", validate_parameters, data, source_index
@@ -1200,17 +1192,14 @@ def validate_document(
             raise MultiValidationError(collector.errors)
         _run_gate(collector, "annual_consumption", validate_annual_consumption,
                   data, parameter_index)
-        collector.gate = "source_coverage"
-        try:
-            for gap in validate_source_coverage(data, parameter_index, source_index):
-                collector.add(
-                    f"source {gap['source_id']} covers only until {gap['covers_until']} "
-                    f"but parameter {gap['parameter_id']} requires FY{gap['forecast_year']}"
-                )
-        except (
-            Exception
-        ) as exc:  # best-effort collect-all must not abort the whole pass
-            collector.add(f"gate could not complete: {type(exc).__name__}: {exc}")
+        coverage_gaps = _run_gate(
+            collector, "source_coverage", validate_source_coverage, data, parameter_index, source_index
+        ) or []
+        for gap in coverage_gaps:
+            collector.add(
+                f"source {gap['source_id']} covers only until {gap['covers_until']} "
+                f"but parameter {gap['parameter_id']} requires FY{gap['forecast_year']}"
+            )
         claim_index = _run_gate(
             collector,
             "evidence_claims",
@@ -1243,22 +1232,10 @@ def validate_document(
             data,
             parameter_index,
         )
-        collector.gate = "revenue_constraints"
-        try:
-            revenue_constraints = validate_revenue_constraints(
-                data.get("revenue_constraints", []),
-                [
-                    segment.get("name")
-                    for segment in data.get("segments", [])
-                    if isinstance(segment, dict)
-                ],
-                parameter_index,
-                years,
-            )
-        except (
-            Exception
-        ) as exc:  # best-effort collect-all must not abort the whole pass
-            collector.add(f"gate could not complete: {type(exc).__name__}: {exc}")
+        revenue_constraints = _run_gate(
+            collector, "revenue_constraints", _validate_document_revenue_constraints,
+            data, parameter_index, years,
+        )
         research_coverage = (
             _run_gate(
                 collector,
@@ -1313,13 +1290,25 @@ def validate_document(
     }
 
 
+def _validate_document_revenue_constraints(data, parameter_index, years):
+    try:
+        return validate_revenue_constraints(
+            data.get("revenue_constraints", []),
+            [segment["name"] for segment in data["segments"]],
+            parameter_index,
+            years,
+        )
+    except RevenueConstraintError as exc:
+        raise ForecastInputError(str(exc)) from exc
+
+
 def _run_gate(
     collector: Collector, gate: str, fn: Any, *args: Any, **kwargs: Any
 ) -> Any:
-    """Run one validation gate under collect-all; record a gate-level note on crash."""
+    """Collect declared input violations and let unexpected faults propagate."""
     collector.gate = gate
     try:
         return fn(*args, **kwargs)
-    except Exception as exc:  # best-effort collect-all must not abort the whole pass
-        collector.add(f"gate could not complete: {type(exc).__name__}: {exc}")
+    except ForecastInputError as exc:
+        collector.add(str(exc))
         return None

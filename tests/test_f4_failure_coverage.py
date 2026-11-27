@@ -90,6 +90,64 @@ def test_ordinary_cli_records_original_exit_and_native_reason(tmp_path, script, 
         assert secret not in json.dumps([detail, row])
 
 
+@pytest.mark.parametrize(("script", "exception_type", "exit_code"), [
+    ("revenue_forecast", "KeyError", 1),
+    ("rf_job_cli", "AttributeError", 3),
+])
+def test_engine_fault_keeps_its_frames_without_becoming_input_refusal(
+    tmp_path, script, exception_type, exit_code,
+):
+    request = _request()
+    path = tmp_path / "input.json"
+    path.write_text(json.dumps(request["forecast_input"]), encoding="utf-8")
+    if script == "rf_job_cli":
+        deployment, _ = _deployment(tmp_path)
+        flags = ("--owner-root", str(tmp_path), "--deployment-config", str(deployment), "submit")
+    else:
+        flags = (str(path), "--validate-only", "--verbose")
+    launcher = (
+        "import importlib, sys\n"
+        "from unittest.mock import patch\n"
+        "sys.path.insert(0, sys.argv.pop(1))\n"
+        "entry = importlib.import_module(sys.argv.pop(1))\n"
+        "exception_type = getattr(__import__('builtins'), sys.argv.pop(1))\n"
+        "with patch('contracts.document.validate_source_coverage', "
+        "side_effect=exception_type('do-not-copy-request')):\n"
+        "    raise SystemExit(entry.main())\n"
+    )
+    configuration = {
+        key: value for key, value in env(tmp_path).items()
+        if key.upper() in {"SYSTEMROOT", "SYSTEMDRIVE", "PATH", "TEMP", "TMP",
+                           "RESEARCH_FEEDBACK_DIR", "LOCALAPPDATA", "XDG_STATE_HOME",
+                           "PYTHONDONTWRITEBYTECODE", "PYTHONUTF8", "PYTHON_DOTENV_DISABLED"}
+    }
+    result = subprocess.run(
+        [sys.executable, "-B", "-c", launcher, str(SCRIPTS), script, exception_type, *flags],
+        input=json.dumps(request) if script == "rf_job_cli" else "",
+        env=configuration, cwd=tmp_path, capture_output=True, text=True,
+        encoding="utf-8", timeout=30,
+    )
+    assert result.returncode == exit_code and result.stdout == "", result
+    if script == "rf_job_cli":
+        assert json.loads(result.stderr)["error"]["code"] == "internal"
+        assert not list((tmp_path / "artifacts" / "rf_jobs" / "jobs").glob("*"))
+    else:
+        assert result.stderr.strip() == f"error: internal forecast failure ({exception_type})"
+
+    row, = observations(tmp_path / "box")
+    assert row["actual"] == f"exit:{exit_code}" and "refusal_code" not in row
+    lookup = invoke(tmp_path, configuration, "rf_job_feedback", "get-failure",
+                    row["details_ref"].split("/")[-1])
+    assert lookup.returncode == 0, lookup.stderr
+    detail = json.loads(lookup.stdout)
+    cause, = detail["cause_chain"]
+    assert cause["type"] == exception_type
+    assert {"validate_document", "_run_gate"} <= {
+        frame["function"] for frame in cause["frames"] if frame["file"] == "contracts/document.py"
+    }
+    assert "do-not-copy-request" not in lookup.stdout and str(tmp_path) not in lookup.stdout
+
+
 def test_ordinary_failure_spools_and_recovers_without_reexecuting_business(tmp_path):
     path = tmp_path / "blocked"
     path.write_text("occupied")

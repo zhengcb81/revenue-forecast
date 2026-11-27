@@ -80,15 +80,13 @@ def collect_mode(collector: Collector):
 
 
 def require(condition: Any, message: str) -> None:
-    # Truthiness gate (bool in intent); data-validation callers pass
-    # isinstance()/fullmatch() results, so the parameter is Any.
-    """Raise ``ForecastInputError`` when *condition* is falsy.
+    """Stop a validator whose remaining work needs this input to be well formed."""
+    if not condition:
+        raise ForecastInputError(message)
 
-    When a :class:`Collector` is active for the current context (set via
-    :func:`collect_mode`), a falsy *condition* appends to that collector instead
-    of raising, enabling a single collect-all pass. With no collector active the
-    behavior is unchanged (raise on the first violation).
-    """
+
+def check(condition: Any, message: str) -> None:
+    """Collect an independent input check whose failure cannot invalidate later reads."""
     if condition:
         return
     collector = _COLLECTOR.get()

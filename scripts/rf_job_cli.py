@@ -158,7 +158,9 @@ def main(argv: list[str] | None = None) -> int:
         return _emit_error(exc.code, exc.message)
     except json.JSONDecodeError:
         return _emit_error("request_invalid", "the request payload is not valid JSON")
-    except (OSError, ValueError, KeyError, TypeError):
+    except Exception:
+        # This process owns the status and JSON error envelope. Save the
+        # original traceback through feedback rather than mixing it into stderr.
         note_native("internal")
         print(json.dumps({"schema_version": "rf-job/1",
                           "error": {"code": "internal", "message": "owner job operation failed"}},

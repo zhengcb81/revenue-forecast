@@ -97,6 +97,14 @@ def main() -> int:
                     effect="not_started" if isinstance(exc, json.JSONDecodeError) else "unknown")
         print(f"error: {exc}", file=sys.stderr)
         return 2
+    except Exception as exc:
+        # The process owns the public message and status. F4 stores the
+        # original exception type and source frames without request values.
+        error_type = type(exc).__name__
+        note_native(error_type)
+        suffix = f" ({error_type})" if error_type.isidentifier() else ""
+        print(f"error: internal forecast failure{suffix}", file=sys.stderr)
+        return 1
     return 0
 
 

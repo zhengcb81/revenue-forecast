@@ -43,11 +43,18 @@ def _chain(error):
         # Read the built-in exception state. Domain exceptions can override arbitrary
         # attributes with properties that throw exceptions of their own.
         tb = BaseException.__traceback__.__get__(error)
+        frames = []
         while tb is not None:
-            path = Path(tb.tb_frame.f_code.co_filename)
-            if path.parent == _ROOT:
-                item.update(file=path.name, line=tb.tb_lineno, function=tb.tb_frame.f_code.co_name)
+            code = tb.tb_frame.f_code
+            path = Path(code.co_filename)
+            if path.is_relative_to(_ROOT):
+                frame = dict(file=path.relative_to(_ROOT).as_posix(), line=tb.tb_lineno, function=code.co_name)
+                frames.append(frame)
+                if path.parent == _ROOT:
+                    item.update(frame)
             tb = tb.tb_next
+        if frames:
+            item["frames"] = frames
         if type(error) is json.JSONDecodeError:
             item.update(input_line=error.lineno, input_column=error.colno)
         if isinstance(error, OSError):

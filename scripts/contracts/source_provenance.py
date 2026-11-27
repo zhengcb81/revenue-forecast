@@ -9,7 +9,7 @@ from datetime import date
 from typing import Any
 from contracts.evidence import (
     ForecastInputError,
-    require,
+    check,
     valid_source_url,
     validate_source_capture,
 )
@@ -108,4 +108,4 @@ def validate_source_provenance(
                 source, as_of, information_eligibility=information_eligibility
             )
     except (OriginalProvenanceError, ForecastInputError) as exc:
-        require(False, str(exc))
+        check(False, str(exc))

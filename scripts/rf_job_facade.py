@@ -401,11 +401,11 @@ def _validate_forecast_input(document: dict[str, Any], *, information_as_of: str
     """Fail-fast engine validation plus scope cross-checks (no writes)."""
     if str(PROJECT_ROOT / "scripts") not in sys.path:
         sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
-    try:
-        from revenue_core import Collector, validate_document
+    from revenue_core import Collector, ForecastInputError, validate_document
 
+    try:
         validate_document(document, collector=Collector())
-    except Exception as exc:  # the engine raises its own input error types
+    except ForecastInputError as exc:
         raise JobFacadeError("request_invalid",
                              f"forecast_input refused by the engine: {exc}") from exc
     if document.get("as_of_date") != information_as_of:

@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
@@ -52,11 +53,40 @@ class VerboseValidationTests(unittest.TestCase):
         self.assertIn("evidence_claims", gates)
         self.assertIn("growth_driver_tree", gates)
 
-    def test_collector_survives_gate_crash_without_propagating(self) -> None:
+    def test_collector_reports_missing_required_field(self) -> None:
         data = copy.deepcopy(self.base)
         del data["base_year"]
         with self.assertRaises(MultiValidationError):
             validate_document(data, collector=Collector())
+
+    def test_unexpected_gate_failure_keeps_original_exception(self) -> None:
+        for gate, error in (
+            ("validate_top_level", KeyError("internal fault")),
+            ("validate_source_coverage", AttributeError("internal fault")),
+            ("validate_revenue_constraints", KeyError("internal fault")),
+        ):
+            with self.subTest(gate=gate), patch(f"contracts.document.{gate}", side_effect=error):
+                collector = Collector()
+                with self.assertRaises(type(error)) as ctx:
+                    validate_document(self.base, collector=collector)
+                self.assertIs(ctx.exception, error)
+                self.assertEqual(collector.errors, [])
+
+    def test_failed_prerequisites_keep_input_diagnostics(self) -> None:
+        mutations = (
+            ("as_of_date", lambda data: data.update(as_of_date=None)),
+            ("segments", lambda data: data.update(segments=[None])),
+            ("invalid capture fields", lambda data: data["sources"][0]["capture"].pop("receipt_sha256")),
+            ("historical_revenue", lambda data: data.update(historical_revenue=[None])),
+            ("growth_driver_tree", lambda data: data.update(growth_driver_tree=None)),
+        )
+        for field, mutate in mutations:
+            with self.subTest(field=field):
+                data = copy.deepcopy(self.base)
+                mutate(data)
+                with self.assertRaises(MultiValidationError) as ctx:
+                    validate_document(data, collector=Collector())
+                self.assertIn(field, str(ctx.exception))
 
     def test_clean_doc_with_collector_returns_indexes(self) -> None:
         result = validate_document(copy.deepcopy(self.base), collector=Collector())
