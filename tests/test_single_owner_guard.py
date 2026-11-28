@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import ast
 import unittest
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
@@ -32,7 +32,7 @@ def _filing_entries(tree: ast.AST) -> set[str]:
         name
         for node in ast.walk(tree)
         if isinstance(node, ast.Constant) and isinstance(node.value, str)
-        if (name := node.value.replace("\\\\", "/").rsplit("/", 1)[-1]) in FILING_ENTRY_NAMES
+        if (name := node.value.replace("\\", "/").rsplit("/", 1)[-1]) in FILING_ENTRY_NAMES
     }
 
 
@@ -45,9 +45,13 @@ class SingleOwnerGuardTests(unittest.TestCase):
                 self.assertEqual(actual, expected)
 
     def test_filing_entry_detection_is_not_a_subprocess_import_allowlist(self) -> None:
-        transport = ast.parse('run([interpreter, "scripts/fetch_statements.py"])')
-        local_job = ast.parse('import subprocess\nsubprocess.run(["render-report"])')
-        self.assertEqual(_filing_entries(transport), {"fetch_statements.py"})
+        native_scripts = PureWindowsPath(SKILL_ROOT / "scripts")
+        for prefix in ("scripts/", "scripts\\", f"{native_scripts}\\"):
+            for entry in sorted(FILING_ENTRY_NAMES):
+                with self.subTest(prefix=prefix, entry=entry):
+                    transport = ast.parse(f"run([interpreter, {prefix + entry!r}])")
+                    self.assertEqual(_filing_entries(transport), {entry})
+        local_job = ast.parse('import subprocess\nsubprocess.run(["render-report", "fetch_filing.py.backup"])')
         self.assertEqual(_filing_entries(local_job), set())
 
     def test_no_second_resolve_filing_symbol(self) -> None:
