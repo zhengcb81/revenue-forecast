@@ -1,12 +1,11 @@
 #!/bin/sh
 # Pre-push runs the fast local correctness gates. The blocking CI workflow
-# runs the sibling-repository E2E suite; production-catalog checks remain an
-# explicit local milestone check. This avoids repeating multi-minute suites
-# synchronously on every push.
+# discovers and runs the full owner suite on Linux and Windows. Cross-owner
+# composition and production-catalog checks use their explicit milestone entry.
 #
 # Installed as .githooks/pre-push (git config core.hooksPath .githooks).
 # Every `git push` runs the fast gate first; a red fast gate aborts the push.
-# CI and this hook invoke the same bounded behavior set.
+# This hook checks the fixed local smoke and Ruff before push.
 #
 # NOTE: shebang MUST be #!/bin/sh (git-for-windows spawns /bin/sh hooks
 # natively; /usr/bin/env bash failed with "cannot spawn").  Use

@@ -86,3 +86,18 @@ def test_failed_gate_preserves_the_first_collection_error(monkeypatch, capsys):
     output = capsys.readouterr()
     assert "first reason: missing fixture" in output.out
     assert "ERROR: first affected test" in output.err
+
+
+def test_timeout_preserves_recorded_progress_without_an_exception_trace(monkeypatch, capsys):
+    def stalled(command, **options):
+        raise subprocess.TimeoutExpired(
+            command, options["timeout"], output=b"173 realistic fixtures started\n",
+            stderr=b"phase: a native lock acquisition\n",
+        )
+
+    monkeypatch.setattr(pre_push_gate.subprocess, "run", stalled)
+    assert pre_push_gate._run(["pytest"], "owner offline behavior", timeout=2) == 1
+    output = capsys.readouterr()
+    assert "173 realistic fixtures started" in output.out
+    assert "phase: a native lock acquisition" in output.err
+    assert "owner offline behavior exceeded 2s" in output.err

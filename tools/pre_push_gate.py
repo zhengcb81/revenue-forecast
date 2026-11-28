@@ -50,33 +50,41 @@ def _safe_console() -> None:
                 pass
 
 
-def _run(
-    cmd: list[str], label: str, timeout: int = 300, *, blocking: bool = True, profile: Path | None = None
-) -> int:
-    print(f"\n=== {label} ===")
-    proc = subprocess.run(
-        cmd,
-        cwd=str(PROJECT_ROOT),
-        stdin=subprocess.DEVNULL,
-        capture_output=True,
-        creationflags=_NO_CONSOLE,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        env=_subprocess_environment(profile),
-        timeout=timeout,
-    )
+def _run(cmd: list[str], label: str, timeout: int = 300, *, profile: Path | None = None) -> int:
+    print(f"\n=== {label} ===", flush=True)
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=str(PROJECT_ROOT),
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            creationflags=_NO_CONSOLE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            env=_subprocess_environment(profile),
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as error:
+        # subprocess returns bytes for partial output even in text mode.
+        if error.stdout:
+            print(error.stdout.decode("utf-8", errors="replace"), end="")
+        if error.stderr:
+            print(error.stderr.decode("utf-8", errors="replace"), end="", file=sys.stderr)
+        print(f"FAILED: {label} exceeded {timeout:g}s", file=sys.stderr)
+        return 1
+    except OSError as error:
+        print(f"FAILED: {label} could not start ({type(error).__name__})", file=sys.stderr)
+        return 1
     if proc.returncode != 0:
         if proc.stdout:
             print(proc.stdout, end="")
         if proc.stderr:
             print(proc.stderr, end="", file=sys.stderr)
-        if blocking:
-            print(f"FAILED: {label}")
+        print(f"FAILED: {label}")
     else:
-        print(((proc.stdout or "") + (proc.stderr or "")).strip()[-500:] or "ok")
+        print(((proc.stdout or "") + (proc.stderr or "")).strip()[-3000:] or "ok")
     return proc.returncode
-
 
 
 # Explicit nodes keep routine push work stable when other files gain tests.
@@ -122,7 +130,7 @@ def _ci_commands(
           "scripts/filing_fetch_client.py", "scripts/trust_anchor.py",
           "scripts/company_wiki_narrative_contracts.py"], "public contract types"),
         ([*pytest, "--collect-only", "--s6-evidence", collected], "owner test inventory"),
-        ([*pytest, "--s6-evidence", executed], "owner offline behavior"),
+        ([*pytest, "--durations=20", "--s6-evidence", executed], "owner offline behavior"),
         ([sys.executable, "-m", "tools.anti_trick_gate_spec", "coverage", "--revision", revision,
           "--policy", str(TEST_POLICY), "--platform", platform, collected, executed],
          "actual owner test coverage"),

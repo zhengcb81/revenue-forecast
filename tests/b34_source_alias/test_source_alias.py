@@ -111,7 +111,8 @@ def owner_action(code: Path, payload: dict) -> dict:
     identity = {"schema_version": "stockwiki.dashboard_identity/1", "command": "resolve",
                 "authority": "stockwiki", "entity_id": entity, "resolution_status": "resolved",
                 "display_name": name, "source_revision": f"identity_schema_version=2.1.0;identity_revision=1;entity={entity}",
-                "entity": {"entity_id": entity, "selected_listing_id": listing_id}}
+                "entity": {"entity_id": entity, "identity_state": "verified",
+                           "selected_listing_id": listing_id}}
     proof = {"schema_version": "stockwiki.dashboard_issuer_proof/1", "authority": "stockwiki",
              "state": "available", "library_revision": "not_provided_no_global_revision", "reason_codes": [],
              "identity_revision": 1, "selected_listing_id": listing_id, "owner_package": {
@@ -631,6 +632,9 @@ def test_trusted_append_guard_runs_after_validation_and_under_lock(
 ):
     catalog, _, _, run, attempt, report = _small_catalog_case(tmp_path)
     events = []
+    entries_before = set(catalog.file.parent.iterdir())
+    lock_path = catalog.file.with_name(catalog.file.name + ".lock")
+    staged = {}
     original_validate = catalog._validate_report_artifact
     original_entries = catalog._entries
 
@@ -649,17 +653,21 @@ def test_trusted_append_guard_runs_after_validation_and_under_lock(
 
     def guard():
         assert events == ["entries-read", "report-validated"]
-        assert len(list(catalog.file.parent.glob(f"{catalog.file.name}.*.tmp"))) == 1
-        assert OwnerFileLock(catalog.file.with_name(catalog.file.name + ".lock")).is_locked()
+        (prepared,) = set(catalog.file.parent.iterdir()) - entries_before - {lock_path}
+        assert OwnerFileLock(lock_path).is_locked()
         assert not catalog.file.exists()
+        staged[prepared] = prepared.read_bytes()
+        assert staged[prepared]
         events.append("guard")
 
     catalog.add_records(
         runs=[run], attempts=[attempt], reports=[report], before_append=guard
     )
     assert events[-1] == "guard"
-    assert catalog.file.exists()
-    assert not OwnerFileLock(catalog.file.with_name(catalog.file.name + ".lock")).is_locked()
+    ((prepared, data),) = staged.items()
+    assert catalog.file.read_bytes() == data
+    assert not prepared.exists()
+    assert not OwnerFileLock(lock_path).is_locked()
 
 
 def test_append_guard_refusal_preserves_existing_catalog_and_releases_lock(tmp_path):
