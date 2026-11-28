@@ -3,20 +3,24 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from hashlib import sha256
 import json
 import os
 from pathlib import Path
 from shutil import copytree
+import subprocess
 import sys
-from threading import Barrier
+from threading import Barrier, Event, local
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from owner_atomic_io import native_path, open_regular_file  # noqa: E402
+from owner_file_lock import OwnerFileLock  # noqa: E402
 from rf_assurance_history import AssuranceRun  # noqa: E402
+import rf_feedback_outbox as outbox  # noqa: E402
 from rf_feedback_outbox import flush, publish, was_published  # noqa: E402
 from rf_job_facade import AttemptOutcome, JobFacade  # noqa: E402
 import rf_job_feedback as feedback  # noqa: E402
@@ -536,39 +540,124 @@ def test_owner_file_checks_descriptor_identity_and_preserves_concurrent_file(tmp
     assert separate.read_bytes() == b"separate fixture"
 
 
-def test_single_file_fallback_preserves_two_original_observations(tmp_path, monkeypatch, isolated_outbox):
+@pytest.mark.parametrize("duplicate", (False, True), ids=("distinct", "same"))
+def test_single_file_fallback_serializes_check_and_append(tmp_path, monkeypatch, isolated_outbox, duplicate):
     blocked_state = tmp_path / "unavailable-state"
     blocked_state.write_bytes(b"synthetic blocker")
     for key in ("LOCALAPPDATA", "XDG_STATE_HOME"):
         monkeypatch.setenv(key, str(blocked_state))
     output = tmp_path / "first-publication.jsonl"
     monkeypatch.setenv("RESEARCH_FEEDBACK_OUT", str(output))
-    expected = [dict(isolated_outbox, run_id=run) for run in ("original-1", "original-2")]
-    real_open = os.open
-    creation = Barrier(2, timeout=5)
-    initial_opens = []
+    first = dict(isolated_outbox, run_id="original-1")
+    other = first if duplicate else dict(isolated_outbox, run_id="original-2")
+    expected = [first] if duplicate else [first, other]
+    worker = local()
+    first_scanned, contender, first_done = Event(), Event(), Event()
+    contended_for_owner_lock = Event()
+    real_acquire = OwnerFileLock.acquire
 
-    def simultaneous_creation(path, flags, *args, **kwargs):
-        if Path(path) == native_path(output) and flags & os.O_EXCL:
-            initial_opens.append(flags)
-            creation.wait()
-        return real_open(path, flags, *args, **kwargs)
+    def observe_lock(lock):
+        acquired = real_acquire(lock)
+        if worker.name == "second" and not acquired:
+            contended_for_owner_lock.set()
+            contender.set()
+        return acquired
+
+    class ObserveScan:
+        def __init__(self, stream):
+            self.stream = stream
+
+        def __getattr__(self, name):
+            return getattr(self.stream, name)
+
+        def __iter__(self):
+            yield from self.stream
+            if worker.name == "first":
+                first_scanned.set()
+                assert contender.wait(5), "second publisher did not reach the transport"
+            # In the unlocked implementation both publishers can scan the same
+            # empty file. Let the first commit before the second appends.
+            elif not first_done.is_set():
+                contender.set()
+                assert first_done.wait(5), "first publisher did not finish"
+
+    @contextmanager
+    def observe_open(path, *, append=False):
+        with open_regular_file(path, append=append) as stream:
+            yield ObserveScan(stream) if append and native_path(path) == native_path(output) else stream
+
+    def send(name, row):
+        worker.name = name
+        try:
+            publish(row)
+        finally:
+            if name == "first":
+                first_done.set()
 
     with monkeypatch.context() as overlap:
-        overlap.setattr(os, "open", simultaneous_creation)
+        overlap.setattr(OwnerFileLock, "acquire", observe_lock)
+        overlap.setattr(outbox, "open_regular_file", observe_open)
         with ThreadPoolExecutor(max_workers=2) as workers:
-            calls = [workers.submit(publish, row) for row in expected]
-            for call in calls:
-                call.result(timeout=10)
+            original = workers.submit(send, "first", first)
+            assert first_scanned.wait(5), "first publisher did not finish its scan"
+            available = workers.submit(send, "second", other)
+            original.result(timeout=10)
+            available.result(timeout=10)
 
-    assert len(initial_opens) == 2
     assert blocked_state.read_bytes() == b"synthetic blocker"
     rows = [json.loads(line) for line in output.read_bytes().splitlines()]
-    assert sorted(rows, key=lambda row: row["run_id"]) == expected
+    assert rows == expected
+    assert contended_for_owner_lock.is_set()
     assert all(was_published(row) for row in expected)
     blocked_state.unlink()
     assert flush() == {"found": 0, "remaining": 0}
     assert [json.loads(line) for line in output.read_bytes().splitlines()] == rows
+
+
+def test_single_file_contention_preserves_pending_for_cold_replay(tmp_path, monkeypatch, isolated_outbox):
+    output = tmp_path / "deferred.jsonl"
+    monkeypatch.setenv("RESEARCH_FEEDBACK_OUT", str(output))
+    complete = dict(isolated_outbox, run_id="already-delivered")
+    waiting = dict(isolated_outbox, run_id="pending-after-contention")
+    publish(complete)
+    original = output.read_bytes()
+
+    monkeypatch.setattr(outbox, "_SINGLE_FILE_LOCK_WAIT_SECONDS", 0.05)
+    with outbox._single_file_lock(native_path(output)):
+        publish(complete)
+        publish(waiting)
+        assert output.read_bytes() == original
+
+    inherited = {
+        "PATH", "PATHEXT", "COMSPEC", "SYSTEMROOT", "WINDIR", "TEMP", "TMP",
+        "PYTHONUTF8", "LOCALAPPDATA", "XDG_STATE_HOME", "RESEARCH_FEEDBACK_OUT",
+    }
+    environment = {key: value for key, value in os.environ.items() if key.upper() in inherited}
+    environment["PYTHONPATH"] = str(Path(outbox.__file__).parent)
+    process = subprocess.run(
+        [sys.executable, "-B", "-c", """
+import json
+import sys
+from rf_feedback_outbox import flush, was_published
+
+rows = json.load(sys.stdin)
+first = flush()
+visible = [was_published(row) for row in rows]
+print(json.dumps({"first": first, "visible": visible, "repeat": flush()}))
+"""],
+        input=json.dumps([complete, waiting]), text=True, encoding="utf-8",
+        capture_output=True, env=environment, cwd=tmp_path, timeout=30,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+    )
+    assert process.returncode == 0, process.stderr
+    assert json.loads(process.stdout) == {
+        "first": {"found": 2, "remaining": 0},
+        "visible": [True, True],
+        "repeat": {"found": 0, "remaining": 0},
+    }
+    content = output.read_bytes()
+    assert content.startswith(original)
+    assert [json.loads(line) for line in content.splitlines()] == [complete, waiting]
 
 
 @pytest.mark.posix_only

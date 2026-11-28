@@ -6,12 +6,18 @@ import json
 import os
 from pathlib import Path
 import sqlite3
+from time import monotonic, sleep
 from uuid import NAMESPACE_URL, uuid5
 
 from urllib.parse import quote
 
 from owner_atomic_io import native_path, open_regular_file, replace_file_bytes
+from owner_file_lock import OwnerFileLock
 from rf_local_diagnostics import record_local_error, state_dir
+
+
+_SINGLE_FILE_LOCK_WAIT_SECONDS = 2.0
+_SINGLE_FILE_LOCK_RETRY_SECONDS = 0.02
 
 
 def _json(value):
@@ -59,14 +65,31 @@ def was_published(row: dict) -> bool:
         return False
 
 
+@contextmanager
+def _single_file_lock(destination: Path):
+    # Keep the mutex beside the ledger so configured directory aliases share it.
+    # A fixed-length name also works when the ledger name is already long.
+    key = uuid5(NAMESPACE_URL, os.path.normcase(destination.name)).hex
+    lock = OwnerFileLock(destination.with_name(f".rf-feedback-{key}.lock"))
+    deadline = monotonic() + _SINGLE_FILE_LOCK_WAIT_SECONDS
+    while not lock.acquire():
+        remaining = deadline - monotonic()
+        if remaining <= 0:
+            raise TimeoutError("feedback output is busy")
+        sleep(min(remaining, _SINGLE_FILE_LOCK_RETRY_SECONDS))
+    try:
+        yield
+    finally:
+        lock.release()
+
+
 def _deliver(key, event):
     dest = native_path(Path(event["target"]))
     row = event["row"]
     data = (_json(row) + "\n").encode("ascii")
     if event["single"]:
-        dest.parent.mkdir(parents=True, exist_ok=True)
         # A previous process may have written and fsynced this row before it acknowledged delivery.
-        with open_regular_file(dest, append=True) as stream:
+        with _single_file_lock(dest), open_regular_file(dest, append=True) as stream:
             stream.seek(0)
             for line in stream:
                 try:
