@@ -150,7 +150,7 @@ def main(argv: list[str] | None = None) -> int:
     platform = {"win32": "windows", "linux": "linux"}.get(sys.platform, sys.platform)
     if options.ci and platform not in {"linux", "windows"}:
         parser.error("the release test policy covers Linux and Windows")
-    gates = [([sys.executable, "-m", "ruff", "check", "scripts", "tests", "tools", "e2e"], "ruff")]
+    gates = [([sys.executable, "-m", "ruff", "check", "--no-cache", "scripts", "tests", "tools", "e2e"], "ruff")]
     with tempfile.TemporaryDirectory(prefix="rf-ci-" if options.ci else "rf-local-") as scratch:
         temporary = Path(scratch)
         if options.ci:

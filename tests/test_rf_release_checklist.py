@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
 import release_checklist as rc  # noqa: E402
+from rf_subprocess_env import isolated_rf_subprocess_env  # noqa: E402
 
 TOOL = ROOT / "tools" / "release_checklist.py"
 
@@ -36,6 +37,9 @@ def _cli(timeout: int = 900) -> subprocess.CompletedProcess:
         encoding="utf-8",
         errors="replace",
         cwd=str(ROOT),
+        env=isolated_rf_subprocess_env(),
+        stdin=subprocess.DEVNULL,
+        creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
         timeout=timeout,
     )
 
@@ -179,7 +183,7 @@ def test_c4_cli_reports_a_real_gate_failure_loudly(tmp_path, monkeypatch, capsys
     monkeypatch.setattr(
         rc,
         "_delegates",
-        lambda: [("ruff", [sys.executable, "-m", "ruff", "check", str(probe)])],
+        lambda: [("ruff", [sys.executable, "-m", "ruff", "check", "--no-cache", str(probe)])],
     )
     assert rc.main([]) == 1
     out = capsys.readouterr().out
