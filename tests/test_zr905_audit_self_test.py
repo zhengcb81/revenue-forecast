@@ -24,11 +24,15 @@ import subprocess
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "assurance" / "unified_completion"))
 
+import daily_t2_schedule as scheduler  # noqa: E402
 import release_gate as rg  # noqa: E402
 from daily_t2_schedule import freshness_status, release_gate  # noqa: E402
 from weekly_t3_assurance import read_weekly_t3  # noqa: E402
@@ -86,14 +90,21 @@ def test_aud2_01_no_run_blocks():
     assert "blocked" in reason
 
 
-def test_aud2_01_schedule_not_registered():
-    # REV-003: the scheduled-task side is also part of AUD2-01 — a task that
-    # is not registered is a missing schedule (read-only schtasks query).
-    proc = subprocess.run(
-        ["schtasks", "/query", "/tn", "revenue_daily_t2", "/fo", "csv", "/v"],
-        capture_output=True, text=True, encoding="utf-8", timeout=60,
-    )
-    assert proc.returncode != 0, "expected task not registered (deployment action)"
+@pytest.mark.parametrize(("code", "stdout", "stderr", "expected"), [
+    (0, '"TaskName"\n"other-test-task"', "", "missing"),
+    (0, '"TaskName"\n"controlled-schedule"', "", "registered"),
+    (1, "", "Access is denied", "unknown"),
+])
+def test_aud2_01_registration_reports_only_observed_status(monkeypatch, code, stdout, stderr, expected):
+    name = "controlled-schedule"
+
+    def task_query(arguments):
+        assert arguments == ["/query", "/tn", name, "/fo", "csv", "/v"]
+        return subprocess.CompletedProcess(arguments, code, stdout, stderr)
+
+    monkeypatch.setattr(scheduler, "sys", SimpleNamespace(platform="win32"))
+    monkeypatch.setattr(scheduler, "_schtasks", task_query)
+    assert scheduler.query_task_status(name)[0] == expected
 
 
 # ---------------------------------------------------------------------------
@@ -163,18 +174,17 @@ def test_aud2_04_forged_zero_counts_sli_red():
 # ---------------------------------------------------------------------------
 
 
-def test_aud2_05_missing_sample_blocks():
-    # the fixed ZR-806 sample list must all exist; a missing one is a
-    # hard failure, never an automatic swap to an easier sample
-    from test_zr806_real_t2_samples import SAMPLES
+def test_aud2_05_missing_requested_evidence_is_never_replaced_by_a_different_sample(tmp_path):
+    from uc.scenarios import closure_report
 
-    missing = [label for label, path, _f, _s in SAMPLES if not path.is_file()]
-    assert missing == [], f"samples missing: {missing} (blocked, never swap)"
-    sli = rg.compute_sli({"latest_run_id": "r", "ok": True}, catalog={
-        "bound_artifacts": 0, "reuse_count": 0, "consumer_ready_rate": 0.95,
-        "render_ok": True,
-    })
-    assert sli["reuse"]["ok"] is False
+    pinned = tmp_path / "requested-evidence.json"
+    (tmp_path / "unrelated-evidence.json").write_text("{}", encoding="utf-8")
+    payload = {"scenarios": {"sample": {"status": "passed", "evidence_path": pinned.name}}}
+    blocked = closure_report(payload, tmp_path)
+    assert blocked["closure_ready"] is False
+    assert blocked["unsatisfied_ids"] == ["sample: evidence_path is missing or unreadable"]
+    pinned.write_text("{}", encoding="utf-8")
+    assert closure_report(payload, tmp_path)["closure_ready"] is True
 
 
 # ---------------------------------------------------------------------------

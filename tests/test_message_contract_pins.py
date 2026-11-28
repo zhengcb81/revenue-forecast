@@ -10,7 +10,7 @@ turns these tests red instead of passing silently:
   #2  the former review block is superseded by verified-byte consumption;
   #5  the six demand/claim refusal texts (archived RF + CW processing_demand.py) —
       verbatim behavior pins AND cross-repo (RF/CW) equality (逐字同文);
-  #8  the "{field} must be a lowercase SHA-256" family — verbatim behavior pins;
+  #8  the RF-owned SourceRef lowercase SHA-256 wire failure;
   #9  the parser/llm counts fail-closed sentence — verbatim.
   #3  `cases_json_declared_expectation_missing` = RUNNER vocabulary, not
       product vocabulary (per decision.md clarification): the correct state
@@ -27,9 +27,8 @@ vars at the copy, expect RED):
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
-import shutil
-import sqlite3
 import sys
 from pathlib import Path
 
@@ -126,24 +125,7 @@ def _drive_six_refusals(mod) -> dict:
     return texts
 
 
-def _load_cw_pair(tmp_path: Path):
-    """prompt_injection + prompt_injection_guard as a real mini package."""
-    pkg = tmp_path / "pi_pkg"
-    if not pkg.exists():
-        pkg.mkdir()
-        (pkg / "__init__.py").write_text("", encoding="utf-8")
-        for name in ("prompt_injection.py", "prompt_injection_guard.py"):
-            shutil.copy2(CW_DIR / name, pkg / name)
-    sys.path.insert(0, str(tmp_path))
-    try:
-        pi = importlib.import_module("pi_pkg.prompt_injection")
-        guard = importlib.import_module("pi_pkg.prompt_injection_guard")
-    finally:
-        sys.path.remove(str(tmp_path))
-    return pi, guard
-
-
-# --- #9: parser/llm counts fail-closed sentence, verbatim -------------------
+# --- #9: parser/llm counts fail-closed sentence ----------------------------
 
 
 def test_counts_sentence_pinned_verbatim():
@@ -197,25 +179,26 @@ def test_six_refusal_sources_verbatim_identical():
         assert token in rf_src and token in cw_src, rendered_literal
 
 
-# --- #8: "{field} must be a lowercase SHA-256" family, verbatim -------------
+# --- #8: RF SourceRef lowercase SHA-256 -------------------------------------
 
 
-def test_lowercase_sha256_family_pinned(tmp_path):
-    pi, guard = _load_cw_pair(tmp_path)
-    con = sqlite3.connect(":memory:")
-    con.execute("CREATE TABLE documents (document_id TEXT PRIMARY KEY, metadata_json TEXT)")
-    con.execute("INSERT INTO documents VALUES('doc-1', '{}')")
-    with pytest.raises(ValueError) as excinfo:
-        pi.record_prompt_injection_review(
-            con, "doc-1", status="not_detected", reviewer="r",
-            evidence_sha256="ABC", now="2026-09-22T00:00:00Z")
-    assert str(excinfo.value) == "evidence_sha256 must be a lowercase SHA-256"
-    with pytest.raises(ValueError) as excinfo:
-        guard.scan_text("x", ruleset_hash="ABC")
-    assert str(excinfo.value) == "ruleset_hash must be a lowercase SHA-256"
-    # evaluate_review was retired with the manual prompt-review gate.
-    # Active raw/SourceRef hashes are verified by test_company_wiki_source_ref_v2.
-    con.close()
+def test_rf_source_ref_requires_a_lowercase_sha256_before_reader_io(tmp_path, monkeypatch):
+    monkeypatch.syspath_prepend(str(RF_SCRIPTS))
+    import company_wiki_source_reader_v2 as reader
+
+    source = json.loads((ROOT / "tests" / "fixtures" / "cwp_source_ref_v2.json").read_text(encoding="utf-8"))
+    source["content_sha256"] = "A" * 64
+
+    def forbidden(*_args, **_kwargs):
+        pytest.fail("invalid hash reached the source reader process")
+
+    monkeypatch.setattr(reader, "_run_reader", forbidden)
+    with pytest.raises(reader.SourceVersionTransportError) as failure:
+        reader.open_source_version_v2(
+            source_ref=source, catalog_config=tmp_path / "catalog.json",
+            as_of_date="2026-07-18", expected_fiscal_year=2025,
+        )
+    assert str(failure.value) == "source_ref SHA-256 is invalid"
 
 
 # --- #3: runner vocabulary is NOT product vocabulary (structural zero-hit) ---

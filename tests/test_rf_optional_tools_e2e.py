@@ -156,9 +156,10 @@ def test_e1_default_cli_json_carries_one_status_per_gate():
 def isolated_rf(tmp_path_factory) -> Path:
     iso = tmp_path_factory.mktemp("g2-iso") / "revenue-forecast"
     (iso / "tools").mkdir(parents=True)
-    shutil.copyfile(READINESS, iso / "tools" / "release_readiness.py")
+    for name in ("release_readiness.py", "cwp_catalog_status.py"):
+        shutil.copyfile(READINESS.with_name(name), iso / "tools" / name)
     assert _git(iso, "init", "-q").returncode == 0
-    assert _git(iso, "add", "tools/release_readiness.py").returncode == 0
+    assert _git(iso, "add", "tools").returncode == 0
     assert (
         _git(
             iso,

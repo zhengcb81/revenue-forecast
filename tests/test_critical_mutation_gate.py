@@ -7,8 +7,11 @@ honest: removing a class's evidence makes the gate fail.
 
 from __future__ import annotations
 
+import json
 import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "compatibility"))
@@ -34,10 +37,25 @@ class TestCriticalMutationGate(unittest.TestCase):
         self.assertIn("## latest_reresolve", text)
         self.assertIn("M-latest", text)
 
-    def test_receipt_scan_finds_kills(self):
-        ev = cmg.collect_receipt_evidence()
-        self.assertGreaterEqual(len(ev["hash_check"]), 1)
-        self.assertGreaterEqual(len(ev["epoch_condition"]), 1)
+    def test_receipt_scan_credits_kills_and_discards_unkilled_attempts(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            owner = Path(scratch)
+            receipts = owner / "assurance" / "fc" / "FC-1005"
+            receipts.mkdir(parents=True)
+            for index, (killed, detail) in enumerate([
+                (True, "wrong sha256 accepted"),
+                (True, "epoch condition bypass"),
+                (False, "path escape allowed"),
+            ]):
+                (receipts / f"11_attempt_{index}.json").write_text(
+                    json.dumps({"mutation": {"killed": killed, "details": detail}}),
+                    encoding="utf-8",
+                )
+            with patch.object(cmg, "SIBLINGS", (owner,)):
+                observed = cmg.collect_receipt_evidence()
+        self.assertEqual(len(observed["hash_check"]), 1)
+        self.assertEqual(len(observed["epoch_condition"]), 1)
+        self.assertEqual(observed["path_containment"], [])
 
     def test_gate_fails_without_file_evidence(self):
         """The gate must be honest: with NO receipt evidence (empty sibling

@@ -67,13 +67,25 @@ def test_v4_wire_rejects_invalid_capability_fields(field, value):
         public_context(mutate=lambda reading: reading["groups"][0]["citation_views"][0].update({field: value}))
 
 
-@pytest.mark.parametrize("field", ["reading_support_use", "reading_support_reason", "selection_trace"])
-def test_v4_wire_requires_its_fields(field):
+@pytest.mark.parametrize("field", ["reading_support_use", "reading_support_reason"])
+def test_v4_wire_requires_its_citation_capability_fields(field):
     def mutate(reading):
-        target = reading if field == "selection_trace" else reading["groups"][0]["citation_views"][0]
-        del target[field]
+        del reading["groups"][0]["citation_views"][0][field]
+
     with pytest.raises(NarrativeTransportError):
         public_context(mutate=mutate)
+
+
+@pytest.mark.parametrize(("mutation", "observation"), [
+    (lambda reading: reading.pop("selection_trace"), {"status": "absent", "reason": "selection_trace_absent"}),
+    (lambda reading: reading.update(selection_trace={}), {"status": "unavailable", "reason": "invalid_selection_trace"}),
+])
+def test_v4_selection_trace_is_diagnostic_and_preserves_verified_citations(mutation, observation):
+    complete = public_context().to_dict()
+    value = public_context(mutate=mutation).to_dict()
+    assert observation in value["reading_diagnostic_observations"]
+    assert value["evidence_spans"] == complete["evidence_spans"]
+    assert value["reading_context"]["groups"] == complete["reading_context"]["groups"]
 
 
 @pytest.mark.parametrize("use", ["context_only", "unresolved"])

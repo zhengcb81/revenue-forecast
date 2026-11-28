@@ -3,7 +3,7 @@
   C1  atomic write: _atomic_write_text writes via same-dir tmp + fsync +
       os.replace; the target appears atomically; tmp is cleaned up.
   C2  fault injection: write failure / os.replace failure leave NO target
-      file and NO tmp orphan; registry append failure exits 2 with no
+      file and NO tmp orphan; registry append failure reports an internal error with no
       half-written output.
   C3  recovery idempotency: the same input published twice produces
       byte-identical outputs and exactly one registry entry per run.
@@ -90,7 +90,7 @@ def test_c2_write_failure_leaves_no_target(monkeypatch, tmp_path):
     assert not target.exists()
 
 
-def test_c2_registry_failure_exits_without_half_output(tmp_path, monkeypatch):
+def test_c2_registry_failure_exits_without_half_output(tmp_path, monkeypatch, capsys):
     """Registry append failure is injected IN-PROCESS via main() (a
     subprocess would re-import the real _append)."""
     sys.path.insert(0, str(ROOT / "tests"))
@@ -112,7 +112,11 @@ def test_c2_registry_failure_exits_without_half_output(tmp_path, monkeypatch):
 
     monkeypatch.setattr(publication_registry, "_append", boom_append)
     rc = revenue_forecast.main()
-    assert rc == 2
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "internal forecast failure (RegistryError)" in captured.err
+    assert "injected registry failure" not in captured.err
     # registry failure precedes the output write: no half-written output,
     # no registry file
     assert not out_file.exists()

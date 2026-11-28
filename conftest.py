@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import subprocess
 
 import pytest
 
@@ -33,13 +32,9 @@ def directory_link():
             link.symlink_to(target, target_is_directory=True)
             return
 
-        quoted_link = "'" + str(link).replace("'", "''") + "'"
-        quoted_target = "'" + str(target).replace("'", "''") + "'"
-        command = "New-Item -ErrorAction Stop -ItemType Junction -Path " + quoted_link
-        command += " -Target " + quoted_target + " | Out-Null"
-        subprocess.run(
-            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command],
-            stdin=subprocess.DEVNULL, capture_output=True, check=True, timeout=15,
-            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-        )
+        # CPython exposes its Win32 junction primitive. The tests require a real
+        # reparse point without shell startup, Developer Mode or admin privileges.
+        from _winapi import CreateJunction
+
+        CreateJunction(str(target.resolve(strict=True)), str(link))
     return create

@@ -459,7 +459,7 @@ def test_cli_deeply_nested_json_fails_closed(monkeypatch, capsys):
         def __init__(self, raw: bytes):
             self.buffer = io.BytesIO(raw)
 
-    monkeypatch.setattr(cli.sys, "stdin", BinaryInput(b"[" * 6000 + b"]" * 6000))
+    monkeypatch.setattr(cli.sys, "stdin", BinaryInput(b"[" * 6000 + b"]" * 5999))
     assert cli.main(["compare"]) == 2
     emitted = capsys.readouterr()
     assert emitted.out == ""

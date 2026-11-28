@@ -7,6 +7,8 @@ from unittest.mock import patch
 
 import pytest
 
+from rf_filing_fixture import write_filing_reply
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "tests"))
@@ -45,16 +47,12 @@ def test_latest_rejects_unresolved_or_invalid_year(year):
 
 
 def test_complete_result_retains_companion_and_unknown_usage(tmp_path):
-    script = tmp_path / "scripts" / "fetch_filing.py"
-    script.parent.mkdir()
-    script.write_text("", encoding="utf-8")
     complete = result()
-    completed = subprocess.CompletedProcess([], 0, json.dumps(complete), "")
-    with patch.object(client.subprocess, "run", return_value=completed):
-        received = client.resolve_filing_result({}, filing_fetch_root=tmp_path, source_ref_v2=True)
-        assert received == complete
-        assert received["usage"]["model_tokens"] is None
-        assert client.resolve_filing({}, filing_fetch_root=tmp_path, source_ref_v2=True) == complete["filing"]
+    write_filing_reply(tmp_path, json.dumps(complete).encode("utf-8"))
+    received = client.resolve_filing_result({}, filing_fetch_root=tmp_path, source_ref_v2=True)
+    assert received == complete
+    assert received["usage"]["model_tokens"] is None
+    assert client.resolve_filing({}, filing_fetch_root=tmp_path, source_ref_v2=True) == complete["filing"]
 
 
 def test_prepare_result_adds_envelope_without_changing_formal_source(tmp_path):
@@ -131,27 +129,21 @@ def test_mixed_source_and_unavailable_never_fallback(tmp_path):
 
 def test_recorded_full_success_replays_without_requery(tmp_path):
     payload = json.loads((ROOT / "tests" / "fixtures" / "ff_complete_success_v2.json").read_text(encoding="utf-8"))
-    script = tmp_path / "scripts" / "fetch_filing.py"
-    script.parent.mkdir()
-    script.write_text("", encoding="utf-8")
-    with patch.object(client.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, json.dumps(payload), "")) as run:
-        actual = client.resolve_filing_result({}, filing_fetch_root=tmp_path, source_ref_v2=True)
+    calls = write_filing_reply(tmp_path, json.dumps(payload).encode("utf-8"))
+    actual = client.resolve_filing_result({}, filing_fetch_root=tmp_path, source_ref_v2=True)
     assert actual == payload
-    assert run.call_count == 1
+    assert calls.read_text(encoding="utf-8").splitlines() == ["called"]
     assert actual["calls"] == 3 and actual["downloads"] == 0
     assert actual["transcript"]["provider_requests"] == 1
     assert actual["transcript"]["retryable"] is False
 
 
 def test_complete_v2_result_refuses_companion_storage_paths(tmp_path):
-    script = tmp_path / "scripts" / "fetch_filing.py"
-    script.parent.mkdir()
-    script.write_text("", encoding="utf-8")
     complete = result()
     complete["transcript"]["storage_path"] = "private/path"
-    with patch.object(client.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, json.dumps(complete), "")):
-        with pytest.raises(client._ClientError, match="storage location"):
-            client.resolve_filing_result({}, filing_fetch_root=tmp_path, source_ref_v2=True)
+    write_filing_reply(tmp_path, json.dumps(complete).encode("utf-8"))
+    with pytest.raises(client._ClientError, match="storage location"):
+        client.resolve_filing_result({}, filing_fetch_root=tmp_path, source_ref_v2=True)
 
 
 @pytest.mark.parametrize(("name", "year", "period_end"), [("CalendarCo", 2025, "2025-12-31"), ("JanuaryCo", 2026, "2026-01-31")])

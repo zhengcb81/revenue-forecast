@@ -22,6 +22,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from rf_filing_fixture import write_filing_reply
+
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
@@ -131,54 +133,27 @@ class ResolveFilingErrorDiagnosticsTests(unittest.TestCase):
         # Phase 6 C1: when filing-fetch exits non-zero and stdout is not a JSON
         # error document, diagnose malformed upstream output without echoing
         # arbitrary stderr (W08: it can contain provider URLs or credentials).
-        from unittest.mock import patch
-
-        completed = subprocess.CompletedProcess(
-            args=[],
-            returncode=2,
-            stdout="not-json",
-            stderr="boom: upstream failure",
-        )
         with _fake_root() as root:
-            with patch("filing_fetch_client.subprocess.run", return_value=completed):
-                with self.assertRaises(_ClientError) as ctx:
-                    resolve_filing(_request("AMD"), filing_fetch_root=root)
+            write_filing_reply(root, b"not-json", exit_code=2, stderr=b"boom: upstream failure")
+            with self.assertRaises(_ClientError) as ctx:
+                resolve_filing(_request("AMD"), filing_fetch_root=root)
             self.assertIn("invalid upstream error document", str(ctx.exception))
             self.assertNotIn("boom: upstream failure", str(ctx.exception))
             self.assertIsNone(ctx.exception.upstream_cause)
 
     def test_resolve_filing_invalid_stdout_json_is_rejected(self) -> None:
-        # Phase 6 C1: zero exit but non-JSON stdout must raise.
-        from unittest.mock import patch
-
-        completed = subprocess.CompletedProcess(
-            args=[],
-            returncode=0,
-            stdout="<html>not json</html>",
-            stderr="",
-        )
         with _fake_root() as root:
-            with patch("filing_fetch_client.subprocess.run", return_value=completed):
-                with self.assertRaises(_ClientError) as ctx:
-                    resolve_filing(_request("AMD"), filing_fetch_root=root)
+            write_filing_reply(root, b"<html>not json</html>")
+            with self.assertRaises(_ClientError) as ctx:
+                resolve_filing(_request("AMD"), filing_fetch_root=root)
             self.assertIn("not valid JSON", str(ctx.exception))
 
     def test_resolve_filing_non_capture_ready_status_is_rejected(self) -> None:
-        # Phase 6 C1: a capture_ready=False response must raise with status.
-        from unittest.mock import patch
-
-        completed = subprocess.CompletedProcess(
-            args=[],
-            returncode=0,
-            stdout=json.dumps(
-                {"schema_version": "1.0", "status": "not_found", "error": "no filing"}
-            ),
-            stderr="",
-        )
+        payload = {"schema_version": "1.0", "status": "not_found", "error": "no filing"}
         with _fake_root() as root:
-            with patch("filing_fetch_client.subprocess.run", return_value=completed):
-                with self.assertRaises(_ClientError) as ctx:
-                    resolve_filing(_request("AMD"), filing_fetch_root=root)
+            write_filing_reply(root, json.dumps(payload).encode("utf-8"))
+            with self.assertRaises(_ClientError) as ctx:
+                resolve_filing(_request("AMD"), filing_fetch_root=root)
             self.assertIn("status=not_found", str(ctx.exception))
 
 
@@ -402,29 +377,23 @@ if __name__ == "__main__":
     unittest.main()
 
 
-def test_schema2_source_candidate_is_unwrapped(tmp_path, monkeypatch):
+def test_schema2_source_candidate_is_unwrapped(tmp_path):
     import filing_fetch_client as client
-    (tmp_path / "scripts").mkdir()
-    (tmp_path / "scripts/fetch_filing.py").write_text("", encoding="utf-8")
     filing = {"status": "source_candidate", "source_ref": {"schema_version": "2.0"},
               "document_kind": "annual_report", "fiscal_year": 2025, "fiscal_period": "FY",
               "resolution_outcome": "reused_existing", "download_events": 0,
               "byte_verification": "pending_verified_open"}
     payload = {"schema_version": "2.0", "status": "source_candidate", "filing": filing,
                "transcript": {"status": "not_requested"}, "calls": 2, "downloads": 0}
-    monkeypatch.setattr(client.subprocess, "run", lambda *a, **kw:
-                        subprocess.CompletedProcess([], 0, json.dumps(payload), ""))
+    write_filing_reply(tmp_path, json.dumps(payload).encode("utf-8"))
     assert client.resolve_filing({"schema_version": "2.0"}, filing_fetch_root=tmp_path) == filing
 
 
-def test_schema2_gap_keeps_provider_reason(tmp_path, monkeypatch):
+def test_schema2_gap_keeps_provider_reason(tmp_path):
     import filing_fetch_client as client
     import pytest
-    (tmp_path / "scripts").mkdir()
-    (tmp_path / "scripts/fetch_filing.py").write_text("", encoding="utf-8")
     payload = {"schema_version": "2.0", "status": "gap",
                "filing": {"status": "gap", "reason": "provider_unavailable"}}
-    monkeypatch.setattr(client.subprocess, "run", lambda *a, **kw:
-                        subprocess.CompletedProcess([], 0, json.dumps(payload), ""))
+    write_filing_reply(tmp_path, json.dumps(payload).encode("utf-8"))
     with pytest.raises(client._ClientError, match="provider_unavailable"):
         client.resolve_filing({"schema_version": "2.0"}, filing_fetch_root=tmp_path)
