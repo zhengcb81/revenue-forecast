@@ -12,7 +12,7 @@ from uuid import NAMESPACE_URL, UUID, uuid5
 
 from urllib.parse import quote
 
-from owner_atomic_io import native_path, open_regular_file, replace_file_bytes, separate_partial_line
+from owner_atomic_io import create_file_bytes, native_path, open_regular_file, replace_file_bytes, separate_partial_line
 from owner_file_lock import OwnerFileLock
 from rf_local_diagnostics import find_local_error, public_diagnostic, record_local_error, state_dir, traceback_facts
 
@@ -79,24 +79,47 @@ def _marker(row: dict) -> bytes:
     return _line(marker)
 
 
-def _directory_published(path: Path, row: dict) -> bool:
-    data = _line(row)
+def _matches_delivery_file(path: Path, expected: bytes) -> bool:
     try:
-        with open_regular_file(path) as packet:
-            if packet.read(len(data) + 1) != data:
-                return False
+        with open_regular_file(path) as stream:
+            if stream.read(len(expected) + 1) != expected:
+                raise ValueError("feedback file does not match its original delivery")
     except FileNotFoundError:
         return False
-    # Receivers can process a complete unmarked packet, and may have already
-    # removed its marker. An existing conflicting marker is a delivery fault.
-    expected = _marker(row)
-    try:
-        with open_regular_file(path.with_suffix(".ready")) as marker:
-            if marker.read(len(expected) + 1) != expected:
-                raise ValueError("feedback marker does not match its original packet")
-    except FileNotFoundError:
-        return True
     return True
+
+
+def _directory_files(path: Path, data: bytes, ready: bytes) -> tuple[bool, bool]:
+    return _matches_delivery_file(path, data), _matches_delivery_file(path.with_suffix(".ready"), ready)
+
+
+def _directory_published(path: Path, row: dict) -> bool:
+    packet, _ = _directory_files(path, _line(row), _marker(row))
+    # CWP can consume an intact unmarked packet, and its receipt retires .ready.
+    return packet
+
+
+def _create_delivery_file(path: Path, data: bytes) -> bool:
+    try:
+        create_file_bytes(path, data)
+    except FileExistsError:
+        if not _matches_delivery_file(path, data):
+            raise
+        return False
+    return True
+
+
+def _publish_directory(path: Path, row: dict) -> None:
+    data, ready = _line(row), _marker(row)
+    packet_exists, marker_exists = _directory_files(path, data, ready)
+    if packet_exists:
+        return
+    marker_path = path.with_suffix(".ready")
+    if not _create_delivery_file(path, data):
+        # A peer won the publication. Its packet is already consumable.
+        _matches_delivery_file(marker_path, ready)
+    elif not marker_exists:
+        _create_delivery_file(marker_path, ready)
 
 
 @contextmanager
@@ -152,9 +175,7 @@ def _dispatch(key, event):
         if _directory_published(dest / f"feedback-{key}.jsonl", original):
             return
         key = uuid5(NAMESPACE_URL, _json({**event, "row": row})).hex
-    path = dest / ("feedback-" + key + ".jsonl")
-    replace_file_bytes(path, _line(row))
-    replace_file_bytes(path.with_suffix(".ready"), _marker(row))
+    _publish_directory(dest / f"feedback-{key}.jsonl", row)
 
 
 def _send(key):

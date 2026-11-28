@@ -238,6 +238,76 @@ def test_legacy_outbox_flush_projects_only_new_deliveries(tmp_path, isolation, s
     assert packet.read_bytes() == landed
 
 
+def _retained_retry_fixture(state, target, legacy):
+    row = {
+        "schema_version": "feedback-observation/1", "owner": "revenue-forecast",
+        "run_id": "retry-run", "attempt_id": "retry-attempt", "step_id": "rf_job_cli/retry",
+        "check_id": "process-outcome", "expected": "exit:0", "actual": "exit:2",
+        "disposition": "deviation", "evidence_ref": "rf-fixture/retry",
+    }
+    if legacy:
+        row.update(run_id="sk-valid-retry-fixture", attempt_id="tvly-valid-retry-fixture")
+    body = _canonical({"row": row, "target": str(target), "single": False})
+    retained = uuid5(NAMESPACE_URL, body).hex, body
+    state.mkdir()
+    db = state / "feedback.sqlite3"
+    with sqlite3.connect(db) as conn:
+        conn.execute("CREATE TABLE pending(id TEXT PRIMARY KEY,body TEXT NOT NULL)")
+        conn.execute("INSERT INTO pending VALUES(?,?)", retained)
+        conn.execute("CREATE TRIGGER reject_fixture_ack BEFORE DELETE ON pending "
+                     "BEGIN SELECT RAISE(FAIL, 'isolated ACK failure'); END")
+    conn.close()
+    return db, retained
+
+
+@pytest.mark.parametrize("legacy", [False, True], ids=["normal", "projected"])
+@pytest.mark.parametrize("phase", ["consumed", "complete", "marker-only", "wrong-marker", "wrong-packet"])
+def test_flush_reuses_the_final_delivery_after_sqlite_ack_failure(tmp_path, isolation, legacy, phase):
+    env, state = isolation
+    target = tmp_path / "retained-inbox"
+    db, retained = _retained_retry_fixture(state, target, legacy)
+
+    def flush():
+        result = invoke(tmp_path, env, "scripts/rf_job_feedback.py", "flush-feedback")
+        assert (result.returncode, result.stderr) == (0, b"")
+        return json.loads(result.stdout)
+
+    assert flush() == {"found": 1, "remaining": 1}
+    with sqlite3.connect(db) as conn:
+        assert conn.execute("SELECT id,body FROM pending").fetchall() == [retained]
+        conn.execute("DROP TRIGGER reject_fixture_ack")
+    conn.close()
+    packet, = target.glob("*.jsonl")
+    marker = packet.with_suffix(".ready")
+    payload = packet.read_bytes()
+    if legacy:
+        assert b"sk-valid-retry-fixture" not in payload and b"tvly-valid-retry-fixture" not in payload
+
+    if phase == "consumed":
+        marker.unlink()
+    elif phase == "marker-only":
+        packet.unlink()
+    elif phase == "wrong-marker":
+        marker.write_bytes(b'{"owner":"other-owner"}\n')
+    elif phase == "wrong-packet":
+        packet.write_bytes(b'{"owner":"other-owner"}\n')
+    existing = {path: (path.read_bytes(), path.stat()) for path in (packet, marker) if path.exists()}
+    remaining = int(phase in {"wrong-marker", "wrong-packet"})
+    assert flush() == {"found": 1, "remaining": remaining}
+    assert flush() == {"found": remaining, "remaining": remaining}
+    assert marker.exists() == (phase != "consumed")
+    for path, (data, st) in existing.items():
+        current = path.stat()
+        assert path.read_bytes() == data
+        assert (current.st_ino, current.st_mtime_ns) == (st.st_ino, st.st_mtime_ns)
+    if phase == "marker-only":
+        assert packet.read_bytes() == payload
+    assert list(target.glob("*.jsonl")) == [packet]
+    with sqlite3.connect(db) as conn:
+        assert conn.execute("SELECT id,body FROM pending").fetchall() == ([retained] if remaining else [])
+    conn.close()
+
+
 @pytest.mark.parametrize("entry", ["rf_job_feedback", "report_catalog_compare_cli"])
 @pytest.mark.parametrize("seed", [b'{"original":"complete"}', b'{"interrupted":'], ids=["unterminated", "torn"])
 def test_cold_failure_survives_unterminated_native_journal(tmp_path, isolation, entry, seed):

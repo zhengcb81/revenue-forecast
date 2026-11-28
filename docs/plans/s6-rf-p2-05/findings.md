@@ -20,3 +20,5 @@
 其余工具下的测试驱动、benchmark、预推脚本、合约检查、计划核对、之前退役的 processed_artifact_canary 和 monthly_broker_runner 保留原归属，不能替代业务入口或当作完成证据。安装清单出厂仍无 console scripts 声明。
 
 原生静态扫描覆盖 117 份 RF runtime 源码（不修改原基线）。AT-11 三项为 CWP 源读取抑制真正原因、生成模板无显式异常因果、F4 异常路径直接 print 至机器 stdout。现有独立副本 P1-05 分支从同版继续，范围对照已完成。
+
+- 独审复现已投递、SQLite 删除失败后，投影键重试会覆盖完整包及 marker。CWP 能读取完整无 marker 的包，消费 marker 后不需重新发布。最终投递键复用 RF 所有者的原子一次创建及字节比较；冲突保留历史和冻结队列。
