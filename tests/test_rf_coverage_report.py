@@ -19,6 +19,7 @@ import configparser
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -46,24 +47,24 @@ def _env(**overrides: str) -> dict[str, str]:
 
 
 def _run(
-    args: list[str], env: dict[str, str] | None = None, timeout: int = 600
+    args: list[str], env: dict[str, str] | None = None, timeout: int = 600, *, owner: Path = ROOT,
 ) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [sys.executable, "-B", str(TOOL), *args],
+        [sys.executable, "-B", str(owner / "tools" / TOOL.name), *args],
         capture_output=True,
         text=True,
         encoding="utf-8",
         errors="replace",
-        cwd=str(ROOT),
+        cwd=str(owner),
         env=env if env is not None else _env(),
         timeout=timeout,
     )
 
 
-def _coverage_root_files() -> dict[str, str]:
+def _coverage_root_files(owner: Path = ROOT) -> dict[str, str]:
     """Coverage DATA files at the repository root (``.coveragerc`` is config)."""
     state: dict[str, str] = {}
-    for path in sorted(ROOT.iterdir()):
+    for path in sorted(owner.iterdir()):
         if not path.is_file():
             continue
         if path.name != ".coverage" and not path.name.startswith(".coverage."):
@@ -143,42 +144,49 @@ def test_c2_explicit_missing_data_file_is_not_supplied(tmp_path):
 
 
 @pytest.fixture(scope="module")
-def explicit_run(tmp_path_factory) -> Path:
+def explicit_run(tmp_path_factory) -> tuple[Path, Path]:
+    owner = tmp_path_factory.mktemp("coverage-owner")
+    (owner / "tools").mkdir()
+    (owner / "scripts").mkdir()
+    (owner / "tests").mkdir()
+    shutil.copyfile(TOOL, owner / "tools" / TOOL.name)
+    shutil.copyfile(ROOT / ".coveragerc", owner / ".coveragerc")
+    (owner / ".coverage").write_bytes(b"owned coverage bytes")
+    (owner / "scripts" / "cov_subject.py").write_text(
+        "def sign(value):\n    if value > 0:\n        return 'positive'\n    return 'nonpositive'\n",
+        encoding="utf-8",
+    )
+    (owner / "tests" / "test_coverage_sample.py").write_text(
+        "from scripts.cov_subject import sign\n\ndef test_positive():\n    assert sign(1) == 'positive'\n",
+        encoding="utf-8",
+    )
     scratch = tmp_path_factory.mktemp("g2-cov-scratch")
-    created = not (ROOT / ".coverage").exists()
-    if created:
-        (ROOT / ".coverage").write_bytes(b"g2-owner-coverage-bytes")
-    before = _coverage_root_files()
-    try:
-        proc = _run(["--run", "--scratch", str(scratch), "--target", SHORT_TARGET])
-        assert proc.returncode == 0, proc.stdout + proc.stderr
-        assert _coverage_root_files() == before, (
-            "the explicit run must not touch the repository's .coverage"
-        )
-    finally:
-        if created and (ROOT / ".coverage").exists():
-            (ROOT / ".coverage").unlink()
-    data_files = [p.name for p in scratch.iterdir() if p.is_file()]
-    assert data_files, "the explicit run must leave coverage data in its scratch"
-    assert all(name.startswith(".coverage") for name in data_files), data_files
-    return scratch
+    before = _coverage_root_files(owner)
+    proc = _run(
+        ["--run", "--scratch", str(scratch), "--target", "tests/test_coverage_sample.py"],
+        owner=owner,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert _coverage_root_files(owner) == before
+    return owner, scratch
 
 
 def test_c3_run_keeps_every_coverage_file_in_its_scratch(explicit_run):
-    scratch = explicit_run
-    assert list(_coverage_root_files()) in ([], [".coverage"]), (
-        _coverage_root_files())
-    assert any(p.name.startswith(".coverage") for p in scratch.iterdir())
+    owner, scratch = explicit_run
+    assert (owner / ".coverage").read_bytes() == b"owned coverage bytes"
+    data = list(scratch.iterdir())
+    assert data and all(path.is_file() and path.name.startswith(".coverage") for path in data)
 
 
 def test_c3_report_reads_the_explicit_run_results_without_pytest(
     explicit_run,
     tmp_path,
 ):
+    owner, scratch = explicit_run
     stub = _stub(tmp_path, "pytest", "raise SystemExit(9)\n")
     proc = _run(
-        ["--data-file", str(explicit_run / ".coverage")],
-        env=_env(PYTHONPATH=str(stub)),
+        ["--data-file", str(scratch / ".coverage")],
+        env=_env(PYTHONPATH=str(stub)), owner=owner,
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert "passed" not in proc.stdout
@@ -268,7 +276,8 @@ def test_c3_run_builds_exactly_one_pytest_command():
 
 
 def test_c4_low_numbers_do_not_block(explicit_run):
-    proc = _run(["--data-file", str(explicit_run / ".coverage")])
+    owner, scratch = explicit_run
+    proc = _run(["--data-file", str(scratch / ".coverage")], owner=owner)
     assert proc.returncode == 0, proc.stdout + proc.stderr
     percentages = [
         token.rstrip("%")
@@ -283,10 +292,11 @@ def test_c4_low_numbers_do_not_block(explicit_run):
 
 
 def test_c4_report_mode_tool_failure_is_nonzero(explicit_run, tmp_path):
+    owner, scratch = explicit_run
     stub = _stub(tmp_path, "coverage", "raise SystemExit(7)\n")
     proc = _run(
-        ["--data-file", str(explicit_run / ".coverage")],
-        env=_env(PYTHONPATH=str(stub)),
+        ["--data-file", str(scratch / ".coverage")],
+        env=_env(PYTHONPATH=str(stub)), owner=owner,
     )
     assert proc.returncode != 0, proc.stdout + proc.stderr
 

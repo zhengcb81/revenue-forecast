@@ -28,7 +28,7 @@ def _subprocess_environment(profile: Path | None = None) -> dict[str, str]:
     }
     environment.update(
         PYTHONDONTWRITEBYTECODE="1", PYTHONUTF8="1", PYTHON_DOTENV_DISABLED="1",
-        REVENUE_ATTESTATION_PROVIDER="", GIT_TERMINAL_PROMPT="0",
+        REVENUE_ATTESTATION_PROVIDER="", GIT_TERMINAL_PROMPT="0", PYTEST_DISABLE_PLUGIN_AUTOLOAD="1",
     )
     if profile is not None:
         for name in ("HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "XDG_STATE_HOME"):
@@ -66,11 +66,10 @@ def _run(cmd: list[str], label: str, timeout: int = 300, *, profile: Path | None
             timeout=timeout,
         )
     except subprocess.TimeoutExpired as error:
-        # subprocess returns bytes for partial output even in text mode.
-        if error.stdout:
-            print(error.stdout.decode("utf-8", errors="replace"), end="")
-        if error.stderr:
-            print(error.stderr.decode("utf-8", errors="replace"), end="", file=sys.stderr)
+        for stream, partial in ((sys.stdout, error.stdout), (sys.stderr, error.stderr)):
+            if partial:
+                text = partial.decode("utf-8", errors="replace") if isinstance(partial, bytes) else partial
+                print(text, end="", file=stream)
         print(f"FAILED: {label} exceeded {timeout:g}s", file=sys.stderr)
         return 1
     except OSError as error:
@@ -116,7 +115,7 @@ def _revision(requested: str | None) -> str:
 
 
 def _ci_commands(
-    evidence_dir: Path, scratch: Path, revision: str, platform: str,
+    evidence_dir: Path, scratch: Path, revision: str, platform: str, *, workers: int = 1,
 ) -> list[tuple[list[str], str]]:
     policy = json.loads(TEST_POLICY.read_text(encoding="utf-8"))["platforms"][platform]
     collected, executed = [str(evidence_dir / f"{name}.json") for name in ("collected", "executed")]
@@ -125,12 +124,13 @@ def _ci_commands(
         "-p", "tools.anti_trick_gate_spec.pytest_probe", "--s6-revision", revision,
         "-m", policy["markexpr"], "--basetemp", str(scratch), *policy["roots"],
     ]
+    executor = [] if workers == 1 else ["-p", "xdist.plugin", "-n", str(workers), "--dist", "loadfile"]
     return [
         ([sys.executable, "-m", "mypy", "scripts/contracts/", "scripts/schema_compatibility.py",
           "scripts/filing_fetch_client.py", "scripts/trust_anchor.py",
           "scripts/company_wiki_narrative_contracts.py"], "public contract types"),
         ([*pytest, "--collect-only", "--s6-evidence", collected], "owner test inventory"),
-        ([*pytest, "--durations=20", "--s6-evidence", executed], "owner offline behavior"),
+        ([*pytest, *executor, "--durations=20", "--s6-evidence", executed], "owner offline behavior"),
         ([sys.executable, "-m", "tools.anti_trick_gate_spec", "coverage", "--revision", revision,
           "--policy", str(TEST_POLICY), "--platform", platform, collected, executed],
          "actual owner test coverage"),
@@ -142,9 +142,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--ci", action="store_true", help="Discover and measure the owner tests for this OS.")
     parser.add_argument("--revision", help="CI revision, checked against the checkout.")
     parser.add_argument("--evidence-dir", type=Path, help="Keep test evidence outside the temporary test tree.")
+    parser.add_argument("--workers", type=int, choices=(1, 2, 4), help="Test workers for CI execution only.")
     options = parser.parse_args(argv)
-    if not options.ci and (options.revision or options.evidence_dir):
-        parser.error("--revision and --evidence-dir apply to --ci")
+    if not options.ci and (options.revision or options.evidence_dir or options.workers):
+        parser.error("--revision, --evidence-dir and --workers apply to --ci")
     _safe_console()
     platform = {"win32": "windows", "linux": "linux"}.get(sys.platform, sys.platform)
     if options.ci and platform not in {"linux", "windows"}:
@@ -155,7 +156,9 @@ def main(argv: list[str] | None = None) -> int:
         if options.ci:
             evidence = (options.evidence_dir or (temporary / "evidence")).resolve()
             evidence.mkdir(parents=True, exist_ok=True)
-            gates.extend(_ci_commands(evidence, temporary / "t", _revision(options.revision), platform))
+            gates.extend(_ci_commands(
+                evidence, temporary / "t", _revision(options.revision), platform, workers=options.workers or 1,
+            ))
         else:
             gates.append((
                 [sys.executable, "-m", "pytest", "-q", "--tb=short", "--capture=sys", "-p", "no:cacheprovider",

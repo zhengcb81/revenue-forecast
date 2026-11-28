@@ -45,7 +45,7 @@ def test_workflow_runs_canonical_suite_on_both_platforms():
     gates = [tokens for tokens in commands if tokens[:2] == ["python", "tools/pre_push_gate.py"]]
     assert gates == [[
         "python", "tools/pre_push_gate.py", "--ci", "--revision", revision,
-        "--evidence-dir", "${{ runner.temp }}/rf-s6",
+        "--evidence-dir", "${{ runner.temp }}/rf-s6", "--workers", "4",
     ]]
     assert any(step.get("uses") == "actions/upload-artifact@v4" for step in job["steps"])
 
@@ -69,12 +69,15 @@ def test_default_local_plan_is_fixed_small_smoke_without_repeated_mypy(monkeypat
 def test_ci_collects_once_and_executes_once_per_os(monkeypatch, platform, boundary, tmp_path):
     gate = _gate()
     commands = [command for command, _ in gate._ci_commands(
-        tmp_path / "receipts", tmp_path / "temp", "b" * 40, platform,
+        tmp_path / "receipts", tmp_path / "temp", "b" * 40, platform, workers=2,
     )]
     pytests = [command for command in commands if command[:3] == [sys.executable, "-m", "pytest"]]
     assert len(pytests) == 2
     assert "--collect-only" in pytests[0]
     assert "--collect-only" not in pytests[1]
+    assert "xdist.plugin" not in pytests[0]
+    worker_plugin = pytests[1].index("xdist.plugin")
+    assert pytests[1][worker_plugin - 1:worker_plugin + 5] == ["-p", "xdist.plugin", "-n", "2", "--dist", "loadfile"]
     for command in pytests:
         assert "tools.anti_trick_gate_spec.pytest_probe" in command
         assert [arg for arg in command if arg in {"tests", "tools/tests"}] == ["tests", "tools/tests"]

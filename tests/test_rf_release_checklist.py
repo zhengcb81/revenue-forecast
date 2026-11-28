@@ -16,8 +16,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
@@ -169,34 +167,21 @@ def test_c3_unknown_argument_is_a_configuration_error():
 def test_c4_cli_green_end_to_end():
     proc = _cli()
     out = proc.stdout + proc.stderr
-    hint = (
-        " (the daily gate expects the sibling checkouts: set "
-        "FF_V2_CODE_ROOT / CWP_V2_CODE_ROOT, or place filing-fetch and "
-        "company-wiki next to this repository)"
-    )
-    assert proc.returncode == 0, out[-4000:] + hint
+    assert proc.returncode == 0, out[-4000:]
     assert "OK:" in out
     for marker in ("pre-push gate", "release readiness"):
         assert marker in out, marker
 
 
-def test_c4_cli_reports_a_real_gate_failure_loudly():
-    probe = ROOT / "tests" / "_g2_ruff_probe.py"
+def test_c4_cli_reports_a_real_gate_failure_loudly(tmp_path, monkeypatch, capsys):
+    probe = tmp_path / "ruff_probe.py"
     probe.write_text("import os\n", encoding="utf-8")
-    try:
-        proc = _cli(timeout=300)
-    finally:
-        if probe.exists():
-            probe.unlink()
-    out = proc.stdout + proc.stderr
-    assert proc.returncode != 0, out[-4000:]
-    assert "RELEASE-BLOCK" in out
-    assert "ruff" in out.lower()
-
-
-@pytest.fixture(autouse=True)
-def _probe_is_removed():
-    yield
-    probe = ROOT / "tests" / "_g2_ruff_probe.py"
-    if probe.exists():
-        probe.unlink()
+    monkeypatch.setattr(
+        rc,
+        "_delegates",
+        lambda: [("ruff", [sys.executable, "-m", "ruff", "check", str(probe)])],
+    )
+    assert rc.main([]) == 1
+    out = capsys.readouterr().out
+    assert "RELEASE-BLOCK: ruff returned exit code 1" in out
+    assert "F401" in out

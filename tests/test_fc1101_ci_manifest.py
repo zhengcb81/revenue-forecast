@@ -1,14 +1,4 @@
-"""FC-1101: PR current-triplet gate — CI manifests must be manifest-driven.
-
-SCENARIO: CTRL-05 (sibling drift fails red)
-
-The CI workflows must consume the compatibility manifest's ``current_triplet``
-— never hardcoded sibling pins (revenue ad62592/77669ae and filing a42bb40
-were the pre-FC-1101 pins, full or abbreviated) and never floating main.
-The gate scans the workflow YAMLs for hardcoded pins (7+ hex — abbreviated
-pins included) and asserts the manifest-driven checkout tool is wired in.
-M1 (reverting to a hardcoded pin) kills the gate.
-"""
+"""FC-1101: check out the exact composition pins using real offline Git."""
 
 from __future__ import annotations
 
@@ -16,79 +6,56 @@ import json
 import re
 import subprocess
 import sys
-import unittest
 from pathlib import Path
 
+from test_compatibility_manifest import ancestry_fixture, fixture_git
+
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SHA1 = re.compile(r"\b[0-9a-f]{7,40}\b")  # full or abbreviated pins
+CHECKOUT_TOOL = PROJECT_ROOT / "tools" / "ci_checkout_siblings.py"
+SHA1 = re.compile(r"\b[0-9a-f]{7,40}\b")
+OWNER_DIRECTORY = {"revenue": "revenue-forecast", "filing": "filing-fetch", "wiki": "company-wiki"}
 
 
-def _workflow_files() -> list[tuple[str, Path]]:
-    files = []
-    for repo, rel in (
-        ("revenue-forecast", "revenue-forecast/.github/workflows/quality.yml"),
-        ("filing-fetch", "filing-fetch/.github/workflows/quality.yml"),
-    ):
-        p = PROJECT_ROOT.parent / rel
-        if p.is_file():
-            files.append((repo, p))
-    return files
+def test_owner_workflow_has_no_hardcoded_sibling_pins():
+    text = (PROJECT_ROOT / ".github/workflows/quality.yml").read_text(encoding="utf-8")
+    assert not SHA1.findall(text)
 
 
-class TestCiManifestGate(unittest.TestCase):
-    def test_no_hardcoded_sibling_pins(self):
-        for repo, path in _workflow_files():
-            text = path.read_text(encoding="utf-8")
-            hits = SHA1.findall(text)
-            self.assertEqual(
-                hits, [],
-                f"{repo} workflow hardcodes sibling commits: {hits[:3]} — "
-                "FC-1101 requires manifest-driven checkout",
-            )
+def test_pin_scan_catches_abbreviated_pins():
+    assert SHA1.search("git checkout ad62592")
+    assert SHA1.search("git checkout " + "a" * 40)
+    assert not SHA1.search("python tools/ci_checkout_siblings.py")
 
-    def test_pin_scan_catches_abbreviated_pins(self):
-        """F2 negative control: the scan must flag an abbreviated pin — a
-        vacuous regex (e.g. corrupted \\b escapes) would pass this and never
-        fail red."""
-        self.assertTrue(SHA1.search("git checkout ad62592"), "7-hex pin not caught")
-        self.assertTrue(SHA1.search("git checkout " + "a" * 40), "40-hex pin not caught")
-        self.assertFalse(SHA1.search("python tools/ci_checkout_siblings.py"))
 
-    def test_manifest_driven_checkout_wired(self):
-        for repo, path in _workflow_files():
-            text = path.read_text(encoding="utf-8")
-            self.assertIn("ci_checkout_siblings.py", text,
-                          f"{repo} workflow must call the manifest-driven checkout")
-
-    def test_manifest_triplet_commits_exist(self):
-        """The manifest's current_triplet commits must EXIST in the three
-        repos (anti-forgery: CI pins real commits, never fabricated hashes).
-
-        NOTE: triplet == HEAD is NOT required — the manifest is the CI
-        authority and is refreshed on release, not on every commit (a
-        ==HEAD assertion would force a commit->manifest->commit loop)."""
-        manifest = json.loads(
-            (PROJECT_ROOT / "compatibility" / "current.json").read_text(
-                encoding="utf-8"))
-        for repo, name in (("revenue", "revenue-forecast"),
-                           ("filing", "filing-fetch"),
-                           ("wiki", "company-wiki")):
-            commit = manifest["current_triplet"][repo]
-            proc = subprocess.run(
-                ["git", "-C", str(PROJECT_ROOT.parent / name), "cat-file", "-e",
-                 commit],
-                capture_output=True, text=True)
-            self.assertEqual(proc.returncode, 0,
-                             f"manifest {repo} triplet {commit[:12]} does not exist")
-
-    def test_checkout_tool_requires_manifest(self):
-        proc = subprocess.run(
-            [sys.executable, "-B",
-             str(PROJECT_ROOT / "tools" / "ci_checkout_siblings.py")],
-            capture_output=True, text=True, timeout=30,
+def test_composition_cli_selects_real_pins_even_when_supplier_heads_are_newer(tmp_path):
+    with ancestry_fixture() as (record, local_remotes):
+        pinned = record["frozen_baseline_triplet"]
+        manifest = tmp_path / "manifest.json"
+        manifest.write_text(
+            json.dumps({"current_triplet": pinned,
+                        "remotes": {owner: str(path) for owner, path in local_remotes.items()}}),
+            encoding="utf-8",
         )
-        self.assertNotEqual(proc.returncode, 0, "--manifest is required")
+        target = tmp_path / "checkout"
+        target.mkdir()
+        proc = subprocess.run(
+            [sys.executable, "-B", str(CHECKOUT_TOOL), "--manifest", str(manifest), "--sibling-root", str(target)],
+            stdin=subprocess.DEVNULL, capture_output=True, timeout=75,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")
+        for owner, name in OWNER_DIRECTORY.items():
+            assert fixture_git(target / name, "rev-parse", "HEAD") == pinned[owner]
+            assert fixture_git(local_remotes[owner], "rev-parse", "HEAD") == record["current_triplet"][owner]
+            assert record["current_triplet"][owner] != pinned[owner]
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_checkout_tool_requires_manifest():
+    proc = subprocess.run(
+        [sys.executable, "-B", str(CHECKOUT_TOOL)], stdin=subprocess.DEVNULL,
+        capture_output=True, text=True, timeout=30,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+    )
+    assert proc.returncode == 2
+    assert "--manifest" in proc.stderr

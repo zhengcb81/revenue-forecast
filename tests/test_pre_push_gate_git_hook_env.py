@@ -7,6 +7,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
@@ -88,12 +90,15 @@ def test_failed_gate_preserves_the_first_collection_error(monkeypatch, capsys):
     assert "ERROR: first affected test" in output.err
 
 
-def test_timeout_preserves_recorded_progress_without_an_exception_trace(monkeypatch, capsys):
+@pytest.mark.parametrize("text_mode", [True, False])
+def test_timeout_preserves_recorded_progress_without_an_exception_trace(monkeypatch, capsys, text_mode):
+    stdout = "173 realistic fixtures started\n"
+    stderr = "phase: a native lock acquisition\n"
+    if not text_mode:
+        stdout, stderr = stdout.encode("utf-8"), stderr.encode("utf-8")
+
     def stalled(command, **options):
-        raise subprocess.TimeoutExpired(
-            command, options["timeout"], output=b"173 realistic fixtures started\n",
-            stderr=b"phase: a native lock acquisition\n",
-        )
+        raise subprocess.TimeoutExpired(command, options["timeout"], output=stdout, stderr=stderr)
 
     monkeypatch.setattr(pre_push_gate.subprocess, "run", stalled)
     assert pre_push_gate._run(["pytest"], "owner offline behavior", timeout=2) == 1

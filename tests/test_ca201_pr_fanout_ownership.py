@@ -37,10 +37,7 @@ this card — it is the absorption acceptance card closing the DAG.
 from __future__ import annotations
 
 import json
-import os
 import re
-import subprocess
-import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -119,18 +116,18 @@ def test_c3_contract_successors_are_ca201() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_c4_ci_gap_honest_report_maps_to_ca201() -> None:
-    env = dict(os.environ)
-    env["PYTHONPATH"] = str(UC_ROOT)
-    proc = subprocess.run(
-        [sys.executable, "-B", "-m", "uc.cli", "ci-gap"],
-        cwd=str(UC_ROOT),
-        capture_output=True,
-        text=True,
-        env=env,
-    )
-    assert proc.returncode in (0, 1), proc.stderr[-500:]
-    out = json.loads(proc.stdout)
+def test_c4_ci_gap_honest_report_maps_to_ca201(tmp_path, monkeypatch) -> None:
+    monkeypatch.syspath_prepend(str(UC_ROOT))
+    from uc import ci_contract
+
+    roots = {"revenue": REPO_ROOT, "wiki": tmp_path / "wiki", "filing": tmp_path / "filing"}
+    for name in ("wiki", "filing"):
+        workflow = roots[name] / ci_contract.WORKFLOW_RELS[name]
+        workflow.parent.mkdir(parents=True)
+        workflow.write_text("name: fixture\non: push\n", encoding="utf-8")
+    monkeypatch.setattr(ci_contract, "REPOS", roots)
+    out = ci_contract.assess()
+
     assert out["schema_version"] == 1
     assert out["unit"] == "ZR-105"
     rev = out["repos"]["revenue"]
@@ -152,8 +149,8 @@ def test_c4_ci_gap_honest_report_maps_to_ca201() -> None:
 
 def test_c5_revenue_pr_gate_carries_required_checks() -> None:
     text = _read_text(QUALITY_YML)
-    assert "compatibility/current.json" in text, "manifest must be referenced"
-    assert "ci_checkout_siblings" in text, "manifest-driven sibling checkout present"
+    assert re.search(r"(?m)^\s+compatibility\s*$", text), "owner checkout must include compatibility fixtures"
+    assert "ci_checkout_siblings" not in text, "composition checkout belongs to the explicit integration run"
     clone_hits = [
         ln for ln, line in enumerate(text.splitlines(), 1) if "git clone" in line
     ]
