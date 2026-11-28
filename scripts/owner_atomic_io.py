@@ -75,6 +75,14 @@ def open_regular_file(path: Path, *, append: bool = False) -> BinaryIO:
         raise
 
 
+def separate_partial_line(stream: BinaryIO) -> None:
+    """Preserve the previous bytes before a lock-protected append."""
+    if stream.seek(0, os.SEEK_END):
+        stream.seek(-1, os.SEEK_END)
+        if stream.read(1) != b"\n":
+            stream.write(b"\n")
+
+
 @contextmanager
 def _staged_file(path: Path, data: bytes) -> Iterator[tuple[Path, Path]]:
     path = native_path(path)

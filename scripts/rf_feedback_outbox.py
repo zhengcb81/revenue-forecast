@@ -12,7 +12,7 @@ from uuid import NAMESPACE_URL, UUID, uuid5
 
 from urllib.parse import quote
 
-from owner_atomic_io import native_path, open_regular_file, replace_file_bytes
+from owner_atomic_io import native_path, open_regular_file, replace_file_bytes, separate_partial_line
 from owner_file_lock import OwnerFileLock
 from rf_local_diagnostics import find_local_error, public_diagnostic, record_local_error, state_dir, traceback_facts
 
@@ -23,6 +23,10 @@ _SINGLE_FILE_LOCK_RETRY_SECONDS = 0.02
 
 def _json(value):
     return json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
+def _line(value: dict) -> bytes:
+    return (_json(value) + "\n").encode("ascii")
 
 
 @contextmanager
@@ -58,17 +62,41 @@ def was_published(row: dict) -> bool:
 def _was_published(row: dict) -> bool:
     key, event, _ = _packet(row)
     dest = Path(event["target"])
-    data = (_json(row) + "\n").encode("ascii")
     try:
         if event["single"]:
+            data = _line(row)
             with open_regular_file(dest) as stream:
                 return any(line == data for line in stream)
-        # Directory delivery acknowledges by consuming the ready marker.
-        # The deterministic packet itself remains the original owner bytes.
-        with open_regular_file(dest / f"feedback-{key}.jsonl") as stream:
-            return stream.read(len(data) + 1) == data
-    except OSError:
+        return _directory_published(dest / f"feedback-{key}.jsonl", row)
+    except (OSError, ValueError):
         return False
+
+
+def _marker(row: dict) -> bytes:
+    marker = {name: row.get(name) for name in ("owner", "run_id", "attempt_id", "step_id")}
+    if not all(isinstance(value, str) and value for value in marker.values()):
+        raise ValueError("missing RF transport coordinates")
+    return _line(marker)
+
+
+def _directory_published(path: Path, row: dict) -> bool:
+    data = _line(row)
+    try:
+        with open_regular_file(path) as packet:
+            if packet.read(len(data) + 1) != data:
+                return False
+    except FileNotFoundError:
+        return False
+    # Receivers can process a complete unmarked packet, and may have already
+    # removed its marker. An existing conflicting marker is a delivery fault.
+    expected = _marker(row)
+    try:
+        with open_regular_file(path.with_suffix(".ready")) as marker:
+            if marker.read(len(expected) + 1) != expected:
+                raise ValueError("feedback marker does not match its original packet")
+    except FileNotFoundError:
+        return True
+    return True
 
 
 @contextmanager
@@ -89,33 +117,44 @@ def _single_file_lock(destination: Path):
         lock.release()
 
 
-def _deliver(key, event):
-    dest = native_path(Path(event["target"]))
-    row = event["row"]
-    data = (_json(row) + "\n").encode("ascii")
-    if event["single"]:
-        # A previous process may have written and fsynced this row before it acknowledged delivery.
-        with _single_file_lock(dest), open_regular_file(dest, append=True) as stream:
-            stream.seek(0)
-            for line in stream:
-                try:
-                    if json.loads(line) == row:
-                        return
-                except (ValueError, UnicodeError):
-                    continue
-            if stream.seek(0, os.SEEK_END):
-                stream.seek(-1, os.SEEK_END)
-                if stream.read(1) != b"\n":
-                    # Preserve an interrupted legacy record while giving this occurrence a complete line.
-                    stream.write(b"\n")
+def _append_sidecar(dest: Path, data: bytes, original: bytes) -> None:
+    # Check and append under one lock, including an old write before SQLite ACK.
+    delivered = {data, original}
+    unterminated = {line[:-1] for line in delivered}
+    with _single_file_lock(dest), open_regular_file(dest, append=True) as stream:
+        stream.seek(0)
+        for line in stream:
+            if line in delivered:
+                return
+            if line in unterminated:
+                # Only the separator was interrupted. Do not publish an alias.
+                separate_partial_line(stream)
+                break
+        else:
+            separate_partial_line(stream)
             stream.write(data)
-            stream.flush()
-            os.fsync(stream.fileno())
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
+def _dispatch(key, event):
+    """Project at the dispatch boundary without modifying a retained SQLite body."""
+    if (not isinstance(event, dict) or not isinstance(event.get("row"), dict)
+            or not isinstance(event.get("target"), str) or type(event.get("single")) is not bool):
+        raise ValueError("invalid retained RF delivery")
+    dest = native_path(Path(event["target"]))
+    original = event["row"]
+    row = public_diagnostic(original)
+    if event["single"]:
+        _append_sidecar(dest, _line(row), _line(original))
         return
+    if row != original:
+        if _directory_published(dest / f"feedback-{key}.jsonl", original):
+            return
+        key = uuid5(NAMESPACE_URL, _json({**event, "row": row})).hex
     path = dest / ("feedback-" + key + ".jsonl")
-    replace_file_bytes(path, data)
-    marker = {name: row[name] for name in ("owner", "run_id", "attempt_id", "step_id")}
-    replace_file_bytes(path.with_suffix(".ready"), (_json(marker) + "\n").encode("ascii"))
+    replace_file_bytes(path, _line(row))
+    replace_file_bytes(path.with_suffix(".ready"), _marker(row))
 
 
 def _send(key):
@@ -123,7 +162,7 @@ def _send(key):
         db.execute("BEGIN IMMEDIATE")
         found = db.execute("SELECT body FROM pending WHERE id=?", (key,)).fetchone()
         if found:
-            _deliver(key, json.loads(found[0]))
+            _dispatch(key, json.loads(found[0]))
             db.execute("DELETE FROM pending WHERE id=?", (key,))
 
 
@@ -151,7 +190,7 @@ def publish_outcome(row, detail=None) -> Delivery:
             if detail is not None:
                 directory = dest.parent if single else dest
                 replace_file_bytes(directory / ".rf-evidence" / (detail["id"] + ".json"), _json(detail).encode("ascii"))
-            _deliver(key, event)
+            _dispatch(key, event)
         except (OSError, TypeError, ValueError, sqlite3.Error) as exc:
             return Delivery(False, "fallback_unavailable", traceback_facts(exc))
         return Delivery(True)
@@ -192,22 +231,28 @@ def _read_detail(data):
     return public_diagnostic(payload) if isinstance(payload, dict) else None
 
 
+def _stored_failure(identifier: str) -> dict | None:
+    path = native_path(state_dir() / "feedback.sqlite3")
+    if not path.is_file():
+        return None
+    # Path.as_uri treats the Windows device prefix as a remote authority. SQLite
+    # accepts the percent-encoded native filename with its genuine read-only mode.
+    uri = "file:" + quote(str(path), safe="") if os.name == "nt" else path.absolute().as_uri()
+    try:
+        with closing(sqlite3.connect(uri + "?mode=ro", uri=True)) as db:
+            found = db.execute("SELECT body FROM failures WHERE id=?", (identifier,)).fetchone()
+        return _read_detail(found[0]) if found else None
+    except (OSError, ValueError, sqlite3.Error):
+        # A damaged optional delivery store does not block the local original.
+        return None
+
+
 def get_failure(identifier):
     if UUID(hex=identifier).hex != identifier:
         raise ValueError("invalid RF feedback occurrence")
-    path = native_path(state_dir() / "feedback.sqlite3")
-    if path.is_file():
-        # Path.as_uri treats the Windows device prefix as a remote authority. SQLite
-        # accepts the percent-encoded native filename with its genuine read-only mode.
-        uri = "file:" + quote(str(path), safe="") if os.name == "nt" else path.absolute().as_uri()
-        try:
-            with closing(sqlite3.connect(uri + "?mode=ro", uri=True)) as db:
-                found = db.execute("SELECT body FROM failures WHERE id=?", (identifier,)).fetchone()
-            if found and (detail := _read_detail(found[0])) is not None:
-                return detail
-        except (OSError, ValueError, sqlite3.Error):
-            # A damaged optional delivery store does not block the local original.
-            pass
+    stored = _stored_failure(identifier)
+    if stored is not None:
+        return stored
     dest, single = _destination()
     fallback = native_path((dest.parent if single else dest) / ".rf-evidence" / (identifier + ".json"))
     try:

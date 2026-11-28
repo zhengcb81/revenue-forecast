@@ -12,6 +12,7 @@ import sqlite3
 import subprocess
 import sys
 import time
+from uuid import NAMESPACE_URL, uuid5
 
 import pytest
 
@@ -48,12 +49,20 @@ PRIVATE = ("Authorization: Bearer " + PRIVATE_VALUES[0] + "\r\n\t" + PRIVATE_VAL
 def isolation(tmp_path):
     profile = tmp_path / "profile"
     profile.mkdir()
+    (profile / "sitecustomize.py").write_text(
+        "import sys\n"
+        "def deny(event, args):\n"
+        "    if event in ('socket.connect', 'socket.getaddrinfo', 'socket.sendto'):\n"
+        "        raise AssertionError('isolated S6 fixture forbids network')\n"
+        "sys.addaudithook(deny)\n",
+        encoding="utf-8",
+    )
     env = {key: value for key, value in os.environ.items()
            if key.upper() in {"PATH", "PATHEXT", "SYSTEMROOT", "WINDIR", "COMSPEC", "LANG"}}
     env.update(
         HOME=str(profile), USERPROFILE=str(profile), LOCALAPPDATA=str(profile),
         XDG_STATE_HOME=str(profile), APPDATA=str(profile), TEMP=str(tmp_path), TMP=str(tmp_path),
-        PYTHONUTF8="1", PYTHONDONTWRITEBYTECODE="1", PYTHON_DOTENV_DISABLED="1",
+        PYTHONUTF8="1", PYTHONDONTWRITEBYTECODE="1", PYTHON_DOTENV_DISABLED="1", PYTHONPATH=str(profile),
         RESEARCH_FEEDBACK_OUT=str(tmp_path / "observations.jsonl"),
         RESEARCH_FEEDBACK_RUN_ID="rf-s6-startup", RESEARCH_FEEDBACK_ATTEMPT_ID="attempt-one",
     )
@@ -159,6 +168,118 @@ def test_windows_archive_busy_preserves_old_and_current_bytes(tmp_path, isolatio
 
 def _canonical(value):
     return json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
+@pytest.mark.parametrize("single", [False, True], ids=["inbox", "sidecar"])
+@pytest.mark.parametrize("phase", ["pending", "unacknowledged", "packet-only", "bad-transport"])
+def test_legacy_outbox_flush_projects_only_new_deliveries(tmp_path, isolation, single, phase):
+    env, state = isolation
+    original = {
+        "schema_version": "feedback-observation/1", "owner": "revenue-forecast",
+        "run_id": "sk-valid-native-legacy-fixture", "attempt_id": "tvly-valid-native-legacy-fixture",
+        "step_id": "rf_job_cli/legacy", "check_id": "process-outcome", "expected": "exit:0",
+        "actual": "exit:2", "disposition": "deviation",
+    }
+    target = tmp_path / ("frozen.jsonl" if single else "frozen")
+    body = _canonical({"row": original, "target": str(target), "single": single})
+    key = uuid5(NAMESPACE_URL, body).hex
+    state.mkdir()
+    db = state / "feedback.sqlite3"
+    with sqlite3.connect(db) as conn:
+        conn.execute("CREATE TABLE pending(id TEXT PRIMARY KEY,body TEXT NOT NULL)")
+        conn.execute("INSERT INTO pending VALUES(?,?)", (key, body))
+    conn.close()
+    legacy_packet = target if single else target / f"feedback-{key}.jsonl"
+    payload = (_canonical(original) + "\n").encode("ascii")
+    if phase in {"unacknowledged", "packet-only"} or (phase == "bad-transport" and not single):
+        legacy_packet.parent.mkdir(parents=True, exist_ok=True)
+        legacy_packet.write_bytes(payload.removesuffix(b"\n") if single and phase == "packet-only" else payload)
+    if not single and phase == "unacknowledged":
+        marker = {field: original[field] for field in ("owner", "run_id", "attempt_id", "step_id")}
+        legacy_packet.with_suffix(".ready").write_bytes((_canonical(marker) + "\n").encode("ascii"))
+    if phase == "bad-transport":
+        invalid_leaf = target if single else legacy_packet.with_suffix(".ready")
+        invalid_leaf.mkdir()
+
+    def flush():
+        result = invoke(tmp_path, env, "scripts/rf_job_feedback.py", "flush-feedback")
+        assert (result.returncode, result.stderr) == (0, b"")
+        return json.loads(result.stdout)
+
+    first = flush()
+    shadow = Path(env["RESEARCH_FEEDBACK_OUT"])
+    assert not shadow.exists()
+    if phase == "bad-transport":
+        assert first == flush() == {"found": 1, "remaining": 1}
+        with sqlite3.connect(db) as conn:
+            assert conn.execute("SELECT id,body FROM pending").fetchall() == [(key, body)]
+        conn.close()
+        if not single:
+            assert legacy_packet.read_bytes() == payload
+            assert list(target.glob("feedback-*.jsonl")) == [legacy_packet]
+        return
+
+    assert first == {"found": 1, "remaining": 0}
+    packets = [target] if single else sorted(target.glob("feedback-*.jsonl"))
+    packet, = packets
+    landed = packet.read_bytes()
+    if phase in {"unacknowledged", "packet-only"}:
+        assert packet == legacy_packet and landed == payload
+    else:
+        expected = dict(original)
+        for field, label in (("run_id", "run"), ("attempt_id", "attempt")):
+            expected[field] = label + "-" + hashlib.sha256(original[field].encode()).hexdigest()[:16]
+        assert landed == (_canonical(expected) + "\n").encode("ascii")
+        if not single:
+            marker = json.loads(packet.with_suffix(".ready").read_bytes())
+            assert all(marker[field] == expected[field] for field in marker)
+            assert not legacy_packet.exists()
+    assert flush() == {"found": 0, "remaining": 0}
+    assert packet.read_bytes() == landed
+
+
+@pytest.mark.parametrize("entry", ["rf_job_feedback", "report_catalog_compare_cli"])
+@pytest.mark.parametrize("seed", [b'{"original":"complete"}', b'{"interrupted":'], ids=["unterminated", "torn"])
+def test_cold_failure_survives_unterminated_native_journal(tmp_path, isolation, entry, seed):
+    env, state = isolation
+    log = state / "logs" / "runtime-errors.jsonl"
+    log.parent.mkdir(parents=True)
+    log.write_bytes(seed)
+    blocker = tmp_path / "blocked-f4"
+    blocker.write_bytes(b"unchanged")
+    env["RESEARCH_FEEDBACK_OUT"] = str(blocker / "out.jsonl")
+    env["RESEARCH_FEEDBACK_PROCESS_STEP_ID"] = "caller/native"
+    if entry == "rf_job_feedback":
+        arguments = ("reconcile", "--owner-root", tmp_path)
+        types = ["JSONDecodeError"]
+    else:
+        (tmp_path / "artifacts" / "report_catalog").mkdir(parents=True)
+        with sqlite3.connect(state / "feedback.sqlite3") as db:
+            db.execute("CREATE TABLE failures(id TEXT PRIMARY KEY,body TEXT NOT NULL)")
+            db.execute("CREATE TRIGGER refuse_fixture_detail BEFORE INSERT ON failures "
+                       "BEGIN SELECT RAISE(FAIL,'fixture refuses the optional detail'); END")
+        db.close()
+        arguments = ("--owner-root", tmp_path, "compare")
+        types = ["CompareError", "JSONDecodeError"]
+    original = invoke(tmp_path, env, f"scripts/{entry}.py", *arguments, body=b"{")
+    if entry == "rf_job_feedback":
+        assert (original.returncode, original.stderr) == (1, b"")
+        assert json.loads(original.stdout) == {"error": "JSONDecodeError"}
+    else:
+        assert (original.returncode, original.stdout) == (2, b"")
+        assert len(original.stderr.splitlines()) == 1
+        assert json.loads(original.stderr)["error"]["code"] == "invalid_json"
+
+    identifier = uuid5(NAMESPACE_URL, repr(("rf-s6-startup", "attempt-one", "caller/native", entry))).hex
+    saved = log.read_bytes()
+    assert saved.startswith(seed + b"\n")
+    persisted, = [row for line in saved[len(seed) + 1:].splitlines()
+                  if (row := json.loads(line)).get("id") == identifier]
+    assert [fact["type"] for fact in persisted["cause_chain"]] == types
+    cold = invoke(tmp_path, env, "scripts/rf_job_feedback.py", "get-failure", identifier)
+    assert (cold.returncode, cold.stderr) == (0, b"")
+    assert [fact["type"] for fact in json.loads(cold.stdout)["cause_chain"]] == types
+    assert log.read_bytes() == saved and blocker.read_bytes() == b"unchanged"
 
 
 def _lookup_payload(identifier, run, attempt):

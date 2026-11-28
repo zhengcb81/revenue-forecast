@@ -22,6 +22,7 @@ import hashlib
 import json
 import os
 import shutil
+import sqlite3
 import subprocess
 import sys
 from pathlib import Path
@@ -55,6 +56,7 @@ def _run(
         cwd=str(cwd or ROOT),
         env=env,
         timeout=timeout,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
     )
 
 
@@ -95,6 +97,7 @@ def _git_status(repo: Path) -> str:
         encoding="utf-8",
         errors="replace",
         check=True,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
     )
     return proc.stdout
 
@@ -106,6 +109,7 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
         text=True,
         encoding="utf-8",
         errors="replace",
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
     )
 
 
@@ -155,11 +159,20 @@ def test_e1_default_cli_json_carries_one_status_per_gate():
 @pytest.fixture(scope="module")
 def isolated_rf(tmp_path_factory) -> Path:
     iso = tmp_path_factory.mktemp("g2-iso") / "revenue-forecast"
-    (iso / "tools").mkdir(parents=True)
-    for name in ("release_readiness.py", "cwp_catalog_status.py"):
-        shutil.copyfile(READINESS.with_name(name), iso / "tools" / name)
+    # Assemble the actual checkout files that implement this standalone
+    # engineering command, excluding optional inputs and sibling owners.
+    sources = (
+        "tools/release_readiness.py", "tools/cwp_catalog_status.py", "tools/rf_owner_runtime.py",
+        "scripts/rf_cli_feedback.py", "scripts/rf_feedback_outbox.py", "scripts/rf_local_diagnostics.py",
+        "scripts/owner_atomic_io.py", "scripts/owner_file_lock.py",
+    )
+    for name in sources:
+        destination = iso / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / name, destination)
+    (iso.parent / "empty").mkdir()
     assert _git(iso, "init", "-q").returncode == 0
-    assert _git(iso, "add", "tools").returncode == 0
+    assert _git(iso, "add", "tools", "scripts").returncode == 0
     assert (
         _git(
             iso,
@@ -177,10 +190,38 @@ def isolated_rf(tmp_path_factory) -> Path:
     return iso
 
 
+def _isolated_env(repo: Path) -> dict[str, str]:
+    host = {"PATH", "PATHEXT", "SYSTEMROOT", "WINDIR", "COMSPEC", "TEMP", "TMP", "LANG"}
+    env = {key: value for key, value in os.environ.items() if key.upper() in host}
+    state = str(repo.parent / "profile")
+    return dict(env, HOME=state, USERPROFILE=state, LOCALAPPDATA=state, XDG_STATE_HOME=state,
+                PYTHONNOUSERSITE="1", PYTHON_DOTENV_DISABLED="1")
+
+
 def test_e2_isolated_default_is_green_and_write_free(isolated_rf):
     tool = isolated_rf / "tools" / "release_readiness.py"
     before_status = _git_status(isolated_rf)
-    proc = _run([str(tool)], cwd=isolated_rf)
+    env = _isolated_env(isolated_rf)
+    profile = Path(env["LOCALAPPDATA"])
+    # A previously queued failure belongs to the feedback owner, even when
+    # the check-only release command is launched in the same profile.
+    state = profile / "revenue-forecast"
+    state.mkdir(parents=True)
+    database = state / "feedback.sqlite3"
+    outbox = isolated_rf.parent / "unexpected.jsonl"
+    row = {
+        "schema_version": "feedback-observation/1", "owner": "revenue-forecast",
+        "run_id": "previous", "attempt_id": "initial", "step_id": "original",
+        "check_id": "process-outcome", "expected": "exit:0", "actual": "exit:2",
+        "disposition": "deviation",
+    }
+    event = {"row": row, "target": str(outbox), "single": True}
+    with sqlite3.connect(database) as conn:
+        conn.execute("CREATE TABLE pending(id TEXT PRIMARY KEY, body TEXT NOT NULL)")
+        conn.execute("INSERT INTO pending VALUES (?, ?)", ("old", json.dumps(event)))
+    conn.close()
+    before_profile = _tree_state(profile)
+    proc = _run([str(tool)], cwd=isolated_rf.parent / "empty", env=env)
     out = proc.stdout + proc.stderr
     assert proc.returncode == 0, out
     assert "NOT_SUPPLIED" in out
@@ -188,6 +229,7 @@ def test_e2_isolated_default_is_green_and_write_free(isolated_rf):
     assert _git_status(isolated_rf) == before_status, (
         "an isolated default run must leave the checkout untouched"
     )
+    assert _tree_state(profile) == before_profile and not outbox.exists()
 
 
 def test_e2_isolated_has_no_sibling_or_scenario_material(isolated_rf):
@@ -199,7 +241,8 @@ def test_e2_isolated_has_no_sibling_or_scenario_material(isolated_rf):
 def test_e2_record_rollback_is_the_only_explicit_writer(isolated_rf):
     tool = isolated_rf / "tools" / "release_readiness.py"
     target = isolated_rf / "rollback_point.json"
-    proc = _run([str(tool), "--record-rollback", str(target)], cwd=isolated_rf)
+    proc = _run([str(tool), "--record-rollback", str(target)],
+                cwd=isolated_rf.parent / "empty", env=_isolated_env(isolated_rf))
     assert proc.returncode == 0, proc.stdout + proc.stderr
     payload = json.loads(target.read_text(encoding="utf-8"))
     assert payload["heads"]["revenue"]

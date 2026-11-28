@@ -513,6 +513,53 @@ def _emit_error(
     sys.stderr.write("\n")
 
 
+def _read_cli_request(request_file: str | None, runtime: Invocation) -> dict | None:
+    if request_file:
+        try:
+            request_text = Path(request_file).read_text(encoding="utf-8")
+        except OSError as exc:
+            runtime.note_native("config_error", kind="refusal", effect="not_started", error=exc)
+            _emit_error("config_error", redact_text(f"cannot read request file: {exc}"), retryable=False)
+            return None
+    else:
+        request_text = sys.stdin.read()
+    runtime.stage = "request-decode"
+    runtime.note_input(request_text)
+    try:
+        request = json.loads(request_text)
+    except (ValueError, RecursionError) as exc:
+        runtime.note_native("config_error", kind="refusal", effect="not_started", error=exc)
+        _emit_error("config_error", "request must be a JSON object", retryable=False)
+        return None
+    if not isinstance(request, dict):
+        runtime.note_native("config_error", kind="refusal", effect="not_started")
+        _emit_error("config_error", "request must be a JSON object", retryable=False)
+        return None
+    return request
+
+
+def _report_client_failure(exc: _ClientError, runtime: Invocation) -> None:
+    code = exc.error_code or exc.status or "fatal"
+    runtime.note_native(exc.source_failure_reason or code,
+                        producer_exit_code=exc.producer_exit_code, error=exc)
+    runtime.transport_facts = {"operation": "filing_fetch", **exc.transport_facts}
+    _emit_error(
+        code,
+        redact_text(str(exc)),
+        retryable=exc.retryable,
+        candidates=exc.candidates,
+        upstream_cause=exc.upstream_cause,
+        acquisition_failure=exc.acquisition_failure,
+        stage=exc.stage, attempts=exc.attempts, calls=exc.calls, downloads=exc.downloads,
+        source_failure_reason=exc.source_failure_reason,
+        acquisition_observation=exc.acquisition_observation,
+        request_diagnostic=exc.request_diagnostic,
+        companion_observation=exc.companion_observation,
+        filing_fetch_result=exc.filing_fetch_result,
+        producer_exit_code=exc.producer_exit_code,
+    )
+
+
 @observed_entry(machine_stderr=True, owner=True)
 def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
     """CLI entry: read a request, resolve it, print the handle JSON to stdout."""
@@ -561,27 +608,8 @@ def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
     )
     args = parser.parse_args(argv)
 
-    if args.request_file:
-        try:
-            request_text = Path(args.request_file).read_text(encoding="utf-8")
-        except OSError as exc:
-            runtime.note_native("config_error", kind="refusal", effect="not_started", error=exc)
-            _emit_error("config_error", redact_text(f"cannot read request file: {exc}"), retryable=False)
-            return 1
-    else:
-        request_text = sys.stdin.read()
-
-    runtime.stage = "request-decode"
-    runtime.note_input(request_text)
-    try:
-        request = json.loads(request_text)
-    except (ValueError, RecursionError) as exc:
-        runtime.note_native("config_error", kind="refusal", effect="not_started", error=exc)
-        _emit_error("config_error", "request must be a JSON object", retryable=False)
-        return 1
-    if not isinstance(request, dict):
-        runtime.note_native("config_error", kind="refusal", effect="not_started")
-        _emit_error("config_error", "request must be a JSON object", retryable=False)
+    request = _read_cli_request(args.request_file, runtime)
+    if request is None:
         return 1
 
     root = Path(args.filing_fetch_root) if args.filing_fetch_root else None
@@ -597,24 +625,7 @@ def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
             source_ref_v2=args.source_ref_v2,
         )
     except _ClientError as exc:
-        runtime.note_native(exc.source_failure_reason or exc.error_code or exc.status or "fatal",
-                            producer_exit_code=exc.producer_exit_code, error=exc)
-        runtime.transport_facts = {"operation": "filing_fetch", **exc.transport_facts}
-        _emit_error(
-            exc.error_code or exc.status or "fatal",
-            redact_text(str(exc)),
-            retryable=exc.retryable,
-            candidates=exc.candidates,
-            upstream_cause=exc.upstream_cause,
-            acquisition_failure=exc.acquisition_failure,
-            stage=exc.stage, attempts=exc.attempts, calls=exc.calls, downloads=exc.downloads,
-            source_failure_reason=exc.source_failure_reason,
-            acquisition_observation=exc.acquisition_observation,
-            request_diagnostic=exc.request_diagnostic,
-            companion_observation=exc.companion_observation,
-            filing_fetch_result=exc.filing_fetch_result,
-            producer_exit_code=exc.producer_exit_code,
-        )
+        _report_client_failure(exc, runtime)
         return 2
 
     sys.stdout.write(json.dumps(handle, ensure_ascii=False))

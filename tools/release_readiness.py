@@ -34,6 +34,9 @@ Usage:
 
 Exit is non-zero for real configuration errors, unreadable explicit inputs,
 tool exceptions, and explicitly supplied HEAD SHAs that do not match.
+
+The repository entry uses the checkout's shared tools and scripts for local
+diagnostics. Run it from a checkout containing those runtime files.
 """
 
 from __future__ import annotations
@@ -422,7 +425,7 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-@observed_entry
+@observed_entry(owner=True)
 def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)

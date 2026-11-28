@@ -85,19 +85,17 @@ def _stage_owns_terminal(entry, parent):
         return False
 
 
-def _observe(invocation: Invocation, code: int) -> None:
+def _invocation_detail(invocation: Invocation, code: int, parent: str) -> dict:
     source = invocation.source
     entry = source.stem
     version = source_version(source)
-    parent = (os.environ.get("RESEARCH_FEEDBACK_PROCESS_STEP_ID") or "").strip()
-    supplied_run = (os.environ.get("RESEARCH_FEEDBACK_RUN_ID") or "").strip()
-    supplied_attempt = (os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID") or "").strip()
+    supplied_run = os.environ.get("RESEARCH_FEEDBACK_RUN_ID", "").strip()
+    supplied_attempt = os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID", "").strip()
     key = (uuid5(NAMESPACE_URL, repr((supplied_run, supplied_attempt, parent, entry))).hex
            if parent and supplied_run and supplied_attempt else uuid4().hex)
     run = supplied_run or "rf-cli-" + key
     attempt = supplied_attempt or key
     reason, kind = invocation.native_code, invocation.kind
-    ref = "rf-cli/1/" + key
     chain = invocation.cause_chain or [{"type": reason, "file": source.name}]
     detail = {"id": key, "entrypoint": entry, "native_code": reason, "classification": kind, "exit_code": code,
               "run_id": run, "attempt_id": attempt, "cause_chain": chain, "code_version": version,
@@ -106,21 +104,31 @@ def _observe(invocation: Invocation, code: int) -> None:
         detail["operation"] = invocation.operation
     if invocation.producer_exit_code is not None:
         detail["producer_exit_code"] = invocation.producer_exit_code
-    delivery = Delivery(False)
-    if invocation.publish_feedback:
-        row = {"schema_version": "feedback-observation/1", "owner": "revenue-forecast", "run_id": run,
-               "attempt_id": attempt, "step_id": entry + "/" + key, "check_id": "process-outcome",
-               "expected": "exit:0", "actual": f"exit:{code}", "disposition": "deviation",
-               "reason": reason, "issue_key": entry + "/" + reason, "version": version or _PROJECTION_VERSION,
-               "details_ref": ref, "evidence_ref": ref}
-        if parent:
-            row["parent_step_id"] = parent
-        if _stage_owns_terminal(entry, parent):
-            row.update(check_id="stage-native-evidence", expected="recorded", actual="recorded", disposition="expected")
-        elif kind == "refusal":
-            row["refusal_code"] = reason.lower()
-        delivery = publish_outcome(row, detail)
-    local = {"operation": entry, **detail, **invocation.transport_facts}
+    return detail
+
+
+def _publish_invocation(detail: dict, parent: str) -> Delivery:
+    key, entry, reason = detail["id"], detail["entrypoint"], detail["native_code"]
+    ref = "rf-cli/1/" + key
+    row = {"schema_version": "feedback-observation/1", "owner": "revenue-forecast", "run_id": detail["run_id"],
+           "attempt_id": detail["attempt_id"], "step_id": entry + "/" + key, "check_id": "process-outcome",
+           "expected": "exit:0", "actual": f"exit:{detail['exit_code']}", "disposition": "deviation",
+           "reason": reason, "issue_key": entry + "/" + reason, "version": detail["code_version"] or _PROJECTION_VERSION,
+           "details_ref": ref, "evidence_ref": ref}
+    if parent:
+        row["parent_step_id"] = parent
+    if _stage_owns_terminal(entry, parent):
+        row.update(check_id="stage-native-evidence", expected="recorded", actual="recorded", disposition="expected")
+    elif detail["classification"] == "refusal":
+        row["refusal_code"] = reason.lower()
+    return publish_outcome(row, detail)
+
+
+def _observe(invocation: Invocation, code: int) -> None:
+    parent = os.environ.get("RESEARCH_FEEDBACK_PROCESS_STEP_ID", "").strip()
+    detail = _invocation_detail(invocation, code, parent)
+    delivery = _publish_invocation(detail, parent) if invocation.publish_feedback else Delivery(False)
+    local = {"operation": detail["entrypoint"], **detail, **invocation.transport_facts}
     if delivery.code is not None:
         local.update(operation="feedback_delivery", code=delivery.code, delivery_cause_chain=delivery.cause_chain)
     if not record_local_error(**local) and not delivery.durable and not invocation.machine_stderr:
@@ -133,6 +141,47 @@ def _request_ref(argv: object) -> str:
     return "sha256:" + hashlib.sha256(encoded.encode("ascii")).hexdigest()
 
 
+def _resume_delivery() -> None:
+    try:
+        flush()
+    except Exception as exc:
+        record_local_error("feedback_flush", code="flush_unavailable", cause_chain=traceback_facts(exc))
+
+
+def _record_failure(invocation: Invocation, code: int) -> None:
+    if not code:
+        return
+    try:
+        _observe(invocation, code)
+    except Exception as exc:
+        saved = record_local_error("feedback_observation", code="observe_unavailable",
+                                   cause_chain=traceback_facts(exc))
+        if not saved and not invocation.machine_stderr:
+            warn_local_failure("entry")
+
+
+def _run_entry(entry, invocation: Invocation, args: tuple, kwargs: dict):
+    code = 1
+    try:
+        result = entry(*args, **kwargs, runtime=invocation)
+        code = result or 0
+        return result
+    except SystemExit as exc:
+        code = exc.code if type(exc.code) is int else int(exc.code is not None)
+        if code and invocation.native_code == "cli_failed":
+            invocation.note_native("invalid_arguments", kind="refusal", effect="not_started", error=exc)
+        raise
+    except KeyboardInterrupt as exc:
+        code = 130
+        invocation.note_native("KeyboardInterrupt", error=exc)
+        raise
+    except Exception as exc:
+        invocation.note_native(type(exc).__name__, error=exc)
+        raise
+    finally:
+        _record_failure(invocation, code)
+
+
 def observed_entry(callback=None, *, machine_stderr: bool = False, owner: bool = False):
     """Bind this invocation's native facts without shared logger state or feedback recursion."""
     def decorate(entry):
@@ -143,36 +192,8 @@ def observed_entry(callback=None, *, machine_stderr: bool = False, owner: bool =
                              _request_ref(sys.argv[1:] if supplied is None else supplied),
                              machine_stderr, not owner)
             if not owner:
-                try:
-                    flush()
-                except Exception as exc:
-                    record_local_error("feedback_flush", code="flush_unavailable", cause_chain=traceback_facts(exc))
-            code = 1
-            try:
-                result = entry(*args, **kwargs, runtime=inv)
-                code = result or 0
-                return result
-            except SystemExit as exc:
-                code = exc.code if type(exc.code) is int else int(exc.code is not None)
-                if code and inv.native_code == "cli_failed":
-                    inv.note_native("invalid_arguments", kind="refusal", effect="not_started", error=exc)
-                raise
-            except KeyboardInterrupt as exc:
-                code = 130
-                inv.note_native("KeyboardInterrupt", error=exc)
-                raise
-            except Exception as exc:
-                inv.note_native(type(exc).__name__, error=exc)
-                raise
-            finally:
-                if code:
-                    try:
-                        _observe(inv, code)
-                    except Exception as exc:
-                        saved = record_local_error("feedback_observation", code="observe_unavailable",
-                                                   cause_chain=traceback_facts(exc))
-                        if not saved and not inv.machine_stderr:
-                            warn_local_failure("entry")
+                _resume_delivery()
+            return _run_entry(entry, inv, args, kwargs)
         return run
     return decorate if callback is None else decorate(callback)
 

@@ -15,7 +15,7 @@ import sys
 from time import monotonic, sleep
 from typing import Any
 
-from owner_atomic_io import native_path, open_regular_file
+from owner_atomic_io import native_path, open_regular_file, separate_partial_line
 from owner_file_lock import OwnerFileLock
 
 
@@ -136,6 +136,37 @@ def source_version(path: Path) -> str | None:
         return None
 
 
+def _include_frames(item: dict, error: BaseException, root: Path) -> None:
+    frames = []
+    trace = BaseException.__traceback__.__get__(error)
+    while trace is not None:
+        code = trace.tb_frame.f_code
+        path = Path(code.co_filename)
+        if _SYMBOL.fullmatch(path.name) and _SYMBOL.fullmatch(code.co_name):
+            local = path.is_absolute() and path.is_relative_to(root)
+            frame = {
+                "file": path.relative_to(root).as_posix().removeprefix("scripts/") if local else path.name,
+                "line": trace.tb_lineno,
+                "function": code.co_name,
+            }
+            frames.append(frame)
+            if local and path.parent.name == "scripts":
+                item.update(frame)
+        trace = trace.tb_next
+    if frames:
+        item["frames"] = frames
+
+
+def _exception_fact(error: BaseException, relation: str, root: Path) -> dict:
+    item: dict = {"type": type(error).__name__, "relation": relation}
+    _include_frames(item, error, root)
+    if type(error) is json.JSONDecodeError:
+        item.update(input_line=error.lineno, input_column=error.colno)
+    if isinstance(error, OSError) and type(errno := OSError.errno.__get__(error)) is int:
+        item["errno"] = errno
+    return item
+
+
 def traceback_facts(error: BaseException | None) -> list[dict]:
     """Detach real cause and context frames without locals, paths or exception values."""
     seen = set()
@@ -147,36 +178,13 @@ def traceback_facts(error: BaseException | None) -> list[dict]:
         if current is None or id(current) in seen:
             continue
         seen.add(id(current))
-        item: dict = {"type": type(current).__name__, "relation": relation}
-        frames = []
-        traceback = BaseException.__traceback__.__get__(current)
-        while traceback is not None:
-            code = traceback.tb_frame.f_code
-            path = Path(code.co_filename)
-            local = path.is_absolute() and path.is_relative_to(root)
-            if _SYMBOL.fullmatch(path.name) and _SYMBOL.fullmatch(code.co_name):
-                frame = {
-                    "file": path.relative_to(root).as_posix().removeprefix("scripts/") if local else path.name,
-                    "line": traceback.tb_lineno,
-                    "function": code.co_name,
-                }
-                frames.append(frame)
-                if local and path.parent.name == "scripts":
-                    item.update(frame)
-            traceback = traceback.tb_next
-        if frames:
-            item["frames"] = frames
-        if type(current) is json.JSONDecodeError:
-            item.update(input_line=current.lineno, input_column=current.colno)
-        if isinstance(current, OSError) and type(errno := OSError.errno.__get__(current)) is int:
-            item["errno"] = errno
         cause = BaseException.__cause__.__get__(current)
         context = BaseException.__context__.__get__(current)
         if context is not None and context is not cause:
             pending.append((context, "context"))
         if cause is not None:
             pending.append((cause, "cause"))
-        trail.append(item)
+        trail.append(_exception_fact(current, relation, root))
     return trail
 
 
@@ -255,6 +263,7 @@ def record_local_error(operation: str, **facts: Any) -> bool:
                 entry["rotation_deferred"] = type(error).__name__
                 data = (json.dumps(entry, ensure_ascii=True) + "\n").encode("ascii")
             with open_regular_file(path, append=True) as stream:
+                separate_partial_line(stream)
                 stream.write(data)
                 stream.flush()
                 os.fsync(stream.fileno())
