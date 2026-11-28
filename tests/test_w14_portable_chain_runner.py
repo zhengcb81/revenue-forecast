@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+from functools import lru_cache
 import sys
 from pathlib import Path
 
@@ -44,10 +45,12 @@ def _commit_present(repo: Path, commit: str) -> bool:
         return False
     proc = subprocess.run(
         ["git", "-C", str(repo), "cat-file", "-e", f"{commit}^{{commit}}"],
-        capture_output=True, check=False)
+        stdin=subprocess.DEVNULL, capture_output=True, check=False,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return proc.returncode == 0
 
 
+@lru_cache(maxsize=1)
 def _chain_env_available() -> tuple[bool, str]:
     for role, repo, commit in (("rf", REPO, RF_COMMIT),
                                ("cwp", CWP_REPO, CWP_COMMIT),
@@ -59,9 +62,11 @@ def _chain_env_available() -> tuple[bool, str]:
     return True, ""
 
 
-_CHAIN_OK, _WHY = _chain_env_available()
-requires_chain = pytest.mark.skipif(
-    not _CHAIN_OK, reason=f"frozen chain inputs unavailable: {_WHY}")
+@pytest.fixture(scope="module")
+def frozen_chain():
+    available, reason = _chain_env_available()
+    if not available:
+        pytest.skip(f"frozen chain inputs unavailable: {reason}")
 
 
 def _run_runner(args: list[str], tmp: Path, *, cwd: Path | None = None,
@@ -108,7 +113,8 @@ def _fake_api_keys() -> dict:
 # E01 — offline by default; offline scenarios actually execute
 # --------------------------------------------------------------------------
 
-@requires_chain
+@pytest.mark.composition
+@pytest.mark.usefixtures("frozen_chain")
 def test_e01_default_offline_full_suite_executes(tmp_path):
     """Default invocation (no --live): offline, S2/S3/S5/S6/S4 all run and
     pass; no offline scenario is skipped or not_executed."""
@@ -287,7 +293,8 @@ def test_e01_default_offline_full_suite_executes(tmp_path):
     assert s4_report["work_root_restored"] is True
 
 
-@requires_chain
+@pytest.mark.composition
+@pytest.mark.usefixtures("frozen_chain")
 def test_e01_s1_intentional_skip_and_retired_auto(tmp_path):
     """S1 without --live force is an intentional skip; --live auto and the
     retired env var never enable network (exit stays 0 for S1 skip)."""
@@ -350,6 +357,8 @@ def test_missing_commit_is_environment_unavailable(tmp_path):
     assert not list((tmp_path / "work").glob("attempt-*")),         "attempt residue after environment_unavailable exit"
 
 
+@pytest.mark.composition
+@pytest.mark.usefixtures("frozen_chain")
 def test_healthy_probe_binds_import_to_frozen_deployment(tmp_path):
     """The probe FAILURE branch (named environment_unavailable, exit 3) is
     covered by test_missing_commit_is_environment_unavailable; this test
@@ -415,7 +424,8 @@ def test_netguard_blocks_and_records_a_real_attempt(tmp_path):
 # E06 — caller directories survive success; evidence history is kept
 # --------------------------------------------------------------------------
 
-@requires_chain
+@pytest.mark.composition
+@pytest.mark.usefixtures("frozen_chain")
 def test_e06_work_root_and_evidence_history_preserved(tmp_path):
     work = tmp_path / "work"
     evidence = tmp_path / "evidence"
@@ -450,7 +460,8 @@ def test_e06_work_root_and_evidence_history_preserved(tmp_path):
 # E07 — same semantics from two different absolute roots
 # --------------------------------------------------------------------------
 
-@requires_chain
+@pytest.mark.composition
+@pytest.mark.usefixtures("frozen_chain")
 def test_e07_two_roots_same_semantics_one_with_unicode_and_spaces(tmp_path):
     first = tmp_path / "plain-root"
     second = tmp_path / "中文 根目录 with spaces"
@@ -495,7 +506,8 @@ def test_e07_two_roots_same_semantics_one_with_unicode_and_spaces(tmp_path):
 # product failure drives the whole E2E non-zero (no narrowed assertions)
 # --------------------------------------------------------------------------
 
-@requires_chain
+@pytest.mark.composition
+@pytest.mark.usefixtures("frozen_chain")
 def test_real_product_failure_makes_suite_nonzero(tmp_path):
     """Frozen-commit provenance, not fixed-hash permission: running the SAME
     scenario set against a historical RF product whose record contract

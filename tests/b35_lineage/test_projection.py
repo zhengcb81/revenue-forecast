@@ -337,7 +337,7 @@ def test_source_seal_misbinding_does_not_fall_back_to_legacy(tmp_path):
     assert e.value.code == "lineage_evidence_mismatch"
 
 
-def test_source_reparse_point_is_refused_even_with_identical_bytes(tmp_path):
+def test_source_reparse_point_is_refused_even_with_identical_bytes(tmp_path, directory_link):
     c = build(tmp_path / "owner")
     original = c.folder / "execution/web-capture-q3-2026"
     saved = original.with_name("saved-capture")
@@ -346,23 +346,7 @@ def test_source_reparse_point_is_refused_even_with_identical_bytes(tmp_path):
     outside.mkdir()
     for p in saved.iterdir():
         (outside / p.name).write_bytes(p.read_bytes())
-    if sys.platform == "win32":
-
-        def quote(value):
-            return "'" + str(value).replace("'", "''") + "'"
-
-        command = f"New-Item -ItemType Junction -Path {quote(original)} -Target {quote(outside)} | Out-Null"
-        subprocess.run(
-            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command],
-            capture_output=True,
-            check=True,
-        )
-    else:
-        try:
-            original.symlink_to(outside, target_is_directory=True)
-        except (OSError, NotImplementedError):
-            saved.rename(original)
-            pytest.skip("host cannot create the isolated symbolic-link fixture")
+    directory_link(original, outside)
     try:
         with pytest.raises(CatalogError) as e:
             trace(c)

@@ -89,6 +89,7 @@ def test_reference_accepts_only_metadata_receipt_and_full_source_binding(tmp_pat
 
 
 
+@pytest.mark.posix_only
 @pytest.mark.skipif(sys.platform == "win32", reason="POSIX executable-provider CLI smoke")
 def test_posix_cli_smoke_uses_own_nonblocking_transport(tmp_path):
     body = (GOLDEN / "bundle.json").read_bytes()

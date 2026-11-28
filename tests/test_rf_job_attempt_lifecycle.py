@@ -180,6 +180,7 @@ def test_native_stage_diagnostics_are_structured_and_do_not_gate_owner_result(tm
     assert b"stage-private-sentinel" not in persisted and b"unstructured-private-sentinel" not in persisted
 
 
+@pytest.mark.windows_only
 @pytest.mark.skipif(os.name != "nt", reason="Windows replacement sharing semantics")
 def test_owner_atomic_retries_the_same_prepared_replacement(tmp_path, monkeypatch):
     path = tmp_path / "job-state.json"

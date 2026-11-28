@@ -22,6 +22,8 @@ from __future__ import annotations
 import json
 import sys
 import unittest
+
+import pytest
 from pathlib import Path
 
 
@@ -152,6 +154,7 @@ def run_family(family: str) -> dict:
     return run_forecast(model_document(family))
 
 
+@pytest.mark.composition
 class GoldenBehaviorLockTests(unittest.TestCase):
     @unittest.skipUnless(ENGINE_VERSION == "4.1.0", "4.1.0 full-result hashes require the pinned emitting runtime; 4.1.1 has new version/receipt metadata")
     def test_all_model_family_outputs_are_pinned(self) -> None:

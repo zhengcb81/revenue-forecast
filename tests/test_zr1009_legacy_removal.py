@@ -48,9 +48,9 @@ REPO_ROOTS = {
 }
 
 CLI = cgf._cli_path()
-pytestmark = pytest.mark.skipif(
+pytestmark = [pytest.mark.composition, pytest.mark.skipif(
     not CLI.is_file(), reason="codegraph CLI not installed at %s" % CLI
-)
+)]
 
 
 # ---------------------------------------------------------------------------

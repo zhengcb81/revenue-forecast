@@ -51,7 +51,7 @@ from reconciliation import reconcile_layer  # noqa: E402
 from revenue_backtest import create_snapshot, validate_snapshot  # noqa: E402
 from revenue_forecast import prepare_forecast  # noqa: E402
 from test_models import YEARS, make_parameters  # noqa: E402
-from test_zr709_zijin_journey import _zijin_document  # noqa: E402
+from rf_model_fixtures import _zijin_document  # noqa: E402
 
 CORPUS = ROOT / "assurance" / "unified_completion" / "corpus" / "golden_corpus.json"
 

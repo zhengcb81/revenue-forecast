@@ -297,28 +297,6 @@ def test_file_scope_normalizes_deduplicates_and_sorts(tmp_path: Path) -> None:
     assert scope == ["SKILL.md", "scripts/scripts.py"]
 
 
-def _link_directory(source: Path, destination: Path) -> None:
-    """Create a directory link, or skip when the host forbids them."""
-    try:
-        os.symlink(source, destination, target_is_directory=True)
-        return
-    except OSError:
-        pass
-    try:
-        proc = subprocess.run(
-            ["cmd", "/c", "mklink", "/J", str(destination), str(source)],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=60,
-        )
-    except OSError:
-        proc = None
-    if proc is None or proc.returncode != 0 or not destination.exists():
-        pytest.skip("directory links are not permitted on this host")
-
-
 def test_bad_scope_is_rejected_before_any_destination_is_written(
     tmp_path: Path,
 ) -> None:
@@ -360,7 +338,7 @@ def test_bad_scope_is_rejected_before_any_destination_is_written(
 
 
 def test_scope_rejects_a_link_that_escapes_the_installation_target(
-    tmp_path: Path,
+    tmp_path: Path, directory_link,
 ) -> None:
     canonical = _skill(tmp_path / "canonical", "new")
     destination = tmp_path / "skills"
@@ -368,7 +346,7 @@ def test_scope_rejects_a_link_that_escapes_the_installation_target(
     outside = tmp_path / "outside"
     outside.mkdir()
     shutil.rmtree(target / "references")
-    _link_directory(outside, target / "references")
+    directory_link(target / "references", outside)
     before = _snapshot(destination)
 
     proc = _cli(

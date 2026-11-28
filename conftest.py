@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import os
+import subprocess
+
 import pytest
 
 
@@ -19,3 +22,24 @@ def _isolate_owner_state(tmp_path_factory):
         ):
             environment.delenv(name, raising=False)
         yield
+
+
+
+@pytest.fixture
+def directory_link():
+    """Make a real directory link in a disposable test tree on either OS."""
+    def create(link, target):
+        if os.name != "nt":
+            link.symlink_to(target, target_is_directory=True)
+            return
+
+        quoted_link = "'" + str(link).replace("'", "''") + "'"
+        quoted_target = "'" + str(target).replace("'", "''") + "'"
+        command = "New-Item -ErrorAction Stop -ItemType Junction -Path " + quoted_link
+        command += " -Target " + quoted_target + " | Out-Null"
+        subprocess.run(
+            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command],
+            stdin=subprocess.DEVNULL, capture_output=True, check=True, timeout=15,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    return create

@@ -27,11 +27,12 @@ def test_pre_push_child_environment_drops_parent_git_context(
     captured: dict[str, str] = {}
     for name in _REPOSITORY_CONTEXT:
         monkeypatch.setenv(name, f"parent-{name}")
-    monkeypatch.setenv("GIT_CONFIG_PARAMETERS", "scoped-safe-directory")
+    monkeypatch.setenv("GIT_CONFIG_PARAMETERS", "synthetic-sensitive-git-config")
+    monkeypatch.setenv("ANTHROPIC_AUTH_TOKEN", "synthetic-private-fixture")
 
     def fake_run(command, **kwargs):
         child_env = kwargs.get("env") or os.environ
-        for name in (*_REPOSITORY_CONTEXT, "GIT_CONFIG_PARAMETERS"):
+        for name in (*_REPOSITORY_CONTEXT, "GIT_CONFIG_PARAMETERS", "ANTHROPIC_AUTH_TOKEN"):
             if name in child_env:
                 captured[name] = child_env[name]
         return subprocess.CompletedProcess(command, 0, "", "")
@@ -41,13 +42,15 @@ def test_pre_push_child_environment_drops_parent_git_context(
 
     for name in _REPOSITORY_CONTEXT:
         assert name not in captured
-    assert captured["GIT_CONFIG_PARAMETERS"] == "scoped-safe-directory"
+    assert "GIT_CONFIG_PARAMETERS" not in captured
+    assert "ANTHROPIC_AUTH_TOKEN" not in captured
 
 
 def test_actual_child_git_uses_its_own_repo_under_parent_hook_context(monkeypatch, tmp_path):
     child = tmp_path / "child-repo"
     subprocess.run(["git", "init", "-q", str(child)], check=True,
-        capture_output=True, env=pre_push_gate._subprocess_environment())
+        stdin=subprocess.DEVNULL, capture_output=True, env=pre_push_gate._subprocess_environment(),
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     monkeypatch.setenv("GIT_DIR", str(ROOT / ".git"))
     monkeypatch.setenv("GIT_WORK_TREE", str(ROOT))
     monkeypatch.setenv("GIT_INDEX_FILE", str(ROOT / ".git" / "index"))
@@ -60,6 +63,14 @@ def test_actual_child_git_uses_its_own_repo_under_parent_hook_context(monkeypatc
         "assert pathlib.Path(actual).resolve()==pathlib.Path(sys.argv[1]).resolve()"
     )
     assert pre_push_gate._run([sys.executable, "-B", "-c", code, str(child)], "isolated child Git") == 0
+
+
+def test_engineering_subprocess_uses_disposable_owner_profile(monkeypatch, tmp_path):
+    monkeypatch.setenv("USERPROFILE", "/unrelated-owner-profile")
+    environment = pre_push_gate._subprocess_environment(tmp_path)
+    assert {
+        environment[key] for key in ("HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "XDG_STATE_HOME")
+    } == {str(tmp_path)}
 
 
 def test_failed_gate_preserves_the_first_collection_error(monkeypatch, capsys):

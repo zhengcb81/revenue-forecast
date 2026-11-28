@@ -169,6 +169,19 @@ def test_existing_http_record_remains_unchanged():
     )
 
 
+@pytest.mark.parametrize("require_capture", [False, True])
+def test_original_without_optional_review_still_needs_matching_verified_bytes(require_capture):
+    record = local_record()
+    trace = record["company_wiki_trace"]
+    del trace["read_receipt"]["review"]
+    accepted = validate_sources({"sources": [record]}, AS_OF, require_capture=require_capture)
+    assert accepted[SOURCE]["company_wiki_trace"] == trace
+
+    trace["read_receipt"]["content_sha256"] = "f" * 64
+    with pytest.raises((ForecastInputError, ValueError)):
+        validate_sources({"sources": [record]}, AS_OF, require_capture=require_capture)
+
+
 def test_invalid_http_provenance_keeps_collector_mode():
     record = local_record()
     record["url"] = "urn:not-a-public-url"
@@ -188,7 +201,6 @@ def test_invalid_http_provenance_keeps_collector_mode():
         "manifest_future_period_end",
         "manifest_retrieved_before_publication",
         "manifest_retrieved_after_read",
-        "receipt_missing_review",
         "receipt_extra_path",
         "capture_tool_mismatch",
         "host_action_mismatch",
@@ -212,8 +224,6 @@ def test_mutated_original_contract_is_rejected(change, tmp_path):
         manifest["retrieved_at"] = "2020-01-01T00:00:00Z"
     elif change == "manifest_retrieved_after_read":
         manifest["retrieved_at"] = "2030-01-01T00:00:00Z"
-    elif change == "receipt_missing_review":
-        del receipt["review"]
     elif change == "receipt_extra_path":
         receipt["physical_path"] = str(tmp_path / "source.pdf")
     elif change == "capture_tool_mismatch":

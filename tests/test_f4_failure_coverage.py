@@ -329,6 +329,7 @@ def long_windows_dir(tmp_path):
             shutil.rmtree(native)
 
 
+@pytest.mark.windows_only
 @pytest.mark.skipif(os.name != "nt", reason="Win32 extended-length paths")
 def test_long_windows_outbox_publishes_complete_ready_and_cold_reopens(tmp_path, long_windows_dir):
     baseline = long_windows_dir
@@ -344,6 +345,7 @@ def test_long_windows_outbox_publishes_complete_ready_and_cold_reopens(tmp_path,
     assert cold.returncode == 0 and json.loads(cold.stdout)["exit_code"] == 2
 
 
+@pytest.mark.windows_only
 @pytest.mark.skipif(os.name != "nt", reason="Win32 extended-length paths")
 def test_long_state_keeps_original_pending_even_if_explicit_destination_is_unwritable(tmp_path, long_windows_dir):
     root = long_windows_dir

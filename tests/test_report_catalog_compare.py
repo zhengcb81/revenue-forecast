@@ -475,16 +475,17 @@ def test_missing_catalog_is_not_found_and_writes_nothing(tmp_path):
     assert not (tmp_path / "catalog.jsonl.lock").exists()
 
 
-def test_public_cli_subprocess_transport_smoke():
-    managed = ROOT / "artifacts" / "report_catalog" / "catalog.jsonl"
-    if managed.exists():
-        pytest.skip("managed production catalog exists; subprocess smoke must not read it")
+def test_public_cli_subprocess_transport_smoke(tmp_path):
+    managed = tmp_path / "artifacts" / "report_catalog" / "catalog.jsonl"
+    managed.parent.mkdir(parents=True)
     import subprocess
 
     payload = json.dumps(request()).encode("utf-8")
     completed = subprocess.run(
-        [sys.executable, "-B", "scripts/report_catalog_compare_cli.py", "compare"],
+        [sys.executable, "-B", "scripts/report_catalog_compare_cli.py",
+         "--owner-root", str(tmp_path), "compare"],
         input=payload, capture_output=True, cwd=ROOT, timeout=60,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
     )
     assert completed.returncode == 2
     assert completed.stdout == b""
@@ -543,6 +544,7 @@ def test_cli_writes_complete_response_larger_than_one_megabyte(monkeypatch, caps
                row["right"]["provenance"]["locator"].endswith("x" * 1100) for row in rows)
 
 
+@pytest.mark.composition
 def test_success_result_matches_dashboard_0_1_1_b_contract_read_only():
     root_text = os.environ.get("DASHBOARD_CONTRACT_ROOT")
     if not root_text:

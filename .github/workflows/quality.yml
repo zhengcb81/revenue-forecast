@@ -2,7 +2,9 @@ name: quality
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -11,11 +13,21 @@ concurrency:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 18
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUTF8: "1"
+      PYTHON_DOTENV_DISABLED: "1"
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: "${{ github.event.pull_request.head.sha || github.sha }}"
+          persist-credentials: false
           sparse-checkout: |
             scripts
             tests
@@ -26,44 +38,28 @@ jobs:
             config
             examples
             agents
+            assurance
+            audit_review
+            docs
+            delivery
+            review_audit
             .github
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Install dependencies
         run: python -m pip install pytest pyyaml requests pymupdf cryptography "ruff==0.15.18" "mypy==1.19.0"
-      - name: Isolate consumer checks
-        run: |
-          echo "PYTHONDONTWRITEBYTECODE=1" >> "$GITHUB_ENV"
-          echo "PYTHONUTF8=1" >> "$GITHUB_ENV"
-      - name: Complete CI source and forecast checks
-        run: python tools/pre_push_gate.py --ci
-
-  windows-lifecycle:
-    runs-on: windows-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            scripts
-            tests
-            tools
-            config
-            references
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install lifecycle test dependencies
-        run: python -m pip install pytest pyyaml requests
-      - name: Reproduce interrupted runs and recover the original attempt
+      - name: Compile shipped Python
+        run: python -m compileall -q scripts tools e2e
+      - name: Run owner checks and verify execution
         env:
-          PYTHONUTF8: "1"
-          PYTHONDONTWRITEBYTECODE: "1"
-          PYTHON_DOTENV_DISABLED: "1"
-        run: >
-          python -m pytest -q --tb=short
-          tests/test_rf_job_attempt_lifecycle.py
-          tests/test_assurance_run_lifecycle.py
-          tests/test_f4_failure_coverage.py::test_filing_transport_failure_keeps_one_safe_wire_and_cold_f4_record
-          tests/test_rf_pytest_feedback_isolation.py
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
+        run: python tools/pre_push_gate.py --ci --revision "${{ github.event.pull_request.head.sha || github.sha }}" --evidence-dir "${{ runner.temp }}/rf-s6"
+      - name: Keep test collection and execution receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rf-s6-evidence-${{ matrix.os }}
+          path: ${{ runner.temp }}/rf-s6/
+          if-no-files-found: ignore

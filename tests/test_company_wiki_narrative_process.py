@@ -94,7 +94,7 @@ def test_deadline_and_tree_cleanup_cover_exited_wrapper_with_live_pipe_holders(t
 
 
 
-@pytest.mark.parametrize("fault", ["tree_attach", "second_thread"])
+@pytest.mark.parametrize("fault", ["tree_attach", pytest.param("second_thread", marks=pytest.mark.windows_only)])
 def test_startup_fault_reaps_suspended_or_partially_started_process(tmp_path, monkeypatch, fault):
     if fault == "second_thread" and sys.platform != "win32":
         pytest.skip("POSIX pipes are nonblocking and have no background thread startup")
@@ -134,6 +134,7 @@ def test_startup_fault_reaps_suspended_or_partially_started_process(tmp_path, mo
 
 
 
+@pytest.mark.posix_only
 @pytest.mark.skipif(sys.platform == "win32", reason="POSIX session detachment; Windows Job owns descendants")
 def test_detached_pipe_holder_cannot_hang_local_reader_host(tmp_path):
     pid_path = tmp_path / "detached.pid"

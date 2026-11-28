@@ -1,6 +1,6 @@
 """Real persistent CWP producer -> public subprocess -> RF's opt-in CLI.
 
-CI supplies the manifest-pinned producer checkout; missing producer/PDF modules
+The owner composition job supplies the pinned producer checkout; missing producer/PDF modules
 are failures. Only the two owner raw samples are opt-in. All catalog/runtime
 writes stay below pytest scratch; original raw files are read-only.
 """
@@ -91,6 +91,7 @@ def _context(fixture, request):
 
 
 @pytest.mark.parametrize("kind", ["txt", "json", "pdf", "skip"])
+@pytest.mark.composition
 def test_real_persistent_producer_survives_rf_public_entry_and_restores_scratch(producer, tmp_path, kind):
     baseline = set(tmp_path.iterdir())
     with producer.published_fixture(tmp_path, kind=kind) as fixture:
@@ -112,6 +113,7 @@ def test_real_persistent_producer_survives_rf_public_entry_and_restores_scratch(
 
 
 @pytest.mark.parametrize("mutation", ["entity", "year", "period", "asof", "artifact", "raw_tamper"])
+@pytest.mark.composition
 def test_real_producer_refusals_are_empty_bounded_and_fail_closed(producer, tmp_path, mutation):
     with producer.published_fixture(tmp_path) as fixture:
         request = _request(fixture, _reference(fixture))
@@ -140,6 +142,7 @@ def test_real_producer_refusals_are_empty_bounded_and_fail_closed(producer, tmp_
             fixture.raw_path.write_bytes(original)
 
 
+@pytest.mark.composition
 def test_unknown_publication_has_metadata_but_no_historical_evidence(producer, tmp_path):
     spec = {"sidecar_overrides": {"fiscal_period": "Q2", "filing_date": None}}
     with producer.published_fixture(tmp_path, source_spec=spec) as fixture:
@@ -159,6 +162,7 @@ def test_rf_cli_rejects_nested_or_oversized_input_without_traceback(tmp_path, pa
     assert "Traceback" not in result.stderr.decode()
 
 
+@pytest.mark.live
 @pytest.mark.skipif(os.environ.get("RF_RUN_NARRATIVE_REAL_SAMPLES") != "1",
                     reason="owner only: RF_RUN_NARRATIVE_REAL_SAMPLES=1")
 @pytest.mark.parametrize("sample_id", ["P01", "T01"])

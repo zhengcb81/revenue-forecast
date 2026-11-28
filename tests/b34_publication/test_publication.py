@@ -252,6 +252,7 @@ def test_late_identity_change_under_catalog_lock_refuses_append(case, monkeypatc
     assert admit(case)["status"] == "succeeded"
 
 
+@pytest.mark.composition
 @pytest.mark.parametrize("version", ["v1", "v2"])
 def test_real_recorder_native_processes_publish_selected_version(case_factory, version):
     value = case_factory(real_recorder=True, version=version)

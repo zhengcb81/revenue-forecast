@@ -166,6 +166,7 @@ def test_six_refusal_texts_pinned_verbatim_rf():
                      in REFUSAL_CONTRACT.items()}
 
 
+@pytest.mark.composition
 def test_six_refusal_texts_cross_repo_equal_cw():
     if not (CW_DIR / "processing_demand.py").is_file():
         pytest.skip(f"company-wiki checkout not found at {CW_DIR}")
@@ -176,6 +177,7 @@ def test_six_refusal_texts_cross_repo_equal_cw():
                      in REFUSAL_CONTRACT.items()}
 
 
+@pytest.mark.composition
 def test_six_refusal_sources_verbatim_identical():
     if not (CW_DIR / "processing_demand.py").is_file():
         pytest.skip(f"company-wiki checkout not found at {CW_DIR}")

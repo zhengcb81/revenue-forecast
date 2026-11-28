@@ -69,6 +69,7 @@ def test_fc1307a_every_registered_digest_carries_a_rationale():
         assert len(entry.get("rationale", "")) > 40, digest
 
 
+@pytest.mark.composition
 def test_fc1307a_the_three_vendored_copies_are_content_identical():
     """Drift guard for the vendored copy, independent of checkout line endings."""
     mine = GUARD.read_bytes().replace(b"\r\n", b"\n")

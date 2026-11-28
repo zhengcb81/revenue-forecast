@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+from functools import lru_cache
 import sys
 from pathlib import Path
 
@@ -35,9 +36,11 @@ def _commit_present(repo: Path, commit: str) -> bool:
         return False
     return subprocess.run(
         ["git", "-C", str(repo), "cat-file", "-e", f"{commit}^{{commit}}"],
-        capture_output=True, check=False).returncode == 0
+        stdin=subprocess.DEVNULL, capture_output=True, check=False,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).returncode == 0
 
 
+@lru_cache(maxsize=1)
 def _inputs_available() -> tuple[bool, str]:
     for role, repo, commit in (("rf", REPO, RF_COMMIT),
                                ("cwp", CWP_REPO, CWP_COMMIT),
@@ -48,7 +51,6 @@ def _inputs_available() -> tuple[bool, str]:
     return True, ""
 
 
-_AVAILABLE, _WHY = _inputs_available()
 
 
 def _run_runner(args: list[str], tmp: Path, timeout: float):
@@ -88,11 +90,13 @@ def test_usage_errors_do_not_touch_directories(tmp_path):
         assert not evidence.exists()
 
 
+@pytest.mark.composition
 def test_offline_chain_scenarios(tmp_path):
     """S2 success + S3 reuse + S5/S6 refusals + S4 restore, offline, from
     frozen three-repo code with zero network."""
-    if not _AVAILABLE:
-        pytest.skip(f"chain inputs unavailable: {_WHY}")
+    available, reason = _inputs_available()
+    if not available:
+        pytest.skip(f"chain inputs unavailable: {reason}")
     proc, summary, evidence = _run_runner(
         ["--live", "never", "--scenarios", "S2,S3,S5,S6,S4"], tmp_path,
         timeout=600)
@@ -117,10 +121,12 @@ def test_offline_chain_scenarios(tmp_path):
         f"runner exit {proc.returncode}\n{proc.stdout[-3000:]}")
 
 
+@pytest.mark.composition
 def test_live_download_scenario_is_opt_in(tmp_path):
     """Without --live force the live scenario must not touch the network."""
-    if not _AVAILABLE:
-        pytest.skip(f"chain inputs unavailable: {_WHY}")
+    available, reason = _inputs_available()
+    if not available:
+        pytest.skip(f"chain inputs unavailable: {reason}")
     proc, summary, _ = _run_runner(
         ["--scenarios", "S1,S4"], tmp_path, timeout=300)
     assert summary, f"no summary: rc={proc.returncode}\n{proc.stderr[-2000:]}"
@@ -133,12 +139,14 @@ def test_live_download_scenario_is_opt_in(tmp_path):
     assert proc.returncode == 0
 
 
+@pytest.mark.composition
 def test_offline_failure_is_never_hidden_as_skip(tmp_path):
     """A real failure must fail the whole run (exit 1): fixture bytes
     tampered against their manifest are detected at load and reported as a
     failure — never as a skip or pass."""
-    if not _AVAILABLE:
-        pytest.skip(f"chain inputs unavailable: {_WHY}")
+    available, reason = _inputs_available()
+    if not available:
+        pytest.skip(f"chain inputs unavailable: {reason}")
     fixture_root = tmp_path / "fixtures"
     fixture_root.mkdir()
     for path in (REPO / "tests" / "fixtures" / "w14_chain").iterdir():

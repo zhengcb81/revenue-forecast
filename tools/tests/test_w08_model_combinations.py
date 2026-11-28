@@ -192,7 +192,10 @@ def test_group_coverage_closes_only_on_real_execution():
 # --- 3. a wrong actual result must be detected ---------------------------
 
 
-@pytest.mark.parametrize("case_id", [c.case_id for c in CB.COMBINATION_CASES])
+@pytest.mark.parametrize(
+    "case_id",
+    [case.case_id for case in CB.COMBINATION_CASES if not case.expected.reject and case.expected.values],
+)
 def test_wrong_result_is_detected_for_every_combination_case(case_id):
     """A deliberately wrong observed value must never PASS.
 
@@ -202,8 +205,6 @@ def test_wrong_result_is_detected_for_every_combination_case(case_id):
     number, and are covered by the reject tests below.
     """
     spec = CB.combination_case_index()[case_id]
-    if spec.expected.reject or not spec.expected.values:
-        pytest.skip(f"{case_id} asserts a rejection/unknown, not a numeric value")
     res = CaseResult(
         case_id=spec.case_id,
         cls=spec.cls,

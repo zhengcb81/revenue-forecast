@@ -65,6 +65,7 @@ def _head(repo: Path) -> str:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.composition
 def test_c1_manifest_triplet_is_rebuildable():
     """The manifest's current_triplet commits must all be real git objects
     (a clean checkout at the candidate triplet reproduces the closure)."""
@@ -92,6 +93,7 @@ def test_c1_checkout_siblings_api_and_no_floating_main():
     assert "floating" not in text.lower() or "never" in text.lower()
 
 
+@pytest.mark.composition
 def test_c1_clean_checkout_layout_from_triplet(tmp_path):
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     triplet = manifest["current_triplet"]
@@ -112,6 +114,7 @@ def test_c1_clean_checkout_layout_from_triplet(tmp_path):
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.composition
 def test_c2_env_freezing_collects_clean_facts(monkeypatch, tmp_path):
     """collect() works on the real trio (read-only) and returns the full
     fact surface the freeze/verify gate consumes."""

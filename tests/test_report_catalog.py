@@ -452,17 +452,14 @@ def test_public_report_catalog_cli_uses_only_the_selected_owner(tmp_path):
 
 
 
-def test_default_catalog_refuses_links_to_another_owner(tmp_path):
+def test_default_catalog_refuses_links_to_another_owner(tmp_path, directory_link):
     other = tmp_path / "other"
     _, _, _, run, attempt, report = _fixture(other)
     other_catalog = ReportCatalog(root=other)
     other_catalog.add_records(runs=[run], attempts=[attempt], reports=[report])
     owner = tmp_path / "owner"
     (owner / "artifacts").mkdir(parents=True)
-    try:
-        (owner / "artifacts/report_catalog").symlink_to(other_catalog.file.parent, target_is_directory=True)
-    except OSError:
-        pytest.skip("directory links are unavailable")
+    directory_link(owner / "artifacts/report_catalog", other_catalog.file.parent)
     with pytest.raises(CatalogError) as refused:
         ReportCatalog(root=owner)
     assert refused.value.code == "catalog_path_forbidden"

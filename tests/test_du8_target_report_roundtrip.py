@@ -130,18 +130,16 @@ def test_published_comparison_is_recomputed_identically_from_the_input(tmp_path,
     )
 
 
-@pytest.mark.parametrize("name", sorted(MODELS))
-@pytest.mark.parametrize(
-    "field",
-    [
-        "modeled_value",
-        "target_value",
-        "attainment_ratio",
-        "meets_target",
-        "measurement_periods",
-        "modeled_period_values",
-    ],
-)
+_COMMON_COMPARISON_FIELDS = ("modeled_value", "target_value", "attainment_ratio", "meets_target")
+_LEGACY_DETAIL_FIELDS = ("measurement_periods", "modeled_period_values")
+_LEGACY_MODELS = ("legacy_annual", "legacy_approximately", "legacy_cumulative")
+_TAMPER_CASES = [
+    (name, field) for name in sorted(MODELS)
+    for field in _COMMON_COMPARISON_FIELDS + (_LEGACY_DETAIL_FIELDS if name in _LEGACY_MODELS else ())
+]
+
+
+@pytest.mark.parametrize("name,field", _TAMPER_CASES)
 def test_tampered_published_comparison_field_is_refused(tmp_path, name, field):
     from revenue_report import validate_forecast_output
 
@@ -150,8 +148,7 @@ def test_tampered_published_comparison_field_is_refused(tmp_path, name, field):
     target = result["management_target_coverage"]["targets"][0]
     scenario = sorted(target["scenario_comparison"])[0]
     row = target["scenario_comparison"][scenario]
-    if field not in row:
-        pytest.skip(f"{name}: {field} is not part of this published row shape")
+    assert field in row, f"{name}: expected published field {field} is absent"
 
     tampered = _reseal(result)
     row = tampered["management_target_coverage"]["targets"][0]["scenario_comparison"][scenario]

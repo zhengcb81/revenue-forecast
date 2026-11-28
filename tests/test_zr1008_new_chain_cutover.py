@@ -45,7 +45,7 @@ from revenue_publication import (  # noqa: E402
     validate_publication_receipt,
 )
 from revenue_report import render_markdown  # noqa: E402
-from test_zr709_zijin_journey import _zijin_document  # noqa: E402
+from rf_model_fixtures import _zijin_document  # noqa: E402
 
 JOURNEY_SLO_SECONDS = 60.0  # frozen wall-clock budget for the cutover journey
 

@@ -6,9 +6,12 @@ import os
 import subprocess
 import sys
 
+import pytest
+
 from .fixtures import ROOT, ANCHOR, ENT, ReportCatalog, doc, raw_json
 
 
+@pytest.mark.composition
 def test_two_management_processes_replay_then_current_stock_revocation_refuses(
     case_factory,
 ):

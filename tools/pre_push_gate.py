@@ -1,13 +1,9 @@
-"""Small fixed local smoke; explicit CI retains the full behavior set.
-
-Pre-commit already checks public types. The local push repeats only fast Ruff
-and fixed source/ref/forecast controls. ``--ci`` runs the existing complete
-behavior set plus types; milestone suites remain separately requested.
-"""
+"""Fast developer smoke or measured CI execution of the owning test roots."""
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -15,22 +11,28 @@ import tempfile
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-_GIT_REPOSITORY_CONTEXT = (
-    "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE",
-    "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES",
-    "GIT_PREFIX", "GIT_NAMESPACE", "GIT_QUARANTINE_PATH",
-)
+TEST_POLICY = PROJECT_ROOT / "tools" / "s6-test-policy.json"
+_NO_CONSOLE = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+_HOST_ENVIRONMENT = {
+    "APPDATA", "COMSPEC", "HOME", "HOMEDRIVE", "HOMEPATH", "LANG",
+    "LC_ALL", "LOCALAPPDATA", "NUMBER_OF_PROCESSORS", "PATH", "PATHEXT",
+    "PROCESSOR_ARCHITECTURE", "PROGRAMDATA", "PROGRAMFILES", "SYSTEMDRIVE",
+    "SYSTEMROOT", "TEMP", "TMP", "TMPDIR", "USERPROFILE", "WINDIR",
+}
 
 
-def _subprocess_environment() -> dict[str, str]:
-    """Let child Git commands resolve their cwd instead of the parent hook."""
-    environment = os.environ.copy()
-    for name in _GIT_REPOSITORY_CONTEXT:
-        environment.pop(name, None)
-    environment["PYTHONDONTWRITEBYTECODE"] = "1"
-    environment["PYTHONUTF8"] = "1"
-    environment["PYTHON_DOTENV_DISABLED"] = "1"
-    environment["REVENUE_ATTESTATION_PROVIDER"] = ""
+def _subprocess_environment(profile: Path | None = None) -> dict[str, str]:
+    """Give engineering checks only the host environment they need."""
+    environment = {
+        key: value for key, value in os.environ.items() if key.upper() in _HOST_ENVIRONMENT
+    }
+    environment.update(
+        PYTHONDONTWRITEBYTECODE="1", PYTHONUTF8="1", PYTHON_DOTENV_DISABLED="1",
+        REVENUE_ATTESTATION_PROVIDER="", GIT_TERMINAL_PROMPT="0",
+    )
+    if profile is not None:
+        for name in ("HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "XDG_STATE_HOME"):
+            environment[name] = str(profile)
     return environment
 
 
@@ -49,17 +51,19 @@ def _safe_console() -> None:
 
 
 def _run(
-    cmd: list[str], label: str, timeout: int = 300, *, blocking: bool = True
+    cmd: list[str], label: str, timeout: int = 300, *, blocking: bool = True, profile: Path | None = None
 ) -> int:
     print(f"\n=== {label} ===")
     proc = subprocess.run(
         cmd,
         cwd=str(PROJECT_ROOT),
+        stdin=subprocess.DEVNULL,
         capture_output=True,
+        creationflags=_NO_CONSOLE,
         text=True,
         encoding="utf-8",
         errors="replace",
-        env=_subprocess_environment(),
+        env=_subprocess_environment(profile),
         timeout=timeout,
     )
     if proc.returncode != 0:
@@ -74,87 +78,6 @@ def _run(
     return proc.returncode
 
 
-
-CI_TESTS = (
-    "tests/test_authoring_projection.py",
-    "tests/test_authoring_projection_basis.py",
-    "tests/test_architecture_dependency_uses.py",
-    "tests/test_architecture_numeric_errors.py",
-    "tests/test_shared_excerpt_claim_semantics.py",
-    "tests/test_m3_acquisition_usage_acceptance.py",
-    "tests/test_m3_period_flow_consumers.py",
-    "tests/test_m3_period_flow_annual_consumers.py",
-    "tests/test_m3_evidence_roles.py",
-    "tests/test_w05_dated_contribution_contract.py",
-    "tests/test_w05_dated_contribution_composition.py",
-    "tests/test_w05_dated_contribution_output.py",
-    "tests/test_w05_root_temporal_lineage.py",
-    "tests/test_mixed_aggregate_recognition.py",
-    "tests/test_ci_smoke_plan.py",
-    "tests/test_pre_push_gate_git_hook_env.py",
-    "tests/test_p5_source_default_v2.py",
-    "tests/test_company_wiki_source_ref_v2.py",
-    "tests/test_company_wiki_source_v2.py",
-    "tests/test_source_preparation.py",
-    "tests/test_financial_statement_source.py",
-    "tests/test_decoupled_source_port.py",
-    "tests/test_company_wiki_source_reader_v2.py",
-    "tests/test_data_contract.py",
-    "tests/test_summary_publication_lineage.py",
-    "tests/test_summary_long_excerpt.py",
-    "tests/test_w04_financial_communication_window.py",
-    "tests/test_recognition_bridge.py",
-    "tests/test_confidence_determinism.py",
-    "tests/test_confidence_source_freshness.py",
-    "tests/test_registry_confidence_generations.py",
-    "tests/test_real_source_quote_confidence.py",
-    "tests/test_sensitivity_dependency_dag.py",
-    "tests/test_published_foundation_roundtrip.py",
-    "tests/test_growth_driver_tree.py",
-    "tests/test_revenue_constraints.py",
-    "tests/test_schema_compatibility.py",
-    "tests/test_research_support_diagnostics.py",
-    "tests/test_scoped_calibration_support.py",
-    "tests/test_r1_source_boundary.py",
-    "tests/test_r1_target_scope.py",
-    "tests/test_r1_narrative_availability.py",
-    "tests/test_r1_local_preparation_observation.py",
-    "tests/test_rf_job_facade_cli.py",
-    "tests/test_rf_job_concurrency.py",
-    "tests/test_rf_job_cost.py",
-    "tests/test_rf_job_recovery.py",
-    "tests/test_rf_job_feedback_roots.py",
-    "tests/test_rf_pytest_feedback_isolation.py",
-    "tests/test_rf_job_attempt_lifecycle.py",
-    "tests/test_f4_failure_coverage.py",
-    "tests/test_s1_p0_error_observability.py",
-    "tests/test_module_boundary_closure.py",
-    "tests/test_daily_t2_public_sources.py",
-    "tests/test_weekly_t3_owner_receipt.py",
-    "tests/test_assurance_run_lifecycle.py",
-    "tests/test_fc1103_t3_runner.py",
-    "tests/test_gp009_monthly_broker.py",
-    "tests/test_zr902_daily_schedule.py",
-    "tests/test_zr902b_run_outcome.py",
-    "tests/test_zr903_weekly_t3.py",
-    "tests/test_zr905_audit_self_test.py::test_aud2_03_swallowed_nonzero_turns_red",
-    "tools/tests/test_release_readiness_owner_status.py",
-    "tests/test_rf_optional_tools_e2e.py::test_e3_explicit_catalog_config_runs_the_public_status_process",
-    "tests/b35_lineage/test_projection.py::test_lineage_projection_runs_without_opening_the_catalog_facade",
-    "tests/b37_publication_sources/test_sources.py::test_sealed_source_cold_read_does_not_load_publication_admission",
-    "tests/test_report_catalog.py::test_catalog_can_append_after_writer_process_exits_under_lock",
-    "tests/test_report_catalog.py::test_catalog_write_failure_preserves_previous_publication_and_retries_once",
-    "tests/test_report_catalog.py::test_public_report_catalog_cli_uses_only_the_selected_owner",
-    "tests/test_report_catalog.py::test_default_catalog_refuses_links_to_another_owner",
-    "tests/test_report_catalog_rf_job_import.py::test_public_import_registers_completed_job_and_replays_without_duplication",
-    "tests/b34_publication/test_publication.py::test_native_stages_and_successful_whole_run_are_distinct",
-    "tools/tests/test_slo_probe.py",
-    "tools/tests/test_audit_baseline.py::AuditBaselineTests::test_explicit_catalog_does_not_open_private_sqlite",
-)
-
-
-# Preserve the historical imported table as the full CI behavior set.
-SMOKE_TESTS = CI_TESTS
 
 # Explicit nodes keep routine push work stable when other files gain tests.
 # Authors separately run the behavior suites relevant to their change.
@@ -174,31 +97,69 @@ LOCAL_SMOKE_TESTS = (
 )
 
 
+def _revision(requested: str | None) -> str:
+    actual = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=PROJECT_ROOT, env=_subprocess_environment(),
+        stdin=subprocess.DEVNULL, creationflags=_NO_CONSOLE, encoding="ascii", timeout=10,
+    ).strip()
+    if requested is not None and requested != actual:
+        raise ValueError("requested test revision differs from the checked out revision")
+    return actual
+
+
+def _ci_commands(
+    evidence_dir: Path, scratch: Path, revision: str, platform: str,
+) -> list[tuple[list[str], str]]:
+    policy = json.loads(TEST_POLICY.read_text(encoding="utf-8"))["platforms"][platform]
+    collected, executed = [str(evidence_dir / f"{name}.json") for name in ("collected", "executed")]
+    pytest = [
+        sys.executable, "-m", "pytest", "-q", "--tb=short", "--capture=sys", "-p", "no:cacheprovider",
+        "-p", "tools.anti_trick_gate_spec.pytest_probe", "--s6-revision", revision,
+        "-m", policy["markexpr"], "--basetemp", str(scratch), *policy["roots"],
+    ]
+    return [
+        ([sys.executable, "-m", "mypy", "scripts/contracts/", "scripts/schema_compatibility.py",
+          "scripts/filing_fetch_client.py", "scripts/trust_anchor.py",
+          "scripts/company_wiki_narrative_contracts.py"], "public contract types"),
+        ([*pytest, "--collect-only", "--s6-evidence", collected], "owner test inventory"),
+        ([*pytest, "--s6-evidence", executed], "owner offline behavior"),
+        ([sys.executable, "-m", "tools.anti_trick_gate_spec", "coverage", "--revision", revision,
+          "--policy", str(TEST_POLICY), "--platform", platform, collected, executed],
+         "actual owner test coverage"),
+    ]
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--ci", action="store_true", help="Run public types and the complete CI behavior set.")
+    parser.add_argument("--ci", action="store_true", help="Discover and measure the owner tests for this OS.")
+    parser.add_argument("--revision", help="CI revision, checked against the checkout.")
+    parser.add_argument("--evidence-dir", type=Path, help="Keep test evidence outside the temporary test tree.")
     options = parser.parse_args(argv)
+    if not options.ci and (options.revision or options.evidence_dir):
+        parser.error("--revision and --evidence-dir apply to --ci")
     _safe_console()
-    gates = [
-        ([sys.executable, "-m", "ruff", "check", "scripts", "tests", "tools", "e2e"], "ruff"),
-    ]
-    if options.ci:
-        gates.append(([sys.executable, "-m", "mypy", "scripts/contracts/", "scripts/schema_compatibility.py",
-            "scripts/filing_fetch_client.py", "scripts/trust_anchor.py",
-            "scripts/company_wiki_narrative_contracts.py"], "public contract types"))
-    tests = CI_TESTS if options.ci else LOCAL_SMOKE_TESTS
-    if options.ci:
-        print("CI pytest targets:\n  " + "\n  ".join(tests))
-    gates.append(([sys.executable, "-m", "pytest", "-q", "--tb=short", "-p", "no:cacheprovider", *tests],
-        "complete CI source and forecast behavior" if options.ci else "fixed local source/ref/forecast smoke"))
+    platform = {"win32": "windows", "linux": "linux"}.get(sys.platform, sys.platform)
+    if options.ci and platform not in {"linux", "windows"}:
+        parser.error("the release test policy covers Linux and Windows")
+    gates = [([sys.executable, "-m", "ruff", "check", "scripts", "tests", "tools", "e2e"], "ruff")]
     with tempfile.TemporaryDirectory(prefix="rf-ci-" if options.ci else "rf-local-") as scratch:
+        temporary = Path(scratch)
+        if options.ci:
+            evidence = (options.evidence_dir or (temporary / "evidence")).resolve()
+            evidence.mkdir(parents=True, exist_ok=True)
+            gates.extend(_ci_commands(evidence, temporary / "t", _revision(options.revision), platform))
+        else:
+            gates.append((
+                [sys.executable, "-m", "pytest", "-q", "--tb=short", "--capture=sys", "-p", "no:cacheprovider",
+                 *LOCAL_SMOKE_TESTS, "--basetemp", str(temporary / "t")], "fixed local source/ref/forecast smoke",
+            ))
+        profile = temporary / "home"
+        profile.mkdir()
         for command, label in gates:
-            if command[:3] == [sys.executable, "-m", "pytest"]:
-                command = [*command, "--basetemp", scratch]
-            rc = _run(command, label)
-            if rc:
-                return rc
-    print("\nCI behavior checks GREEN" if options.ci else "\nlocal_fast_pass: fixed smoke GREEN")
+            code = _run(command, label, timeout=900 if options.ci else 120, profile=profile)
+            if code:
+                return code
+    print("\nOwner behavior and coverage GREEN" if options.ci else "\nlocal_fast_pass: fixed smoke GREEN")
     return 0
 
 

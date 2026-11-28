@@ -225,6 +225,7 @@ def test_triage_concurrent_writers_return_the_first_complete_receipt(tmp_path, i
     assert list(snapshot(receipts)) == [f"triage-{request['action_id']}.json"]
 
 
+@pytest.mark.posix_only
 @pytest.mark.skipif(os.name != "posix", reason="requires real POSIX symlink leaves")
 def test_triage_write_ignores_linked_legacy_lock_and_refuses_linked_receipt(tmp_path, isolated_outbox):
     request = triage_request(isolated_outbox, disposition="deviation")
@@ -459,6 +460,7 @@ def _record_no_descriptor_access(monkeypatch, *paths):
     monkeypatch.setattr(os, "open", descriptor_guard)
 
 
+@pytest.mark.posix_only
 @pytest.mark.skipif(os.name != "posix", reason="uses real POSIX symbolic links")
 def test_outbox_allows_configured_parent_alias_and_rejects_leaf_link(tmp_path, monkeypatch, isolated_outbox):
     physical = tmp_path / "owner"
@@ -481,6 +483,7 @@ def test_outbox_allows_configured_parent_alias_and_rejects_leaf_link(tmp_path, m
     assert detached.read_bytes() == b"unrelated fixture bytes"
 
 
+@pytest.mark.posix_only
 @pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="uses a real POSIX FIFO")
 def test_special_single_file_retains_original_pending_record_without_opening_node(tmp_path, monkeypatch, isolated_outbox):
     output = tmp_path / "explicit-outbox.jsonl"
@@ -568,6 +571,7 @@ def test_single_file_fallback_preserves_two_original_observations(tmp_path, monk
     assert [json.loads(line) for line in output.read_bytes().splitlines()] == rows
 
 
+@pytest.mark.posix_only
 @pytest.mark.skipif(os.name != "posix", reason="uses a real POSIX leaf substitution")
 @pytest.mark.parametrize("substitute", ("symlink", "fifo"))
 def test_rejected_leaf_won_the_first_creation_race(tmp_path, monkeypatch, substitute):
