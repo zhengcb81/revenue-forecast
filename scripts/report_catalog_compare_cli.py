@@ -10,6 +10,9 @@ Without the option this CLI keeps its original code-root behaviour.
 """
 from __future__ import annotations
 
+from rf_cli_feedback import Invocation, exit_cli, observed_entry
+from rf_local_diagnostics import redact_text
+
 import json
 import sys
 from typing import Any
@@ -51,15 +54,17 @@ def _error_code(error: BaseException) -> str:
     return "invalid_request"
 
 
-def _emit_error(code: str, message: str) -> int:
+def _emit_error(runtime: Invocation, code: str, message: str) -> int:
+    runtime.note_native(code, kind="refusal" if code.startswith("invalid_") else "failure", effect="not_started")
     payload = {"schema_version": SCHEMA_VERSION,
-               "error": {"code": code, "message": message}}
+               "error": {"code": code, "message": redact_text(message)}}
     sys.stderr.write(json.dumps(payload, ensure_ascii=False, sort_keys=True,
                                 allow_nan=False, separators=(",", ":")) + "\n")
     return 2
 
 
-def main(argv: list[str] | None = None) -> int:
+@observed_entry(machine_stderr=True)
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
     argv = sys.argv[1:] if argv is None else list(argv)
     try:
         owner_root, command_argv = split_owner_root(argv)
@@ -68,13 +73,15 @@ def main(argv: list[str] | None = None) -> int:
         # by name and pathless instead of turning into a command error.
         owner_workspace = resolve_owner_root(owner_root)
     except DeploymentError as exc:
-        return _emit_error(exc.code, exc.message)
+        return _emit_error(runtime, exc.code, exc.message)
     if command_argv != ["compare"]:
-        return _emit_error("invalid_command", "only the fixed compare command is supported")
+        return _emit_error(runtime, "invalid_command", "only the fixed compare command is supported")
+    runtime.note_operation("compare", external_work_possible=False)
     try:
         raw = sys.stdin.buffer.read(MAX_INPUT_BYTES + 1)
+        runtime.note_input(raw)
         if len(raw) > MAX_INPUT_BYTES:
-            return _emit_error("input_too_large", "comparison request exceeds the input limit")
+            return _emit_error(runtime, "input_too_large", "comparison request exceeds the input limit")
         try:
             text = raw.decode("utf-8", errors="strict")
             request = json.loads(text, object_pairs_hook=_object_no_duplicates,
@@ -91,19 +98,19 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.write(encoded + "\n")
         return 0
     except DeploymentError as exc:
-        return _emit_error(exc.code, exc.message)
+        return _emit_error(runtime, exc.code, exc.message)
     except CompareError as exc:
-        return _emit_error(exc.code, str(exc))
+        return _emit_error(runtime, exc.code, str(exc))
     except CatalogError as exc:
-        return _emit_error(_error_code(exc), "exact catalog or report read failed")
+        return _emit_error(runtime, _error_code(exc), "exact catalog or report read failed")
     except OSError:
-        return _emit_error("unavailable", "comparison could not complete within resource limits")
+        return _emit_error(runtime, "unavailable", "comparison could not complete within resource limits")
     except (MemoryError, RecursionError):
-        return _emit_error("resource_limit", "comparison could not complete within resource limits")
+        return _emit_error(runtime, "resource_limit", "comparison could not complete within resource limits")
     except Exception:
         # No exception text from owner libraries is exposed: it may contain a locator.
-        return _emit_error("incompatible", "exact catalog or report validation failed")
+        return _emit_error(runtime, "incompatible", "exact catalog or report validation failed")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

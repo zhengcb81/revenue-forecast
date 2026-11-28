@@ -9,6 +9,11 @@
 
 from __future__ import annotations
 
+if __package__:
+    from .rf_owner_runtime import DiagnosticParser, Invocation, exit_cli, observed_entry
+else:
+    from rf_owner_runtime import DiagnosticParser, Invocation, exit_cli, observed_entry
+
 import argparse
 import subprocess
 import sys
@@ -59,8 +64,9 @@ def cmd_verify(args: argparse.Namespace) -> int:
     return 0 if run_status == "fresh" else 1
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(
+@observed_entry
+def main(*, runtime: Invocation) -> int:
+    parser = DiagnosticParser(
         description="Legacy monthly broker task and history (GP-009 / CA-206 C3)"
     )
     parser.add_argument("--ledger", type=Path, default=DEFAULT_LEDGER)
@@ -82,4 +88,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

@@ -10,11 +10,11 @@ No chmod or host-signature requirement is imposed by index maintenance.
 
 from __future__ import annotations
 
-import argparse
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+
 import json
 import logging
 import os
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -259,8 +259,9 @@ def audit(result_files: list[Path] | None = None, *, since: str | None = None) -
     return problems
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(
+@observed_entry
+def main(*, runtime: Invocation) -> int:
+    parser = DiagnosticParser(
         description="Query and audit the append-only publication registry"
     )
     command = parser.add_subparsers(dest="command", required=True)
@@ -283,7 +284,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(exit_cli(main))
 
 
 def rebuild_publications(result_files: list[Path], *, output_path: Path) -> dict[str, int]:

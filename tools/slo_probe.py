@@ -13,6 +13,11 @@ Exit 0 = all budgets green; 2 = budget breach (alarm, not fatal).
 
 from __future__ import annotations
 
+if __package__:
+    from .rf_owner_runtime import DiagnosticParser, Invocation, exit_cli, observed_entry
+else:
+    from rf_owner_runtime import DiagnosticParser, Invocation, exit_cli, observed_entry
+
 import argparse
 import json
 import statistics
@@ -84,8 +89,9 @@ def _peak_rss_gb() -> float | None:
         return None
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+@observed_entry
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
+    parser = DiagnosticParser(description=__doc__)
     # Old wrappers may still send this argument. Only the owner config selects data.
     parser.add_argument("--catalog", type=Path, help=argparse.SUPPRESS)
     parser.add_argument("--config", type=Path, required=True, help="CWP public resolver configuration")
@@ -99,9 +105,11 @@ def main(argv: list[str] | None = None) -> int:
             exact.append(_resolve(EXACT_PROBE, args.config))
             latest.append(_resolve(LATEST_PROBE, args.config))
     except subprocess.CalledProcessError as exc:
+        runtime.note_native("cwp_resolve_failed", producer_exit_code=exc.returncode, error=exc)
         print(f"CWP resolve failed (exit {exc.returncode})", file=sys.stderr)
         return 1
     except (OSError, subprocess.TimeoutExpired) as exc:
+        runtime.note_native(type(exc).__name__, error=exc)
         print(f"CWP resolve failed ({type(exc).__name__})", file=sys.stderr)
         return 1
     # bundle: exact resolves carry the envelope; timing the same exact call
@@ -137,4 +145,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(exit_cli(main))

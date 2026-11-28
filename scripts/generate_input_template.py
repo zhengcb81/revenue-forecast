@@ -18,7 +18,8 @@ CLI mirrors ``revenue_forecast.py`` conventions.
 
 from __future__ import annotations
 
-import argparse
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+
 import json
 import sys
 from pathlib import Path
@@ -356,8 +357,9 @@ def build_template(
     return document
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+@observed_entry
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
+    parser = DiagnosticParser(description=__doc__.splitlines()[0])
     parser.add_argument("--name", required=True, help="company name")
     parser.add_argument(
         "--base-year", type=int, required=True, help="base fiscal year (e.g. 2025)"
@@ -408,7 +410,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     except ValueError as exc:
         parser.error(str(exc))
-        raise AssertionError("unreachable")  # parser.error exits
+        raise AssertionError("unreachable") from exc  # parser.error exits
     rendered = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
     if args.output:
         args.output.write_text(rendered, encoding="utf-8")
@@ -418,4 +420,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

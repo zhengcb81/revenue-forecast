@@ -34,7 +34,8 @@ from rf_job_facade import (  # noqa: E402
     Deployment,
     resolve_owner_root,
 )
-from rf_cli_feedback import note_native, note_operation, observed_entry
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+from rf_local_diagnostics import redact_text
 
 OWNER_ROOT_OPTION = "--owner-root"
 DEPLOYMENT_CONFIG_OPTION = "--deployment-config"
@@ -44,13 +45,13 @@ def _emit(payload: dict) -> None:
     print(json.dumps(payload, ensure_ascii=False, sort_keys=True, allow_nan=False))
 
 
-def _emit_error(code: str, message: str) -> int:
+def _emit_error(runtime: Invocation, code: str, message: str) -> int:
     request_refusal = (code.startswith(("owner_root_", "deployment_config_", "request_")) or code in
                        {"owner_job_not_found", "action_not_allowed", "lock_unavailable"})
-    note_native(code, kind="refusal" if request_refusal else "failure",
+    runtime.note_native(code, kind="refusal" if request_refusal else "failure",
                 effect="not_started" if request_refusal else "unknown")
     print(json.dumps({"schema_version": "rf-job/1",
-                      "error": {"code": code, "message": message}},
+                      "error": {"code": code, "message": redact_text(message)}},
                      ensure_ascii=False, sort_keys=True), file=sys.stderr)
     return 2
 
@@ -93,14 +94,14 @@ def _split_deployment_argv(raw: list[str]) -> tuple[str | None, str | None, list
     return owner_root, deployment_config, remaining
 
 
-def _read_request(request_json: str | None) -> object:
-    if request_json is not None:
-        return json.loads(request_json)
-    return json.load(sys.stdin)
+def _read_request(runtime: Invocation, request_json: str | None) -> object:
+    data = sys.stdin.read() if request_json is None else request_json
+    runtime.note_input(data)
+    return json.loads(data)
 
 
-@observed_entry
-def main(argv: list[str] | None = None) -> int:
+@observed_entry(machine_stderr=True)
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
     for stream in (sys.stdout, sys.stderr):
         reconfigure = getattr(stream, "reconfigure", None)
         if reconfigure is not None:
@@ -112,11 +113,9 @@ def main(argv: list[str] | None = None) -> int:
     try:
         owner_root_text, deployment_config_text, command_argv = _split_deployment_argv(raw)
     except JobFacadeError as exc:
-        return _emit_error(exc.code, exc.message)
+        return _emit_error(runtime, exc.code, exc.message)
 
-    import argparse
-
-    parser = argparse.ArgumentParser(
+    parser = DiagnosticParser(
         description="RF public full_research job facade (protocol rf-job/1)")
     commands = parser.add_subparsers(dest="command", required=True)
     submit = commands.add_parser(
@@ -132,19 +131,19 @@ def main(argv: list[str] | None = None) -> int:
     listing.add_argument("--limit", type=int, default=50)
     args = parser.parse_args(command_argv)
     operation = args.action if args.command == "act" else args.command
-    note_operation(operation, external_work_possible=operation not in ("get-status", "list-jobs", "reconcile"))
+    runtime.note_operation(operation, external_work_possible=operation not in ("get-status", "list-jobs", "reconcile"))
 
     try:
         owner_root = resolve_owner_root(owner_root_text)
         deployment = (Deployment.load(Path(deployment_config_text))
                       if deployment_config_text is not None else None)
     except JobFacadeError as exc:
-        return _emit_error(exc.code, exc.message)
+        return _emit_error(runtime, exc.code, exc.message)
 
     try:
         facade = JobFacade(owner_root, deployment)
         if args.command == "submit":
-            request = _read_request(args.request_json)
+            request = _read_request(runtime, args.request_json)
             result = facade.submit(request)
         elif args.command == "get-status":
             result = facade.get_status(args.job_id)
@@ -155,13 +154,13 @@ def main(argv: list[str] | None = None) -> int:
         _emit(result)
         return 0
     except JobFacadeError as exc:
-        return _emit_error(exc.code, exc.message)
+        return _emit_error(runtime, exc.code, exc.message)
     except json.JSONDecodeError:
-        return _emit_error("request_invalid", "the request payload is not valid JSON")
+        return _emit_error(runtime, "request_invalid", "the request payload is not valid JSON")
     except Exception:
         # This process owns the status and JSON error envelope. Save the
         # original traceback through feedback rather than mixing it into stderr.
-        note_native("internal")
+        runtime.note_native("internal")
         print(json.dumps({"schema_version": "rf-job/1",
                           "error": {"code": "internal", "message": "owner job operation failed"}},
                          ensure_ascii=False, sort_keys=True), file=sys.stderr)
@@ -169,4 +168,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

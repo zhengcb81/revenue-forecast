@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
-import argparse
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+from rf_local_diagnostics import redact_text
+
 import copy
 import json
 import math
@@ -715,8 +717,9 @@ def evaluate_snapshot(
     return evaluation
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(
+@observed_entry
+def main(*, runtime: Invocation) -> int:
+    parser = DiagnosticParser(
         description="Create immutable revenue forecasts or evaluate them against actual revenue"
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -742,10 +745,11 @@ def main() -> int:
             else:
                 print(json.dumps(rendered, ensure_ascii=False, indent=2))
     except (OSError, json.JSONDecodeError, ForecastInputError) as exc:
-        print(f"error: {exc}", file=sys.stderr)
+        runtime.note_native(type(exc).__name__, kind="refusal", effect="not_started", error=exc)
+        print(redact_text(f"error: {exc}"), file=sys.stderr)
         return 2
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

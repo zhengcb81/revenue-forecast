@@ -11,6 +11,7 @@ from uuid import uuid4
 
 from owner_atomic_io import native_path, replace_file_bytes
 from rf_feedback_outbox import publish
+from rf_local_diagnostics import public_reference, record_local_error, redact_facts, traceback_facts
 
 _RUN_ID = re.compile(r"[0-9]{8}T[0-9]{12}Z-[0-9a-f]{32}")
 
@@ -47,21 +48,26 @@ class AssuranceRun:
             "started_at": now.isoformat(), "ended_at": None, "exit_code": None,
             "request": request, "code_version": code_version, "state": "started",
             "step": "owner_read", "effect": "read_only",
-            "feedback_run_id": (os.environ.get("RESEARCH_FEEDBACK_RUN_ID") or "").strip() or self.run_id,
-            "feedback_attempt_id": (os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID") or "").strip() or self.run_id,
+            "feedback_run_id": public_reference(
+                (os.environ.get("RESEARCH_FEEDBACK_RUN_ID") or "").strip() or self.run_id, "run"),
+            "feedback_attempt_id": public_reference(
+                (os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID") or "").strip() or self.run_id, "attempt"),
         }
         self._save()
 
     def finish(self, *, exit_code: int, outcome: str, diagnostic: dict) -> None:
         self.body.update(ended_at=datetime.now(UTC).isoformat(), exit_code=exit_code,
                          state="failed" if exit_code else "completed", outcome=outcome,
-                         diagnostic=diagnostic, step="owner_read_finished")
+                         diagnostic=redact_facts(diagnostic), step="owner_read_finished")
         self._save()
 
     def _save(self) -> None:
         try:
             write_json(self.path, self.body)
         except OSError as exc:
+            record_local_error("assurance_history", period=self.body["period"], run_id=self.body["feedback_run_id"],
+                               attempt_id=self.body["feedback_attempt_id"], cause_chain=traceback_facts(exc),
+                               code_version=self.body["code_version"])
             print(f"warning: RF assurance history {self.run_id} is unavailable ({type(exc).__name__})",
                   file=sys.stderr)
             return
@@ -88,6 +94,9 @@ class AssuranceRun:
         try:
             publish(row)
         except (OSError, TypeError, ValueError, RuntimeError) as exc:
+            record_local_error("assurance_feedback", period=period, run_id=row["run_id"],
+                               attempt_id=row["attempt_id"], cause_chain=traceback_facts(exc),
+                               code_version=self.body["code_version"])
             print(f"warning: RF assurance feedback {self.run_id} is unavailable ({type(exc).__name__})",
                   file=sys.stderr)
 

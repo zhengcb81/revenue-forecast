@@ -19,7 +19,6 @@ Exit codes: 0 = source record produced; 1 = not found/not admissible;
 
 from __future__ import annotations
 
-import argparse
 import json
 import math
 import subprocess
@@ -33,7 +32,8 @@ FILING_FETCH_CLIENT = PROJECT_ROOT / "scripts" / "filing_fetch_client.py"
 
 import company_wiki_source  # noqa: E402
 from filing_upstream_cause import failure_observation, parse_error_document, safe_failure_message, validated_source_failure_reason  # noqa: E402
-from rf_cli_feedback import note_native, observed_entry  # noqa: E402
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry  # noqa: E402
+from rf_local_diagnostics import redact_text  # noqa: E402
 from filing_fetch_client import select_filing  # noqa: E402
 from source_period_semantics import valid_fiscal_year  # noqa: E402
 
@@ -51,10 +51,10 @@ def _remaining_timeout(deadline: float) -> float:
     return remaining
 
 
-def _read_request(request_file: str | None) -> dict:
-    if request_file:
-        return json.loads(Path(request_file).read_text(encoding="utf-8"))
-    return json.load(sys.stdin)
+def _read_request(runtime: Invocation, request_file: str | None) -> dict:
+    data = Path(request_file).read_text(encoding="utf-8") if request_file else sys.stdin.read()
+    runtime.note_input(data)
+    return json.loads(data)
 
 
 _SOURCE_TYPE_BY_KIND = {
@@ -493,9 +493,9 @@ def prepare_source(
     )["source"]
 
 
-@observed_entry
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
+@observed_entry(machine_stderr=True)
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
+    parser = DiagnosticParser(
         description="Revenue source preparation — the single production entry."
     )
     parser.add_argument("--request-file", help="request JSON file (else stdin)")
@@ -534,8 +534,10 @@ def main(argv: list[str] | None = None) -> int:
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8")
 
+    runtime.stage = "request-decode"
     try:
-        request = _read_request(args.request_file)
+        request = _read_request(runtime, args.request_file)
+        runtime.stage = "prepare-source"
         prepare = prepare_source_result if args.result_envelope else prepare_source
         narrative_request = (json.loads(args.narrative_request_file.read_text(encoding="utf-8"))
                              if args.narrative_request_file else None)
@@ -555,17 +557,17 @@ def main(argv: list[str] | None = None) -> int:
                                       if args.narrative_reader_command_json else None),
         )
     except (json.JSONDecodeError, ValueError) as exc:
-        note_native("bad_request", kind="refusal")
-        sys.stderr.write(json.dumps({"error_code": "bad_request", "error": str(exc)}))
+        runtime.note_native("bad_request", kind="refusal")
+        sys.stderr.write(json.dumps({"error_code": "bad_request", "error": redact_text(str(exc))}))
         sys.stderr.write("\n")
         return 2
     except RuntimeError as exc:
-        failure = {"error_code": "upstream", "error": str(exc)}
+        failure = {"error_code": "upstream", "error": redact_text(str(exc))}
         failure.update(failure_observation({key: getattr(exc, key, None) for key in
                        ("upstream_cause", "acquisition_failure", "stage", "attempts", "calls", "downloads",
                         "source_failure_reason", "acquisition_observation", "request_diagnostic",
                         "companion_observation", "filing_fetch_result", "producer_exit_code")}))
-        note_native(failure.get("source_failure_reason") or failure["error_code"],
+        runtime.note_native(failure.get("source_failure_reason") or failure["error_code"],
                     producer_exit_code=failure.get("producer_exit_code"))
         sys.stderr.write(json.dumps(failure))
         sys.stderr.write("\n")
@@ -576,4 +578,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

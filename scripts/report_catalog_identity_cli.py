@@ -23,7 +23,9 @@ No research, model, network, or download runs from here.
 
 from __future__ import annotations
 
-import argparse
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+from rf_local_diagnostics import redact_text
+
 import json
 import sys
 from pathlib import Path
@@ -52,7 +54,7 @@ from report_catalog_identity_resolver import (  # noqa: E402
 
 def _fail(error_code: str, detail: str) -> None:
     print(
-        json.dumps({"error_code": error_code, "detail": detail},
+        json.dumps({"error_code": error_code, "detail": redact_text(detail)},
                    ensure_ascii=False, sort_keys=True),
         file=sys.stderr,
     )
@@ -105,7 +107,8 @@ def _admin_owner_root(
     return root
 
 
-def main(argv: list[str] | None = None) -> int:
+@observed_entry(machine_stderr=True)
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
     # Public protocol bytes remain UTF-8 on Windows operator consoles as well.
     for stream in (sys.stdout, sys.stderr):
         reconfigure = getattr(stream, "reconfigure", None)
@@ -117,13 +120,14 @@ def main(argv: list[str] | None = None) -> int:
     try:
         owner_root_text, raw = split_owner_root(sys.argv[1:] if argv is None else list(argv))
     except DeploymentError as exc:
+        runtime.note_native(exc.code, kind="refusal", effect="not_started", error=exc)
         _fail(exc.code, exc.message)
         return 2
-    parser = argparse.ArgumentParser(
+    parser = DiagnosticParser(
         description="Trusted StockWiki identity seam for the RF report catalog"
     )
     commands = parser.add_subparsers(dest="command", required=True)
-    shared = argparse.ArgumentParser(add_help=False)
+    shared = DiagnosticParser(add_help=False)
     shared.add_argument("--config", help="trusted bridge deployment config JSON path")
     resolve = commands.add_parser("resolve", parents=[shared])
     resolve.add_argument("--entity-id", required=True)
@@ -264,13 +268,15 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(output, ensure_ascii=False, sort_keys=True, allow_nan=False))
         return 0
     except DeploymentError as exc:
+        runtime.note_native(exc.code, kind="refusal", effect="not_started", error=exc)
         _fail(exc.code, exc.message)
         return 2
     except (IdentityBridgeError, CatalogError, OSError, ValueError, KeyError) as exc:
+        runtime.note_native(type(exc).__name__, error=exc)
         code = getattr(exc, "error_code", None) or getattr(exc, "code", None)
         _fail(code or "identity_cli_failed", str(exc))
         return 2
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

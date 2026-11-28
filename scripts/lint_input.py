@@ -16,7 +16,9 @@ exit 2 when any finding is reported.
 
 from __future__ import annotations
 
-import argparse
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+from rf_local_diagnostics import redact_text
+
 import json
 import re
 import sys
@@ -35,7 +37,7 @@ from research.revenue_basis import parse_revenue_basis
 
 
 def _finding(category: str, path: str, message: str) -> dict[str, str]:
-    return {"category": category, "path": path, "message": message}
+    return {"category": category, "path": path, "message": redact_text(message)}
 
 
 def _check_top_level(data: dict[str, Any]) -> list[dict[str, str]]:
@@ -544,8 +546,9 @@ def lint(
     return findings
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+@observed_entry
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
+    parser = DiagnosticParser(description=__doc__.splitlines()[0])
     parser.add_argument("input", type=Path, help="input JSON path (see contracts.constants.FORECAST_SCHEMA_VERSION)")
     parser.add_argument(
         "--check-conclusion-facts",
@@ -562,7 +565,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         data = json.loads(args.input.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        print(f"error: {exc}", file=sys.stderr)
+        runtime.note_native(type(exc).__name__, kind="refusal", effect="not_started", error=exc)
+        print(redact_text(f"error: {exc}"), file=sys.stderr)
         return 2
 
     findings = lint(
@@ -573,10 +577,11 @@ def main(argv: list[str] | None = None) -> int:
     if not findings:
         print("ok: no findings")
         return 0
+    runtime.note_native("input_findings", kind="refusal", effect="not_started")
     for finding in findings:
         print(f"[{finding['category']}] {finding['path']}: {finding['message']}")
     return 2
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

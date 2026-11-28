@@ -55,7 +55,7 @@ from owner_file_lock import OwnerFileLock
 from rf_job_artifacts import ATTEMPT_LAYOUT, STAGE_RESULTS, latest_attempt as _last_attempt
 from rf_job_artifacts import selected_artifacts, stage_directory
 from rf_job_feedback import publish_attempt
-from rf_local_diagnostics import child_traceback_facts, record_local_error
+from rf_local_diagnostics import child_traceback_facts, public_reference, record_local_error, traceback_facts
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -597,10 +597,13 @@ class SubprocessStageRunner:
             full_env.update(env)
         try:
             proc = subprocess.Popen(
-                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=full_env, cwd=PROJECT_ROOT,
+                command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                env=full_env, cwd=PROJECT_ROOT,
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
             )
         except OSError as exc:
+            record_local_error("rf_job_worker_launch", stage=stage, job_id=self._owner_job_id,
+                               attempt_id=f"{stage}-{attempt_no}", cause_chain=traceback_facts(exc))
             return AttemptOutcome(exit_code=3, killed=False, elapsed_seconds=time.monotonic() - started,
                                   started=False, process_error=type(exc).__name__)
         with proc:
@@ -904,8 +907,10 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
         "exit_code": None,
         "execution_state": "launch_pending",
         "input_sha256": job["request_sha256"],
-        "feedback_run_id": (os.environ.get("RESEARCH_FEEDBACK_RUN_ID") or "").strip() or owner_job_id,
-        "feedback_attempt_id": (os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID") or "").strip() or attempt_id,
+        "feedback_run_id": public_reference(
+            (os.environ.get("RESEARCH_FEEDBACK_RUN_ID") or "").strip() or owner_job_id, "run"),
+        "feedback_attempt_id": public_reference(
+            (os.environ.get("RESEARCH_FEEDBACK_ATTEMPT_ID") or "").strip() or attempt_id, "attempt"),
     }
     companion_read_only = _companion_read_only(deployment.source_request_template)
     if stage == "source":
@@ -992,7 +997,8 @@ def _run_stage(job: dict[str, Any], *, stage: str, store: JobStore, deployment: 
         except (OSError, json.JSONDecodeError, ValueError, UnicodeDecodeError) as exc:
             record_local_error("rf_job_compute", code="stage_result_unreadable",
                                job_id=owner_job_id, attempt_id=record["attempt_id"],
-                               exception_type=type(exc).__name__)
+                               exception_type=type(exc).__name__, cause_chain=traceback_facts(exc),
+                               code_version=record.get("code_version"), input_ref=record.get("input_sha256"))
             record["status"] = "failed"
             record["failure_code"] = "stage_result_unreadable"
             record["error_detail"] = type(exc).__name__
@@ -1045,7 +1051,9 @@ def _project_stage_diagnostics(runner: SubprocessStageRunner, attempt: dict[str,
         })
     except (OSError, ValueError, RuntimeError) as exc:
         record_local_error("rf_job_diagnostics", code="stage_log_unavailable",
-                           job_id=job_id, attempt_id=attempt["attempt_id"], exception_type=type(exc).__name__)
+                           job_id=job_id, attempt_id=attempt["attempt_id"], exception_type=type(exc).__name__,
+                           cause_chain=traceback_facts(exc), code_version=attempt.get("code_version"),
+                           input_ref=attempt.get("input_sha256"))
 
 
 def _enforce_budget(job: dict[str, Any], store: JobStore) -> None:

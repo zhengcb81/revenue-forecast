@@ -198,8 +198,8 @@ def _raise_reader_refusal(opened: subprocess.CompletedProcess[bytes]) -> None:
         raise SourceVersionTransportError("source reader emitted partial bytes on refusal")
     try:
         refusal = _one_json_line(opened.stderr)
-    except SourceVersionTransportError:
-        raise SourceVersionTransportError("source reader refused current version") from None
+    except SourceVersionTransportError as error:
+        raise SourceVersionTransportError("source reader refused current version") from error
     if _valid_refusal(refusal):
         reason = validated_source_failure_reason(refusal["reason"])
         message = f"source reader refused: {reason}" if reason is not None else "source reader refused current version"

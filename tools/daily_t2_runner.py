@@ -1,7 +1,11 @@
 """Run RF's daily assurance against company-wiki's public read-only commands."""
 from __future__ import annotations
 
-import argparse
+if __package__:
+    from .rf_owner_runtime import DiagnosticParser, Invocation, exit_cli, observed_entry
+else:
+    from rf_owner_runtime import DiagnosticParser, Invocation, exit_cli, observed_entry
+
 from collections import Counter
 import json
 from pathlib import Path
@@ -127,14 +131,16 @@ def run_checks(
     return report, {"ok": 0, "not-ok": 1, "blocked": 2}[outcome]
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+@observed_entry
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
+    parser = DiagnosticParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--source-ref", action="append", type=Path, default=[],
                         help="Optional exact SourceRef JSON file to verify through the owner")
     parser.add_argument("--report-root", type=Path, default=DEFAULT_REPORT_ROOT)
     parser.add_argument("--run-id", default=None)
     args = parser.parse_args(argv)
+    runtime.note_operation("daily-owner-read", external_work_possible=False)
     try:
         refs = [json.loads(path.read_bytes()) for path in args.source_ref]
     except (OSError, UnicodeError, json.JSONDecodeError):
@@ -147,8 +153,10 @@ def main(argv: list[str] | None = None) -> int:
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     print(json.dumps(report["checks"], ensure_ascii=False))
+    if exit_code:
+        runtime.note_native("daily_owner_read_failed")
     return exit_code
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

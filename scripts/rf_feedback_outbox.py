@@ -2,18 +2,19 @@
 from __future__ import annotations
 
 from contextlib import closing, contextmanager
+from dataclasses import dataclass, field
 import json
 import os
 from pathlib import Path
 import sqlite3
 from time import monotonic, sleep
-from uuid import NAMESPACE_URL, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid5
 
 from urllib.parse import quote
 
 from owner_atomic_io import native_path, open_regular_file, replace_file_bytes
 from owner_file_lock import OwnerFileLock
-from rf_local_diagnostics import record_local_error, state_dir
+from rf_local_diagnostics import find_local_error, public_diagnostic, record_local_error, state_dir, traceback_facts
 
 
 _SINGLE_FILE_LOCK_WAIT_SECONDS = 2.0
@@ -49,7 +50,12 @@ def _packet(row):
 
 
 def was_published(row: dict) -> bool:
-    """Verify one exact original observation in the configured owner outbox."""
+    """Check the same observation across historical and sanitized delivery."""
+    projected = public_diagnostic(row)
+    return _was_published(row) or (projected != row and _was_published(projected))
+
+
+def _was_published(row: dict) -> bool:
     key, event, _ = _packet(row)
     dest = Path(event["target"])
     data = (_json(row) + "\n").encode("ascii")
@@ -121,7 +127,17 @@ def _send(key):
             db.execute("DELETE FROM pending WHERE id=?", (key,))
 
 
-def publish(row, detail=None):
+@dataclass(frozen=True)
+class Delivery:
+    durable: bool
+    code: str | None = None
+    cause_chain: list[dict] = field(default_factory=list)
+
+
+def publish_outcome(row, detail=None) -> Delivery:
+    """Keep one occurrence in the outbox or deliver it without a second owner event."""
+    row = public_diagnostic(row)
+    detail = public_diagnostic(detail) if detail is not None else None
     key, event, encoded = _packet(row)
     dest, single = Path(event["target"]), event["single"]
     try:
@@ -136,14 +152,24 @@ def publish(row, detail=None):
                 directory = dest.parent if single else dest
                 replace_file_bytes(directory / ".rf-evidence" / (detail["id"] + ".json"), _json(detail).encode("ascii"))
             _deliver(key, event)
-        except OSError as exc:
-            record_local_error("feedback_delivery", code="fallback_unavailable", exception_type=type(exc).__name__)
-        return
+        except (OSError, TypeError, ValueError, sqlite3.Error) as exc:
+            return Delivery(False, "fallback_unavailable", traceback_facts(exc))
+        return Delivery(True)
     try:
         _send(key)
     except (OSError, ValueError, sqlite3.Error) as exc:
         # The owner can retransmit the original journal row without calling a business entry.
-        record_local_error("feedback_delivery", code="outbox_delayed", exception_type=type(exc).__name__)
+        return Delivery(True, "outbox_delayed", traceback_facts(exc))
+    return Delivery(True)
+
+
+def publish(row, detail=None) -> bool:
+    delivery = publish_outcome(row, detail)
+    if delivery.code is not None:
+        saved = record_local_error("feedback_delivery", code=delivery.code, cause_chain=delivery.cause_chain,
+                                   run_id=row.get("run_id"), attempt_id=row.get("attempt_id"))
+        return delivery.durable or saved
+    return delivery.durable
 
 
 def flush():
@@ -161,8 +187,12 @@ def flush():
     return {"found": len(keys), "remaining": remaining}
 
 
+def _read_detail(data):
+    payload = json.loads(data)
+    return public_diagnostic(payload) if isinstance(payload, dict) else None
+
+
 def get_failure(identifier):
-    from uuid import UUID
     if UUID(hex=identifier).hex != identifier:
         raise ValueError("invalid RF feedback occurrence")
     path = native_path(state_dir() / "feedback.sqlite3")
@@ -170,10 +200,20 @@ def get_failure(identifier):
         # Path.as_uri treats the Windows device prefix as a remote authority. SQLite
         # accepts the percent-encoded native filename with its genuine read-only mode.
         uri = "file:" + quote(str(path), safe="") if os.name == "nt" else path.absolute().as_uri()
-        with closing(sqlite3.connect(uri + "?mode=ro", uri=True)) as db:
-            found = db.execute("SELECT body FROM failures WHERE id=?", (identifier,)).fetchone()
-        if found:
-            return json.loads(found[0])
+        try:
+            with closing(sqlite3.connect(uri + "?mode=ro", uri=True)) as db:
+                found = db.execute("SELECT body FROM failures WHERE id=?", (identifier,)).fetchone()
+            if found and (detail := _read_detail(found[0])) is not None:
+                return detail
+        except (OSError, ValueError, sqlite3.Error):
+            # A damaged optional delivery store does not block the local original.
+            pass
     dest, single = _destination()
     fallback = native_path((dest.parent if single else dest) / ".rf-evidence" / (identifier + ".json"))
-    return json.loads(fallback.read_bytes()) if fallback.is_file() else None
+    try:
+        if fallback.is_file() and (detail := _read_detail(fallback.read_bytes())) is not None:
+            return detail
+    except (OSError, ValueError):
+        # The original local row remains independently addressable.
+        pass
+    return find_local_error(identifier)

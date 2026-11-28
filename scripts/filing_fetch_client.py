@@ -18,7 +18,8 @@ or with an explicit request file::
 
 from __future__ import annotations
 
-import argparse
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+
 import json
 import math
 import os
@@ -33,7 +34,7 @@ from typing import Any
 from company_wiki_narrative_contracts import NarrativeTransportError, canonical_bytes, decode_object
 from company_wiki_narrative_process import run_bounded
 from filing_upstream_cause import FAILURE_STATUSES, failure_detail, failure_observation, safe_failure_message, validated_failure_candidates
-from rf_local_diagnostics import child_traceback_facts, record_local_error
+from rf_local_diagnostics import child_traceback_facts, record_local_error, redact_text
 
 _DEPENDENCY_ERROR_LINE = re.compile(r"^(ImportError|ModuleNotFoundError):", re.MULTILINE)
 
@@ -67,8 +68,10 @@ class _ClientError(RuntimeError):
         companion_observation: dict[str, Any] | None = None,
         filing_fetch_result: dict[str, Any] | None = None,
         producer_exit_code: int | None = None,
+        transport_facts: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(message)
+        self.transport_facts = transport_facts or {}
         self.status = status if isinstance(status, str) and status in FAILURE_STATUSES else None
         self.error_code = error_code if isinstance(error_code, str) and error_code in FAILURE_STATUSES else None
         self.retryable = retryable if type(retryable) is bool else None
@@ -295,6 +298,12 @@ def request_financial_statements(
         )
     except NarrativeTransportError as exc:
         return _statement_error("upstream_error", exc.reason)
+    if completed.returncode:
+        record_local_error(
+            "filing_fetch_statements", code="upstream_process_exit",
+            producer_exit_code=completed.returncode,
+            child_errors=child_traceback_facts(completed.stderr.decode("utf-8", errors="replace")),
+        )
     return _statement_result(completed.returncode, completed.stdout, completed.stderr)
 
 
@@ -354,8 +363,10 @@ def resolve_filing_result(
             creationflags=creationflags,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
-        record_local_error("filing_fetch", code="filing_fetch_subprocess_failed", exception_type=type(exc).__name__)
-        raise _ClientError("filing-fetch subprocess failed") from exc
+        raise _ClientError(
+            "filing-fetch subprocess failed",
+            transport_facts={"code": "filing_fetch_subprocess_failed", "exception_type": type(exc).__name__},
+        ) from exc
     stderr = completed.stderr.decode("utf-8", errors="replace")
     if completed.returncode != 0:
         # filing-fetch writes its structured error document to STDOUT and exits
@@ -373,30 +384,25 @@ def resolve_filing_result(
                 candidates=detail.get("candidates"),
                 **failure_observation(payload),
             )
-        record_local_error(
-            "filing_fetch", code="filing_fetch_invalid_error_document", producer_exit_code=completed.returncode,
-            child_errors=child_traceback_facts(stderr),
-        )
-        # The public wire keeps its known startup hint and typed process exit.
-        # Child diagnostic facts remain in the owner log.
+        # The owner combines these child facts with its public occurrence.
         dependency_error = _DEPENDENCY_ERROR_LINE.search(stderr)
         suffix = f" (stderr reports {dependency_error.group(1)})" if dependency_error else ""
         raise _ClientError(
             f"filing-fetch exited {completed.returncode}: invalid upstream error document{suffix}",
             source_failure_reason="filing_fetch_invalid_error_document",
             producer_exit_code=completed.returncode,
+            transport_facts={"code": "filing_fetch_invalid_error_document",
+                             "child_errors": child_traceback_facts(stderr)},
         )
     try:
         response = json.loads(completed.stdout.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        record_local_error(
-            "filing_fetch", code="filing_fetch_invalid_response_json", producer_exit_code=completed.returncode,
-            child_errors=child_traceback_facts(stderr), exception_type=type(exc).__name__,
-        )
         raise _ClientError(
             "filing-fetch stdout is not valid JSON",
             source_failure_reason="filing_fetch_invalid_response_json",
             producer_exit_code=completed.returncode,
+            transport_facts={"code": "filing_fetch_invalid_response_json",
+                             "child_errors": child_traceback_facts(stderr), "exception_type": type(exc).__name__},
         ) from exc
     if not isinstance(response, dict):
         raise _ClientError("filing-fetch response must be an object")
@@ -507,7 +513,8 @@ def _emit_error(
     sys.stderr.write("\n")
 
 
-def main(argv: list[str] | None = None) -> int:
+@observed_entry(machine_stderr=True, owner=True)
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
     """CLI entry: read a request, resolve it, print the handle JSON to stdout."""
     # Speak UTF-8 on Windows regardless of the platform default (matches
     # filing-fetch's own stdin/stdout handling): handles and requests routinely
@@ -516,7 +523,7 @@ def main(argv: list[str] | None = None) -> int:
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8")
 
-    parser = argparse.ArgumentParser(
+    parser = DiagnosticParser(
         description="Resolve (or ensure) a filing via the standalone filing-fetch skill.",
     )
     parser.add_argument(
@@ -558,17 +565,27 @@ def main(argv: list[str] | None = None) -> int:
         try:
             request_text = Path(args.request_file).read_text(encoding="utf-8")
         except OSError as exc:
-            _emit_error("config_error", f"cannot read request file: {exc}", retryable=False)
+            runtime.note_native("config_error", kind="refusal", effect="not_started", error=exc)
+            _emit_error("config_error", redact_text(f"cannot read request file: {exc}"), retryable=False)
             return 1
     else:
         request_text = sys.stdin.read()
 
-    request = _try_loads(request_text)
+    runtime.stage = "request-decode"
+    runtime.note_input(request_text)
+    try:
+        request = json.loads(request_text)
+    except (ValueError, RecursionError) as exc:
+        runtime.note_native("config_error", kind="refusal", effect="not_started", error=exc)
+        _emit_error("config_error", "request must be a JSON object", retryable=False)
+        return 1
     if not isinstance(request, dict):
+        runtime.note_native("config_error", kind="refusal", effect="not_started")
         _emit_error("config_error", "request must be a JSON object", retryable=False)
         return 1
 
     root = Path(args.filing_fetch_root) if args.filing_fetch_root else None
+    runtime.note_operation("resolve-filing", external_work_possible=args.allow_download)
     try:
         resolver = resolve_filing_result if args.result_envelope else resolve_filing
         handle = resolver(
@@ -580,9 +597,12 @@ def main(argv: list[str] | None = None) -> int:
             source_ref_v2=args.source_ref_v2,
         )
     except _ClientError as exc:
+        runtime.note_native(exc.source_failure_reason or exc.error_code or exc.status or "fatal",
+                            producer_exit_code=exc.producer_exit_code, error=exc)
+        runtime.transport_facts = {"operation": "filing_fetch", **exc.transport_facts}
         _emit_error(
             exc.error_code or exc.status or "fatal",
-            str(exc),
+            redact_text(str(exc)),
             retryable=exc.retryable,
             candidates=exc.candidates,
             upstream_cause=exc.upstream_cause,
@@ -603,4 +623,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(exit_cli(main))

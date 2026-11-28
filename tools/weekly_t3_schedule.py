@@ -2,6 +2,13 @@
 
 from __future__ import annotations
 
+if __package__:
+    from .rf_owner_runtime import (DiagnosticParser, Invocation, exit_cli, observed_entry,
+                                  record_local_error, traceback_facts)
+else:
+    from rf_owner_runtime import (DiagnosticParser, Invocation, exit_cli, observed_entry,
+                                  record_local_error, traceback_facts)
+
 import argparse
 import subprocess
 import sys
@@ -29,7 +36,6 @@ else:
     from weekly_t3_assurance import FILING_ROOT, MAX_AGE_DAYS, add_owner_options, read_weekly_t3, receipt_label
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from rf_assurance_history import AssuranceRun, get_run, path_reference, show_run, write_json  # noqa: E402
 
 WEEKLY_LEDGER = PROJECT_ROOT / "assurance" / "runs" / "weekly_manifest.json"
@@ -42,6 +48,7 @@ def _write_report(ledger_path: Path, run_id: str, body: dict) -> str:
     try:
         write_json(target, body)
     except OSError as exc:
+        record_local_error("weekly_report_write", run_id=run_id, cause_chain=traceback_facts(exc))
         print(f"warning: could not persist the weekly receipt report: {type(exc).__name__}",
               file=sys.stderr)
         return f"{target.name} (NOT WRITTEN: {type(exc).__name__})"
@@ -76,6 +83,7 @@ def run_weekly(
     try:
         write_ledger(ledger_path, run_id, result.ledger_time, triplet, result.ok, report)
     except OSError as exc:
+        record_local_error("weekly_ledger_write", run_id=run_id, cause_chain=traceback_facts(exc))
         print(f"warning: could not refresh weekly ledger {run_id} ({type(exc).__name__})", file=sys.stderr)
     if not result.ok:
         try:
@@ -88,6 +96,7 @@ def run_weekly(
                 "owner_run_id": (result.receipt or {}).get("run_id"),
             })
         except OSError as exc:
+            record_local_error("weekly_alert_write", run_id=run_id, cause_chain=traceback_facts(exc))
             print(f"warning: could not record weekly alert {run_id} ({type(exc).__name__})", file=sys.stderr)
     print(f"run_id={run_id} ok={result.ok} status={result.status} detail={result.detail}")
     return exit_code
@@ -156,8 +165,9 @@ def cmd_verify_weekly(args: argparse.Namespace) -> int:
     return 0 if run_status == "fresh" else 1
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Weekly T3 scheduling (ZR-903)")
+@observed_entry
+def main(*, runtime: Invocation) -> int:
+    parser = DiagnosticParser(description="Weekly T3 scheduling (ZR-903)")
     parser.add_argument("--ledger", type=Path, default=WEEKLY_LEDGER)
     parser.add_argument("--alerts", type=Path, default=WEEKLY_ALERTS)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -167,6 +177,7 @@ def main() -> int:
     for name in ("register", "unregister", "query", "verify"):
         sub.add_parser(name)
     args = parser.parse_args()
+    runtime.note_operation(args.command, external_work_possible=args.command in {"register", "unregister"})
     if args.command == "run-weekly":
         return run_weekly(
             args.ledger, args.alerts, filing_fetch_root=args.filing_fetch_root,
@@ -184,4 +195,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

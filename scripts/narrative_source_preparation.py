@@ -6,6 +6,8 @@ stdout is RF's source-only context (or metadata reference), never a forecast.
 
 from __future__ import annotations
 
+from rf_cli_feedback import Invocation, exit_cli, observed_entry
+
 import argparse
 from pathlib import Path
 import sys
@@ -22,7 +24,8 @@ class _Parser(argparse.ArgumentParser):
         raise NarrativeTransportError("blocked", "invalid_cli_arguments")
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+@observed_entry(machine_stderr=True)
+def main(argv: Sequence[str] | None = None, *, runtime: Invocation) -> int:
     parser = _Parser(description=__doc__)
     parser.add_argument("--company-wiki-catalog-config", type=Path, required=True)
     parser.add_argument("--operation", choices=("reference", "read"), default="read")
@@ -32,7 +35,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--reader-executable", help="explicit installed CWP command; default Python module")
     try:
         args = parser.parse_args(argv)
-        request = decode_object(sys.stdin.buffer.read())
+        runtime.note_operation(args.operation, external_work_possible=False)
+        raw = sys.stdin.buffer.read()
+        runtime.note_input(raw)
+        request = decode_object(raw)
         command = [args.reader_executable] if args.reader_executable else None
         kwargs = {
             "catalog_config": args.company_wiki_catalog_config,
@@ -51,9 +57,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         sys.stdout.buffer.flush()
         return 0
     except NarrativeTransportError as error:
+        runtime.note_native(error.reason, kind="refusal", effect="not_started", error=error)
         refusal = {"schema_version": "revenue-narrative-refusal/1",
                    "status": error.status, "reason": error.reason}
-    except (TypeError, ValueError, OSError, RecursionError):
+    except (TypeError, ValueError, OSError, RecursionError) as error:
+        runtime.note_native("invalid_request", kind="refusal", effect="not_started", error=error)
         refusal = {"schema_version": "revenue-narrative-refusal/1",
                    "status": "blocked", "reason": "invalid_request"}
     sys.stderr.buffer.write(canonical_bytes(refusal) + b"\n")
@@ -62,4 +70,4 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

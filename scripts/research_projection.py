@@ -6,7 +6,8 @@ This command changes explanations only; native validation remains downstream.
 """
 from __future__ import annotations
 
-import argparse
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+
 import hashlib
 import json
 from pathlib import Path
@@ -15,8 +16,9 @@ from research.authoring_projection import reconcile_authoring_explanations
 from revenue_forecast import _atomic_write_text
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+@observed_entry
+def main(*, runtime: Invocation):
+    parser = DiagnosticParser(description=__doc__)
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -34,4 +36,4 @@ def main():
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

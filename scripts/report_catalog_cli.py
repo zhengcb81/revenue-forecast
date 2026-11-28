@@ -27,7 +27,8 @@ import re
 import sys
 
 from report_catalog import CatalogError, ReportCatalog, import_w09
-from rf_cli_feedback import note_native, observed_entry
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+from rf_local_diagnostics import redact_text
 from report_catalog_deployment import (DeploymentError, assert_read_only_command,
                                        build_catalog, resolve_owner_root, split_owner_root)
 
@@ -68,13 +69,13 @@ def _trace_page(catalog: ReportCatalog, args: argparse.Namespace) -> dict:
     }}
 
 
-def _emit_error(code: str, message: str) -> int:
+def _emit_error(runtime: Invocation, code: str, message: str) -> int:
     request_refusal = (code.startswith(("owner_root_", "invalid_")) or code in
                        {"not_found", "node_not_found", "identity_unverified", "write_command_forbidden"})
-    note_native(code, kind="refusal" if request_refusal else "failure",
+    runtime.note_native(code, kind="refusal" if request_refusal else "failure",
                 effect="not_started" if request_refusal else "unknown")
     print(json.dumps({"schema_version": "rf-report-catalog/1", "error": {"code": code,
-          "message": message}}, ensure_ascii=False, sort_keys=True), file=sys.stderr)
+          "message": redact_text(message)}}, ensure_ascii=False, sort_keys=True), file=sys.stderr)
     return 2
 
 
@@ -86,8 +87,8 @@ def _query_filters(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--limit", type=int, default=50)
 
 
-@observed_entry
-def main(argv: list[str] | None = None) -> int:
+@observed_entry(machine_stderr=True)
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
     raw = sys.argv[1:] if argv is None else list(argv)
     try:
         owner_root, command_argv = split_owner_root(raw)
@@ -96,8 +97,8 @@ def main(argv: list[str] | None = None) -> int:
         # turning into a parser usage error.
         owner_workspace = resolve_owner_root(owner_root)
     except DeploymentError as exc:
-        return _emit_error(exc.code, exc.message)
-    parser = argparse.ArgumentParser(description="Read owner-indexed RF runs and exact reports")
+        return _emit_error(runtime, exc.code, exc.message)
+    parser = DiagnosticParser(description="Read owner-indexed RF runs and exact reports")
     commands = parser.add_subparsers(dest="command", required=True)
     _query_filters(commands.add_parser("list-runs"))
     _query_filters(commands.add_parser("list-reports"))
@@ -178,12 +179,12 @@ def main(argv: list[str] | None = None) -> int:
             print(encoder.encode(output))
         return 0
     except DeploymentError as exc:
-        return _emit_error(exc.code, exc.message)
+        return _emit_error(runtime, exc.code, exc.message)
     except (CatalogError, OSError, ValueError, KeyError) as exc:
         code = exc.code if isinstance(exc, CatalogError) else "catalog_invalid"
         message = str(exc) if isinstance(exc, CatalogError) else "catalog request failed"
-        return _emit_error(code, message)
+        return _emit_error(runtime, code, message)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

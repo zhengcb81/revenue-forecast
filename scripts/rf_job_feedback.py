@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 from collections.abc import Sequence
 import hashlib
 import json
@@ -15,7 +14,8 @@ from owner_atomic_io import create_file_bytes, native_path, open_regular_file, r
 from owner_file_lock import OwnerFileLock
 from rf_assurance_history import get_run
 from rf_feedback_outbox import flush, get_failure, publish, was_published
-from rf_local_diagnostics import record_local_error
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+from rf_local_diagnostics import record_local_error, same_reference
 
 
 OWNER = "revenue-forecast"
@@ -81,7 +81,9 @@ def _stage_outcome(row: dict, stage: str, status: str, reason: str | None = None
 
 def _matches_attempt(job_id: str, attempt: dict, observation: dict) -> bool:
     run_id, wrapper_attempt = observation.get("run_id"), observation.get("attempt_id")
-    if (run_id, wrapper_attempt) == _feedback_identity(job_id, attempt):
+    original_run, original_attempt = _feedback_identity(job_id, attempt)
+    if (same_reference(run_id, original_run, "run")
+            and same_reference(wrapper_attempt, original_attempt, "attempt")):
         return True
     if attempt.get("feedback_run_id") is not None or attempt.get("feedback_attempt_id") is not None:
         return False
@@ -200,7 +202,8 @@ def _cli_failure(row: dict, identifier: str) -> dict | None:
         return None
     event = get_failure(identifier)
     if (event and event.get("id") == identifier
-            and row.get("run_id") == event["run_id"] and row.get("attempt_id") == event["attempt_id"]
+            and same_reference(row.get("run_id"), event["run_id"], "run")
+            and same_reference(row.get("attempt_id"), event["attempt_id"], "attempt")
             and row.get("step_id") == event["entrypoint"] + "/" + event["id"]
             and type(event.get("exit_code")) is int and event["exit_code"] != 0):
         return event
@@ -232,8 +235,8 @@ def _lookup_observation(owner_roots: Sequence[Path], row: dict, assurance_ledger
             return {"state": "unknown", "code": "native_owner_conflict"}
         if (record is None or row.get("owner") != OWNER
                 or row.get("step_id") != f"assurance/{period}/{original_id}"
-                or row.get("run_id") != record["feedback_run_id"]
-                or row.get("attempt_id") != record["feedback_attempt_id"]):
+                or not same_reference(row.get("run_id"), record["feedback_run_id"], "run")
+                or not same_reference(row.get("attempt_id"), record["feedback_attempt_id"], "attempt")):
             return {"state": "unknown"}
         if record["state"] == "started":
             return {"state": "pending"}
@@ -333,7 +336,6 @@ def _triage_cli_failure(row: dict, identifier: str) -> tuple[dict, list[str]]:
         return facts, ["original_cli_diagnostic"]
     reason = event.get("native_code")
     if (not isinstance(reason, str) or not _CODE.fullmatch(reason)
-            or row.get("version") not in (None, event.get("code_version"))
             or row.get("issue_key") not in (None, f"{event['entrypoint']}/{reason}")):
         return facts, ["matching_cli_diagnostic"]
     effect = "not_started" if event.get("side_effect_state") == "not_started" else "unknown"
@@ -477,8 +479,9 @@ def record_report(root: Path, request: dict) -> dict:
     return {"result": {"recorded": True}}
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+@observed_entry(owner=True)
+def main(*, runtime: Invocation) -> int:
+    parser = DiagnosticParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("flush-feedback")
     commands.add_parser("get-failure").add_argument("identifier")
@@ -498,6 +501,7 @@ def main() -> int:
     get.add_argument("--reports-dir", type=Path, required=True)
     get.add_argument("action_id")
     args = parser.parse_args()
+    runtime.note_operation(args.command, external_work_possible=False)
     try:
         if args.command == "flush-feedback":
             result = flush()
@@ -524,11 +528,12 @@ def main() -> int:
                 raise ValueError("invalid feedback action ID")
             result = {"report": json.loads((args.reports_dir / f"{args.action_id}.json").read_bytes())}
     except (OSError, ValueError, KeyError, TypeError) as error:
-        print(json.dumps({"error": type(error).__name__}))
+        runtime.note_native(type(error).__name__, error=error)
+        sys.stdout.write(json.dumps({"error": type(error).__name__}) + "\n")
         return 1
     print(json.dumps(result, ensure_ascii=True))
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

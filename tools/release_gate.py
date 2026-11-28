@@ -20,7 +20,11 @@ All paths are under assurance/runs/ (audit output); no production writes.
 
 from __future__ import annotations
 
-import argparse
+if __package__:
+    from .rf_owner_runtime import DiagnosticParser, Invocation, exit_cli, observed_entry
+else:
+    from rf_owner_runtime import DiagnosticParser, Invocation, exit_cli, observed_entry
+
 import hashlib
 import json
 import os
@@ -197,8 +201,9 @@ def mark_acked(alert_path: Path, run_id: str) -> int:
     return changed
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="SLI/release gate (ZR-904)")
+@observed_entry
+def main(*, runtime: Invocation) -> int:
+    parser = DiagnosticParser(description="SLI/release gate (ZR-904)")
     sub = parser.add_subparsers(dest="command", required=True)
     pub = sub.add_parser("publish")
     pub.add_argument("--reports-dir", type=Path, default=DEFAULT_REPORTS)
@@ -223,4 +228,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

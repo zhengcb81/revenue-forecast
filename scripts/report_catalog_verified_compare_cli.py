@@ -11,6 +11,8 @@ neighbouring databases are never imported.
 """
 from __future__ import annotations
 
+from rf_cli_feedback import Invocation, exit_cli, observed_entry
+
 import argparse
 import json
 import sys
@@ -76,7 +78,8 @@ def _read_request(limit: int = MAX_INPUT_BYTES) -> dict[str, Any]:
     return value
 
 
-def main(argv: list[str] | None = None) -> int:
+@observed_entry(machine_stderr=True)
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
     schema = SCHEMA_VERSION
     try:
         owner_root_text, raw = split_owner_root(sys.argv[1:] if argv is None else list(argv))
@@ -93,6 +96,7 @@ def main(argv: list[str] | None = None) -> int:
         commands.add_parser("compare", parents=[shared])
         commands.add_parser("append-binding", parents=[shared])
         args = parser.parse_args(raw)
+        runtime.note_operation(args.command, external_work_possible=False)
         schema = READ_SCHEMA if args.command == "get-bindings" else SCHEMA_VERSION
         resolver = FrozenSubjectResolver.from_public_fixture(args.subject_fixture)
         catalog = build_catalog(workspace) or ReportCatalog()
@@ -120,8 +124,9 @@ def main(argv: list[str] | None = None) -> int:
         code = getattr(exc, "code", None) or getattr(exc, "error_code", None)
         if not isinstance(code, str):
             code = "scope_unavailable"
+        runtime.note_native(code, error=exc)
         return _emit_error(code, schema)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

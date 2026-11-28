@@ -3,12 +3,12 @@
 
 from __future__ import annotations
 
-import argparse
 import json
 import os
 import sys
 from pathlib import Path
-from rf_cli_feedback import note_native, observed_entry
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+from rf_local_diagnostics import redact_text
 
 from revenue_core import (
     Collector,
@@ -51,8 +51,8 @@ def prepare_forecast(data: dict, *, mode: str = "formal") -> dict:
 
 
 @observed_entry
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Calculate a source-traceable revenue-only forecast")
+def main(*, runtime: Invocation) -> int:
+    parser = DiagnosticParser(description="Calculate a source-traceable revenue-only forecast")
     parser.add_argument(
         "input", type=Path, nargs="?", help="input JSON document (required unless --version)"
     )
@@ -75,8 +75,12 @@ def main() -> int:
         return 0
     if args.input is None:
         parser.error("the following arguments are required: input")
+    runtime.stage = "input-decode"
     try:
-        data = json.loads(args.input.read_text(encoding="utf-8"))
+        raw = args.input.read_text(encoding="utf-8")
+        runtime.note_input(raw)
+        data = json.loads(raw)
+        runtime.stage = "compute"
         if args.validate_only and args.verbose:
             validate_document(data, collector=Collector())
         # ZR-701: validate-only runs the engine in draft mode — strong
@@ -93,15 +97,15 @@ def main() -> int:
         if args.markdown:
             _atomic_write_text(args.markdown, render_markdown(result))
     except (OSError, json.JSONDecodeError, ForecastInputError) as exc:
-        note_native(type(exc).__name__, kind="refusal" if isinstance(exc, (json.JSONDecodeError, ForecastInputError)) else "failure",
+        runtime.note_native(type(exc).__name__, kind="refusal" if isinstance(exc, (json.JSONDecodeError, ForecastInputError)) else "failure",
                     effect="not_started" if isinstance(exc, json.JSONDecodeError) else "unknown")
-        print(f"error: {exc}", file=sys.stderr)
+        print(redact_text(f"error: {exc}"), file=sys.stderr)
         return 2
     except Exception as exc:
         # The process owns the public message and status. F4 stores the
         # original exception type and source frames without request values.
         error_type = type(exc).__name__
-        note_native(error_type)
+        runtime.note_native(error_type)
         suffix = f" ({error_type})" if error_type.isidentifier() else ""
         print(f"error: internal forecast failure{suffix}", file=sys.stderr)
         return 1
@@ -109,4 +113,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

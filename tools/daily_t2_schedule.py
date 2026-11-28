@@ -6,6 +6,13 @@ pins use the CWP public verifier. Existing daily ledgers still load normally.
 
 from __future__ import annotations
 
+if __package__:
+    from .rf_owner_runtime import (DiagnosticParser, Invocation, exit_cli, observed_entry,
+                                  record_local_error, traceback_facts)
+else:
+    from rf_owner_runtime import (DiagnosticParser, Invocation, exit_cli, observed_entry,
+                                  record_local_error, traceback_facts)
+
 import argparse
 import json
 import subprocess
@@ -19,7 +26,6 @@ else:
     from daily_t2_runner import DEFAULT_CONFIG, DEFAULT_REPORT_ROOT
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from rf_assurance_history import AssuranceRun, get_run, path_reference, show_run, write_json  # noqa: E402
 
 RUNNER = PROJECT_ROOT / "tools" / "daily_t2_runner.py"
@@ -165,20 +171,23 @@ def run_daily(
     for path in source_ref_files:
         argv.extend(("--source-ref", str(path)))
     try:
-        proc = subprocess.run(argv, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
+        proc = subprocess.run(argv, stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                              encoding="utf-8", errors="replace", timeout=600,
+                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     except (OSError, subprocess.TimeoutExpired) as error:
+        causes = traceback_facts(error)
         cause = type(error).__name__
         proc = subprocess.CompletedProcess(
             argv, 2, "", f"{ENVIRONMENT_SENTINEL}: {cause}",
         )
     else:
-        cause = None
+        causes = []
     report = _read_runner_report(report_path)
     ok, outcome, detail = run_outcome(proc, report)
     exit_code = 0 if ok else proc.returncode or 1
     diagnostic = {"owner_exit_code": proc.returncode, "report_available": report is not None}
-    if cause is not None:
-        diagnostic["cause_chain"] = [{"type": cause}]
+    if causes:
+        diagnostic["cause_chain"] = causes
     elif report is not None:
         diagnostic["checks"] = report.get("checks", {})
     attempt.finish(exit_code=exit_code, outcome=outcome, diagnostic=diagnostic)
@@ -188,10 +197,12 @@ def run_daily(
         try:
             write_json(report_path, report)
         except OSError as exc:
+            record_local_error("daily_report_write", run_id=run_id, cause_chain=traceback_facts(exc))
             print(f"warning: could not record report {run_id} ({type(exc).__name__})", file=sys.stderr)
     try:
         write_ledger(ledger_path, run_id, started, report.get("triplet", {}), ok, str(report_path))
     except OSError as exc:
+        record_local_error("daily_ledger_write", run_id=run_id, cause_chain=traceback_facts(exc))
         print(f"warning: could not refresh daily ledger {run_id} ({type(exc).__name__})", file=sys.stderr)
     status, freshness = freshness_status(read_ledger(ledger_path), now=started)
     if not ok:
@@ -202,6 +213,7 @@ def run_daily(
                 "exit_code": exit_code,
             })
         except OSError as exc:
+            record_local_error("daily_alert_write", run_id=run_id, cause_chain=traceback_facts(exc))
             print(f"warning: could not record daily alert {run_id} ({type(exc).__name__})", file=sys.stderr)
     print(f"run_id={run_id} ok={ok} outcome={outcome} status={status} detail={detail}")
     return exit_code
@@ -325,7 +337,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     """Parser factory (testable without executing commands)."""
-    parser = argparse.ArgumentParser(description="Daily Windows T2 scheduling (ZR-902)")
+    parser = DiagnosticParser(description="Daily Windows T2 scheduling (ZR-902)")
     parser.add_argument("--ledger", type=Path, default=DEFAULT_LEDGER)
     parser.add_argument("--alerts", type=Path, default=DEFAULT_ALERTS)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -339,8 +351,10 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> int:
+@observed_entry
+def main(*, runtime: Invocation) -> int:
     args = build_parser().parse_args()
+    runtime.note_operation(args.command, external_work_possible=args.command in {"register", "unregister"})
     if args.command == "run-daily":
         return run_daily(
             args.config, args.report_root, args.ledger, args.alerts,
@@ -358,4 +372,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

@@ -18,7 +18,9 @@ exit 2 on expected error or detected drift in ``--check`` mode.
 """
 from __future__ import annotations
 
-import argparse
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+from rf_local_diagnostics import redact_text
+
 import json
 import re
 import sys
@@ -152,8 +154,9 @@ def apply_hash_fixes(data: dict[str, Any]) -> list[str]:
     return changes
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+@observed_entry
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
+    parser = DiagnosticParser(description=__doc__.splitlines()[0])
     parser.add_argument("input", type=Path, help="input JSON path (see contracts.constants.FORECAST_SCHEMA_VERSION)")
     parser.add_argument("--output", type=Path, help="write fixed JSON here instead of in place")
     parser.add_argument("--check", action="store_true", help="report drift only, write nothing (exit 2 on drift)")
@@ -163,7 +166,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         data = json.loads(args.input.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError, ForecastInputError) as exc:
-        print(f"error: {exc}", file=sys.stderr)
+        runtime.note_native(type(exc).__name__, kind="refusal", effect="not_started", error=exc)
+        print(redact_text(f"error: {exc}"), file=sys.stderr)
         return 2
 
     for warning in _format_warnings(data):
@@ -175,6 +179,7 @@ def main(argv: list[str] | None = None) -> int:
         for entry in drift:
             print(f"drift: {entry['path']} ({entry['kind']}) expected {entry['expected']}")
         if drift:
+            runtime.note_native("hash_drift", kind="refusal", effect="not_started")
             return 2
         print("ok: no hash drift")
         return 0
@@ -196,4 +201,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

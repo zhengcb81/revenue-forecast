@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-import argparse
+if __package__:
+    from .rf_owner_runtime import DiagnosticParser, Invocation, exit_cli, observed_entry
+else:
+    from rf_owner_runtime import DiagnosticParser, Invocation, exit_cli, observed_entry
+
 import json
 import sys
 from datetime import UTC, datetime
@@ -19,8 +23,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 REPORT_ROOT = PROJECT_ROOT / "assurance" / "runs"
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+@observed_entry
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
+    parser = DiagnosticParser(description=__doc__)
     parser.add_argument("--report-root", type=Path, default=REPORT_ROOT)
     parser.add_argument("--run-id", help="local RF report identifier")
     parser.add_argument("--force", action="store_true",
@@ -34,10 +39,14 @@ def main(argv: list[str] | None = None) -> int:
     if not run_id or run_id in {".", ".."} or any(char in run_id for char in "/\\:"):
         parser.error("--run-id must be one local report name")
 
+    runtime.note_operation("weekly-owner-read", external_work_possible=False)
     result = read_weekly_t3(
         args.filing_fetch_root, receipts_dir=args.receipts_dir, owner_run_id=args.owner_run_id,
     )
     status = {"ok": "passed", "not-ok": "failed", "blocked": "blocked"}[result.status]
+    if result.exit_code:
+        runtime.note_native(result.detail, producer_exit_code=result.owner_exit_code)
+        runtime.cause_chain = list(result.cause_chain)
     args.report_root.mkdir(parents=True, exist_ok=True)
     out = args.report_root / run_id
     try:
@@ -59,4 +68,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

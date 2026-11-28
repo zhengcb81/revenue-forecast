@@ -38,8 +38,14 @@ tool exceptions, and explicitly supplied HEAD SHAs that do not match.
 
 from __future__ import annotations
 
+if __package__:
+    from .rf_owner_runtime import DiagnosticParser, Invocation, exit_cli, observed_entry
+else:
+    from rf_owner_runtime import DiagnosticParser, Invocation, exit_cli, observed_entry
+
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -83,8 +89,8 @@ def _head(repo: Path) -> str:
     try:
         result = subprocess.run(
             ["git", "-C", str(repo), "rev-parse", "HEAD"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0,
             check=False,
         )
     except OSError:
@@ -365,7 +371,7 @@ def run_checks(
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Release readiness (ZR-1001)")
+    parser = DiagnosticParser(description="Release readiness (ZR-1001)")
     parser.add_argument(
         "--catalog-config",
         type=Path,
@@ -416,7 +422,8 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
+@observed_entry
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
     expect_heads: dict[str, str] = {}
@@ -443,4 +450,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))

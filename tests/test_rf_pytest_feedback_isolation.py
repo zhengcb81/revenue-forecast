@@ -29,14 +29,16 @@ def test_emit(tmp_path, monkeypatch):
         "check_id": "test", "expected": "ok", "actual": "ok",
     })
     command = [sys.executable, "-B", str(scripts / "rf_job_cli.py"), "list-jobs", "--owner-root"]
-    result = subprocess.run(command, timeout=20, capture_output=True)
+    result = subprocess.run(command, timeout=20, stdin=subprocess.DEVNULL, capture_output=True,
+                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert result.returncode == 2
     assert (state_dir() / "feedback.sqlite3").is_file()
     assert len(list((state_dir() / "observations").glob("*.ready"))) == 2
 
     explicit = tmp_path / "explicit.jsonl"
     monkeypatch.setenv("RESEARCH_FEEDBACK_OUT", str(explicit))
-    result = subprocess.run(command, timeout=20, capture_output=True)
+    result = subprocess.run(command, timeout=20, stdin=subprocess.DEVNULL, capture_output=True,
+                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert result.returncode == 2
     assert len(explicit.read_bytes().splitlines()) == 1
 """
@@ -66,7 +68,8 @@ def test_pytest_feedback_stays_out_of_inherited_desktop(tmp_path, inherit_explic
     child = subprocess.run(
         [sys.executable, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider",
          "--confcutdir", str(suite), "--basetemp", str(tmp_path / "pt"), "tools/tests/test_probe.py"],
-        cwd=suite, env=environment, capture_output=True, text=True, encoding="utf-8", timeout=60,
+        cwd=suite, env=environment, stdin=subprocess.DEVNULL, capture_output=True,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0), text=True, encoding="utf-8", timeout=60,
     )
     assert not any(desktop.iterdir()), "pytest wrote to the inherited RF owner state"
     assert not inherited_out.exists() and not inherited_dir.exists()

@@ -28,6 +28,8 @@ Trust rules pinned by the dashboard extension card:
 
 from __future__ import annotations
 
+from rf_cli_feedback import Invocation, exit_cli, observed_entry
+
 import hashlib
 import json
 import os
@@ -298,8 +300,10 @@ def make_identity_resolver(
     return resolver
 
 
-def _main(argv: list[str] | None = None) -> int:  # pragma: no cover - thin probe helper
+@observed_entry
+def _main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
     args = argv if argv is not None else sys.argv[1:]
+    runtime.note_operation("resolve-identity", external_work_possible=False)
     entity_id = args[0]
     listing_id = args[1] if len(args) > 1 else None
     config = load_bridge_config()
@@ -309,4 +313,4 @@ def _main(argv: list[str] | None = None) -> int:  # pragma: no cover - thin prob
 
 
 if __name__ == "__main__":  # pragma: no cover
-    raise SystemExit(_main())
+    raise SystemExit(exit_cli(_main))

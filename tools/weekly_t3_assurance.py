@@ -12,9 +12,12 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+if __package__:
+    from .rf_owner_runtime import child_traceback_facts
+else:
+    from rf_owner_runtime import child_traceback_facts
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
-from rf_local_diagnostics import child_traceback_facts  # noqa: E402
 
 FILING_ROOT = PROJECT_ROOT.parent / "filing-fetch"
 RECEIPT_SCHEMA = "ff-t3-assurance/1"

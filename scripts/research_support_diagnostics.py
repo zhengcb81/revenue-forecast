@@ -16,7 +16,9 @@ IDs — not a buyer-grade economic quality certification.
 """
 from __future__ import annotations
 
-import argparse
+from rf_cli_feedback import DiagnosticParser, Invocation, exit_cli, observed_entry
+from rf_local_diagnostics import redact_text
+
 import hashlib
 import json
 import sys
@@ -105,8 +107,9 @@ def build_support_diagnostics(data: dict, input_sha256: str) -> dict:
             "economic_truth_inferred": False}
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Read-only economic support diagnostics over one native forecast input.")
+@observed_entry
+def main(argv: list[str] | None = None, *, runtime: Invocation) -> int:
+    parser = DiagnosticParser(description="Read-only economic support diagnostics over one native forecast input.")
     parser.add_argument("--input", required=True, help="Path to the native forecast input JSON (read-only).")
     parser.add_argument("--output", help="New output path for the diagnostics JSON; omit to print to stdout. Existing files are not overwritten.")
     args = parser.parse_args(argv)
@@ -115,12 +118,14 @@ def main(argv: list[str] | None = None) -> int:
         payload = source.read_bytes()
         data = json.loads(payload.decode("utf-8"))
     except (OSError, ValueError) as exc:
-        print(f"cannot read input {source}: {exc}", file=sys.stderr)
+        runtime.note_native(type(exc).__name__, kind="refusal", effect="not_started", error=exc)
+        print(redact_text(f"cannot read input {source}: {exc}"), file=sys.stderr)
         return 2
     try:
         diagnostics = build_support_diagnostics(data, hashlib.sha256(payload).hexdigest())
     except Exception as exc:  # fail closed on any contract violation
-        print(f"input rejected: {exc}", file=sys.stderr)
+        runtime.note_native(type(exc).__name__, kind="refusal", effect="not_started", error=exc)
+        print(redact_text(f"input rejected: {exc}"), file=sys.stderr)
         return 2
     rendered = json.dumps(diagnostics, ensure_ascii=False, indent=1) + "\n"
     if args.output is None:
@@ -128,11 +133,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     target = Path(args.output)
     if target.exists():
-        print(f"refusing to overwrite existing output {target}", file=sys.stderr)
+        runtime.note_native("output_exists", kind="refusal", effect="not_started")
+        print(redact_text(f"refusing to overwrite existing output {target}"), file=sys.stderr)
         return 2
     target.write_text(rendered, encoding="utf-8", newline="\n")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(exit_cli(main))
